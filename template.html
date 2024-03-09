@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Charts</title>
+    {{ table_styles | safe }}
+    <style>
+        body {
+            font-family: 'Arial', sans-serif; /* Example font */
+            color: #333;
+        }
+        .ticker-section h2 {
+            display: inline-block;
+            margin-right: 10px; /* Adjust the spacing between the header and the button */
+        } /* Closing bracket added here */
+
+        .home-button {
+            padding: 10px 20px; /* Increase padding for a larger button */
+            font-size: 18px; /* Increase font size for better visibility */
+            background-color: #008CBA; /* Change the background color for higher contrast */
+            color: white; /* Keep the text color white for contrast */
+            border: none; /* Remove any borders */
+            border-radius: 5px; /* Rounded corners for a modern look */
+            text-decoration: none; /* Remove underline from links */
+            display: inline-block; /* Align inline with other elements */
+            margin: 5px 0; /* Adjust margins around the button */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Add a shadow for depth */
+            transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition for hover effect */
+        }
+
+        .home-button:hover {
+            background-color: #003f4b; /* Even darker on hover */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+
+        /* Page break style */
+        @media print {
+            hr {
+                page-break-after: always; /* Force page break after hr for print */
+            }
+        }
+
+        /* Rest of your CSS */
+    </style>
+</head>
+<body>
+    <!-- Target for "Home" button navigation -->
+    <div id="top-of-page"></div>
+
+    <div class="navigation">
+        {{ nav_links | safe }}
+    </div>
+
+    {% for ticker_data in tickers_data %}
+        <!-- Insert an anchor tag with the ticker ID right before the section content -->
+        <a id="{{ ticker_data.ticker }}" class="section-anchor"></a>
+        <div class="ticker-section">
+            <h2>{{ ticker_data.ticker }}</h2>
+            <!-- Insert the Home button right after the ticker header -->
+            <a href="#top-of-page" class="home-button">Home</a>
+            <!-- The rest of the ticker section content -->
+            <div>
+                <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" class="chart">
+                <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" class="chart">
+            </div>
+            {{ ticker_data.financial_table | safe }}
+            <!-- Balance Sheet Section -->
+            <div class="balance-sheet-container">
+                <div class="balance-sheet-table" align=left>
+                    {{ ticker_data.balance_sheet_table_html | safe }}
+                </div>
+                <div class="balance-sheet-chart">
+                    <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" class="chart" align=right>
+                </div>
+            </div>
+        </div>
+        <hr> <!-- Page break will occur here when printed -->
+    {% endfor %}
+    
+</body>
+</html>
