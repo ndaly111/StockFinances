@@ -3,7 +3,7 @@ name: Run Python Script
 on:
   schedule:
     # Schedule for every day at 8 AM (this uses UTC time)
-    - cron: '2 * * * *'
+    - cron: '* * * * *'
 
 jobs:
   run-main-script:
@@ -23,5 +23,5 @@ jobs:
         pip install -r requirements.txt  # Assumes you have a requirements.txt file
 
     - name: Run main script
-      run: python remote_main.py  # Replace this with the path to your Python script
+      run: python main_remote.py  # Replace this with the path to your Python script
  
