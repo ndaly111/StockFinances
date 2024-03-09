@@ -26,7 +26,6 @@ TICKERS_FILE_PATH = 'tickers.csv'
 DB_PATH = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'financial_charts.html'
-PDF_OUTPUT_FILE = '/Users/nicholasdaly/Library/Mobile Documents/com~apple~CloudDocs/Stock Data/stock_charts.pdf'
 is_remote = True
 print("constants")
 
@@ -255,11 +254,7 @@ def main():
         html_full_path = generate_html_report(sorted_tickers, financial_data, '.', HTML_OUTPUT_FILE)
         print("---m generating html report")
 
-        # Convert HTML to PDF outside the ticker loop
-        if os.path.exists(html_full_path):
-            html_to_pdf(html_full_path, PDF_OUTPUT_FILE)
-            print(f"PDF report generated at {PDF_OUTPUT_FILE}")
-
+        
     finally:
         if conn:
             conn.close()
