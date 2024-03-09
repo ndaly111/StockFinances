@@ -3,7 +3,7 @@ name: Run Python Script
 on:
   schedule:
     # Schedule for every day at 8 AM (this uses UTC time)
-    - cron: '0 8 * * *'
+    - cron: '2 * * * *'
 
 jobs:
   run-main-script:
@@ -16,12 +16,12 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'  # Use the version of Python you need
+        python-version: '3.9'  # Use the version of Python you need
 
     - name: Install dependencies
       run: |
         pip install -r requirements.txt  # Assumes you have a requirements.txt file
 
     - name: Run main script
-      run: python main.py  # Replace this with the path to your Python script
+      run: python remote_main.py  # Replace this with the path to your Python script
  
