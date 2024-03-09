@@ -24,3 +24,4 @@ jobs:
 
     - name: Run main script
       run: python main.py  # Replace this with the path to your Python script
+ 
