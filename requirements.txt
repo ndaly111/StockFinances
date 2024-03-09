@@ -1,7 +1,6 @@
 pandas
 yfinance
 matplotlib
-sqlite3
 os
 datetime
 numpy
