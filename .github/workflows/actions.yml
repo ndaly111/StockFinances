@@ -5,7 +5,6 @@ on:
     - cron: '0 8 * * *'
   workflow_dispatch:
 
-
 jobs:
   run-main-script:
     runs-on: ubuntu-latest
@@ -20,9 +19,20 @@ jobs:
         python-version: '3.9'  # Use the version of Python you need
 
     - name: Install dependencies
-      run: |
-        pip install -r requirements.txt  # Assumes you have a requirements.txt file
+      run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
 
     - name: Run main script
       run: python main_remote.py  # Replace this with the path to your Python script
- 
+
+    - name: Configure Git
+      run: |
+        git config --global user.name 'ndaly111'
+        git config --global user.email 'ndaly111@gmail.com'
+
+    - name: Commit HTML to gh-pages
+      run: |
+        git fetch
+        git checkout gh-pages
+        git add financial_charts.html
+        git commit -m "Update HTML report"
+        git push origin gh-pages
