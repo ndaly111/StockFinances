@@ -35,4 +35,4 @@ jobs:
         git checkout gh-pages
         git add financial_charts.html
         git commit -m "Update HTML report"
-        git push origin gh-pages
+        git push origin gh-pages --force --quiet "https://${{ secrets.HTML_ACCESS }}@github.com/ndaly111/StockFinances.git"
