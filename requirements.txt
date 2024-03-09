@@ -1,7 +1,5 @@
 pandas
 yfinance
 matplotlib
-os
-datetime
 numpy
 jinja2
