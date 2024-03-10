@@ -16,20 +16,26 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.9'  # Use the version of Python you need
+        python-version: '3.9'
 
     - name: Install dependencies
-      run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
+      run: pip install -r requirements.txt
 
     - name: Run main script
-      run: python main_remote.py  # Replace this with the path to your Python script
+      run: python main_remote.py
 
-    - name: Configure Git
+    - name: Checkout gh-pages branch
+      run: git checkout -b gh-pages origin/gh-pages
+
+    - name: Copy HTML to root
+      run: cp charts/financial_charts.html ./  # Adjust the path if your HTML is generated elsewhere
+
+    - name: Commit and push
       run: |
         git config --global user.name 'ndaly111'
         git config --global user.email 'ndaly111@gmail.com'
-
-    - name: Push changes
-      run: |
-        git commit -m "Update HTML report" --allow-empty
-        git push --force "https://${{ secrets.HTML_ACCESS }}@github.com/ndaly111/StockFinances.git" gh-pages
+        git add financial_charts.html
+        git commit -m "Update HTML report"
+        git push origin gh-pages --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.HTML_ACCESS }}
