@@ -29,7 +29,7 @@ jobs:
         git config --global user.name 'ndaly111'
         git config --global user.email 'ndaly111@gmail.com'
 
-    - name: Commit HTML to gh-pages
+        - name: Commit HTML to gh-pages
       run: |
         git fetch
         git checkout gh-pages
