@@ -27,12 +27,9 @@ jobs:
     - name: Configure Git
       run: |
         git config --global user.name 'ndaly111'
-        git config --global user.email 'ndaly111@gmail.com'
+        git config --global user.email 'ndaly111@gmail.
 
-    - name: Commit HTML to gh-pages
-     run: |
-      git fetch
-      git checkout gh-pages
-      git add financial_charts.html
-      git commit -m "Update HTML report"
-      git push --force --quiet "https://${{ secrets.HTML_ACCESS }}@github.com/ndaly111/StockFinances.git" gh-pages
+    - name: Push changes
+      run: |
+        git commit -m "Update HTML report" --allow-empty
+        git push --force "https://${{ secrets.HTML_ACCESS }}@github.com/ndaly111/StockFinances.git" gh-pages
