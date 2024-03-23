@@ -5,6 +5,9 @@ on:
     - cron: '0 8 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write  # Grants permission to push changes
+
 jobs:
   run-main-script:
     runs-on: ubuntu-latest
