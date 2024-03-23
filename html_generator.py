@@ -228,7 +228,7 @@ def print_dataframe_to_console(df, message):
 
 
 # Function to create HTML content
-def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='financial_charts.html'):
+def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='index.html'):
     charts_output_dir = "charts/"
     print("HTML generator 9 creating HTML for tickers")
     # Ensure charts_output_dir ends with a slash
