@@ -37,7 +37,7 @@ jobs:
     
     - name: Add changes to gh-pages
       run: |
-        git add financial_charts.html
+        git add index.html
         git add charts/*  # This will add the charts/ directory and all contents to gh-pages
         git commit -m "Update website content" --allow-empty  # This commits the changes
     
