@@ -1,0 +1,49 @@
+name: Run Python Script
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Grants permission to push changes
+
+jobs:
+  run-main-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
+    
+    - name: Run main script
+      run: python main_remote.py  # This will generate 'financial_charts.html' in the root directory
+
+    - name: Set up Git identity
+      run: |
+        git config --global user.name 'ndaly111'
+        git config --global user.email 'ndaly111@gmail.com'
+        
+    - name: Checkout gh-pages branch
+      run: git checkout gh-pages || git checkout --orphan gh-pages
+    
+    - name: Add changes to gh-pages
+      run: |
+        git add index.html
+        git add charts/*  # This will add the charts/ directory and all contents to gh-pages
+        git commit -m "Update website content" --allow-empty  # This commits the changes
+    
+    - name: Push changes to gh-pages
+      run: |
+        git push origin gh-pages --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

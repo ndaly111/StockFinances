@@ -5,7 +5,6 @@ import ticker_manager
 from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries)
 from chart_generator import (prepare_data_for_charts, generate_financial_charts)
 from html_generator import (create_html_for_tickers)
-from html_to_pdf_converter import html_to_pdf
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data,
     check_missing_balance_sheet_data,
@@ -26,7 +25,6 @@ TICKERS_FILE_PATH = 'tickers.csv'
 DB_PATH = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'financial_charts.html'
-PDF_OUTPUT_FILE = '/Users/nicholasdaly/Library/Mobile Documents/com~apple~CloudDocs/Stock Data/stock_charts.pdf'
 is_remote = True
 print("constants")
 
@@ -255,11 +253,7 @@ def main():
         html_full_path = generate_html_report(sorted_tickers, financial_data, '.', HTML_OUTPUT_FILE)
         print("---m generating html report")
 
-        # Convert HTML to PDF outside the ticker loop
-        if os.path.exists(html_full_path):
-            html_to_pdf(html_full_path, PDF_OUTPUT_FILE)
-            print(f"PDF report generated at {PDF_OUTPUT_FILE}")
-
+        
     finally:
         if conn:
             conn.close()
