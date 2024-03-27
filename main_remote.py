@@ -245,7 +245,7 @@ def main():
             # Generate HTML report after all tickers have been processed
             # Your existing chart generation code
             print("---m chart generation code")
-            generate_charts(ticker, cursor, charts_output_dir, combined_data)
+            
 
 
 
