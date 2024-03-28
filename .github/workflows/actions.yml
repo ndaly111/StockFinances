@@ -25,7 +25,7 @@ jobs:
       run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
     
     - name: Run main script
-      run: python Fetch_all.py  # This will generate 'financial_charts.html' in the root directory
+      run: python main_remote.py  # This will generate 'financial_charts.html' in the root directory
 
     - name: Set up Git identity
       run: |
