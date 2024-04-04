@@ -279,7 +279,7 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     charts_output_dir = charts_output_dir.rstrip('/') + '/'
 
     # Sorting the tickers
-    sorted_tickers = sorted(current_# Building navigation links
+    sorted_tickers = sorted(current_)# Building navigation links
     home_button = '<a href="#top-of-page" class="home-button">Home</a>'
     nav_links = " | " + " | ".join(
         f'<a href="#{ticker}" class="home-button">{ticker}</a>' for ticker in sorted_tickers)
