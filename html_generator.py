@@ -166,6 +166,7 @@ template_html_content = """
     <div class="navigation">
         {{ nav_links | safe }}
     </div>
+    <div>
 
     {% for ticker_data in tickers_data %}
         <div class="ticker-section" id="{{ ticker_data.ticker }}">
