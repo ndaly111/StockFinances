@@ -5,7 +5,6 @@ import ticker_manager
 from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries)
 from chart_generator import (prepare_data_for_charts, generate_financial_charts)
 from html_generator import (create_html_for_tickers)
-from html_to_pdf_converter import html_to_pdf
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data,
     check_missing_balance_sheet_data,
