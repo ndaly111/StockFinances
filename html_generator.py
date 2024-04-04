@@ -160,7 +160,20 @@ template_html_content = """
     </style>
 </head>
 <body>
+    <!-- Target for "Home" button navigation -->
     <div id="top-of-page"></div>
+
+    <div class="navigation">
+        {{ nav_links | safe }}
+    </div>
+
+    {% for ticker_data in tickers_data %}
+        <div class="ticker-section" id="{{ ticker_data.ticker }}">
+            <h2>{{ ticker_data.ticker }}</h2>
+            <!-- Insert the Home button right after the ticker header -->
+            <a href="#top-of-page" class="home-button">Home</a>
+        </div>
+        <div>
 
     {% for ticker_data in tickers_data %}
         <div class="ticker-section" id="{{ ticker_data.ticker }}">
