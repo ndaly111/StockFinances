@@ -69,6 +69,12 @@
     </style>
 </head>
 <body>
+    <!-- Target for "Home" button navigation -->
+    <div id="top-of-page"></div>
+
+    <div class="navigation">
+        {{ nav_links | safe }}
+    </div>
     <div id="top-of-page"></div>
 
     {% for ticker_data in tickers_data %}
