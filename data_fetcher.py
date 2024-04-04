@@ -334,15 +334,23 @@ def fetch_ttm_data_from_yahoo(ticker):
     ttm_data['TTM_Revenue'] = ttm_financials.loc['Total Revenue', :].iloc[:4].sum()
     ttm_data['TTM_Net_Income'] = ttm_financials.loc['Net Income', :].iloc[:4].sum()
 
-    if 'Basic EPS' in ttm_financials.index:
-        ttm_data['TTM_EPS'] = ttm_financials.loc['Basic EPS', :].iloc[:4].sum()
-    else:
-        shares_outstanding = stock.info.get('sharesOutstanding', None)
-        if shares_outstanding:
+    # Fetch the shares outstanding
+    shares_outstanding = stock.info.get('sharesOutstanding', None)
+
+    # Calculate EPS if possible
+    if shares_outstanding:
+        ttm_data['Shares_Outstanding'] = shares_outstanding
+        # The EPS will be based on the Basic EPS if available, else calculated from Net Income and shares outstanding
+        if 'Basic EPS' in ttm_financials.index:
+            ttm_data['TTM_EPS'] = ttm_financials.loc['Basic EPS', :].iloc[:4].sum()
+        else:
             ttm_data['TTM_EPS'] = ttm_data['TTM_Net_Income'] / shares_outstanding
+    else:
+        ttm_data['TTM_EPS'] = None
 
     # Get the quarter information
     ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
+
     return ttm_data
 
 
@@ -356,14 +364,15 @@ def store_ttm_data(ticker, ttm_data, cursor):
         ttm_data['TTM_Revenue'],
         ttm_data['TTM_Net_Income'],
         ttm_data['TTM_EPS'],
+        ttm_data.get('Shares_Outstanding'),  # Get shares outstanding, using .get to avoid KeyError if not present
         ttm_data['Quarter']
     )
 
     # Use INSERT OR REPLACE to overwrite existing data if the same ticker and quarter are found
     try:
         cursor.execute("""
-            INSERT OR REPLACE INTO TTM_Data (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS, Quarter, Last_Updated)
-            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
+            INSERT OR REPLACE INTO TTM_Data (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS, Shares_Outstanding, Quarter, Last_Updated)
+            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
         """, ttm_values)
         cursor.connection.commit()
         print(f"TTM data stored/updated for {ticker}")

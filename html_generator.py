@@ -97,79 +97,109 @@ template_html_content = """
     {{ table_styles | safe }}
     <style>
         body {
-            font-family: 'Arial', sans-serif; /* Example font */
+            font-family: 'Arial', sans-serif;
             color: #333;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent scrolling on the x-axis */
         }
-        .ticker-section h2 {
-            display: inline-block;
-            margin-right: 10px; /* Adjust the spacing between the header and the button */
-        } /* Closing bracket added here */
+        .carousel-container {
+        white-space: nowrap; /* Ensure the charts don't wrap */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        margin: 0 auto; /* Remove top/bottom margins and center horizontally */
+        padding: 10px 0; /* Add padding to prevent content from touching the edges */
+    }
 
+        .carousel-item {
+            display: inline-block; /* Display items in a line */
+            width: 100vw; /* Each item takes the full viewport width */
+            vertical-align: top; /* Align items to the top */
+            margin-right: 20px; /* Margin between items */
+            margin-bottom: 0; /* Remove bottom margin if any */
+        }
+        .chart-container, .financial-table-container, .balance-sheet-container {
+            vertical-align: top; text-align: center; /* Center content for all containers */
+            margin-bottom: 20px;
+        }
+        .chart, .financial-table-container img, .balance-sheet-container img {
+            max-width: 100%;
+            height: auto;
+        }
+        .balance-sheet-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .balance-sheet-table, .balance-sheet-chart {
+            flex: 1;
+            max-width: calc(50% - 10px); /* Adjust max-width for spacing */
+            box-sizing: border-box;
+        }
+        .balance-sheet-chart img {
+            max-width: 80%; /* Make the balance sheet chart smaller */
+        }
         .home-button {
-            padding: 10px 20px; /* Increase padding for a larger button */
-            font-size: 18px; /* Increase font size for better visibility */
-            background-color: #008CBA; /* Change the background color for higher contrast */
-            color: white; /* Keep the text color white for contrast */
-            border: none; /* Remove any borders */
-            border-radius: 5px; /* Rounded corners for a modern look */
-            text-decoration: none; /* Remove underline from links */
-            display: inline-block; /* Align inline with other elements */
-            margin: 5px 0; /* Adjust margins around the button */
-            cursor: pointer; /* Change cursor to pointer on hover */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Add a shadow for depth */
-            transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition for hover effect */
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
-
         .home-button:hover {
-            background-color: #003f4b; /* Even darker on hover */
+            background-color: #003f4b;
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
-
-
-        /* Page break style */
-        @media print {
-            hr {
-                page-break-after: always; /* Force page break after hr for print */
-            }
-        }
-
-        /* Rest of your CSS */
     </style>
 </head>
 <body>
-    <!-- Target for "Home" button navigation -->
     <div id="top-of-page"></div>
 
-    <div class="navigation">
-        {{ nav_links | safe }}
-    </div>
-
     {% for ticker_data in tickers_data %}
-        <!-- Insert an anchor tag with the ticker ID right before the section content -->
-        <a id="{{ ticker_data.ticker }}" class="section-anchor"></a>
-        <div class="ticker-section">
-            <h2>{{ ticker_data.ticker }}</h2>
-            <!-- Insert the Home button right after the ticker header -->
-            <a href="#top-of-page" class="home-button">Home</a>
-            <!-- The rest of the ticker section content -->
+        <div class="ticker-section" id="{{ ticker_data.ticker }}">
+            <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
+
             <div>
-                <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" class="chart">
-                <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" class="chart">
+                <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
+                <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" align="center">
+                {{ ticker_data.financial_table | safe }}
             </div>
-            {{ ticker_data.financial_table | safe }}
-            <!-- Balance Sheet Section -->
+
+            <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
+
+            <div class="carousel-container">
+                <div class="carousel-item">
+                    <img src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
+                </div>
+                <div class="carousel-item">
+                    <img src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
+                </div>
+                <div class="carousel-item">
+                    {{ ticker_data.yoy_growth_table_html | safe }}
+                </div>
+            </div>
+
+
+            <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
+
             <div class="balance-sheet-container">
-                <div class="balance-sheet-table" align=left>
+                <div class="balance-sheet-table">
                     {{ ticker_data.balance_sheet_table_html | safe }}
                 </div>
                 <div class="balance-sheet-chart">
-                    <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" class="chart" align=right>
+                    <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" style="max-width: 80%;">
                 </div>
             </div>
         </div>
-        <hr> <!-- Page break will occur here when printed -->
+        <hr>
     {% endfor %}
-    
 </body>
 </html>
 """
@@ -228,7 +258,7 @@ def print_dataframe_to_console(df, message):
 
 
 # Function to create HTML content
-def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='index.html'):
+def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='financial_charts.html'):
     charts_output_dir = "charts/"
     print("HTML generator 9 creating HTML for tickers")
     # Ensure charts_output_dir ends with a slash
@@ -237,11 +267,10 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     # Sorting the tickers
     sorted_tickers = sorted(current_tickers)
 
-    # Building navigation links
-    home_button = '<a href="#top-of-page" class="home-button">Home</a>'
-    nav_links = home_button + " | " + " | ".join(
-        f'<a href="#{ticker}" class="home-button">{ticker}</a>' for ticker in sorted_tickers)
-
+    # Building navigation links - Update to ensure correct IDs
+    nav_links = '<a href="#top-of-page" class="home-button">Home</a>' + " | " + " | ".join(
+        f'<a href="#{ticker}" class="ticker-nav">{ticker}</a>' for ticker in sorted_tickers
+    )
 
     # Load the template
     env = Environment(loader=FileSystemLoader('.'))
@@ -307,32 +336,18 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
             df = calculate_and_format_changes(df)
             rendered_table = df.to_html(classes="financial-data", border=0, na_rep='N/A')
 
-            # Read the balance sheet table HTML file
-            with open(f"charts/{ticker}_balance_sheet_table.html", 'r') as bs_table_file:
-                balance_sheet_table_html = bs_table_file.read()
-
-            # Add balance sheet table and chart for each ticker
-            balance_sheet_html = f"""
-                    <div class="balance-sheet-container">
-                        <div class="balance-sheet-table">
-                            <!-- Your balance sheet table HTML here -->
-                            {rendered_table}  <!-- For example purposes, using the same table as above -->
-                        </div>
-                        <div class="balance-sheet-chart">
-                            <img src="charts/{ticker}_balance_sheet_chart.png" alt="Balance Sheet Chart">
-                        </div>
-                    </div>
-                    """
 
             ticker_data = {
                 'ticker': ticker,
                 'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
                 'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
                 'financial_table': rendered_table,
-                # Adding paths for balance sheet chart and table HTML
+                'forecast_rev_net_chart_path': f"{charts_output_dir}{ticker}_Revenue_Net_Income_Forecast.png",
+                'forecast_eps_chart_path': f"{charts_output_dir}{ticker}_EPS_Forecast.png",
+                'yoy_growth_table_html': open(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html").read(),
                 'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
-                'balance_sheet_table_html': balance_sheet_table_html
-                # This is the HTML content of the balance sheet table
+                'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
+                'balance_sheet_table_html': open(f"{charts_output_dir}{ticker}_balance_sheet_table.html").read()  # Read the content directly into the dictionary
             }
 
             data_for_rendering['tickers_data'].append(ticker_data)

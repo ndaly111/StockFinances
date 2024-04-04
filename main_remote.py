@@ -5,6 +5,7 @@ import ticker_manager
 from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries)
 from chart_generator import (prepare_data_for_charts, generate_financial_charts)
 from html_generator import (create_html_for_tickers)
+from html_to_pdf_converter import html_to_pdf
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data,
     check_missing_balance_sheet_data,
@@ -15,20 +16,26 @@ from balance_sheet_data_fetcher import (
 from balance_sheet_data_fetcher import balance_sheet_data_fetcher
 from balancesheet_chart import (fetch_balance_sheet_data,plot_chart,format_value, create_and_save_table)
 import pandas as pd
-
+from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_in_database)
+from forecasted_earnings_chart import generate_forecast_charts_and_tables
 
 
 
 
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
+db_path = 'Stock Data.db'
 DB_PATH = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'financial_charts.html'
+PDF_OUTPUT_FILE = '/Users/nicholasdaly/Library/Mobile Documents/com~apple~CloudDocs/Stock Data/stock_charts.pdf'
 is_remote = True
+historical_table_name = 'Annual_Data'
+forecast_table_name = 'ForwardFinancialData'
 print("constants")
 
 debug_this = False
+table_name = 'ForwardFinancialData'
 
 
 def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
@@ -238,16 +245,21 @@ def main():
             print(ticker_financial_data.empty)  # Should print False if there is data
 
             if not ticker_financial_data.empty:
-                print("---m financial data has data, generating charts")
+                print("Financial data has data, generating charts")
                 financial_data[ticker] = ticker_financial_data
                 generate_financial_charts(ticker, charts_output_dir, financial_data[ticker])
+            else:
+                print(f"No data available to generate charts for {ticker}.")
+
+            combined_df = scrape_and_prepare_data(ticker)
+            print("---m combined df")
+
+            if not combined_df.empty:
+                store_in_database(combined_df, ticker, db_path, table_name)
 
             # Generate HTML report after all tickers have been processed
-            # Your existing chart generation code
-            print("---m chart generation code")
+            generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
             
-
-
 
         # Generate HTML report after processing all tickers
         html_full_path = generate_html_report(sorted_tickers, financial_data, '.', HTML_OUTPUT_FILE)

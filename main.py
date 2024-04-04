@@ -16,21 +16,25 @@ from balance_sheet_data_fetcher import (
 from balance_sheet_data_fetcher import balance_sheet_data_fetcher
 from balancesheet_chart import (fetch_balance_sheet_data,plot_chart,format_value, create_and_save_table)
 import pandas as pd
-
+from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_in_database)
+from forecasted_earnings_chart import generate_forecast_charts_and_tables
 
 
 
 
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
-DB_PATH = 'Stock Data.db'
+db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'financial_charts.html'
 PDF_OUTPUT_FILE = '/Users/nicholasdaly/Library/Mobile Documents/com~apple~CloudDocs/Stock Data/stock_charts.pdf'
 is_remote = False
+historical_table_name = 'Annual_Data'
+forecast_table_name = 'ForwardFinancialData'
 print("constants")
 
 debug_this = False
+table_name = 'ForwardFinancialData'
 
 
 def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
@@ -212,7 +216,7 @@ def main():
     sorted_tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=False)
     print("---main loop 1 sorted tickers")
 
-    conn = establish_database_connection(DB_PATH)
+    conn = establish_database_connection(db_path)
     if conn is None:
         return
 
@@ -245,10 +249,15 @@ def main():
                 generate_financial_charts(ticker, charts_output_dir, financial_data[ticker])
             else:
                 print(f"No data available to generate charts for {ticker}.")
+
+            combined_df = scrape_and_prepare_data(ticker)
+            print("---m combined df")
+
+            if not combined_df.empty:
+                store_in_database(combined_df, ticker, db_path, table_name)
+
             # Generate HTML report after all tickers have been processed
-            # Your existing chart generation code
-            print("---m chart generation code")
-            generate_charts(ticker, cursor, charts_output_dir, combined_data)
+            generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
 
 
 
