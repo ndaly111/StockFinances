@@ -279,12 +279,10 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     charts_output_dir = charts_output_dir.rstrip('/') + '/'
 
     # Sorting the tickers
-    sorted_tickers = sorted(current_tickers)
-
-    # Building navigation links - Update to ensure correct IDs
-    nav_links = '<a href="#top-of-page" class="home-button">Home</a>' + " | " + " | ".join(
-        f'<a href="#{ticker}" class="ticker-nav">{ticker}</a>' for ticker in sorted_tickers
-    )
+    sorted_tickers = sorted(current_# Building navigation links
+    home_button = '<a href="#top-of-page" class="home-button">Home</a>'
+    nav_links = " | " + " | ".join(
+        f'<a href="#{ticker}" class="home-button">{ticker}</a>' for ticker in sorted_tickers)
 
     # Load the template
     env = Environment(loader=FileSystemLoader('.'))
