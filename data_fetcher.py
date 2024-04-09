@@ -331,25 +331,33 @@ def fetch_ttm_data_from_yahoo(ticker):
         return None
 
     ttm_data = {}
-    ttm_data['TTM_Revenue'] = ttm_financials.loc['Total Revenue', :].iloc[:4].sum()
-    ttm_data['TTM_Net_Income'] = ttm_financials.loc['Net Income', :].iloc[:4].sum()
+    # Fetching TTM Revenue and Net Income
+    try:
+        ttm_data['TTM_Revenue'] = ttm_financials.loc['Total Revenue', :].iloc[:4].sum()
+        ttm_data['TTM_Net_Income'] = ttm_financials.loc['Net Income', :].iloc[:4].sum()
+    except KeyError:
+        # If the key doesn't exist, set to None
+        ttm_data['TTM_Revenue'] = None
+        ttm_data['TTM_Net_Income'] = None
 
-    # Fetch the shares outstanding
-    shares_outstanding = stock.info.get('sharesOutstanding', None)
+    # Check for Basic EPS availability and NaN values
+    eps_available_and_valid = False
+    if 'Basic EPS' in ttm_financials.index:
+        eps_values = ttm_financials.loc['Basic EPS', :].iloc[:4]
+        if not eps_values.isna().any():  # Check if any of the EPS values are NaN
+            ttm_data['TTM_EPS'] = eps_values.sum()
+            eps_available_and_valid = True
 
-    # Calculate EPS if possible
-    if shares_outstanding:
-        ttm_data['Shares_Outstanding'] = shares_outstanding
-        # The EPS will be based on the Basic EPS if available, else calculated from Net Income and shares outstanding
-        if 'Basic EPS' in ttm_financials.index:
-            ttm_data['TTM_EPS'] = ttm_financials.loc['Basic EPS', :].iloc[:4].sum()
-        else:
-            ttm_data['TTM_EPS'] = ttm_data['TTM_Net_Income'] / shares_outstanding
-    else:
-        ttm_data['TTM_EPS'] = None
+    # Use trailingEps if EPS data is not available or valid
+    if not eps_available_and_valid:
+        ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
 
-    # Get the quarter information
-    ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
+    # Fetch shares outstanding and latest quarter information
+    ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding', None)
+    try:
+        ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
+    except Exception:
+        ttm_data['Quarter'] = None
 
     return ttm_data
 
