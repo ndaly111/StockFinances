@@ -324,6 +324,8 @@ def is_ttm_data_blank(ttm_data):
         return False
 
 
+import yfinance as yf
+
 def fetch_ttm_data_from_yahoo(ticker):
     stock = yf.Ticker(ticker)
     ttm_financials = stock.quarterly_financials
@@ -343,9 +345,13 @@ def fetch_ttm_data_from_yahoo(ticker):
     # Directly use trailingEps for TTM_EPS without conditionally checking for NaNs in quarterly EPS data
     ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
 
+    # Get shares outstanding
+    ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding', None)
+
     # Get the quarter information
     ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
     return ttm_data
+
 
 
 def store_ttm_data(ticker, ttm_data, cursor):
@@ -416,10 +422,22 @@ def prompt_and_update_partial_entries(ticker, cursor, is_remote=False):
                     params.append(response)
 
             if eps is None:
-                response = input(f"Please enter the EPS for {symbol} in {date} (or type 'skip' to leave unchanged): ")
-                if response.lower() != 'skip':
+                stock = yf.Ticker(symbol)
+                info = stock.info
+                trailing_eps = info.get('trailingEps')
+
+                if trailing_eps is not None:
+                    print(f"Fetched trailing EPS for {symbol}: {trailing_eps}")
+                    eps = trailing_eps  # Use the fetched trailing EPS
                     updates.append("EPS = ?")
-                    params.append(response)
+                    params.append(eps)
+                else:
+                    # Prompt for manual input if trailing EPS is not available
+                    response = input(
+                        f"Please enter the EPS for {symbol} in {date} (or type 'skip' to leave unchanged): ")
+                    if response.lower() != 'skip':
+                        updates.append("EPS = ?")
+                        params.append(response)
 
             if updates:
                 update_query = f"UPDATE Annual_Data SET {', '.join(updates)} WHERE Symbol = ? AND Date = ?"
