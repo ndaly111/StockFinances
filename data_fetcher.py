@@ -331,33 +331,20 @@ def fetch_ttm_data_from_yahoo(ticker):
         return None
 
     ttm_data = {}
-    # Fetching TTM Revenue and Net Income
+    # Attempt to calculate TTM Revenue and Net Income
     try:
         ttm_data['TTM_Revenue'] = ttm_financials.loc['Total Revenue', :].iloc[:4].sum()
         ttm_data['TTM_Net_Income'] = ttm_financials.loc['Net Income', :].iloc[:4].sum()
     except KeyError:
-        # If the key doesn't exist, set to None
+        # If the key doesn't exist, or an error occurs, default these values to None
         ttm_data['TTM_Revenue'] = None
         ttm_data['TTM_Net_Income'] = None
 
-    # Check for Basic EPS availability and NaN values
-    eps_available_and_valid = False
-    if 'Basic EPS' in ttm_financials.index:
-        eps_values = ttm_financials.loc['Basic EPS', :].iloc[:4]
-        if not eps_values.isna().any():  # Check if any of the EPS values are NaN
-            ttm_data['TTM_EPS'] = eps_values.sum()
-            eps_available_and_valid = True
+    # Directly use trailingEps for TTM_EPS without conditionally checking for NaNs in quarterly EPS data
+    ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
 
-    # Use trailingEps if EPS data is not available or valid
-    if not eps_available_and_valid:
-        ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
-
-    # Fetch shares outstanding and latest quarter information
+    # Fetch shares outstanding for completeness
     ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding', None)
-    try:
-        ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
-    except Exception:
-        ttm_data['Quarter'] = None
 
     return ttm_data
 
