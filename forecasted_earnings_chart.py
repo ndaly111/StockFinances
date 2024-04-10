@@ -34,19 +34,7 @@ def format_axis(ax, max_value):
 
 def fetch_financial_data(ticker, db_path):
     print("fetch financial data 3 forecasted earnings chart")
-    """
-    Fetches financial data from the database.
 
-    Args:
-        ticker (str): The ticker symbol for the financial data.
-        db_path (str): Database path.
-        historical_table (str): The name of the table containing historical data.
-        forecast_table (str): The name of the table containing forecast data.
-
-    Returns:
-        tuple: Contains three pandas DataFrames for historical data, forecast data, and analyst counts.
-    """
-    db_path = 'Stock Data.db'
     historical_table = 'Annual_Data'
     forecast_table = 'ForwardFinancialData'
 
@@ -81,35 +69,43 @@ def fetch_financial_data(ticker, db_path):
         SELECT Shares_Outstanding FROM TTM_Data WHERE Symbol = ? 
         ORDER BY Last_Updated DESC LIMIT 1;
         """
-
-        # Execute the query
         shares_outstanding_result = pd.read_sql_query(shares_outstanding_query, conn, params=(ticker,))
+        shares_outstanding = shares_outstanding_result['Shares_Outstanding'].iloc[
+            0] if not shares_outstanding_result.empty else None
 
-        # Check if the result is empty
-        if not shares_outstanding_result.empty:
-            shares_outstanding = shares_outstanding_result.iloc[0, 0]
+        # Only calculate Net Income for forecast data if shares_outstanding is not None
+        if shares_outstanding is not None:
+            forecast_data['EPS'] = pd.to_numeric(forecast_data['EPS'], errors='coerce')
+            forecast_data['Net_Income'] = forecast_data['EPS'] * shares_outstanding
         else:
-            # Handle the case where there are no results (e.g., set to None or a default value)
-            shares_outstanding = None  # or some default value, like 0
-
-        # Calculating Net Income for forecast data
-        forecast_data['Net_Income'] = forecast_data['EPS'] * shares_outstanding
+            print(f"Shares outstanding data is missing for ticker: {ticker}")
+            forecast_data['Net_Income'] = None
 
         return historical_data, forecast_data, analyst_counts
 
 
-
 def prepare_data_for_plotting(historical_data, forecast_data):
     print("prepare data for plotting 4 forecasted earnings chart")
-    """Prepares combined data for plotting."""
-    print("---preparing forcast data")
+
     historical_data['Type'] = 'Historical'
-    print("---historical",historical_data)
     forecast_data['Type'] = 'Forecast'
-    print("---forecast data",forecast_data)
+
+    # Ensure all data is numeric and replace non-numeric values with NaN
+    historical_data[['Revenue', 'Net_Income', 'EPS']] = historical_data[['Revenue', 'Net_Income', 'EPS']].apply(
+        pd.to_numeric, errors='coerce')
+    forecast_data[['Revenue', 'Net_Income', 'EPS']] = forecast_data[['Revenue', 'Net_Income', 'EPS']].apply(
+        pd.to_numeric, errors='coerce')
+
+    # Drop rows where 'Revenue' or 'Net_Income' is NaN or infinite
+    historical_data = historical_data.dropna(subset=['Revenue', 'Net_Income'])
+    forecast_data = forecast_data.dropna(subset=['Revenue', 'Net_Income'])
+
+    # Concatenate the historical and forecast data
     combined_data = pd.concat([historical_data, forecast_data])
+
+    # Sort by 'Date' and 'Type'
     combined_data.sort_values(by=['Date', 'Type'], inplace=True)
-    print("---combined",combined_data)
+
     return combined_data
 
 

@@ -343,9 +343,8 @@ def fetch_ttm_data_from_yahoo(ticker):
     # Directly use trailingEps for TTM_EPS without conditionally checking for NaNs in quarterly EPS data
     ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
 
-    # Fetch shares outstanding for completeness
-    ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding', None)
-
+    # Get the quarter information
+    ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
     return ttm_data
 
 
