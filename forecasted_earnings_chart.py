@@ -113,9 +113,19 @@ def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding
     return combined_data
 
 
-
 def plot_bars(ax, combined_data, bar_width, analyst_counts):
     print("plot bars 5 forecasted earnings chart")
+    # Calculate the maximum and minimum values in the Net_Income column
+    max_net_income = combined_data['Net_Income'].max()
+    min_net_income = combined_data['Net_Income'].min()
+
+    # Calculate padding as 20% of the larger of the absolute values of max and min Net_Income
+    padding = 0.2 * max(abs(max_net_income), abs(min_net_income))
+
+    # Set y-axis limits with additional padding based on the largest value label
+    max_label_height = max_net_income + padding * 2  # Adjust 2 to a higher value if necessary
+    min_label_height = min_net_income - padding if min_net_income < 0 else 0
+    ax.set_ylim(min_label_height, max_label_height)
     # Unique dates for the x-axis.
     unique_dates = combined_data['Date'].unique()
     # Number of groups of bars.
@@ -179,6 +189,7 @@ def plot_bars(ax, combined_data, bar_width, analyst_counts):
 
     return ax
 
+
 def add_value_labels(ax):
     """Adds value labels to the bars."""
     for rect in ax.patches:
@@ -217,13 +228,23 @@ def format_chart(ax, combined_data, output_path, ticker):
     plt.close()
 
 
-def plot_eps(ticker,ax, combined_data, analyst_counts):
+def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     # Define color for EPS bars
     eps_color = '#74a9cf'
 
+    # Calculate the y-axis limits based on EPS values with padding
+    max_eps = combined_data['EPS'].max()
+    min_eps = combined_data['EPS'].min() if combined_data['EPS'].min() < 0 else 0
+    padding = max(abs(max_eps), abs(min_eps)) * 0.2  # 20% of the larger of max/min EPS
+    ax.set_ylim(min_eps - padding, max_eps + padding)
+
+    # Set the positions for the EPS bars
+    unique_dates = combined_data['Date'].unique()
+    positions = np.arange(len(unique_dates)) * (bar_width * 3)
+
     # Bar settings
     bar_settings = {
-        'width': 0.35,
+        'width': bar_width,
         'align': 'center',
         'color': eps_color,
         'label': 'EPS',
@@ -279,7 +300,7 @@ def generate_financial_forecast_chart(ticker, combined_data, charts_output_dir,d
     format_chart(ax1, combined_data, charts_output_dir, ticker)
 
     fig, ax2 = plt.subplots(figsize=(10, 6))
-    plot_eps(ticker,ax2, combined_data, analyst_counts)
+    plot_eps(ticker,ax2, combined_data, analyst_counts, bar_width)
     plt.tight_layout()
     plt.savefig(f"{charts_output_dir}{ticker}_EPS_Forecast.png")
     plt.close(fig)
