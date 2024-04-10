@@ -32,12 +32,3 @@ jobs:
         git config --global user.name 'ndaly111'
         git config --global user.email 'ndaly111@gmail.com'
         
-    - name: Checkout gh-pages branch
-      run: git checkout gh-pages || git checkout --orphan gh-pages
-    
-
-    - name: Push changes to gh-pages
-      run: |
-        git push origin gh-pages --force
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
