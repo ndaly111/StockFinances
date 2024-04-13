@@ -114,15 +114,15 @@ template_html_content = """
 
         .carousel-item {
             display: inline-block; /* Display items in a line */
-            width: 100vw; /* Each item takes the full viewport width */
+            width: 95%; /* Each item takes the full viewport width */
             vertical-align: top; /* Align items to the top */
-            margin-right: 20px; /* Margin between items */
+            margin-right: 2%; /* Margin between items */
             margin-bottom: 0; /* Remove bottom margin if any */
             scroll-snap-align: center; /* Ensure the item aligns to the center when snapped */
         }
         .chart-container, .financial-table-container, .balance-sheet-container {
             vertical-align: top; text-align: center; /* Center content for all containers */
-            margin-bottom: 20px;
+            margin-bottom: 5%;
         }
         .chart, .financial-table-container img, .balance-sheet-container img {
             max-width: 100%;
