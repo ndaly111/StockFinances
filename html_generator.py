@@ -108,7 +108,7 @@ template_html_content = """
     overflow-x: auto; /* Enable horizontal scrolling */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     margin: 0 auto; /* Remove top/bottom margins and center horizontally */
-    padding: 10px 0; /* Add padding to prevent content from touching the edges */
+    padding: 5%; /* Add padding to prevent content from touching the edges */
     scroll-snap-type: x mandatory; /* Enable snapping along the x-axis, requiring a snap point */
         }
 
