@@ -104,21 +104,21 @@ template_html_content = """
             overflow-x: hidden; /* Prevent scrolling on the x-axis */
         }
         .carousel-container {
-    white-space: nowrap; /* Ensure the charts don't wrap */
-    overflow-x: auto; /* Enable horizontal scrolling */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    margin: 0 auto; /* Remove top/bottom margins and center horizontally */
-    padding: 5%; /* Add padding to prevent content from touching the edges */
-    scroll-snap-type: x mandatory; /* Enable snapping along the x-axis, requiring a snap point */
+            white-space: nowrap; /* Ensure the charts don't wrap */
+            overflow-x: auto; /* Enable horizontal scrolling */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            margin: 0 auto; /* Remove top/bottom margins and center horizontally */
+            padding: 5%; /* Add padding to prevent content from touching the edges */
+            scroll-snap-type: x mandatory; /* Enable snapping along the x-axis, requiring a snap point */
         }
 
         .carousel-item {
             display: inline-block; /* Display items in a line */
-            width: 95%; /* Each item takes the full viewport width */
+            width: 90%; /* Each item takes the full viewport width */
             vertical-align: top; /* Align items to the top */
             margin-right: 2%; /* Margin between items */
             margin-bottom: 0; /* Remove bottom margin if any */
-            scroll-snap-align: center; /* Ensure the item aligns to the center when snapped */
+            scroll-snap-align: start; /* Ensure the item aligns to the center when snapped */
         }
         .chart-container, .financial-table-container, .balance-sheet-container {
             vertical-align: top; text-align: center; /* Center content for all containers */
