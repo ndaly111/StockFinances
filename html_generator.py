@@ -100,24 +100,24 @@ def ensure_template_exists(template_path, template_content):
             color: #333;
             margin: 0;
             padding: 0;
-            overflow-x: hidden; /* Prevent scrolling on the x-axis */
+            overflow-x: hidden;
         }
         .carousel-container {
-            white-space: nowrap; /* Ensure the charts don't wrap */
-            overflow-x: auto; /* Enable horizontal scrolling */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            margin: 0 auto; /* Remove top/bottom margins and center horizontally */
-            padding: 10px 0; /* Add padding to prevent content from touching the edges */
+            white-space: nowrap; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            margin: 0 auto;
+            padding: 10px 0; 
         }
         .carousel-item {
-            display: inline-block; /* Display items in a line */
-            width: 100vw; /* Each item takes the full viewport width */
-            vertical-align: top; /* Align items to the top */
-            margin-right: 20px; /* Margin between items */
-            margin-bottom: 0; /* Remove bottom margin if any */
+            display: inline-block; 
+            width: 100vw; 
+            vertical-align: top; 
+            margin-right: 20px; 
+            margin-bottom: 0; 
         }
         .chart-container, .financial-table-container, .balance-sheet-container {
-            vertical-align: top; text-align: center; /* Center content for all containers */
+            vertical-align: top; text-align: center; 
             margin-bottom: 20px;
         }
         .chart, .financial-table-container img, .balance-sheet-container img {
@@ -131,11 +131,11 @@ def ensure_template_exists(template_path, template_content):
         }
         .balance-sheet-table, .balance-sheet-chart {
             flex: 1;
-            max-width: calc(50% - 10px); /* Adjust max-width for spacing */
+            max-width: calc(50% - 10px); 
             box-sizing: border-box;
         }
         .balance-sheet-chart img {
-            max-width: 80%; /* Make the balance sheet chart smaller */
+            max-width: 80%; 
         }
         .home-button {
             padding: 10px 20px;
