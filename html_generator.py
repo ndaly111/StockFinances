@@ -89,7 +89,6 @@ def ensure_template_exists(template_path, template_content):
 
 
 # Define the content of your template.html with the table style placeholder
-template_html_content = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -109,8 +108,7 @@ template_html_content = """
             -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
             margin: 0 auto; /* Remove top/bottom margins and center horizontally */
             padding: 10px 0; /* Add padding to prevent content from touching the edges */
-      }
-
+        }
         .carousel-item {
             display: inline-block; /* Display items in a line */
             width: 100vw; /* Each item takes the full viewport width */
@@ -162,10 +160,13 @@ template_html_content = """
 <body>
     <div id="top-of-page"></div>
 
+    <div class="navigation">
+        {{ nav_links | safe }}
+    </div>
     {% for ticker_data in tickers_data %}
         <div class="ticker-section" id="{{ ticker_data.ticker }}">
-            <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
-
+            <h2>{{ ticker_data.ticker }}</h2>
+            <a href="#top-of-page" class="home-button">Home</a>
             <div>
                 {{ ticker_data.ticker_info | safe }}
                 <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
@@ -173,8 +174,7 @@ template_html_content = """
                 {{ ticker_data.financial_table | safe }}
             </div>
 
-            <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
-
+            <a href="#top-of-page" class="home-button">Home</a>
             <div class="carousel-container">
                 <div class="carousel-item">
                     <img src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
@@ -186,9 +186,6 @@ template_html_content = """
                     {{ ticker_data.yoy_growth_table_html | safe }}
                 </div>
             </div>
-
-
-            <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
 
             <div class="balance-sheet-container">
                 <div class="balance-sheet-table">
@@ -203,7 +200,6 @@ template_html_content = """
     {% endfor %}
 </body>
 </html>
-"""
 print("html generator 4 defined template.html")
 
 # Path to your template file
