@@ -104,25 +104,23 @@ template_html_content = """
             overflow-x: hidden; /* Prevent scrolling on the x-axis */
         }
         .carousel-container {
-            white-space: nowrap; /* Ensure the charts don't wrap */
-            overflow-x: auto; /* Enable horizontal scrolling */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            margin: 0 auto; /* Remove top/bottom margins and center horizontally */
-            padding: 5%; /* Add padding to prevent content from touching the edges */
-            scroll-snap-type: x mandatory; /* Enable snapping along the x-axis, requiring a snap point */
-        }
+        white-space: nowrap; /* Ensure the charts don't wrap */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        margin: 0 auto; /* Remove top/bottom margins and center horizontally */
+        padding: 10px 0; /* Add padding to prevent content from touching the edges */
+    }
 
         .carousel-item {
             display: inline-block; /* Display items in a line */
-            width: 90%; /* Each item takes the full viewport width */
+            width: 100vw; /* Each item takes the full viewport width */
             vertical-align: top; /* Align items to the top */
-            margin-right: 2%; /* Margin between items */
+            margin-right: 20px; /* Margin between items */
             margin-bottom: 0; /* Remove bottom margin if any */
-            scroll-snap-align: start; /* Ensure the item aligns to the center when snapped */
         }
         .chart-container, .financial-table-container, .balance-sheet-container {
             vertical-align: top; text-align: center; /* Center content for all containers */
-            margin-bottom: 5%;
+            margin-bottom: 20px;
         }
         .chart, .financial-table-container img, .balance-sheet-container img {
             max-width: 100%;
@@ -162,28 +160,13 @@ template_html_content = """
     </style>
 </head>
 <body>
-    <!-- Target for "Home" button navigation -->
     <div id="top-of-page"></div>
-
-    <div class="navigation">
-        {{ nav_links | safe }}
-    </div>
-    <div>
-
-    {% for ticker_data in tickers_data %}
-        <div class="ticker-section" id="{{ ticker_data.ticker }}">
-            <h2>{{ ticker_data.ticker }}</h2>
-            <!-- Insert the Home button right after the ticker header -->
-            <a href="#top-of-page" class="home-button">Home</a>
-        </div>
-        <div>
 
     {% for ticker_data in tickers_data %}
         <div class="ticker-section" id="{{ ticker_data.ticker }}">
             <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
 
             <div>
-                {{ ticker_data.ticker_info | safe }}
                 <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
                 <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" align="center">
                 {{ ticker_data.financial_table | safe }}
@@ -282,10 +265,12 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     charts_output_dir = charts_output_dir.rstrip('/') + '/'
 
     # Sorting the tickers
-    sorted_tickers = sorted(current_tickers)# Building navigation links
-    home_button = '<a href="#top-of-page" class="home-button">Home</a>'
-    nav_links = " | " + " | ".join(
-        f'<a href="#{ticker}" class="home-button">{ticker}</a>' for ticker in sorted_tickers)
+    sorted_tickers = sorted(current_tickers)
+
+    # Building navigation links - Update to ensure correct IDs
+    nav_links = '<a href="#top-of-page" class="home-button">Home</a>' + " | " + " | ".join(
+        f'<a href="#{ticker}" class="ticker-nav">{ticker}</a>' for ticker in sorted_tickers
+    )
 
     # Load the template
     env = Environment(loader=FileSystemLoader('.'))
@@ -354,7 +339,6 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
 
             ticker_data = {
                 'ticker': ticker,
-                'ticker_info': open(f"{charts_output_dir}{ticker}_ticker_info.html").read(),
                 'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
                 'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
                 'financial_table': rendered_table,
