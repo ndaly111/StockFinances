@@ -103,7 +103,7 @@ def ensure_template_exists(template_path, template_content):
             overflow-x: hidden; /* Prevent scrolling on the x-axis */
         }
         .carousel-container {
-            white-space: nowrap; /* Ensure the charts don't wrap */
+            white-space: nowrap; /* Ensure the charts dont wrap */
             overflow-x: auto; /* Enable horizontal scrolling */
             -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
             margin: 0 auto; /* Remove top/bottom margins and center horizontally */
