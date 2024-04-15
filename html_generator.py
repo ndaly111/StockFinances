@@ -104,12 +104,12 @@ template_html_content = """
             overflow-x: hidden; /* Prevent scrolling on the x-axis */
         }
         .carousel-container {
-        white-space: nowrap; /* Ensure the charts don't wrap */
-        overflow-x: auto; /* Enable horizontal scrolling */
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-        margin: 0 auto; /* Remove top/bottom margins and center horizontally */
-        padding: 10px 0; /* Add padding to prevent content from touching the edges */
-    }
+            white-space: nowrap; /* Ensure the charts don't wrap */
+            overflow-x: auto; /* Enable horizontal scrolling */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            margin: 0 auto; /* Remove top/bottom margins and center horizontally */
+            padding: 10px 0; /* Add padding to prevent content from touching the edges */
+      }
 
         .carousel-item {
             display: inline-block; /* Display items in a line */
@@ -167,6 +167,7 @@ template_html_content = """
             <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
 
             <div>
+                {{ ticker_data.ticker_info | safe }}
                 <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
                 <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" align="center">
                 {{ ticker_data.financial_table | safe }}
@@ -339,6 +340,7 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
 
             ticker_data = {
                 'ticker': ticker,
+                'ticker_info': open(f"{charts_output_dir}{ticker}_ticker_info.html").read(),
                 'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
                 'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
                 'financial_table': rendered_table,
