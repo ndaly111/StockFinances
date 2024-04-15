@@ -258,6 +258,10 @@ def main():
 
             # Generate HTML report after all tickers have been processed
             generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
+            prepared_data = prepare_data_for_display(ticker, user_pe, user_ps, growth_rate)
+
+            # Generate HTML table and save to file
+            generate_html_table(prepared_data, ticker)
             
 
         # Generate HTML report after processing all tickers
