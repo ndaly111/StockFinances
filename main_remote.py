@@ -17,6 +17,12 @@ from balancesheet_chart import (fetch_balance_sheet_data,plot_chart,format_value
 import pandas as pd
 from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_in_database)
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
+from ticker_info import (fetch_stock_data,format_number,prepare_data_for_display,generate_html_table)
+
+
+user_pe = "-"
+user_ps = "-"
+growth_rate = "-"
 
 
 
