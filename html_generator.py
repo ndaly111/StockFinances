@@ -183,6 +183,7 @@ template_html_content = """
             <a href="#top-of-page" class="home-button">Home</a> | <h2>{{ ticker_data.ticker }}</h2>
 
             <div>
+                {{ ticker_data.ticker_info | safe }}
                 <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
                 <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" align="center">
                 {{ ticker_data.financial_table | safe }}
@@ -353,6 +354,7 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
 
             ticker_data = {
                 'ticker': ticker,
+                'ticker_info': open(f"{charts_output_dir}{ticker}_ticker_info.html").read(),
                 'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
                 'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
                 'financial_table': rendered_table,

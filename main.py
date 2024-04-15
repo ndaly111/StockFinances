@@ -18,15 +18,20 @@ from balancesheet_chart import (fetch_balance_sheet_data,plot_chart,format_value
 import pandas as pd
 from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_in_database)
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
+import requests
+from bs4 import BeautifulSoup
+from ticker_info import (fetch_stock_data,format_number,prepare_data_for_display,generate_html_table)
 
 
-
+user_pe = "-"
+user_ps = "-"
+growth_rate = "-"
 
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
 db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
-HTML_OUTPUT_FILE = 'financial_charts.html'
+HTML_OUTPUT_FILE = 'index.html'
 PDF_OUTPUT_FILE = '/Users/nicholasdaly/Library/Mobile Documents/com~apple~CloudDocs/Stock Data/stock_charts.pdf'
 is_remote = False
 historical_table_name = 'Annual_Data'
@@ -36,6 +41,29 @@ print("constants")
 debug_this = False
 table_name = 'ForwardFinancialData'
 
+
+def fetch_10_year_treasury_yield():
+    """
+    Fetches the latest 10-year Treasury note yield from the FRED website.
+
+    Returns:
+        str: The latest 10-year Treasury note yield as a string, or 'N/A' if not found.
+    """
+    url = "https://fred.stlouisfed.org/series/GS10"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+        soup = BeautifulSoup(response.content, 'html.parser')
+        yield_value = soup.find("span", class_="series-meta-observation-value")
+        if yield_value:
+            return yield_value.text.strip()
+        else:
+            return "N/A"
+    except requests.RequestException as e:
+        print(f"Error fetching the 10-year Treasury note yield: {e}")
+        return "N/A"
+
+yield_rate = fetch_10_year_treasury_yield()
 
 def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
     print("main 1 manage tickers")
@@ -258,6 +286,11 @@ def main():
 
             # Generate HTML report after all tickers have been processed
             generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
+
+            prepared_data = prepare_data_for_display(ticker, user_pe, user_ps, growth_rate)
+
+            # Generate HTML table and save to file
+            generate_html_table(prepared_data, ticker)
 
 
 
