@@ -89,6 +89,7 @@ def ensure_template_exists(template_path, template_content):
 
 
 # Define the content of your template.html with the table style placeholder
+template_html_content = """
 <!DOCTYPE html>
 <html>
 <head>
