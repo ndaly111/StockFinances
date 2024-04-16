@@ -113,9 +113,16 @@ template_html_content = """
             -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
             margin: 20px auto; /* Center horizontally */
             padding: 10px 0; /* Padding to prevent content touching the edges */
+            scroll-snap-type: x mandatory; /* Enables snap scrolling on the x-axis */
+            scroll-snap-type: x mandatory; /* Enables snap scrolling on the x-axis with a mandatory behavior */
+            display: flex; /* Use flex display to manage child elements */
+            flex-direction: row; /* Arrange items in a row */
+            gap: 20px; /* This can replace margin-right on carousel-item for spacing between items */
         }
         .carousel-item {
             display: inline-block; /* Display items in a line */
+            scroll-snap-align: center; /* Aligns the snapping point to the center of the element */
+            flex: 0 0 auto;
             width: 100%; /* Full width of the container */
             vertical-align: top; /* Align items to the top */
             margin-right: 20px; /* Margin between items */
@@ -123,6 +130,11 @@ template_html_content = """
         .chart-container, .financial-table-container, .balance-sheet-container {
             text-align: center; /* Center content vertically */
             margin-bottom: 20px; /* Space below each container */
+            scroll-snap-align: center; /* Aligns the snapping point to the center of the element */
+            /* It's important to give the item a defined width, less than 100% if you want it to be less than full width */
+            width: 90%; /* Example width, adjust as necessary for your layout */
+            margin-left: auto; /* Centers the item in the carousel if width is less than 100% */
+            margin-right: auto; /* Centers the item in the carousel if width is less than 100% */
         }
         .chart, .financial-table-container img, .balance-sheet-container img {
             max-width: 100%; /* Maximum width of images */
