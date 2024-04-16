@@ -161,6 +161,7 @@ template_html_content = """
     </style>
 </head>
 <body>
+    <!-- Target for "Home" button navigation -->
     <div id="top-of-page"></div>
 
     <div class="navigation">
@@ -168,41 +169,36 @@ template_html_content = """
     </div>
 
     {% for ticker_data in tickers_data %}
-    <div class="ticker-section" id="{{ ticker_data.ticker }}">
-        <h2>{{ ticker_data.ticker }}</h2>
-        <a href="#top-of-page" class="home-button">Home</a>
-        <div>
-            {{ ticker_data.ticker_info | safe }}
-            <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
-            <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" align="center">
+        <div class="ticker-section" id="{{ ticker_data.ticker }}">
+            <h2>{{ ticker_data.ticker }}</h2>
+            <!-- Insert the Home button right after the ticker header -->
+            <a href="#top-of-page" class="home-button">Home</a>
+            <!-- The rest of the ticker section content -->
+            <div>
+                <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" class="chart">
+                <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" class="chart">
+            </div>
+            <h2>{{ ticker_data.ticker }}</h2>
+            <a href="#top-of-page" class="home-button">Home</a>
             {{ ticker_data.financial_table | safe }}
-        </div>
-        <div class="carousel-container">
-            <div class="carousel-item">
-                <img src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
-            </div>
-            <div class="carousel-item">
-                <img src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
-            </div>
-            <div class="carousel-item">
-                {{ ticker_data.yoy_growth_table_html | safe }}
-            </div>
-        </div>
-        <div class="balance-sheet-container">
-            <div class="balance-sheet-table">
-                {{ ticker_data.balance_sheet_table_html | safe }}
-            </div>
-            <div class="balance-sheet-chart">
-                <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" style="max-width: 80%;">
+            <!-- Balance Sheet Section -->
+            <h2>{{ ticker_data.ticker }}</h2>
+            <a href="#top-of-page" class="home-button">Home</a>
+            <div class="balance-sheet-container">
+                <div class="balance-sheet-table" align=left>
+                    {{ ticker_data.balance_sheet_table_html | safe }}
+                </div>
+                <div class="balance-sheet-chart">
+                    <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" class="chart" align=right>
+                </div>
             </div>
         </div>
-    </div>
-    <hr>
-{% endfor %}
+        <hr> <!-- Page break will occur here when printed -->
+    {% endfor %}
+    
 </body>
 </html>
 """
-
 print("html generator 4 defined template.html")
 
 # Path to your template file
@@ -213,6 +209,8 @@ print("html generator 5 defined template path")
 # Ensure the template exists before rendering
 ensure_template_exists(template_file_path, template_html_content)
 print("html generator 6 ensuring templat exists")
+
+
 
 
 
