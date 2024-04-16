@@ -198,7 +198,7 @@ template_html_content = """
             </div>
         </div>
         <hr>
-    {% endfor %}
+        {% endfor %}
 </body>
 </html>
 """
