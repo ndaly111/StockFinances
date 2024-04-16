@@ -201,6 +201,7 @@ template_html_content = """
     {% endfor %}
 </body>
 </html>
+"""
 
 print("html generator 4 defined template.html")
 
@@ -279,49 +280,49 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     # Define your table styles
     table_styles = """
     <style>
-    .financial-data {
-        font-size: 14px;
-        font-family: 'Arial', sans-serif;
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-    }
-    .financial-data th, .financial-data td {
-        text-align: right;
-        padding: 8px;
-        border: none;
-    }
-    .financial-data th {
-        background-color: #f2f2f2;
-    }
-    .financial-data tbody tr:hover {
-        background-color: #f5f5f5;
-    }
-    img.chart {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 10px auto;
-    }
-    .balance-sheet-container {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-    .balance-sheet-table, .balance-sheet-chart {
-        flex: 1;
-        padding: 10px;
-    }
-    .balance-sheet-table, .balance-sheet-chart {
-        overflow-x: auto;
-    }
-    @media (max-width: 768px) {
-        .balance-sheet-container {
-            flex-direction: column;
+        .financial-data {
+            font-size: 14px;
+            font-family: 'Arial', sans-serif;
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
         }
-    }
+        .financial-data th, .financial-data td {
+            text-align: right;
+            padding: 8px;
+            border: none;
+        }
+        .financial-data th {
+            background-color: #f2f2f2;
+        }
+        .financial-data tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        img.chart {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+        }
+        .balance-sheet-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .balance-sheet-table, .balance-sheet-chart {
+            flex: 1;
+            padding: 10px;
+        }
+        .balance-sheet-table, .balance-sheet-chart {
+            overflow-x: auto;
+        }
+        @media (max-width: 768px) {
+            .balance-sheet-container {
+                flex-direction: column;
+            }
+        }
     </style>
-    """
+"""
 
     data_for_rendering = {
         'tickers_data': [],
