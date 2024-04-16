@@ -107,19 +107,21 @@ template_html_content = """
             white-space: nowrap; /* Ensure the charts don't wrap */
             overflow-x: auto; /* Enable horizontal scrolling */
             -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            margin: 0 auto; /* Remove top/bottom margins and center horizontally */
+            margin: 0 auto; /* Center horizontally */
             padding: 10px 0; /* Add padding to prevent content from touching the edges */
         }
         .carousel-item {
             display: inline-block; /* Display items in a line */
-            width: 100vw; /* Each item takes the full viewport width */
+            width: 90%; /* Width of each item */
             vertical-align: top; /* Align items to the top */
-            margin-right: 20px; /* Margin between items */
+            margin-right: 2%; /* Margin between items */
             margin-bottom: 0; /* Remove bottom margin if any */
+            scroll-snap-align: start; /* Snapping effect when scrolling */
         }
         .chart-container, .financial-table-container, .balance-sheet-container {
-            vertical-align: top; text-align: center; /* Center content for all containers */
-            margin-bottom: 20px;
+            vertical-align: top;
+            text-align: center; /* Center content for all containers */
+            margin-bottom: 5%;
         }
         .chart, .financial-table-container img, .balance-sheet-container img {
             max-width: 100%;
@@ -164,40 +166,38 @@ template_html_content = """
     <div class="navigation">
         {{ nav_links | safe }}
     </div>
+
     {% for ticker_data in tickers_data %}
-        <div class="ticker-section" id="{{ ticker_data.ticker }}">
-            <h2>{{ ticker_data.ticker }}</h2>
-            <a href="#top-of-page" class="home-button">Home</a>
-            <div>
-                {{ ticker_data.ticker_info | safe }}
-                <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
-                <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" align="center">
-                {{ ticker_data.financial_table | safe }}
+    <div class="ticker-section" id="{{ ticker_data.ticker }}">
+        <h2>{{ ticker_data.ticker }}</h2>
+        <a href="#top-of-page" class="home-button">Home</a>
+        <div>
+            {{ ticker_data.ticker_info | safe }}
+            <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
+            <img src="{{ ticker_data.eps_chart_path }}" alt="EPS Chart" align="center">
+            {{ ticker_data.financial_table | safe }}
+        </div>
+        <div class="carousel-container">
+            <div class="carousel-item">
+                <img src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
             </div>
-
-            <a href="#top-of-page" class="home-button">Home</a>
-            <div class="carousel-container">
-                <div class="carousel-item">
-                    <img src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
-                </div>
-                <div class="carousel-item">
-                    <img src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
-                </div>
-                <div class="carousel-item">
-                    {{ ticker_data.yoy_growth_table_html | safe }}
-                </div>
+            <div class="carousel-item">
+                <img src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
             </div>
-
-            <div class="balance-sheet-container">
-                <div class="balance-sheet-table">
-                    {{ ticker_data.balance_sheet_table_html | safe }}
-                </div>
-                <div class="balance-sheet-chart">
-                    <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" style="max-width: 80%;">
-                </div>
+            <div class="carousel-item">
+                {{ ticker_data.yoy_growth_table_html | safe }}
             </div>
         </div>
-        <hr>
+        <div class="balance-sheet-container">
+            <div class="balance-sheet-table">
+                {{ ticker_data.balance_sheet_table_html | safe }}
+            </div>
+            <div class="balance-sheet-chart">
+                <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" style="max-width: 80%;">
+            </div>
+        </div>
+    </div>
+    <hr>
     {% endfor %}
 </body>
 </html>
