@@ -16,8 +16,10 @@ def fetch_stock_data(ticker):
     data = {
         'Close Price': stock.info.get('previousClose'),
         'Market Cap': stock.info.get('marketCap'),
-        'P/E Ratio': stock.info.get('trailingPE'),
-        'P/S Ratio': stock.info.get('priceToSalesTrailing12Months')
+        'P/E Ratio': "{:.2f}".format(stock.info.get('trailingPE')) if stock.info.get(
+            'trailingPE') is not None else 'N/A',
+        'P/S Ratio': "{:.2f}".format(stock.info.get('priceToSalesTrailing12Months')) if stock.info.get(
+            'priceToSalesTrailing12Months') is not None else 'N/A'
     }
     return data
 

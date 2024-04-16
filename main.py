@@ -20,7 +20,7 @@ from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
 import requests
 from bs4 import BeautifulSoup
-from ticker_info import (fetch_stock_data,format_number,prepare_data_for_display,generate_html_table)
+from ticker_info import (prepare_data_for_display,generate_html_table)
 
 
 user_pe = "-"
@@ -28,7 +28,7 @@ user_ps = "-"
 growth_rate = "-"
 
 # Constants
-TICKERS_FILE_PATH = 'tickers.csv'
+TICKERS_FILE_PATH = 'tickers aapl.csv'
 db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'index.html'

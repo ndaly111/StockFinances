@@ -89,53 +89,57 @@ def ensure_template_exists(template_path, template_content):
 
 
 # Define the content of your template.html with the table style placeholder
+template_html_content = """
 <!DOCTYPE html>
 <html>
 <head>
     <title>Financial Charts</title>
-    {{ table_styles | safe }}
     <style>
         body {
             font-family: 'Arial', sans-serif;
             color: #333;
             margin: 0;
             padding: 0;
-            overflow-x: hidden; /* Prevent scrolling on the x-axis */
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        .navigation {
+            text-align: center; /* Center navigation links */
+            padding: 10px 0; /* Padding for the navigation bar */
+            background: #f2f2f2; /* Light grey background for the navigation bar */
         }
         .carousel-container {
             white-space: nowrap; /* Ensure the charts don't wrap */
             overflow-x: auto; /* Enable horizontal scrolling */
             -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            margin: 0 auto; /* Remove top/bottom margins and center horizontally */
-            padding: 10px 0; /* Add padding to prevent content from touching the edges */
+            margin: 20px auto; /* Center horizontally */
+            padding: 10px 0; /* Padding to prevent content touching the edges */
         }
         .carousel-item {
             display: inline-block; /* Display items in a line */
-            width: 100vw; /* Each item takes the full viewport width */
+            width: 100%; /* Full width of the container */
             vertical-align: top; /* Align items to the top */
             margin-right: 20px; /* Margin between items */
-            margin-bottom: 0; /* Remove bottom margin if any */
         }
         .chart-container, .financial-table-container, .balance-sheet-container {
-            vertical-align: top; text-align: center; /* Center content for all containers */
-            margin-bottom: 20px;
+            text-align: center; /* Center content vertically */
+            margin-bottom: 20px; /* Space below each container */
         }
         .chart, .financial-table-container img, .balance-sheet-container img {
-            max-width: 100%;
-            height: auto;
+            max-width: 100%; /* Maximum width of images */
+            height: auto; /* Maintain aspect ratio */
         }
         .balance-sheet-container {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
+            display: flex; /* Flex container for layout */
+            justify-content: space-between; /* Space between child elements */
+            flex-wrap: wrap; /* Allow items to wrap if needed */
         }
         .balance-sheet-table, .balance-sheet-chart {
-            flex: 1;
-            max-width: calc(50% - 10px); /* Adjust max-width for spacing */
-            box-sizing: border-box;
+            flex: 1; /* Allow flex items to grow to fill available space */
+            max-width: calc(50% - 10px); /* Maximum width with spacing */
+            box-sizing: border-box; /* Include padding and border in width calculation */
         }
         .balance-sheet-chart img {
-            max-width: 80%; /* Make the balance sheet chart smaller */
+            max-width: 80%; /* Limit width of balance sheet charts */
         }
         .home-button {
             padding: 10px 20px;
@@ -146,7 +150,7 @@ def ensure_template_exists(template_path, template_content):
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
-            margin: 5px 0;
+            margin: 5px;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: background-color 0.3s, box-shadow 0.3s;
@@ -159,14 +163,15 @@ def ensure_template_exists(template_path, template_content):
 </head>
 <body>
     <div id="top-of-page"></div>
-
     <div class="navigation">
         {{ nav_links | safe }}
     </div>
+
     {% for ticker_data in tickers_data %}
         <div class="ticker-section" id="{{ ticker_data.ticker }}">
             <h2>{{ ticker_data.ticker }}</h2>
             <a href="#top-of-page" class="home-button">Home</a>
+
             <div>
                 {{ ticker_data.ticker_info | safe }}
                 <img src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart" align="center">
@@ -174,7 +179,6 @@ def ensure_template_exists(template_path, template_content):
                 {{ ticker_data.financial_table | safe }}
             </div>
 
-            <a href="#top-of-page" class="home-button">Home</a>
             <div class="carousel-container">
                 <div class="carousel-item">
                     <img src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
@@ -195,12 +199,12 @@ def ensure_template_exists(template_path, template_content):
                     <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart" style="max-width: 80%;">
                 </div>
             </div>
+            <hr>
         </div>
-        <hr>
     {% endfor %}
 </body>
 </html>
-
+"""
 print("html generator 4 defined template.html")
 
 # Path to your template file
@@ -256,7 +260,7 @@ def print_dataframe_to_console(df, message):
 
 
 # Function to create HTML content
-def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='financial_charts.html'):
+def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='index.html'):
     charts_output_dir = "charts/"
     print("HTML generator 9 creating HTML for tickers")
     # Ensure charts_output_dir ends with a slash
@@ -265,11 +269,13 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     # Sorting the tickers
     sorted_tickers = sorted(current_tickers)
 
-    # Building navigation links - Update to ensure correct IDs
-    nav_links = '<a href="#top-of-page" class="home-button">Home</a>' + " | " + " | ".join(
-        f'<a href="#{ticker}" class="ticker-nav">{ticker}</a>' for ticker in sorted_tickers
+    # Building navigation links - Update to ensure correct IDs and styling
+    nav_links = " | ".join(
+        f'<a href="#{ticker}" class="home-button">{ticker}</a>' for ticker in sorted_tickers
     )
 
+    # Debug print to check nav_links content
+    print("Navigation links:", nav_links)
     # Load the template
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('template.html')
@@ -344,7 +350,6 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
                 'forecast_rev_net_chart_path': f"{charts_output_dir}{ticker}_Revenue_Net_Income_Forecast.png",
                 'forecast_eps_chart_path': f"{charts_output_dir}{ticker}_EPS_Forecast.png",
                 'yoy_growth_table_html': open(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html").read(),
-                'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
                 'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
                 'balance_sheet_table_html': open(f"{charts_output_dir}{ticker}_balance_sheet_table.html").read()  # Read the content directly into the dictionary
             }
