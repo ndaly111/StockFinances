@@ -119,10 +119,9 @@ template_html_content = """
             flex-direction: row; /* Arrange items in a row */
             gap: 20px; /* This can replace margin-right on carousel-item for spacing between items */
         }
+        }
         .carousel-item {
             display: inline-block; /* Display items in a line */
-            scroll-snap-align: center; /* Aligns the snapping point to the center of the element */
-            flex: 0 0 auto;
             width: 100%; /* Full width of the container */
             vertical-align: top; /* Align items to the top */
             margin-right: 20px; /* Margin between items */

@@ -28,6 +28,22 @@
             flex-direction: row; /* Arrange items in a row */
             gap: 20px; /* This can replace margin-right on carousel-item for spacing between items */
         }
+        .financial-data-table, .dataframe {
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+            text-align: center;
+            font-family: 'Arial', sans-serif; /* Using Arial as an example of a sans-serif font */
+        }
+        .financial-data-table th,
+        .financial-data-table td,
+        .dataframe th,
+        .dataframe td {
+            padding: 8px 12px;
+            border: 1px solid #ddd; /* Add border to match your previous table styles */
+            background-color: #f2f2f2; /* Background color for table header */
+        }
         .carousel-item {
             display: inline-block; /* Display items in a line */
             scroll-snap-align: center; /* Aligns the snapping point to the center of the element */
