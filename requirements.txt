@@ -3,4 +3,3 @@ yfinance
 matplotlib
 numpy
 jinja2
-PIL
