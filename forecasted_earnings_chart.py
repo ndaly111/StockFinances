@@ -10,6 +10,7 @@ from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
 
 
+
 def millions_formatter(x, pos):
     print("millions formatter 1 forecasted earnings chart")
     """Formats numbers as millions with a dollar sign."""
@@ -20,7 +21,10 @@ def millions_formatter(x, pos):
 
 def format_axis(ax, max_value):
     print("format axis 2 forecasted earnings chart")
-    """Dynamically format the axis based on the maximum value."""
+    # Add a buffer to the maximum value to make space for labels
+    buffer = max_value * 0.1  # 10% buffer for the y-axis
+    max_lim = max_value + buffer
+
     threshold = 1e9
     if max_value >= threshold:
         formatter = FuncFormatter(lambda x, pos: f'${int(x / 1e9)}B')
@@ -30,6 +34,9 @@ def format_axis(ax, max_value):
         formatter = FuncFormatter(lambda x, pos: f'${int(x / 1e6)}M')
         ax.yaxis.set_major_formatter(formatter)
         ax.set_ylabel('USD (Millions)')
+
+    ax.set_ylim(top=max_lim)  # Set the top limit with buffer
+
 
 
 def fetch_financial_data(ticker, db_path):
@@ -115,6 +122,15 @@ def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding
 
 def plot_bars(ax, combined_data, bar_width, analyst_counts):
     print("plot bars 5 forecasted earnings chart")
+    # Calculate the max values for Revenue and Net Income with padding
+    max_revenue = combined_data['Revenue'].max()
+    max_net_income = combined_data['Net_Income'].max()
+    max_value = max(max_revenue, max_net_income)
+    padding = max_value * 0.2  # 20% padding for the y-axis
+
+    # Set y-axis limits with padding
+    ax.set_ylim(0, max_value + padding)
+
     # Unique dates for the x-axis.
     unique_dates = combined_data['Date'].unique()
     # Number of groups of bars.
@@ -131,10 +147,8 @@ def plot_bars(ax, combined_data, bar_width, analyst_counts):
     custom_xtick_labels = []
     for index, date in enumerate(unique_dates):
         date_str = pd.to_datetime(date).strftime('%Y-%m-%d')
-        # Initialize default label
         label = date_str
 
-        # If this date has forecast data, add the analyst counts
         if date in analyst_counts['Date'].values:
             revenue_analyst_count = analyst_counts.loc[analyst_counts['Date'] == date, 'ForwardRevenueAnalysts'].iloc[0]
             eps_analyst_count = analyst_counts.loc[analyst_counts['Date'] == date, 'ForwardEPSAnalysts'].iloc[0]
@@ -142,15 +156,14 @@ def plot_bars(ax, combined_data, bar_width, analyst_counts):
 
         custom_xtick_labels.append(label)
 
-        # Plotting logic remains the same
         date_data = combined_data[combined_data['Date'] == date]
         group_offset = positions[index] - bar_width / 2
-        # Plot historical bars
+
         if 'Historical' in date_data['Type'].values:
             historical_data = date_data[date_data['Type'] == 'Historical']
             ax.bar(group_offset, historical_data['Revenue'], color='green', **bar_settings)
             ax.bar(group_offset + bar_width, historical_data['Net_Income'], color='blue', **bar_settings)
-        # Plot forecast bars
+
         if 'Forecast' in date_data['Type'].values:
             forecast_data = date_data[date_data['Type'] == 'Forecast']
             ax.bar(group_offset, forecast_data['Revenue'], color='#b6d7a8', **bar_settings)
@@ -159,24 +172,20 @@ def plot_bars(ax, combined_data, bar_width, analyst_counts):
     ax.set_xticks(positions)
     ax.set_xticklabels(custom_xtick_labels)
 
-    # Adjust the legend to show only one entry per label
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     ax.legend(by_label.values(), by_label.keys(), loc='best')
 
-    # Add a horizontal line at y=0
     ax.axhline(0, color='black', linewidth=0.8)
-
-    # Add minor tick marks on the y-axis
     ax.yaxis.set_minor_locator(AutoMinorLocator())
 
-    # Improve formatting
     ax.set_xlabel('Date', fontsize=12)
     ax.set_ylabel('USD (Millions)', fontsize=12)
     ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'${int(x / 1e6)}M'))
     ax.set_title(f'Revenue and Net Income (Historical & Forecasted)', fontsize=14)
 
     return ax
+
 
 
 def add_value_labels(ax):
@@ -280,6 +289,18 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
 def generate_financial_forecast_chart(ticker, combined_data, charts_output_dir,db_path,historical_data,forecast_data,analyst_counts):
     print("generate financial forecast chart 10 forecasted earnings chart")
     print("---prepare for plotting (within generate financial forecast chart function)")
+
+    # Calculate the maximum value for the axis
+    max_revenue = combined_data['Revenue'].max()
+    max_net_income = combined_data['Net_Income'].max()
+    max_value = max(max_revenue, max_net_income)
+
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+    bar_width = 0.3
+    plot_bars(ax1, combined_data, bar_width, analyst_counts)  # Call without 'positions'
+
+    # Call format_axis with the max value
+    format_axis(ax1, max_value)
 
     # Generate Revenue and Net Income Chart
     fig, ax1 = plt.subplots(figsize=(10, 6))
