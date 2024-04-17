@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 import os
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
+import shutil  # Import shutil for file operations
 
 
 
@@ -420,23 +421,38 @@ forecast_table_name = 'ForwardFinancialData'
 #output_chart_path = 'charts/'
 
 
+import shutil  # Import shutil for file operations
+
+
 def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     print("generate forecast charts and tables 13 forecasted earnings chart")
-    historical_table_name = 'Annual_Data'
-    forecast_table_name = 'ForwardFinancialData'
 
-    # Fetch the necessary data only once
+    # Fetch the necessary data
     historical_data, forecast_data, analyst_counts, shares_outstanding = fetch_financial_data(ticker, db_path)
 
     # Prepare combined data for plotting only once
     combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding)
 
-    # Pass the prepared combined_data to the chart generation function
-    generate_financial_forecast_chart(ticker, combined_data, charts_output_dir,db_path,historical_data,forecast_data,analyst_counts)
+    # Check if there is forecast data available
+    if forecast_data.empty:
+        print(f"No forecast data available for {ticker}.")
+        # Paths for the placeholder and target files
+        placeholder_image_path = os.path.join(charts_output_dir, 'No_forecast_data.png')
+        revenue_forecast_path = os.path.join(charts_output_dir, f"{ticker}_Revenue_Net_Income_Forecast.png")
+        eps_forecast_path = os.path.join(charts_output_dir, f"{ticker}_EPS_Forecast.png")
 
-    # Proceed with YOY growth calculation and HTML generation using combined_data
+        # Copy placeholder image to the forecast chart filenames
+        shutil.copy(placeholder_image_path, revenue_forecast_path)
+        shutil.copy(placeholder_image_path, eps_forecast_path)
+    else:
+        # Generate charts if forecast data is available
+        generate_financial_forecast_chart(ticker, combined_data, charts_output_dir, db_path, historical_data,
+                                          forecast_data, analyst_counts)
+
+    # Proceed with YOY growth calculation and HTML generation using combined data
     yoy_growth_table = calculate_yoy_growth(combined_data, analyst_counts)
     save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker)
 
     print(f"Completed generating charts and tables for {ticker}.")
+
 

@@ -28,7 +28,7 @@ user_ps = "-"
 growth_rate = "-"
 
 # Constants
-TICKERS_FILE_PATH = 'tickers.csv'
+TICKERS_FILE_PATH = 'tickers aapl.csv'
 db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'index.html'
