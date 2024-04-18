@@ -6,7 +6,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 import os
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
-
+import yfinance as yf
 
 
 
@@ -95,8 +95,35 @@ def fetch_financial_data(ticker, db_path):
 
 
 
-def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding):
+
+
+def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker):
     print("prepare data for plotting 4 forecasted earnings chart")
+    # Ensure that ticker is a string
+    if not isinstance(ticker, str):
+        print("Error: Ticker must be a string.")
+        return None
+
+    # Fetch current market data for the ticker using yfinance
+    market_data = yf.Ticker(ticker)
+    print("---market data", market_data)
+
+    # Attempt to fetch various market data points
+    current_price = market_data.info.get('regularMarketPrice', None)
+    if not current_price:  # Fallback to previous close if regular market price is not available
+        current_price = market_data.info.get('previousClose', None)
+    
+    # If both regular and previous close prices are unavailable, try average of bid and ask
+    if not current_price:
+        bid = market_data.info.get('bid', None)
+        ask = market_data.info.get('ask', None)
+        if bid and ask:
+            current_price = (bid + ask) / 2
+    
+    print("---current price", current_price)
+    market_cap = market_data.info.get('marketCap', None)
+    print("---market cap", market_cap)
+
     # Assign types to differentiate data in plots
     historical_data['Type'] = 'Historical'
     forecast_data['Type'] = 'Forecast'
@@ -104,18 +131,16 @@ def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding
     # Convert 'EPS' to numeric to avoid calculation errors
     forecast_data['EPS'] = pd.to_numeric(forecast_data['EPS'], errors='coerce')
 
-    # Ensure 'shares_outstanding' is not None and is a numeric value
-    if shares_outstanding and pd.notnull(shares_outstanding):
-        forecast_data['Net_Income'] = forecast_data['EPS'] * shares_outstanding
+    # Calculate Net Income based on new formula
+    if current_price and market_cap:
+        forecast_data['Net_Income'] = (forecast_data['EPS'] / current_price) * market_cap
     else:
-        print("Shares outstanding data is missing or invalid. Unable to calculate Net Income for forecast data.")
+        print("Current price or market cap is missing or invalid. Unable to calculate 'Net_Income' for forecast data.")
         forecast_data['Net_Income'] = pd.NA  # Use pandas NA for missing data
 
     # Combine historical and forecast data for plotting
     combined_data = pd.concat([historical_data, forecast_data])
     combined_data.sort_values(by=['Date', 'Type'], inplace=True)
-
-    # Optionally, you can drop or fill NA values in 'Net_Income' here if needed
 
     return combined_data
 
@@ -227,8 +252,9 @@ def format_chart(ax, combined_data, output_path, ticker):
 
 
 def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
-    # Define color for EPS bars
-    eps_color = '#74a9cf'
+    # Define colors for EPS bars
+    historical_eps_color = '#2c3e50'  # Darker color for historical EPS
+    forecast_eps_color = '#74a9cf'    # Same color as before for forecast EPS
 
     # Calculate the y-axis limits based on EPS values with padding
     max_eps = combined_data['EPS'].max()
@@ -240,17 +266,18 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     unique_dates = combined_data['Date'].unique()
     positions = np.arange(len(unique_dates)) * (bar_width * 3)
 
-    # Bar settings
-    bar_settings = {
-        'width': bar_width,
-        'align': 'center',
-        'color': eps_color,
-        'label': 'EPS',
-        'alpha': 0.7
-    }
+    # Loop through each unique date and plot bars based on 'Type'
+    for date in unique_dates:
+        date_data = combined_data[combined_data['Date'] == date]
+        group_offset = positions[list(unique_dates).index(date)] - bar_width / 2
 
-    # Plot EPS bars
-    ax.bar(combined_data['Date'], combined_data['EPS'], **bar_settings)
+        if 'Historical' in date_data['Type'].values:
+            historical_eps = date_data[date_data['Type'] == 'Historical']
+            ax.bar(group_offset, historical_eps['EPS'], width=bar_width, color=historical_eps_color, label='Historical EPS', align='center')
+        
+        if 'Forecast' in date_data['Type'].values:
+            forecast_eps = date_data[date_data['Type'] == 'Forecast']
+            ax.bar(group_offset + bar_width, forecast_eps['EPS'], width=bar_width, color=forecast_eps_color, label='Forecast EPS', align='center')
 
     # Add value labels for EPS
     for rect in ax.patches:
@@ -267,20 +294,22 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     ax.axhline(y=0, color='black', linewidth=1)
 
     # Generate custom tick labels with the date and the number of EPS analysts for forecast only
-    unique_dates = combined_data['Date'].unique()
     custom_xtick_labels = []
     for date in unique_dates:
         date_str = pd.to_datetime(date).strftime('%Y-%m-%d')
         label = date_str
-
-        # If this date has forecast data, add the EPS analyst counts
         if date in analyst_counts['Date'].values:
             eps_analyst_count = analyst_counts.loc[analyst_counts['Date'] == date, 'ForwardEPSAnalysts'].iloc[0]
             label += f"\n({eps_analyst_count} analysts)"
         custom_xtick_labels.append(label)
 
-    ax.set_xticks(combined_data['Date'])
+    ax.set_xticks(positions)
     ax.set_xticklabels(custom_xtick_labels)
+
+    # Ensure each label is only added once to the legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys(), loc='best')
 
     return ax
 
@@ -422,14 +451,10 @@ forecast_table_name = 'ForwardFinancialData'
 
 def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     print("generate forecast charts and tables 13 forecasted earnings chart")
-    historical_table_name = 'Annual_Data'
-    forecast_table_name = 'ForwardFinancialData'
-
-    # Fetch the necessary data only once
     historical_data, forecast_data, analyst_counts, shares_outstanding = fetch_financial_data(ticker, db_path)
 
-    # Prepare combined data for plotting only once
-    combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding)
+    # Prepare combined data for plotting
+    combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker)
 
     # Pass the prepared combined_data to the chart generation function
     generate_financial_forecast_chart(ticker, combined_data, charts_output_dir,db_path,historical_data,forecast_data,analyst_counts)
