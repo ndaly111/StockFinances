@@ -123,14 +123,25 @@ def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding
 
 def plot_bars(ax, combined_data, bar_width, analyst_counts):
     print("plot bars 5 forecasted earnings chart")
-    # Calculate the max values for Revenue and Net Income with padding
+
+    # Calculate maximum revenue and net income
     max_revenue = combined_data['Revenue'].max()
     max_net_income = combined_data['Net_Income'].max()
-    max_value = max(max_revenue, max_net_income)
-    padding = max_value * 0.2  # 20% padding for the y-axis
+    min_net_income = combined_data['Net_Income'].min()
 
-    # Set y-axis limits with padding
-    ax.set_ylim(0, max_value + padding)
+    # Calculate padding based on the absolute values of revenue and net income
+    abs_max_value = max(abs(max_revenue), abs(max_net_income), abs(min_net_income))
+    padding = abs_max_value * 0.2
+
+    # Set axis maximum (ax_max) to the max revenue plus padding
+    ax_max = max_revenue + padding
+
+    # Set axis minimum (ax_min)
+    # If all net income values are greater than zero, ax_min is zero; otherwise, it's the minimum net income minus the padding
+    ax_min = min_net_income - padding if min_net_income < 0 else 0
+
+    # Set the limits for the y-axis
+    ax.set_ylim(ax_min, ax_max)
 
     # Unique dates for the x-axis.
     unique_dates = combined_data['Date'].unique()
