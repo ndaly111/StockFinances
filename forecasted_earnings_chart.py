@@ -115,6 +115,7 @@ def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding
     # Combine historical and forecast data for plotting
     combined_data = pd.concat([historical_data, forecast_data])
     combined_data.sort_values(by=['Date', 'Type'], inplace=True)
+    combined_data['Date'] = pd.to_datetime(combined_data['Date'])
 
     # Optionally, you can drop or fill NA values in 'Net_Income' here if needed
 
@@ -268,9 +269,13 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     for rect in ax.patches:
         height = rect.get_height()
         x = rect.get_x() + rect.get_width() / 2
-        y = height
+        # Adjust y position based on the sign of the height
+        if height >= 0:
+            y = height + abs(height) * 0.05  # Slightly above the bar for positive values
+        else:
+            y = height - abs(height) * 0.05  # Slightly below the bar for negative values
         label_text = f'{height:.2f}'  # Format label with two decimal places
-        ax.text(x, y, label_text, ha='center', va='bottom')
+        ax.text(x, y, label_text, ha='center', va='bottom' if height >= 0 else 'top')
 
     # Set labels and title
     ax.set_xlabel('Date')
