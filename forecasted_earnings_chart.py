@@ -6,8 +6,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 import os
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
-import shutil  # Import shutil for file operations
-
+import yfinance as yf
 
 
 
@@ -96,8 +95,35 @@ def fetch_financial_data(ticker, db_path):
 
 
 
-def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding):
+
+
+def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker):
     print("prepare data for plotting 4 forecasted earnings chart")
+    # Ensure that ticker is a string
+    if not isinstance(ticker, str):
+        print("Error: Ticker must be a string.")
+        return None
+
+    # Fetch current market data for the ticker using yfinance
+    market_data = yf.Ticker(ticker)
+    print("---market data", market_data)
+
+    # Attempt to fetch various market data points
+    current_price = market_data.info.get('regularMarketPrice', None)
+    if not current_price:  # Fallback to previous close if regular market price is not available
+        current_price = market_data.info.get('previousClose', None)
+    
+    # If both regular and previous close prices are unavailable, try average of bid and ask
+    if not current_price:
+        bid = market_data.info.get('bid', None)
+        ask = market_data.info.get('ask', None)
+        if bid and ask:
+            current_price = (bid + ask) / 2
+    
+    print("---current price", current_price)
+    market_cap = market_data.info.get('marketCap', None)
+    print("---market cap", market_cap)
+
     # Assign types to differentiate data in plots
     historical_data['Type'] = 'Historical'
     forecast_data['Type'] = 'Forecast'
@@ -105,44 +131,30 @@ def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding
     # Convert 'EPS' to numeric to avoid calculation errors
     forecast_data['EPS'] = pd.to_numeric(forecast_data['EPS'], errors='coerce')
 
-    # Ensure 'shares_outstanding' is not None and is a numeric value
-    if shares_outstanding and pd.notnull(shares_outstanding):
-        forecast_data['Net_Income'] = forecast_data['EPS'] * shares_outstanding
+    # Calculate Net Income based on new formula
+    if current_price and market_cap:
+        forecast_data['Net_Income'] = (forecast_data['EPS'] / current_price) * market_cap
     else:
-        print("Shares outstanding data is missing or invalid. Unable to calculate Net Income for forecast data.")
+        print("Current price or market cap is missing or invalid. Unable to calculate 'Net_Income' for forecast data.")
         forecast_data['Net_Income'] = pd.NA  # Use pandas NA for missing data
 
     # Combine historical and forecast data for plotting
     combined_data = pd.concat([historical_data, forecast_data])
     combined_data.sort_values(by=['Date', 'Type'], inplace=True)
-    combined_data['Date'] = pd.to_datetime(combined_data['Date'])
-
-    # Optionally, you can drop or fill NA values in 'Net_Income' here if needed
 
     return combined_data
 
 
 def plot_bars(ax, combined_data, bar_width, analyst_counts):
     print("plot bars 5 forecasted earnings chart")
-
-    # Calculate maximum revenue and net income
+    # Calculate the max values for Revenue and Net Income with padding
     max_revenue = combined_data['Revenue'].max()
     max_net_income = combined_data['Net_Income'].max()
-    min_net_income = combined_data['Net_Income'].min()
+    max_value = max(max_revenue, max_net_income)
+    padding = max_value * 0.2  # 20% padding for the y-axis
 
-    # Calculate padding based on the absolute values of revenue and net income
-    abs_max_value = max(abs(max_revenue), abs(max_net_income), abs(min_net_income))
-    padding = abs_max_value * 0.2
-
-    # Set axis maximum (ax_max) to the max revenue plus padding
-    ax_max = max_revenue + padding
-
-    # Set axis minimum (ax_min)
-    # If all net income values are greater than zero, ax_min is zero; otherwise, it's the minimum net income minus the padding
-    ax_min = min_net_income - padding if min_net_income < 0 else 0
-
-    # Set the limits for the y-axis
-    ax.set_ylim(ax_min, ax_max)
+    # Set y-axis limits with padding
+    ax.set_ylim(0, max_value + padding)
 
     # Unique dates for the x-axis.
     unique_dates = combined_data['Date'].unique()
@@ -242,7 +254,7 @@ def format_chart(ax, combined_data, output_path, ticker):
 def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     # Define colors for EPS bars
     historical_eps_color = '#2c3e50'  # Darker color for historical EPS
-    forecast_eps_color = '#74a9cf'  # Same color as before for forecast EPS
+    forecast_eps_color = '#74a9cf'    # Same color as before for forecast EPS
 
     # Calculate the y-axis limits based on EPS values with padding
     max_eps = combined_data['EPS'].max()
@@ -261,13 +273,11 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
 
         if 'Historical' in date_data['Type'].values:
             historical_eps = date_data[date_data['Type'] == 'Historical']
-            ax.bar(group_offset, historical_eps['EPS'], width=bar_width, color=historical_eps_color,
-                   label='Historical EPS', align='center')
-
+            ax.bar(group_offset, historical_eps['EPS'], width=bar_width, color=historical_eps_color, label='Historical EPS', align='center')
+        
         if 'Forecast' in date_data['Type'].values:
             forecast_eps = date_data[date_data['Type'] == 'Forecast']
-            ax.bar(group_offset + bar_width, forecast_eps['EPS'], width=bar_width, color=forecast_eps_color,
-                   label='Forecast EPS', align='center')
+            ax.bar(group_offset + bar_width, forecast_eps['EPS'], width=bar_width, color=forecast_eps_color, label='Forecast EPS', align='center')
 
     # Add value labels for EPS
     for rect in ax.patches:
@@ -302,6 +312,7 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     ax.legend(by_label.values(), by_label.keys(), loc='best')
 
     return ax
+
 
 
 def generate_financial_forecast_chart(ticker, combined_data, charts_output_dir,db_path,historical_data,forecast_data,analyst_counts):
@@ -438,38 +449,19 @@ forecast_table_name = 'ForwardFinancialData'
 #output_chart_path = 'charts/'
 
 
-import shutil  # Import shutil for file operations
-
-
 def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     print("generate forecast charts and tables 13 forecasted earnings chart")
-
-    # Fetch the necessary data
     historical_data, forecast_data, analyst_counts, shares_outstanding = fetch_financial_data(ticker, db_path)
 
-    # Prepare combined data for plotting only once
-    combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding)
+    # Prepare combined data for plotting
+    combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker)
 
-    # Check if there is forecast data available
-    if forecast_data.empty:
-        print(f"No forecast data available for {ticker}.")
-        # Paths for the placeholder and target files
-        placeholder_image_path = os.path.join(charts_output_dir, 'No_forecast_data.png')
-        revenue_forecast_path = os.path.join(charts_output_dir, f"{ticker}_Revenue_Net_Income_Forecast.png")
-        eps_forecast_path = os.path.join(charts_output_dir, f"{ticker}_EPS_Forecast.png")
+    # Pass the prepared combined_data to the chart generation function
+    generate_financial_forecast_chart(ticker, combined_data, charts_output_dir,db_path,historical_data,forecast_data,analyst_counts)
 
-        # Copy placeholder image to the forecast chart filenames
-        shutil.copy(placeholder_image_path, revenue_forecast_path)
-        shutil.copy(placeholder_image_path, eps_forecast_path)
-    else:
-        # Generate charts if forecast data is available
-        generate_financial_forecast_chart(ticker, combined_data, charts_output_dir, db_path, historical_data,
-                                          forecast_data, analyst_counts)
-
-    # Proceed with YOY growth calculation and HTML generation using combined data
+    # Proceed with YOY growth calculation and HTML generation using combined_data
     yoy_growth_table = calculate_yoy_growth(combined_data, analyst_counts)
     save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker)
 
     print(f"Completed generating charts and tables for {ticker}.")
-
 
