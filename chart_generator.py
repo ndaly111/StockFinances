@@ -125,104 +125,58 @@ def prepare_data_for_charts(ticker, cursor):
 # Usage in the main chart generation function
 def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_path):
     print("chart generator 5 generating rev and net inc chart")
-    """
-    Generates the revenue and net income chart for a given ticker.
-    :param df: DataFrame containing financial data.
-    :param ticker: The ticker symbol.
-    :param cursor: Database cursor object.
-    """
-
     df = financial_data_df
     print("---revenue net income chart data frame", df)
 
-
-    # Convert 'Year' to a string if it's not already
     df['Date'] = df['Date'].astype(str)
-
-
-    # Set the positions and width for the bars
     positions = np.arange(len(df))
     width = 0.3
-
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Determine if Net Income should be in millions or billions
-    net_income_max = df['Net_Income'].max()
-    print("---net income max", net_income_max)
-    if abs(net_income_max) < 1e9: # Default scale for billions
-        print("---net income is more than 1B, format in millions")
-        scale_factor = 1e6  # This is the new variable for scale factor
-        label_ending = 'M'
-
-        bars1 = ax.bar(positions - width / 2, df['Revenue'] / 1e6, width, label='Revenue (Millions)', color='green')
-        bars2 = ax.bar(positions + width / 2, df['Net_Income'] / 1e6, width, label='Net Income (Millions)',
-                       color='blue')
-        ax.set_ylabel('Amount (Millions $)')
-        format_axis_as_millions(ax)  # Format axis as millions
-
-
-    else:  # Otherwise, use billions
-        print("---else (meaning max net income is more than $1B, formatting in millions")
-        bars1 = ax.bar(positions - width / 2, df['Revenue'] / 1e9, width, label='Revenue (Billions)', color='green')
-        bars2 = ax.bar(positions + width / 2, df['Net_Income'] / 1e9, width, label='Net Income (Billions)',
-                       color='blue')
-        ax.set_ylabel('Amount (Billions $)')
-        format_axis_as_billions(ax)  # Format axis as billions
-        scale_factor = 1e9  # This is the new variable for scale factor
+    max_net_income = df['Net_Income'].max()
+    if abs(max_net_income) >= 1e9:
+        scale_factor = 1e9
         label_ending = 'B'
+        ylabel = 'Amount (Billions $)'
+    else:
+        scale_factor = 1e6
+        label_ending = 'M'
+        ylabel = 'Amount (Millions $)'
 
+    bars1 = ax.bar(positions - width / 2, df['Revenue'] / scale_factor, width, label=f'Revenue ({label_ending})', color='green')
+    bars2 = ax.bar(positions + width / 2, df['Net_Income'] / scale_factor, width, label=f'Net Income ({label_ending})', color='blue')
+    ax.set_ylabel(ylabel)
 
+    max_revenue = max(df['Revenue'] / scale_factor)
+    min_net_income = min(df['Net_Income'] / scale_factor)
+    upper_limit = max_revenue * 1.2
+    lower_limit = min_net_income * 1.2 if min_net_income < 0 else 0
 
-    # Adding grid lines for each tick and a thicker line at y=0
-    ax.grid(True, which='both', linestyle='--', linewidth='0.5', color='grey', axis='y')
-    ax.axhline(0, color='black', linewidth='1')  # Thicker line at y=0
-
-    # Adding labels, title, and legend
-
+    ax.set_ylim(lower_limit, upper_limit)
     ax.set_title(f'Revenue and Net Income for {ticker}')
     ax.set_xticks(positions)
     ax.set_xticklabels(df['Date'], rotation=0)
-    ax.legend(loc='upper left', bbox_to_anchor=(0, -.05))
+    ax.legend()
 
-    # Adding value labels on top of the bars
-    def add_value_labels(ax, bars, label_ending, scale_factor):
+    # Adding grid lines for each tick and a thicker line at y=0
+    ax.grid(True, which='both', linestyle='--', linewidth='0.5', color='grey', axis='y')
+    ax.axhline(0, color='black', linewidth=1)  # Thicker line at y=0
+
+    def add_value_labels(ax, bars):
         for bar in bars:
             height = bar.get_height()
-            label = f'{height:.1f}{label_ending}'  # Apply scale_factor here
+            label = f'{height:.1f}{label_ending}'
+            y_offset = 3 if height >= 0 else -12
+            ax.annotate(label, xy=(bar.get_x() + bar.get_width() / 2, height), xytext=(0, y_offset),
+                        textcoords="offset points", ha='center', va='bottom')
 
-            # Determine the y offset for the label
-            label_y_offset = 12 if height >= 0 else -12
-
-            ax.annotate(label,
-                        xy=(bar.get_x() + bar.get_width() / 2, height),
-                        xytext=(0, label_y_offset),
-                        textcoords="offset points",
-                        ha='center', va='bottom', color="black")
-
-    add_value_labels(ax, bars1, label_ending, scale_factor)
-    add_value_labels(ax, bars2, label_ending, scale_factor)
-
+    add_value_labels(ax, bars1)
+    add_value_labels(ax, bars2)
     plt.tight_layout()
-
-    # Find the tallest bar for Revenue and lowest for Net Income
-    max_revenue = max(df['Revenue'] / scale_factor)
-    min_net_income = min(df['Net_Income'] / scale_factor)
-
-    # Calculate new limits
-    upper_limit = max_revenue * 1.2
-    if min_net_income < 0:
-        adjusted_net_income_limit = min_net_income * 1.3
-        adjusted_revenue_limit = 0 - (max_revenue * 0.25)
-        lower_limit = min(adjusted_net_income_limit, adjusted_revenue_limit)
-    else:
-        lower_limit = 0
-
-
-    # Set the new y-axis limits
-    ax.set_ylim(lower_limit, upper_limit)
-
     plt.savefig(revenue_chart_path)
     plt.close()
+
+
 
 
 

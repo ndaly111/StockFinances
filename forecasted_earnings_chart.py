@@ -240,8 +240,9 @@ def format_chart(ax, combined_data, output_path, ticker):
 
 
 def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
-    # Define color for EPS bars
-    eps_color = '#74a9cf'
+    # Define colors for EPS bars
+    historical_eps_color = '#2c3e50'  # Darker color for historical EPS
+    forecast_eps_color = '#74a9cf'  # Same color as before for forecast EPS
 
     # Calculate the y-axis limits based on EPS values with padding
     max_eps = combined_data['EPS'].max()
@@ -253,29 +254,28 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     unique_dates = combined_data['Date'].unique()
     positions = np.arange(len(unique_dates)) * (bar_width * 3)
 
-    # Bar settings
-    bar_settings = {
-        'width': bar_width,
-        'align': 'center',
-        'color': eps_color,
-        'label': 'EPS',
-        'alpha': 0.7
-    }
+    # Loop through each unique date and plot bars based on 'Type'
+    for date in unique_dates:
+        date_data = combined_data[combined_data['Date'] == date]
+        group_offset = positions[list(unique_dates).index(date)] - bar_width / 2
 
-    # Plot EPS bars
-    ax.bar(combined_data['Date'], combined_data['EPS'], **bar_settings)
+        if 'Historical' in date_data['Type'].values:
+            historical_eps = date_data[date_data['Type'] == 'Historical']
+            ax.bar(group_offset, historical_eps['EPS'], width=bar_width, color=historical_eps_color,
+                   label='Historical EPS', align='center')
+
+        if 'Forecast' in date_data['Type'].values:
+            forecast_eps = date_data[date_data['Type'] == 'Forecast']
+            ax.bar(group_offset + bar_width, forecast_eps['EPS'], width=bar_width, color=forecast_eps_color,
+                   label='Forecast EPS', align='center')
 
     # Add value labels for EPS
     for rect in ax.patches:
         height = rect.get_height()
         x = rect.get_x() + rect.get_width() / 2
-        # Adjust y position based on the sign of the height
-        if height >= 0:
-            y = height + abs(height) * 0.05  # Slightly above the bar for positive values
-        else:
-            y = height - abs(height) * 0.05  # Slightly below the bar for negative values
+        y = height
         label_text = f'{height:.2f}'  # Format label with two decimal places
-        ax.text(x, y, label_text, ha='center', va='bottom' if height >= 0 else 'top')
+        ax.text(x, y, label_text, ha='center', va='bottom')
 
     # Set labels and title
     ax.set_xlabel('Date')
@@ -284,23 +284,24 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     ax.axhline(y=0, color='black', linewidth=1)
 
     # Generate custom tick labels with the date and the number of EPS analysts for forecast only
-    unique_dates = combined_data['Date'].unique()
     custom_xtick_labels = []
     for date in unique_dates:
         date_str = pd.to_datetime(date).strftime('%Y-%m-%d')
         label = date_str
-
-        # If this date has forecast data, add the EPS analyst counts
         if date in analyst_counts['Date'].values:
             eps_analyst_count = analyst_counts.loc[analyst_counts['Date'] == date, 'ForwardEPSAnalysts'].iloc[0]
             label += f"\n({eps_analyst_count} analysts)"
         custom_xtick_labels.append(label)
 
-    ax.set_xticks(combined_data['Date'])
+    ax.set_xticks(positions)
     ax.set_xticklabels(custom_xtick_labels)
 
-    return ax
+    # Ensure each label is only added once to the legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys(), loc='best')
 
+    return ax
 
 
 def generate_financial_forecast_chart(ticker, combined_data, charts_output_dir,db_path,historical_data,forecast_data,analyst_counts):

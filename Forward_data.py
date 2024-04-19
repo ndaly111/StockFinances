@@ -11,9 +11,10 @@ from datetime import datetime
 
 def scrape_annual_estimates(ticker,table_id):
     print("forward_data 1 scrape annual estimates")
-    ticker.replace("-", ".")
+    ticker = ticker.replace("-", ".")
     print("---ticker", ticker)
     url = f'https://fintel.io/sfo/us/{ticker}'  # URL formatted with the ticker variable
+    print("---url",url)
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
@@ -117,6 +118,7 @@ def store_in_database(df, ticker, db_path, table_name):
 
     # Special rule for BRK.B or BRK-B tickers
     eps_scale_factor = 1500 if ticker in ['BRK.B', 'BRK-B'] else 1
+    print("---scale factor", eps_scale_factor)
 
     for _, row in df.iterrows():
         date_str = row['Date'].strftime('%Y-%m-%d')
@@ -125,14 +127,15 @@ def store_in_database(df, ticker, db_path, table_name):
         # Convert EPS to a float, handling any conversion errors
         try:
             eps_raw = row.get('EPS Average (Annual)', '0')  # Default to '0' if key not found
+            eps_raw = eps_raw.replace(',', '')  # Remove commas
             eps = float(eps_raw) / eps_scale_factor
-        except ValueError:
-            print(
-                f"Warning: Unable to convert EPS value '{eps_raw}' to float for {ticker} on {date_str}. Defaulting to 0.")
+        except ValueError as e:
+            print(f"Error converting EPS: {e}")
+            print(f"Warning: Unable to convert EPS value '{eps_raw}' to float for {ticker} on {date_str}. Defaulting to 0.")
             eps = 0.0
 
-        eps_analysts = row.get('Number of Analysts (Annually)_x', 0)  # Adjust the '_x' suffix if needed
-        revenue_analysts = row.get('Number of Analysts (Annually)_y', 0)  # Adjust the '_y' suffix if needed
+        eps_analysts = row.get('Number of Analysts (Annually)_x', 0)
+        revenue_analysts = row.get('Number of Analysts (Annually)_y', 0)
         last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         insert_query = f'''
@@ -159,6 +162,7 @@ def store_in_database(df, ticker, db_path, table_name):
     conn.commit()
     conn.close()
     print("Data stored successfully.")
+
 
 
 # Example usage
