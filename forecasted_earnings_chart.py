@@ -450,7 +450,7 @@ def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     # Prepare combined data for plotting only once
     combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding)
 
-    # Check if there is forecast data availabl
+    # Check if there is forecast data available
     if forecast_data.empty:
         print(f"No forecast data available for {ticker}.")
         # Paths for the placeholder and target files
