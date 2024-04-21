@@ -223,43 +223,28 @@ def store_annual_data(ticker, annual_data, cursor):
             print(f"Database error while storing/updating annual data for {ticker}: {e}")
 
 
-def fetch_ttm_data(ticker, cursor):
-    print("data fetcher (new)0 Fetching TTM data for ticker")
+
+
+def fetch_ttm_data(ticker):
+    print("Fetching TTM data for ticker:", ticker)
     try:
-        # Fetch the column names for TTM_Data table
-        cursor.execute("PRAGMA table_info(TTM_Data)")
-        columns = [col[1] for col in cursor.fetchall()]  # Get column names
-        print("---getting column names", columns)
-
-        # Fetch all TTM data entries for the given ticker, ordered by Quarter
-        cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ? ORDER BY Quarter DESC", (ticker,))
-        print("---fetching all TTM data for ticker")
-        results = [dict(zip(columns, row)) for row in cursor.fetchall()]  # Convert each tuple to a dictionary
-        print("---converting tuple to a dictionary", results)
-
-        if results:
-            print(f"---fetched {len(results)} rows of TTM data for {ticker}")
-            # Sort results by 'Quarter' regardless of how many are fetched
-            results_sorted_by_quarter = sorted(results, key=lambda x: x['Quarter'], reverse=True)
-
-            if len(results) > 1:
-                print("---More than one row fetched, checking for outdated data...")
-                quarters_to_keep = results_sorted_by_quarter[0]['Quarter']
-                quarters_to_delete = [row['Quarter'] for row in results_sorted_by_quarter[1:]]
-
-                print(f"Keeping only the most recent quarter data for {ticker}, quarter: {quarters_to_keep}.")
-                for quarter in quarters_to_delete:
-                    print(f"Removing outdated TTM data for {ticker} for quarter: {quarter}.")
-                    cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ? AND Quarter = ?", (ticker, quarter))
-                cursor.connection.commit()
-
-            # Return the most recent result after checking for and handling multiple results
-            return results_sorted_by_quarter[0] if results_sorted_by_quarter else None
-        else:
-            print(f"No TTM data found for {ticker} in the database.")
-            return None
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
+        stock = yf.Ticker(ticker)
+        ttm_data = {
+            'TTM Revenue': stock.info.get('totalRevenue'),
+            'TTM Net Income': stock.info.get('netIncomeToCommon'),
+            'TTM EPS': stock.info.get('trailingEps')
+        }
+        # Ensure data is in a readable format or print 'N/A' if not available
+        for key, value in ttm_data.items():
+            if value is None:
+                ttm_data[key] = 'N/A'
+            else:
+                ttm_data[key] = f"${value:,.0f}"  # Format as currency without decimal places
+        
+        print("Fetched TTM data:", ttm_data)
+        return ttm_data
+    except Exception as e:
+        print(f"Error fetching TTM data for {ticker}: {e}")
         return None
 
 
