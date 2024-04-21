@@ -390,7 +390,7 @@ def calculate_yoy_growth(combined_data, analyst_counts):
     yoy_table.rename(columns={
         'Revenue_YoY': 'Revenue Growth (%)',
         'ForwardRevenueAnalysts': 'Revenue Analysts (#)',
-        'Net_Income_YoY': 'Net Income Growth (%)',
+        'Net_Income_YoY': 'EPS Growth (%)',
         'ForwardEPSAnalysts': 'EPS Analysts (#)'
     }, inplace=True)
 
