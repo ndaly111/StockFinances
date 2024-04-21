@@ -1,27 +1,44 @@
 import yfinance as yf
 import os
 
+from bs4 import BeautifulSoup
 
-def fetch_stock_data(ticker):
-    """
-    Fetches financial data for a given ticker using yfinance.
 
-    Args:
-        ticker (str): The stock ticker symbol.
-
-    Returns:
-        dict: A dictionary containing the fetched stock data.
-    """
+def fetch_stock_data(ticker, treasury_yield):
     stock = yf.Ticker(ticker)
+    current_price = stock.info.get('currentPrice')
+    forward_eps = stock.info.get('forwardEps')
+    pe_ratio = stock.info.get('trailingPE', None)
+    forward_pe_ratio = current_price / forward_eps if forward_eps else None
+
+    # Ensure treasury_yield is a float and convert from percentage to decimal
+    treasury_yield = float(treasury_yield) / 100 if treasury_yield and treasury_yield != '-' else None
+
+    # Calculate implied growth for trailing P/E
+    implied_growth = calculate_implied_growth(pe_ratio, treasury_yield) if pe_ratio is not None else '-'
+    implied_growth_formatted = f"{implied_growth * 100:.1f}%" if implied_growth != '-' else 'N/A'
+
+    # Calculate implied growth for forward P/E
+    implied_forward_growth = calculate_implied_growth(forward_pe_ratio,
+                                                      treasury_yield) if forward_pe_ratio is not None else '-'
+    implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if implied_forward_growth != '-' else '-'
+
     data = {
-        'Close Price': stock.info.get('previousClose'),
+        'Close Price': current_price,
         'Market Cap': stock.info.get('marketCap'),
-        'P/E Ratio': "{:.2f}".format(stock.info.get('trailingPE')) if stock.info.get(
-            'trailingPE') is not None else 'N/A',
-        'P/S Ratio': "{:.2f}".format(stock.info.get('priceToSalesTrailing12Months')) if stock.info.get(
-            'priceToSalesTrailing12Months') is not None else 'N/A'
+        'P/E Ratio': "{:.2f}".format(pe_ratio) if pe_ratio is not None else '-',
+        'Forward P/E Ratio': "{:.2f}".format(forward_pe_ratio) if forward_pe_ratio is not None else '-',
+        'Implied Growth*': implied_growth_formatted,
+        'Implied Forward Growth*': implied_forward_growth_formatted,
     }
     return data
+
+
+def calculate_implied_growth(pe_ratio, treasury_yield):
+    if pe_ratio is None or treasury_yield is None:
+        return '-'
+    else:
+        return ((pe_ratio / 10) ** (1/10)) + treasury_yield - 1
 
 
 def format_number(value):
@@ -46,25 +63,10 @@ def format_number(value):
         return f"${value:.2f}"
 
 
-def prepare_data_for_display(ticker, user_pe, user_ps, growth_rate):
-    """
-    Integrates fetched stock data with user-provided estimates and prepares it for display.
 
-    Args:
-        ticker (str): The stock ticker symbol.
-        user_pe (float): User-provided fair P/E ratio.
-        user_ps (float): User-provided fair P/S ratio.
-        growth_rate (str): User-provided estimated growth rate.
 
-    Returns:
-        dict: A dictionary with combined stock data and user inputs.
-    """
-    fetched_data = fetch_stock_data(ticker)
-    fetched_data.update({
-        'Fair P/E': user_pe,
-        'Fair P/S': user_ps,
-        'Estimated Growth Rate': growth_rate
-    })
+def prepare_data_for_display(ticker, treasury_yield):
+    fetched_data = fetch_stock_data(ticker, treasury_yield)
     return fetched_data
 
 
@@ -127,7 +129,7 @@ if __name__ == "__main__":
     growth_rate = '5%'  # Example growth rate provided by the user
 
     # Prepare and fetch data
-    prepared_data = prepare_data_for_display(ticker, user_pe, user_ps, growth_rate)
+    prepared_data = prepare_data_for_display(ticker, treasury_yield)
 
     # Generate HTML table and save to file
     html_file_path = generate_html_table(prepared_data, ticker)

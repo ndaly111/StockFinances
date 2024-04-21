@@ -13,19 +13,16 @@ from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data_from_yahoo,
     store_fetched_balance_sheet_data
 )
-from balance_sheet_data_fetcher import balance_sheet_data_fetcher
 from balancesheet_chart import (fetch_balance_sheet_data,plot_chart,format_value, create_and_save_table)
 import pandas as pd
 from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_in_database)
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
-import requests
 from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
+import requests
 
 
-user_pe = "-"
-user_ps = "-"
-growth_rate = "-"
+
 
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
@@ -42,28 +39,7 @@ debug_this = False
 table_name = 'ForwardFinancialData'
 
 
-def fetch_10_year_treasury_yield():
-    """
-    Fetches the latest 10-year Treasury note yield from the FRED website.
 
-    Returns:
-        str: The latest 10-year Treasury note yield as a string, or 'N/A' if not found.
-    """
-    url = "https://fred.stlouisfed.org/series/GS10"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raises an HTTPError for bad responses
-        soup = BeautifulSoup(response.content, 'html.parser')
-        yield_value = soup.find("span", class_="series-meta-observation-value")
-        if yield_value:
-            return yield_value.text.strip()
-        else:
-            return "N/A"
-    except requests.RequestException as e:
-        print(f"Error fetching the 10-year Treasury note yield: {e}")
-        return "N/A"
-
-yield_rate = fetch_10_year_treasury_yield()
 
 def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
     print("main 1 manage tickers")
@@ -125,7 +101,7 @@ def fetch_financial_data(ticker, cursor):
             print("Stored new annual data for ticker:", ticker)
 
     # Fetch TTM data and check for completeness and freshness
-    ttm_data = fetch_ttm_data(ticker, cursor)
+    ttm_data = fetch_ttm_data(ticker)
     ttm_null = check_null_fields_ttm(ttm_data)
     ttm_blank = is_ttm_data_blank(ttm_data)
     ttm_outdated = is_ttm_data_outdated(ttm_data)
@@ -233,12 +209,32 @@ def generate_html_report(sorted_tickers, financial_data, output_dir, output_file
     print(f"HTML report generated at {html_full_path}")
     return html_full_path
 
+def fetch_10_year_treasury_yield():
+    """
+    Fetches the latest 10-year Treasury note yield from the FRED website.
 
+    Returns:
+        str: The latest 10-year Treasury note yield as a string, or 'N/A' if not found.
+    """
+    url = "https://fred.stlouisfed.org/series/GS10"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+        soup = BeautifulSoup(response.content, 'html.parser')
+        yield_value = soup.find("span", class_="series-meta-observation-value")
+        if yield_value:
+            return yield_value.text.strip()
+        else:
+            return "N/A"
+    except requests.RequestException as e:
+        print(f"Error fetching the 10-year Treasury note yield: {e}")
+        return "N/A"
 
 
 def main():
     print("main start")
     financial_data = {}
+    treasury_yield = fetch_10_year_treasury_yield()
 
     # Manage tickers and establish database connection
     sorted_tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=False)
@@ -287,7 +283,7 @@ def main():
             # Generate HTML report after all tickers have been processed
             generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
 
-            prepared_data = prepare_data_for_display(ticker, user_pe, user_ps, growth_rate)
+            prepared_data = prepare_data_for_display(ticker,treasury_yield)
 
             # Generate HTML table and save to file
             generate_html_table(prepared_data, ticker)
