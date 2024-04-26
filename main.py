@@ -20,6 +20,7 @@ from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
 import requests
+from html_generator2 import html_generator2
 
 
 
@@ -285,19 +286,14 @@ def main():
 
             prepared_data = prepare_data_for_display(ticker,treasury_yield)
 
-            # Generate HTML table and save to file
             generate_html_table(prepared_data, ticker)
 
 
 
-        # Generate HTML report after processing all tickers
-        html_full_path = generate_html_report(sorted_tickers, financial_data, '.', HTML_OUTPUT_FILE)
-        print("---m generating html report")
+        print("generating HTML2")
+        # Call html_generator2 function after all tickers have been processed
+        html_generator2(sorted_tickers, financial_data)
 
-        # Convert HTML to PDF outside the ticker loop
-        if os.path.exists(html_full_path):
-            html_to_pdf(html_full_path, PDF_OUTPUT_FILE)
-            print(f"PDF report generated at {PDF_OUTPUT_FILE}")
 
     finally:
         if conn:

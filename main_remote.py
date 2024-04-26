@@ -20,7 +20,7 @@ from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
 import requests
-
+from html_generator2 import html_generator2
 
 
 # Constants
@@ -278,19 +278,18 @@ def main():
             if not combined_df.empty:
                 store_in_database(combined_df, ticker, db_path, table_name)
 
-            # Generate HTML report after all tickers have been processed
-            generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
-            prepared_data = prepare_data_for_display(ticker, treasury_yield)
+                # Generate HTML report after all tickers have been processed
+                generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
 
-            # Generate HTML table and save to file
-            generate_html_table(prepared_data, ticker)
-            
+                prepared_data = prepare_data_for_display(ticker, treasury_yield)
 
-        # Generate HTML report after processing all tickers
-        html_full_path = generate_html_report(sorted_tickers, financial_data, '.', HTML_OUTPUT_FILE)
-        print("---m generating html report")
+                generate_html_table(prepared_data, ticker)
 
-        
+            print("generating HTML2")
+            # Call html_generator2 function after all tickers have been processed
+            html_generator2(sorted_tickers, financial_data)
+
+
     finally:
         if conn:
             conn.close()

@@ -21,17 +21,21 @@ body {
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     margin: 20px auto; /* Center horizontally */
     padding: 10px 0; /* Padding to prevent content touching the edges */
-    scroll-snap-type: x mandatory; /* Enables snap scrolling on the x-axis */
-    display: flex; /* Use flex display to manage child elements */
-    flex-direction: row; /* Arrange items in a row */
-    gap: 20px; /* Spacing between items */
+    scroll-snap-type: x mandatory;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
 }
 
 .carousel-item {
-    display: inline-block; /* Display items in a line */
-    width: 100%; /* Full width of the container */
-    vertical-align: top; /* Align items to the top */
-    margin-right: 20px; /* Margin between items */
+    flex: 0 0 auto; /* Do not grow, do not shrink, and be automatically sized */
+    scroll-snap-align: start; /* Ensure snapping aligns to the start of the item */
+}
+
+.carousel-item img {
+    max-width: 100%;
+    height: auto;
 }
 
 /* Specific styles for tables */
@@ -70,4 +74,43 @@ th {
 .home-button:hover {
     background-color: #003f4b;
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+.balance-sheet-container {
+    display: flex;
+    justify-content: center; /* Center-align flex items horizontally */
+    align-items: center; /* Center-align flex items vertically */
+    text-align: center; /* Center-align the text */
+    flex-wrap: wrap; /* Allow items to wrap to next line on small screens */
+    margin-bottom: 20px;
+}
+
+.balance-sheet-table, .balance-sheet-chart {
+    width: 100%; /* Full width of their container by default */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    padding: 10px;
+    margin-bottom: 10px; /* Margin between table and chart */
+}
+
+/* Ensure the balance sheet items sit side by side on larger screens */
+@media (min-width: 768px) {
+    .balance-sheet-table, .balance-sheet-chart {
+        width: calc(50% - 20px);
+        margin-bottom: 0; /* No margin between items */
+    }
+}
+
+.balance-sheet-chart img {
+    max-width: 100%; /* Make the image responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.chart {
+    max-width: 100%; /* Prevent the chart from being wider than its container */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* You might need to add this style to constrain the image within its container */
+img {
+    max-width: 100%;
+    height: auto;
 }

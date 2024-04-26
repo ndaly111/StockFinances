@@ -47,34 +47,7 @@ def prepare_financial_data(df):
     return df
 
 
-def append_yearly_changes(df):
-    """
-    Appends yearly changes for 'Revenue', 'Net_Income', and 'EPS' as formatted strings
-    to the DataFrame. Changes are calculated year-over-year and formatted as percentages
-    and values in millions.
 
-    Args:
-        df (pd.DataFrame): DataFrame containing the financial data.
-
-    Returns:
-        pd.DataFrame: DataFrame with appended yearly change columns, formatted as strings.
-    """
-    # Ensure the DataFrame is sorted by 'Date' to calculate changes correctly
-    df.sort_values('Date', ascending=False, inplace=True)
-
-    # Define the columns to calculate yearly changes
-    financial_columns = ['Revenue', 'Net_Income', 'EPS']
-
-    for column in financial_columns:
-        change_column_name = f'{column}_Change'
-        # Calculate year-over-year percentage change
-        df[change_column_name] = df[column].pct_change(periods=-1) * 100
-
-        # Format the changes as strings with percentage sign and two decimals
-        # For values, divide by 1 million to represent values in millions
-        df[change_column_name] = df[change_column_name].apply(lambda x: f"{x:.2f}%" if pd.notnull(x) else "N/A")
-
-    return df
 
 
 
@@ -270,6 +243,23 @@ def print_dataframe_to_console(df, message):
     print(df)
 
 
+def get_file_content_or_placeholder(file_path, placeholder="No data available", is_binary=False):
+    """Gets the content of a file if it exists, otherwise returns a placeholder.
+       For binary files (like images), set is_binary to True."""
+    try:
+        if is_binary:
+            with open(file_path, 'rb') as file:  # Open as binary
+                return file.read()
+        else:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return file.read()
+    except FileNotFoundError:
+        return f"<div style='text-align: center;'><strong>{placeholder}</strong></div>"
+    except UnicodeDecodeError as e:
+        return f"<div style='text-align: center;'><strong>Error reading file: {e}</strong></div>"
+
+
+
 # Function to create HTML content
 def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='index.html'):
     charts_output_dir = "charts/"
@@ -351,18 +341,24 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
             df = calculate_and_format_changes(df)
             rendered_table = df.to_html(classes="financial-data", border=0, na_rep='N/A')
 
-
             ticker_data = {
                 'ticker': ticker,
-                'ticker_info': open(f"{charts_output_dir}{ticker}_ticker_info.html").read(),
+                'ticker_info': open(f"{charts_output_dir}{ticker}_ticker_info.html").read() if os.path.exists(
+                    f"{charts_output_dir}{ticker}_ticker_info.html") else "Ticker info not available",
                 'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
                 'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
                 'financial_table': rendered_table,
-                'forecast_rev_net_chart_path': f"{charts_output_dir}{ticker}_Revenue_Net_Income_Forecast.png",
-                'forecast_eps_chart_path': f"{charts_output_dir}{ticker}_EPS_Forecast.png",
-                'yoy_growth_table_html': open(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html").read(),
+                'forecast_rev_net_chart_path': get_file_content_or_placeholder(
+                    f"{charts_output_dir}{ticker}_Revenue_Net_Income_Forecast.png",
+                    "No Revenue & Net Income Forecast data available"),
+                'forecast_eps_chart_path': get_file_content_or_placeholder(
+                    f"{charts_output_dir}{ticker}_EPS_Forecast.png", "No EPS Forecast data available"),
+                'yoy_growth_table_html': get_file_content_or_placeholder(
+                    f"{charts_output_dir}{ticker}_yoy_growth_tbl.html", "No Year-Over-Year Growth data available"),
                 'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
-                'balance_sheet_table_html': open(f"{charts_output_dir}{ticker}_balance_sheet_table.html").read()  # Read the content directly into the dictionary
+                'balance_sheet_table_html': open(
+                    f"{charts_output_dir}{ticker}_balance_sheet_table.html").read() if os.path.exists(
+                    f"{charts_output_dir}{ticker}_balance_sheet_table.html") else "Balance sheet data not available"
             }
 
             data_for_rendering['tickers_data'].append(ticker_data)
