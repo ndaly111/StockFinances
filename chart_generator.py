@@ -9,16 +9,6 @@ from datetime import datetime
 
 
 
-def format_axis_as_billions(ax):
-    print("chart generator 1 format axis as billions")
-    ax.get_yaxis().set_major_formatter(
-        mtick.FuncFormatter(lambda x, p: format(int(x), ',.0f')))
-
-def format_axis_as_millions(ax):
-    print("chart generator 2 format axis as millions")
-    ax.get_yaxis().set_major_formatter(
-        mtick.FuncFormatter(lambda x, p: format(int(x) / 1e6, ',.0f') + 'M'))
-
 
 def chart_needs_update(chart_path, last_data_update, ttm_update=False, annual_update=False, debug_this=False):
     print("chart generator 3 does chart need an update?")
@@ -244,21 +234,6 @@ def generate_eps_chart(ticker, charts_output_dir, financial_data_df):
     plt.savefig(eps_chart_path)
     plt.close(fig)
 
-def format_to_millions(value):
-    print("html_generator 1 format to millions")
-    """
-    Formats a numerical value to a string representing the value in millions
-    with a dollar sign and commas.
-    """
-    print("html generator 1 formatting to millions", value)
-    try:
-        print("---value",value)
-        # Assume value is already a float representing the total amount (not in millions)
-        value_in_millions = value / 1e6  # Convert to millions
-        formatted_value = f"${value_in_millions:,.0f}M"
-        return formatted_value
-    except ValueError:
-        return "N/A"
 
 
 def append_yearly_changes(df):
@@ -314,11 +289,19 @@ def format_eps(value):
 def prepare_financial_data(df):
     """
     Prepare the financial data by converting strings to numeric and handling nulls.
+    Adjusts large numbers to be represented in millions or billions for financial figures,
+    and formats EPS consistently.
     """
-    financial_columns = ['Revenue', 'Net_Income', 'EPS']
+    financial_columns = ['Revenue', 'Net_Income']
     for column in financial_columns:
         # Remove $ and commas, then convert to float
         df[column] = pd.to_numeric(df[column].replace('[\$,]', '', regex=True), errors='coerce')
+        df[column] = df[column].apply(format_currency)
+
+    # Handle EPS separately to maintain its scale
+    if 'EPS' in df.columns:
+        df['EPS'] = pd.to_numeric(df['EPS'].replace('[\$,]', '', regex=True), errors='coerce')
+        df['EPS'] = df['EPS'].apply(format_eps)
 
     # Convert 'Last_Updated' to datetime format, if necessary
     if 'Last_Updated' in df.columns:

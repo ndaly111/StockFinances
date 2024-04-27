@@ -53,7 +53,7 @@ def ensure_templates_exist():
             <p>Welcome to the financial dashboard. Select a company above to view more details.</p>
         </div>
         <footer>
-            <p>Financial Data Dashboard</p>
+            <p>Nick's Financial Data Dashboard</p>
         </footer>
     </body>
     </html>
