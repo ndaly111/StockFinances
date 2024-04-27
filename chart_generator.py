@@ -287,25 +287,50 @@ def format_eps(value):
     return f"${value:.2f}"
 
 def prepare_financial_data(df):
-    """
-    Prepare the financial data by converting strings to numeric and handling nulls.
-    Adjusts large numbers to be represented in millions or billions for financial figures,
-    and formats EPS consistently.
-    """
-    financial_columns = ['Revenue', 'Net_Income']
+    # Define columns that need to be converted to numeric
+    financial_columns = ['Revenue', 'Net_Income', 'EPS']
+
+    # Convert financial figure columns from string to float
     for column in financial_columns:
-        # Remove $ and commas, then convert to float
-        df[column] = pd.to_numeric(df[column].replace('[\$,]', '', regex=True), errors='coerce')
-        df[column] = df[column].apply(format_currency)
+        # Remove dollar signs, commas, and "M" (if your data represents millions, you might want to divide by 1e6 to convert to actual values)
+        df[column] = df[column].replace('[\$,M]', '', regex=True).astype(float)
+        # If your data uses "M" to represent millions, you might want to scale the numbers accordingly
+        # df[column] = df[column] / 1e6  # Uncomment this line if necessary
 
-    # Handle EPS separately to maintain its scale
-    if 'EPS' in df.columns:
-        df['EPS'] = pd.to_numeric(df['EPS'].replace('[\$,]', '', regex=True), errors='coerce')
-        df['EPS'] = df['EPS'].apply(format_eps)
+    # Your existing logic to calculate percentage changes
+    for column in financial_columns:
+        change_column_name = f'{column}_Change'
+        # Calculate percentage change and store in a new column
+        df[change_column_name] = df[column].pct_change(periods=-1) * 100
 
-    # Convert 'Last_Updated' to datetime format, if necessary
-    if 'Last_Updated' in df.columns:
-        df['Last_Updated'] = pd.to_datetime(df['Last_Updated'])
+    return df
+
+def calculate_and_format_changes(df):
+    # Ensure the DataFrame is sorted by 'Date' to calculate changes correctly
+    df.sort_values('Date', ascending=True, inplace=True)
+
+    # Define the columns to calculate yearly changes
+    financial_columns = ['Revenue', 'Net_Income', 'EPS']
+
+    # Convert columns to float if they are not already, assuming they are strings with $ and M symbols
+    for column in financial_columns:
+        if df[column].dtype == 'object':
+            df[column] = df[column].replace('[\$,M]', '', regex=True).astype(float) * 1e6
+
+    # Calculate and format the yearly changes
+    for column in financial_columns:
+        change_column = f"{column}_Change"
+        df[change_column] = df[column].pct_change(fill_method=None) * 100
+
+        # Format the changes as percentages with one decimal place
+        df[change_column] = df[change_column].apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "N/A")
+
+    # Format the financial numbers in millions and EPS as specified
+    for column in financial_columns:
+        if column != 'EPS':  # For Revenue and Net_Income
+            df[column] = df[column].apply(lambda x: f"${x/1e6:,.0f}M")
+        else:  # For EPS
+            df[column] = df[column].apply(lambda x: f"${x:,.2f}")
 
     return df
 
@@ -330,20 +355,9 @@ def append_yearly_changes(df):
     return df
 
 
-def generate_financial_data_table_html(ticker, financial_data_df, charts_output_dir):
-    if financial_data_df.empty:
-        print(f"No data available for ticker {ticker}")
-        return
-
-    print("Data before processing:", financial_data_df.dtypes)  # Check data types
-
-    financial_data_df = prepare_financial_data(financial_data_df)
-    financial_data_df = append_yearly_changes(financial_data_df)
-
-    print("Data after processing:", financial_data_df.head())  # Check first few rows of the DataFrame
-
-    # Convert the DataFrame to a HTML table string
-    html_table = financial_data_df.to_html(classes="financial-data", border=0, index=False, na_rep='N/A')
+def generate_financial_data_table_html(ticker, df, charts_output_dir):
+    df = calculate_and_format_changes(df)
+    html_table = df.to_html(classes="financial-data", border=0, na_rep='N/A')
 
     # Save the HTML table to a file
     table_file_path = os.path.join(charts_output_dir, f"{ticker}_rev_net_table.html")
