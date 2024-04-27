@@ -278,12 +278,11 @@ def main():
             if not combined_df.empty:
                 store_in_database(combined_df, ticker, db_path, table_name)
 
-                # Generate HTML report after all tickers have been processed
-                generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
+            # Generate HTML report after all tickers have been processed
+            generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
+            prepared_data = prepare_data_for_display(ticker, treasury_yield)
 
-                prepared_data = prepare_data_for_display(ticker, treasury_yield)
-
-                generate_html_table(prepared_data, ticker)
+            generate_html_table(prepared_data, ticker)
 
             print("generating HTML2")
             # Call html_generator2 function after all tickers have been processed
