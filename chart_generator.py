@@ -309,21 +309,23 @@ def prepare_financial_data(df):
 
     return df
 
+
 def append_yearly_changes(df):
     """
-    Appends yearly changes for 'Revenue', 'Net_Income', and 'EPS' as formatted strings
-    to the DataFrame. Changes are calculated year-over-year and formatted as percentages.
+    Appends yearly percentage changes to financial columns.
+    Ensure all data are numeric and handle NaN values appropriately.
     """
     financial_columns = ['Revenue', 'Net_Income', 'EPS']
     for column in financial_columns:
-        change_column_name = f'{column}_Change'
-        # Calculate the percentage change
-        df[change_column_name] = df[column].pct_change(periods=-1) * 100
+        # Convert column to numeric, forcing errors to NaN to avoid type issues
+        df[column] = pd.to_numeric(df[column], errors='coerce')
 
-    # Apply formatting to the percentage columns after calculations
-    percentage_columns = [f'{col}_Change' for col in financial_columns]
-    for col in percentage_columns:
-        df[col] = df[col].apply(lambda x: f"{x:.2f}%" if pd.notnull(x) else "N/A")
+        # Calculate the percentage change, specifying no fill method for NAs
+        change_column = f"{column}_Change"
+        df[change_column] = df[column].pct_change(fill_method=None) * 100  # Explicitly handle NA values
+
+        # Format the change as a string with two decimal places, handling NaNs
+        df[change_column] = df[change_column].apply(lambda x: f"{x:.2f}%" if pd.notnull(x) else "N/A")
 
     return df
 
@@ -333,8 +335,12 @@ def generate_financial_data_table_html(ticker, financial_data_df, charts_output_
         print(f"No data available for ticker {ticker}")
         return
 
+    print("Data before processing:", financial_data_df.dtypes)  # Check data types
+
     financial_data_df = prepare_financial_data(financial_data_df)
     financial_data_df = append_yearly_changes(financial_data_df)
+
+    print("Data after processing:", financial_data_df.head())  # Check first few rows of the DataFrame
 
     # Convert the DataFrame to a HTML table string
     html_table = financial_data_df.to_html(classes="financial-data", border=0, index=False, na_rep='N/A')
