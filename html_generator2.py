@@ -85,7 +85,7 @@ def ensure_templates_exist():
             <img src="../{{ ticker_data.eps_chart_path }}" alt="EPS Chart">
             {{ ticker_data.financial_table | safe }}
         </div>
-    
+        <div><h1>Forecast Data</h1></div>
         <div class="carousel-container">
             <div class="carousel-item">
                 <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">

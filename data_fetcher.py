@@ -223,6 +223,23 @@ def store_annual_data(ticker, annual_data, cursor):
             print(f"Database error while storing/updating annual data for {ticker}: {e}")
 
 
+def handle_ttm_duplicates(ticker, cursor):
+    print("Checking for duplicate TTM entries for ticker:", ticker)
+    try:
+        cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ?", (ticker,))
+        results = cursor.fetchall()
+        if len(results) > 1:
+            print("---Multiple TTM entries detected for", ticker, ":", len(results))
+            cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ?", (ticker,))
+            cursor.connection.commit()
+            print("---Cleared duplicate TTM entries for", ticker)
+            return True  # Indicates duplicates were found and cleared
+        return False  # Indicates no duplicates were found
+    except sqlite3.Error as e:
+        print("Database error during duplicate check:", e)
+        return False
+
+
 def fetch_ttm_data(ticker, cursor):
     print("data fetcher (new)0 Fetching TTM data for ticker")
     try:

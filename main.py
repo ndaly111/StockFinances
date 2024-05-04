@@ -2,7 +2,7 @@
 import os
 import sqlite3
 import ticker_manager
-from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries)
+from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries,handle_ttm_duplicates)
 from chart_generator import (prepare_data_for_charts, generate_financial_charts)
 from html_generator import (create_html_for_tickers)
 from html_to_pdf_converter import html_to_pdf
@@ -101,6 +101,15 @@ def fetch_financial_data(ticker, cursor):
             store_annual_data(ticker, annual_data, cursor)
             print("Stored new annual data for ticker:", ticker)
 
+    if handle_ttm_duplicates(ticker, cursor):
+        print("Fetching new TTM data for ticker after clearing duplicates:", ticker)
+        ttm_data_from_yahoo = fetch_ttm_data_from_yahoo(ticker)
+        if ttm_data_from_yahoo:
+            store_ttm_data(ticker, ttm_data_from_yahoo, cursor)
+            print("Stored new TTM data for ticker:", ticker)
+        return ttm_data_from_yahoo
+
+        # Continue with existing checks and data fetching if no duplicates were found
     ttm_data = fetch_ttm_data(ticker, cursor)
     if ttm_data is None or check_null_fields_ttm(ttm_data) or is_ttm_data_blank(ttm_data) or is_ttm_data_outdated(
             ttm_data):
@@ -108,6 +117,8 @@ def fetch_financial_data(ticker, cursor):
         if ttm_data_from_yahoo:
             store_ttm_data(ticker, ttm_data_from_yahoo, cursor)
             print("Stored new TTM data for ticker:", ticker)
+        return ttm_data_from_yahoo
+    return ttm_data
 
     # Combine the annual and TTM data into one DataFrame
     ticker_data_df = pd.DataFrame(ticker_data)
