@@ -244,8 +244,18 @@ def format_chart(ax, combined_data, output_path, ticker):
     """Formats the chart with titles, axis labels, and saves the figure."""
     ax.set_title(f'{ticker} Revenue and Net Income (Historical & Forecasted)')
     ax.set_xlabel('Date')
-    ax.set_ylabel('USD (Millions)')
-    formatter = FuncFormatter(lambda x, p: f'${int(x / 1e6)}M')
+    ax.set_ylabel('USD (Millions or Billions)')
+
+    # Determine the maximum value in the dataset for scaling
+    max_value = combined_data[['Revenue', 'Net_Income']].max().max()
+
+    if max_value >= 1e9:  # if the max value is in the billions, scale to billions
+        formatter = FuncFormatter(lambda x, p: f'${int(x / 1e9)}B')
+        ax.set_ylabel('USD (Billions)')
+    else:  # otherwise, scale to millions
+        formatter = FuncFormatter(lambda x, p: f'${int(x / 1e6)}M')
+        ax.set_ylabel('USD (Millions)')
+
     ax.yaxis.set_major_formatter(formatter)
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
@@ -255,7 +265,6 @@ def format_chart(ax, combined_data, output_path, ticker):
         plt.tight_layout()
     except Exception as e:
         print(f"An error occurred while applying tight layout: {e}")
-        # Possibly more diagnostics here
 
     fig_path = f"{output_path}{ticker}_Revenue_Net_Income_Forecast.png"
     plt.savefig(fig_path)

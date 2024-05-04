@@ -26,7 +26,7 @@ from html_generator2 import html_generator2
 
 
 # Constants
-TICKERS_FILE_PATH = 'tickers.csv'
+TICKERS_FILE_PATH = 'tickers aapl.csv'
 db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'index.html'
