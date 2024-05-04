@@ -101,13 +101,9 @@ def fetch_financial_data(ticker, cursor):
             store_annual_data(ticker, annual_data, cursor)
             print("Stored new annual data for ticker:", ticker)
 
-    # Fetch TTM data and check for completeness and freshness
-    ttm_data = fetch_ttm_data(ticker)
-    ttm_null = check_null_fields_ttm(ttm_data)
-    ttm_blank = is_ttm_data_blank(ttm_data)
-    ttm_outdated = is_ttm_data_outdated(ttm_data)
-
-    if ttm_blank or ttm_null or ttm_outdated:
+    ttm_data = fetch_ttm_data(ticker, cursor)
+    if ttm_data is None or check_null_fields_ttm(ttm_data) or is_ttm_data_blank(ttm_data) or is_ttm_data_outdated(
+            ttm_data):
         ttm_data_from_yahoo = fetch_ttm_data_from_yahoo(ticker)
         if ttm_data_from_yahoo:
             store_ttm_data(ticker, ttm_data_from_yahoo, cursor)

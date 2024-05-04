@@ -26,8 +26,8 @@ def fetch_stock_data(ticker, treasury_yield):
     data = {
         'Close Price': current_price,
         'Market Cap': stock.info.get('marketCap'),
-        'P/E Ratio': "{:.2f}".format(pe_ratio) if pe_ratio is not None else '-',
-        'Forward P/E Ratio': "{:.2f}".format(forward_pe_ratio) if forward_pe_ratio is not None else '-',
+        'P/E Ratio': "{:.1f}".format(pe_ratio) if pe_ratio is not None else '-',
+        'Forward P/E Ratio': "{:.1f}".format(forward_pe_ratio) if forward_pe_ratio is not None else '-',
         'Implied Growth*': implied_growth_formatted,
         'Implied Forward Growth*': implied_forward_growth_formatted,
     }

@@ -223,29 +223,35 @@ def store_annual_data(ticker, annual_data, cursor):
             print(f"Database error while storing/updating annual data for {ticker}: {e}")
 
 
-
-
-def fetch_ttm_data(ticker):
-    print("Fetching TTM data for ticker:", ticker)
+def fetch_ttm_data(ticker, cursor):
+    print("data fetcher (new)0 Fetching TTM data for ticker")
     try:
-        stock = yf.Ticker(ticker)
-        ttm_data = {
-            'TTM Revenue': stock.info.get('totalRevenue'),
-            'TTM Net Income': stock.info.get('netIncomeToCommon'),
-            'TTM EPS': stock.info.get('trailingEps')
-        }
-        # Ensure data is in a readable format or print 'N/A' if not available
-        for key, value in ttm_data.items():
-            if value is None:
-                ttm_data[key] = 'N/A'
-            else:
-                ttm_data[key] = f"${value:,.0f}"  # Format as currency without decimal places
-        
-        print("Fetched TTM data:", ttm_data)
-        return ttm_data
-    except Exception as e:
-        print(f"Error fetching TTM data for {ticker}: {e}")
+        # Fetch the column names for TTM_Data table
+        cursor.execute("PRAGMA table_info(TTM_Data)")
+        columns = [col[1] for col in cursor.fetchall()]  # Get column names
+        print("---getting column names", columns)
+
+        # Fetch all TTM data entries for the given ticker, ordered by Quarter
+        cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ? ORDER BY Quarter DESC", (ticker,))
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]  # Convert each tuple to a dictionary
+        print("---converting tuple to a dictionary", results)
+
+        if len(results) > 1:
+            print("---Multiple TTM entries found for", ticker, "clearing existing data...")
+            cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ?", (ticker,))
+            cursor.connection.commit()
+            print("---All existing TTM data for", ticker, "has been cleared.")
+            return None  # Returning None to indicate that new data needs to be fetched
+        elif results:
+            print(f"---Fetched {len(results)} rows of TTM data for {ticker}")
+            return results[0]  # Return the most recent entry if only one exists
+        else:
+            print(f"No TTM data found for {ticker} in the database.")
+            return None
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
         return None
+
 
 
 
