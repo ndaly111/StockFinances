@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
 import requests
 from html_generator2 import html_generator2
+from valuation_update import valuation_update
 
 
 # Constants
@@ -279,6 +280,7 @@ def main():
             prepared_data = prepare_data_for_display(ticker, treasury_yield)
 
             generate_html_table(prepared_data, ticker)
+            valuation_update(ticker, cursor)
 
             print("generating HTML2")
             # Call html_generator2 function after all tickers have been processed

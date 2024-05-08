@@ -21,12 +21,14 @@ from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
 import requests
 from html_generator2 import html_generator2
+from valuation_update import valuation_update
+
 
 
 
 
 # Constants
-TICKERS_FILE_PATH = 'tickers aapl.csv'
+TICKERS_FILE_PATH = 'tickers.csv'
 db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'index.html'
@@ -294,6 +296,8 @@ def main():
             prepared_data = prepare_data_for_display(ticker,treasury_yield)
 
             generate_html_table(prepared_data, ticker)
+
+            valuation_update(ticker, cursor)
 
 
 
