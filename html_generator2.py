@@ -39,7 +39,7 @@ def ensure_templates_exist():
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Financial Overview Home</title>
+        <title>Nick's Stock Financials</title>
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
@@ -75,7 +75,7 @@ def ensure_templates_exist():
         <header>
             <a href="../index.html" class="home-button">Home</a>
             <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
-            <h2>{{ ticker_data.ticker }}</h2>
+            <h2>Ticker - {{ ticker_data.ticker }}</h2>
         </header>
     
         <!-- Section for ticker information and summary -->
@@ -89,7 +89,7 @@ def ensure_templates_exist():
             <img src="../{{ ticker_data.eps_chart_path }}" alt="EPS Chart">
             {{ ticker_data.financial_table | safe }}
         </div>
-        <div><br><br><hr><br><h1>Forecast Data</h1></div>
+        <div><br><br><hr><br><h1>{{ ticker_data.ticker }} Forecast Data</h1></div>
         <div class="carousel-container">
             <div class="carousel-item">
                 <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
