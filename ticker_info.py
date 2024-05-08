@@ -5,10 +5,13 @@ from bs4 import BeautifulSoup
 
 
 def fetch_stock_data(ticker, treasury_yield):
+    import yfinance as yf  # Assuming yfinance is imported here
+
     stock = yf.Ticker(ticker)
     current_price = stock.info.get('currentPrice')
     forward_eps = stock.info.get('forwardEps')
     pe_ratio = stock.info.get('trailingPE', None)
+    price_to_book = stock.info.get('priceToBook')
     forward_pe_ratio = current_price / forward_eps if forward_eps else None
 
     # Ensure treasury_yield is a float and convert from percentage to decimal
@@ -23,13 +26,18 @@ def fetch_stock_data(ticker, treasury_yield):
                                                       treasury_yield) if forward_pe_ratio is not None else '-'
     implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if implied_forward_growth != '-' else '-'
 
+    # Format close price as $xx.xx or return '-' if current_price is None
+    formatted_close_price = f"${current_price:.2f}" if current_price is not None else '-'
+
+    # Create the dictionary with proper formatting or placeholders if a value is None
     data = {
-        'Close Price': current_price,
+        'Close Price': formatted_close_price,
         'Market Cap': stock.info.get('marketCap'),
         'P/E Ratio': "{:.1f}".format(pe_ratio) if pe_ratio is not None else '-',
         'Forward P/E Ratio': "{:.1f}".format(forward_pe_ratio) if forward_pe_ratio is not None else '-',
         'Implied Growth*': implied_growth_formatted,
         'Implied Forward Growth*': implied_forward_growth_formatted,
+        'P/B Ratio': "{:.1f}".format(price_to_book) if price_to_book is not None else '-',
     }
     return data
 
