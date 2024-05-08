@@ -1,6 +1,9 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 import pandas as pd
+import sqlite3
+
+db_path = 'Stock Data.db'
 
 env = Environment(loader=FileSystemLoader('templates'))
 
@@ -71,7 +74,7 @@ def ensure_templates_exist():
     <body>
         <header>
             <a href="../index.html" class="home-button">Home</a>
-            <h1>{{ ticker_data.ticker }} - Financial Overview</h1>
+            <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
         </header>
     
         <!-- Section for ticker information and summary -->
@@ -131,15 +134,31 @@ def create_home_page(tickers, output_dir):
         file.write(template.render(tickers=tickers))
     print(f"Home page created at {home_page_path}")
 
+def get_company_short_name(ticker, cursor):
+    """Fetch the short name of the company for a given ticker."""
+    cursor.execute('SELECT short_name FROM Tickers_Info WHERE ticker = ?', (ticker,))
+    company_info = cursor.fetchone()
+    return company_info[0] if company_info else ticker
+
 
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
+    """Prepares and generates individual HTML pages for each ticker using provided charts."""
     print(f"Preparing and generating pages for tickers in {output_dir} using charts from {charts_output_dir}...")
     if not charts_output_dir.endswith('/'):
         charts_output_dir += '/'
 
+    # Establish a connection to the database
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
     for ticker in tickers:
+        # Retrieve the company's short name from the database
+        company_name = get_company_short_name(ticker, cursor)
+
+        # Prepare data for the individual ticker
         ticker_data = {
             'ticker': ticker,
+            'company_name': company_name,  # Include the company name here
             'ticker_info': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_ticker_info.html", "Ticker info not available"),
             'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
             'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
@@ -150,6 +169,8 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
             'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
             'balance_sheet_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available")
         }
+
+        # Create the HTML page for this specific ticker
         create_ticker_page(ticker, ticker_data, output_dir)
 
 def get_file_content_or_placeholder(file_path, placeholder="No data available"):
