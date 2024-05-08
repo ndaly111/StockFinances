@@ -75,6 +75,7 @@ def ensure_templates_exist():
         <header>
             <a href="../index.html" class="home-button">Home</a>
             <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
+            <h2>{{ ticker_data.ticker }}</h2>
         </header>
     
         <!-- Section for ticker information and summary -->
