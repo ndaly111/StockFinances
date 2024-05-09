@@ -125,6 +125,8 @@ def ensure_templates_exist():
     
         <footer>
             <a href="../index.html" class="home-button">Back to Home</a>
+            <br><br><br><br><br>
+            
         </footer>
     </body>
     </html>
