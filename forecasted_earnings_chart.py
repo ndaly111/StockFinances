@@ -7,6 +7,7 @@ import numpy as np
 import os
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 import yfinance as yf
+import shutil  # Import shutil for file operations
 
 
 
@@ -470,7 +471,97 @@ forecast_table_name = 'ForwardFinancialData'
 #output_chart_path = 'charts/'
 
 
-import shutil  # Import shutil for file operations
+
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=None, analyst_column=None):
+    """
+    Generates a line chart showing year-over-year (YoY) percentage changes with dynamic y-axis limits.
+
+    Args:
+        data (pd.Series): A pandas Series containing the percentage changes.
+        title (str): The title of the chart.
+        ylabel (str): The label for the y-axis.
+        output_path (str): The path where the chart image will be saved.
+        analyst_counts_df (pd.DataFrame, optional): DataFrame with analyst count data.
+        analyst_column (str, optional): Column name to use for analyst counts.
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+    years = data.index
+    values = data.values
+
+    # Plot the data as a line graph
+    ax.plot(years, values, marker='o', linestyle='-', color='blue')
+
+    # Add labels for each data point
+    for i, (year, value) in enumerate(zip(years, values)):
+        label = f'{value:.1f}%'
+        y_offset = 1 if value > 0 else -1  # Adjust offset direction for positive/negative values
+        ax.text(year, value + y_offset, label, ha='center', va='bottom' if value > 0 else 'top', fontsize=10)
+
+    # Set custom x-axis labels to include analyst counts where available
+    if analyst_counts_df is not None and analyst_column:
+        # Ensure years are integers for indexing
+        analyst_counts_df['Year'] = pd.to_datetime(analyst_counts_df['Date']).dt.year
+        year_analysts = analyst_counts_df.groupby('Year')[analyst_column].last().to_dict()
+
+        x_labels = [
+            f"{year}* ({year_analysts.get(year, 'N/A')})" if year in year_analysts else str(year)
+            for year in years
+        ]
+        ax.set_xticks(years)
+        ax.set_xticklabels(x_labels)
+
+    ax.set_title(title)
+    ax.set_xlabel('Year')
+    ax.set_ylabel(ylabel)
+    ax.axhline(y=0, color='black', linewidth=0.8)  # Horizontal line at y=0
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Determine dynamic y-axis limits
+    max_y_value = min(max(values) + 5, 100)  # Add a buffer, up to a maximum of 100
+    min_y_value = max(min(values) - 5, -100)  # Add a buffer to the bottom, but not below -100
+
+    ax.set_ylim(min_y_value, max_y_value)
+
+    fig.tight_layout()
+    plt.savefig(output_path)
+    plt.close(fig)
+    print(f"Chart saved to {output_path}")
+
+
+
+def generate_revenue_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts, analyst_column):
+    """
+    Generates a line chart for Revenue YoY percentage change.
+
+    Args:
+        yoy_table (pd.DataFrame): Year-over-Year growth table containing revenue data.
+        ticker (str): The stock ticker symbol.
+        output_dir (str): The directory where the chart will be saved.
+        analyst_counts (pd.DataFrame): Analyst count data.
+        analyst_column (str): The column to use for analyst counts.
+    """
+    revenue_changes = pd.to_numeric(yoy_table.loc['Revenue Growth (%)'].replace('%', '', regex=True), errors='coerce').dropna()
+    output_path = f"{output_dir}{ticker}_revenue_yoy_change.png"
+    generate_yoy_line_chart(revenue_changes, f"{ticker} Revenue Year-over-Year Change", "Revenue YoY (%)", output_path, analyst_counts, analyst_column)
+
+def generate_eps_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts, analyst_column):
+    """
+    Generates a line chart for EPS YoY percentage change.
+
+    Args:
+        yoy_table (pd.DataFrame): Year-over-Year growth table containing EPS data.
+        ticker (str): The stock ticker symbol.
+        output_dir (str): The directory where the chart will be saved.
+        analyst_counts (pd.DataFrame): Analyst count data.
+        analyst_column (str): The column to use for analyst counts.
+    """
+    eps_changes = pd.to_numeric(yoy_table.loc['EPS Growth (%)'].replace('%', '', regex=True), errors='coerce').dropna()
+    output_path = f"{output_dir}{ticker}_eps_yoy_change.png"
+    generate_yoy_line_chart(eps_changes, f"{ticker} EPS Year-over-Year Change", "EPS YoY (%)", output_path, analyst_counts, analyst_column)
 
 
 def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
@@ -499,6 +590,11 @@ def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     # Proceed with YOY growth calculation and HTML generation using combined data
     yoy_growth_table = calculate_yoy_growth(combined_data, analyst_counts)
     save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker)
+    # Revenue YoY Change Chart
+    generate_revenue_yoy_change_chart(yoy_growth_table, ticker, 'charts/', analyst_counts, 'ForwardRevenueAnalysts')
+
+    # EPS YoY Change Chart
+    generate_eps_yoy_change_chart(yoy_growth_table, ticker, 'charts/', analyst_counts, 'ForwardEPSAnalysts')
 
     print(f"Completed generating charts and tables for {ticker}.")
 

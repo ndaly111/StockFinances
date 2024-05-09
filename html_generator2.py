@@ -100,7 +100,17 @@ def ensure_templates_exist():
                 {{ ticker_data.yoy_growth_table_html | safe }}
             </div>
         </div>
-    
+        
+        <!-- New Carousel for YoY Growth Charts -->
+        <div><br><br><h1>{{ ticker_data.ticker }} - Y/Y % Change</h1></div>
+        <div class="carousel-container">
+            <div class="carousel-item">
+                <img src="../{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue Year-over-Year Change Chart">
+            </div>
+            <div class="carousel-item">
+                <img src="../{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS Year-over-Year Change Chart">
+            </div>
+        </div>
         <div class="balance-sheet-container">
             <div class="balance-sheet-table">
                 {{ ticker_data.balance_sheet_table_html | safe }}
@@ -159,15 +169,23 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
         ticker_data = {
             'ticker': ticker,
             'company_name': company_name,  # Include the company name here
-            'ticker_info': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_ticker_info.html", "Ticker info not available"),
+            'ticker_info': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_ticker_info.html",
+                                                           "Ticker info not available"),
             'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
             'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
-            'financial_table': get_file_content_or_placeholder(os.path.join(charts_output_dir, f"{ticker}_rev_net_table.html"), "Financial table not available"),
+            'financial_table': get_file_content_or_placeholder(
+                os.path.join(charts_output_dir, f"{ticker}_rev_net_table.html"), "Financial table not available"),
             'forecast_rev_net_chart_path': f"{charts_output_dir}{ticker}_Revenue_Net_Income_Forecast.png",
             'forecast_eps_chart_path': f"{charts_output_dir}{ticker}_EPS_Forecast.png",
-            'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html", "No Year-Over-Year Growth data available"),
+            'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html",
+                                                                     "No Year-Over-Year Growth data available"),
             'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
-            'balance_sheet_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available")
+            'balance_sheet_table_html': get_file_content_or_placeholder(
+                f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available"),
+            'revenue_yoy_change_chart_path': f"{charts_output_dir}{ticker}_revenue_yoy_change.png",
+            # Add path to revenue YoY change chart
+            'eps_yoy_change_chart_path': f"{charts_output_dir}{ticker}_eps_yoy_change.png"
+            # Add path to EPS YoY change chart
         }
 
         # Create the HTML page for this specific ticker
