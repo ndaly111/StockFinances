@@ -564,37 +564,50 @@ def generate_eps_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts,
     generate_yoy_line_chart(eps_changes, f"{ticker} EPS Year-over-Year Change", "EPS YoY (%)", output_path, analyst_counts, analyst_column)
 
 
+
+
 def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
-    print("generate forecast charts and tables 13 forecasted earnings chart")
+    print(f"Generating forecast charts and tables for {ticker}...")
+
+    # Fetch financial data
     historical_data, forecast_data, analyst_counts, shares_outstanding = fetch_financial_data(ticker, db_path)
 
     # Prepare combined data for plotting
     combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker)
 
+    # Paths for placeholder and target chart filenames
+    placeholder_image_path = os.path.join(charts_output_dir, 'No_forecast_data.png')
+    revenue_forecast_path = os.path.join(charts_output_dir, f"{ticker}_Revenue_Net_Income_Forecast.png")
+    eps_forecast_path = os.path.join(charts_output_dir, f"{ticker}_EPS_Forecast.png")
+    revenue_yoy_path = os.path.join(charts_output_dir, f"{ticker}_revenue_yoy_change.png")
+    eps_yoy_path = os.path.join(charts_output_dir, f"{ticker}_eps_yoy_change.png")
+
     # Check if there is forecast data available
     if forecast_data.empty:
         print(f"No forecast data available for {ticker}.")
-        # Paths for the placeholder and target files
-        placeholder_image_path = os.path.join(charts_output_dir, 'No_forecast_data.png')
-        revenue_forecast_path = os.path.join(charts_output_dir, f"{ticker}_Revenue_Net_Income_Forecast.png")
-        eps_forecast_path = os.path.join(charts_output_dir, f"{ticker}_EPS_Forecast.png")
-
-        # Copy placeholder image to the forecast chart filenames
+        # Copy placeholders for the forecast charts
         shutil.copy(placeholder_image_path, revenue_forecast_path)
         shutil.copy(placeholder_image_path, eps_forecast_path)
+
+        # Copy placeholders for the YoY growth charts
+        shutil.copy(placeholder_image_path, revenue_yoy_path)
+        shutil.copy(placeholder_image_path, eps_yoy_path)
     else:
-        # Generate charts if forecast data is available
-        generate_financial_forecast_chart(ticker, combined_data, charts_output_dir, db_path, historical_data,
-                                          forecast_data, analyst_counts)
+        # Generate forecast charts if data is available
+        generate_financial_forecast_chart(
+            ticker, combined_data, charts_output_dir, db_path, historical_data,
+            forecast_data, analyst_counts
+        )
 
-    # Proceed with YOY growth calculation and HTML generation using combined data
-    yoy_growth_table = calculate_yoy_growth(combined_data, analyst_counts)
-    save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker)
-    # Revenue YoY Change Chart
-    generate_revenue_yoy_change_chart(yoy_growth_table, ticker, 'charts/', analyst_counts, 'ForwardRevenueAnalysts')
+        # Proceed with YoY growth calculation and charts generation
+        yoy_growth_table = calculate_yoy_growth(combined_data, analyst_counts)
+        save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker)
 
-    # EPS YoY Change Chart
-    generate_eps_yoy_change_chart(yoy_growth_table, ticker, 'charts/', analyst_counts, 'ForwardEPSAnalysts')
+        # Revenue YoY Change Chart
+        generate_revenue_yoy_change_chart(yoy_growth_table, ticker, charts_output_dir, analyst_counts, 'ForwardRevenueAnalysts')
+
+        # EPS YoY Change Chart
+        generate_eps_yoy_change_chart(yoy_growth_table, ticker, charts_output_dir, analyst_counts, 'ForwardEPSAnalysts')
 
     print(f"Completed generating charts and tables for {ticker}.")
 
