@@ -497,10 +497,10 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=
     for i, (year, value) in enumerate(zip(years, values)):
         # Create the display label based on whether the value exceeds the threshold
         if value > 95:
-            label = '95%'
+            
             display_value = 95
         elif value < -95:
-            label = '-95%'
+            
             display_value = -95
         else:
             label = f'{value:.1f}%'
