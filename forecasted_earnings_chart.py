@@ -471,8 +471,6 @@ forecast_table_name = 'ForwardFinancialData'
 #output_chart_path = 'charts/'
 
 
-
-
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -497,14 +495,15 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=
 
     # Add labels for each data point
     for i, (year, value) in enumerate(zip(years, values)):
-        label = f'{value:.1f}%'
-        y_offset = 1 if value > 0 else -1  # Adjust offset direction for positive/negative values
-        
-        if value > .95: value = 95
-        elif value < -.95: value = -95
-        # Use the clamped value
-        y_offset = value
-        ax.text(year, value + y_offset, label, ha='center', va='bottom' if value > 0 else 'top', fontsize=10)
+        # Clamp the values within the display range for labels only
+        display_value = max(min(value, 95), -95)
+        label = f'{display_value:.1f}%' if abs(display_value) < 100 else f'{int(display_value)}%'
+
+        # Adjust offset direction based on the original value (not clamped)
+        y_offset = 1 if value > 0 else -1
+
+        # Display the label with an appropriate offset for visibility
+        ax.text(year, display_value + y_offset, label, ha='center', va='bottom' if value > 0 else 'top', fontsize=10)
 
     # Set custom x-axis labels to include analyst counts where available
     if analyst_counts_df is not None and analyst_column:
