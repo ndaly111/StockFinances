@@ -4,3 +4,4 @@ matplotlib
 numpy
 jinja2
 pdfkit
+peewee
