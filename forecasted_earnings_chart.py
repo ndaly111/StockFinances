@@ -541,6 +541,7 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=
 
 
 
+
 def generate_revenue_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts, analyst_column):
     """
     Generates a line chart for Revenue YoY percentage change.
