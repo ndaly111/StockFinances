@@ -499,6 +499,11 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=
     for i, (year, value) in enumerate(zip(years, values)):
         label = f'{value:.1f}%'
         y_offset = 1 if value > 0 else -1  # Adjust offset direction for positive/negative values
+        
+        if value > 0.95: value = 0.95
+        elif value < -0.95: value = -0.95
+        # Use the clamped value
+        y_offset = value
         ax.text(year, value + y_offset, label, ha='center', va='bottom' if value > 0 else 'top', fontsize=10)
 
     # Set custom x-axis labels to include analyst counts where available
