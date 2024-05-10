@@ -474,9 +474,11 @@ forecast_table_name = 'ForwardFinancialData'
 import matplotlib.pyplot as plt
 import pandas as pd
 
+
 def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=None, analyst_column=None):
     """
-    Generates a line chart showing year-over-year (YoY) percentage changes with dynamic y-axis limits.
+    Generates a line chart showing year-over-year (YoY) percentage changes, ensuring the y-axis starts at 0.
+    Out-of-bounds values are labeled at ±95% if they exceed the 0% to 100% range.
 
     Args:
         data (pd.Series): A pandas Series containing the percentage changes.
@@ -493,25 +495,27 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=
     # Plot the data as a line graph
     ax.plot(years, values, marker='o', linestyle='-', color='blue')
 
-    # Add labels for each data point
+    # Add labels, placing out-of-bounds labels at ±95% if outside the 0-100% range
     for i, (year, value) in enumerate(zip(years, values)):
-        label = f'{value:.1f}%'
+        if value > 100:
+            label_value = 95
+            label_text = f'{value:.1f}%'
+        elif value < 0:
+            label_value = -95 if value < -100 else value
+            label_text = f'{value:.1f}%'
+        else:
+            label_value = value
+            label_text = f'{value:.1f}%'
 
-        # Adjust offset direction based on the original value (not clamped)
-        y_offset = 1 if value > 0 else -1
+        y_offset = 1 if label_value > 0 else -1  # Adjust offset direction
+        ax.text(year, label_value + y_offset, label_text, ha='center', va='bottom' if label_value > 0 else 'top', fontsize=10)
 
-        # Clamp y_offset to be within -0.95 to 0.95 if required (or -95 to 95 for larger scales)
-        if y_offset > 0.95:
-            y_offset = 0.95
-        elif y_offset < -0.95:
-            y_offset = -0.95
-
-        # Display the label at the clamped position
-        ax.text(year, value + y_offset, label, ha='center', va='bottom' if value > 0 else 'top', fontsize=10)
+    # Determine dynamic y-axis limits starting from 0, up to a maximum of 100%
+    max_y_value = min(max(values) + 5, 100)
+    min_y_value = 0
 
     # Set custom x-axis labels to include analyst counts where available
     if analyst_counts_df is not None and analyst_column:
-        # Ensure years are integers for indexing
         analyst_counts_df['Year'] = pd.to_datetime(analyst_counts_df['Date']).dt.year
         year_analysts = analyst_counts_df.groupby('Year')[analyst_column].last().to_dict()
 
@@ -522,17 +526,13 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts_df=
         ax.set_xticks(years)
         ax.set_xticklabels(x_labels)
 
+    ax.set_ylim(min_y_value, max_y_value)
+
     ax.set_title(title)
     ax.set_xlabel('Year')
     ax.set_ylabel(ylabel)
     ax.axhline(y=0, color='black', linewidth=0.8)  # Horizontal line at y=0
     ax.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # Determine dynamic y-axis limits
-    max_y_value = min(max(values) + 5, 100)  # Add a buffer, up to a maximum of 100
-    min_y_value = max(min(values) - 5, -100)  # Add a buffer to the bottom, but not below -100
-
-    ax.set_ylim(min_y_value, max_y_value)
 
     fig.tight_layout()
     plt.savefig(output_path)
