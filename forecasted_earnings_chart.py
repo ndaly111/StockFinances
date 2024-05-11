@@ -489,25 +489,24 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
     years = data.index
     values = data.values
 
+    # Calculate dynamic y-axis limits with buffer
+    min_y_value = min(min(values), 0)  # Ensure zero is always visible
+    max_y_value = max(values) + 5  # Add a small buffer
+    ax.set_ylim(min_y_value - 5, max_y_value)  # Ensure labels are within the frame
+
     # Plot the data as a line graph
     ax.plot(years, values, marker='o', linestyle='-', color='blue')
 
-    # Dynamic y-axis limits
-    max_y_value = min(max(values) + 5, 100)  # Limit to 100
-    min_y_value = 0  # Always start at zero
-
-    ax.set_ylim(min_y_value, max(max_y_value, min(values)))  # Set dynamic range
-
     # Add labels for each data point
     for i, (year, value) in enumerate(zip(years, values)):
-        label = f'{value:.1f}%'
-        y_offset = 1 if value > 0 else -1  # Adjust offset direction based on value sign
-        label_position = value + y_offset
-        if value > max_y_value:
-            label_position = max_y_value * 0.95  # Adjust label to be within bounds
-        elif value < min_y_value:
-            label_position = min_y_value * 1.05  # Adjust label to be within bounds
-        ax.text(year, label_position, label, ha='center', va='bottom' if value >= 0 else 'top', fontsize=10)
+        # Adjust label position to be inside the chart area
+        if value > max_y_value - 5:
+            label_pos = max_y_value - 5
+        elif value < min_y_value + 5:
+            label_pos = min_y_value + 5
+        else:
+            label_pos = value
+        ax.text(year, label_pos, f'{value:.1f}%', ha='center', va='bottom' if value >= 0 else 'top', fontsize=10)
 
     # Set custom x-axis labels to include analyst counts where available
     if analyst_counts is not None and analyst_column:
@@ -526,6 +525,7 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
     plt.close(fig)
     print(f"Chart saved to {output_path}")
 
+# Usage of the function would follow similar patterns as before, ensuring data is passed correctly.
 
 
 
