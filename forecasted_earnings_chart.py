@@ -470,8 +470,10 @@ historical_table_name = 'Annual_Data'
 forecast_table_name = 'ForwardFinancialData'
 #output_chart_path = 'charts/'
 
+
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np  # Needed for checking NaNs and infinity
 
 def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=None, analyst_column=None):
     """
@@ -489,23 +491,27 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
     years = data.index
     values = data.values
 
+    # Ensure no NaN or Inf values in the dataset for plotting
+    if np.any(np.isnan(values)) or np.isinf(np.max(values)) or np.isinf(np.min(values)):
+        print("Data contains NaN or Inf values. Adjusting data for plotting.")
+        values = np.nan_to_num(values, nan=0.0, posinf=np.max(values[np.isfinite(values)]), neginf=np.min(values[np.isfinite(values)]))
+
     # Calculate dynamic y-axis limits with buffer
     min_y_value = min(min(values), 0)  # Ensure zero is always visible
     max_y_value = max(values) + 5  # Add a small buffer
-    ax.set_ylim(min_y_value - 5, max_y_value)  # Ensure labels are within the frame
+
+    # Set y-axis limits ensuring they are valid
+    if not np.isnan(min_y_value) and not np.isnan(max_y_value) and not np.isinf(min_y_value) and not np.isinf(max_y_value):
+        ax.set_ylim(min_y_value - 5, max_y_value)
+    else:
+        ax.set_ylim(0, 100)  # Default to 0-100 if calculated limits are not valid
 
     # Plot the data as a line graph
     ax.plot(years, values, marker='o', linestyle='-', color='blue')
 
     # Add labels for each data point
     for i, (year, value) in enumerate(zip(years, values)):
-        # Adjust label position to be inside the chart area
-        if value > max_y_value - 5:
-            label_pos = max_y_value - 5
-        elif value < min_y_value + 5:
-            label_pos = min_y_value + 5
-        else:
-            label_pos = value
+        label_pos = value  # Adjust label position
         ax.text(year, label_pos, f'{value:.1f}%', ha='center', va='bottom' if value >= 0 else 'top', fontsize=10)
 
     # Set custom x-axis labels to include analyst counts where available
@@ -524,9 +530,6 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
     plt.savefig(output_path)
     plt.close(fig)
     print(f"Chart saved to {output_path}")
-
-# Usage of the function would follow similar patterns as before, ensuring data is passed correctly.
-
 
 
 
