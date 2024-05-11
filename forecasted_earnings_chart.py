@@ -470,7 +470,6 @@ historical_table_name = 'Annual_Data'
 forecast_table_name = 'ForwardFinancialData'
 #output_chart_path = 'charts/'
 
-
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -493,14 +492,22 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
     # Plot the data as a line graph
     ax.plot(years, values, marker='o', linestyle='-', color='blue')
 
-    # Set dynamic y-axis limits
-    min_y_value = 0  # Start at zero or more
+    # Dynamic y-axis limits
     max_y_value = min(max(values) + 5, 100)  # Limit to 100
-    ax.set_ylim(min_y_value, max_y_value)
+    min_y_value = 0  # Always start at zero
+
+    ax.set_ylim(min_y_value, max(max_y_value, min(values)))  # Set dynamic range
 
     # Add labels for each data point
     for i, (year, value) in enumerate(zip(years, values)):
-        ax.text(year, value, f'{value:.1f}%', ha='center', va='bottom' if value >= 0 else 'top', fontsize=10)
+        label = f'{value:.1f}%'
+        y_offset = 1 if value > 0 else -1  # Adjust offset direction based on value sign
+        label_position = value + y_offset
+        if value > max_y_value:
+            label_position = max_y_value * 0.95  # Adjust label to be within bounds
+        elif value < min_y_value:
+            label_position = min_y_value * 1.05  # Adjust label to be within bounds
+        ax.text(year, label_position, label, ha='center', va='bottom' if value >= 0 else 'top', fontsize=10)
 
     # Set custom x-axis labels to include analyst counts where available
     if analyst_counts is not None and analyst_column:
