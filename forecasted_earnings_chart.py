@@ -497,7 +497,9 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
         values = np.nan_to_num(values, nan=0.0, posinf=np.max(values[np.isfinite(values)]), neginf=np.min(values[np.isfinite(values)]))
 
     # Calculate dynamic y-axis limits with buffer
+    # try if max > 100 than 100, else max+5
     min_y_value = min(min(values), 0)  # Ensure zero is always visible
+    # if min > -100 than -100 else min
     max_y_value = max(values) + 5  # Add a small buffer
 
     # Set y-axis limits ensuring they are valid
@@ -511,6 +513,7 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
 
     # Add labels for each data point
     for i, (year, value) in enumerate(zip(years, values)):
+        #if value > 95 than label_pos = 95, if value < -95 than label_pos = -95
         label_pos = value  # Adjust label position
         ax.text(year, label_pos, f'{value:.1f}%', ha='center', va='bottom' if value >= 0 else 'top', fontsize=10)
 
