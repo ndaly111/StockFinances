@@ -587,6 +587,7 @@ def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     revenue_yoy_path = os.path.join(charts_output_dir, f"{ticker}_revenue_yoy_change.png")
     eps_yoy_path = os.path.join(charts_output_dir, f"{ticker}_eps_yoy_change.png")
 
+
     # Check if there is forecast data available
     if forecast_data.empty:
         print(f"No forecast data available for {ticker}.")

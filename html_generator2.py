@@ -121,10 +121,13 @@ def ensure_templates_exist():
             </div>
         </div>
         <hr>
+        {% if ticker_data.valuation_chart %}
         <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
         <div><br>
-        <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
-        <br><br><br><hr></div>
+            <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
+            <br><br><br><hr></div>
+        {% endif %}
+
     
         <footer>
             <a href="../index.html" class="home-button">Back to Home</a>
@@ -168,35 +171,34 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
     cursor = conn.cursor()
 
     for ticker in tickers:
-        # Retrieve the company's short name from the database
         company_name = get_company_short_name(ticker, cursor)
 
-        # Prepare data for the individual ticker
+        valuation_chart_path = f"{charts_output_dir}{ticker}_valuation_chart.png"
+        # Check if the valuation chart exists
+        if os.path.exists(valuation_chart_path):
+            valuation_chart = valuation_chart_path
+        else:
+            valuation_chart = None  # Or provide a path to a default placeholder image
+
         ticker_data = {
             'ticker': ticker,
-            'company_name': company_name,  # Include the company name here
-            'ticker_info': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_ticker_info.html",
-                                                           "Ticker info not available"),
+            'company_name': company_name,
+            'ticker_info': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_ticker_info.html", "Ticker info not available"),
             'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
             'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
-            'financial_table': get_file_content_or_placeholder(
-                os.path.join(charts_output_dir, f"{ticker}_rev_net_table.html"), "Financial table not available"),
+            'financial_table': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_rev_net_table.html", "Financial table not available"),
             'forecast_rev_net_chart_path': f"{charts_output_dir}{ticker}_Revenue_Net_Income_Forecast.png",
             'forecast_eps_chart_path': f"{charts_output_dir}{ticker}_EPS_Forecast.png",
-            'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html",
-                                                                     "No Year-Over-Year Growth data available"),
+            'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html", "No Year-Over-Year Growth data available"),
             'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
-            'balance_sheet_table_html': get_file_content_or_placeholder(
-                f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available"),
+            'balance_sheet_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available"),
             'revenue_yoy_change_chart_path': f"{charts_output_dir}{ticker}_revenue_yoy_change.png",
-            # Add path to revenue YoY change chart
             'eps_yoy_change_chart_path': f"{charts_output_dir}{ticker}_eps_yoy_change.png",
-            # Add path to EPS YoY change chart
-            'valuation_chart': f"{charts_output_dir}{ticker}_valuation_chart.png"
+            'valuation_chart': valuation_chart
         }
 
-        # Create the HTML page for this specific ticker
         create_ticker_page(ticker, ticker_data, output_dir)
+
 
 def get_file_content_or_placeholder(file_path, placeholder="No data available"):
     print(f"Retrieving content from {file_path} or using placeholder...")
