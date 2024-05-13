@@ -280,7 +280,7 @@ def main():
             prepared_data = prepare_data_for_display(ticker, treasury_yield)
 
             generate_html_table(prepared_data, ticker)
-            valuation_update(ticker, cursor)
+            valuation_update(ticker, cursor, treasury_yield)
 
             print("generating HTML2")
             # Call html_generator2 function after all tickers have been processed
