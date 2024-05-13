@@ -472,22 +472,14 @@ forecast_table_name = 'ForwardFinancialData'
 
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-import numpy as np  # Needed for checking NaNs and infinity
 
-def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=None, analyst_column=None):
+def generate_yoy_line_chart(chart_type, data, title, ylabel, output_path, analyst_counts=None, analyst_column=None):
     """
     Generates a line chart showing year-over-year (YoY) percentage changes with dynamic y-axis limits.
-
-    Args:
-        data (pd.Series): A pandas Series containing the percentage changes.
-        title (str): The title of the chart.
-        ylabel (str): The label for the y-axis.
-        output_path (str): The path where the chart image will be saved.
-        analyst_counts (pd.DataFrame, optional): DataFrame with analyst count data.
-        analyst_column (str, optional): Column name to use for analyst counts.
     """
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 5))
     years = data.index
     values = data.values
 
@@ -496,35 +488,41 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
         print("Data contains NaN or Inf values. Adjusting data for plotting.")
         values = np.nan_to_num(values, nan=0.0, posinf=np.max(values[np.isfinite(values)]), neginf=np.min(values[np.isfinite(values)]))
 
-    # Calculate dynamic y-axis limits with buffer
-    # try if max > 100 than 100, else max+5
-    min_y_value = min(min(values), 0)  # Ensure zero is always visible
-    # if min > -100 than -100 else min
-    max_y_value = max(values) + 5  # Add a small buffer
+    # Determine colors based on the chart type
+    historical_color = 'blue' if chart_type == "revenue" else 'green'
+    forecast_color = 'grey'
 
-    # Set y-axis limits ensuring they are valid
-    if not np.isnan(min_y_value) and not np.isnan(max_y_value) and not np.isinf(min_y_value) and not np.isinf(max_y_value):
-        ax.set_ylim(min_y_value - 5, max_y_value)
-    else:
-        ax.set_ylim(0, 100)  # Default to 0-100 if calculated limits are not valid
+    # Determine which years are considered forecast
+    forecast_years = analyst_counts['Year'].values if analyst_counts is not None and analyst_column else []
 
-    # Plot the data as a line graph
-    ax.plot(years, values, marker='o', linestyle='-', color='blue')
+    # Plot each segment with the appropriate color
+    for i in range(len(years) - 1):
+        if years[i] in forecast_years or years[i+1] in forecast_years:
+            color = forecast_color
+        else:
+            color = historical_color
+        ax.plot(years[i:i+2], values[i:i+2], marker='o', linestyle='-', color=color)
+
+    # Calculate and set dynamic y-axis limits with buffer
+    buffer = 5
+    min_y_value = max(min(values) - buffer, -95)
+    max_y_value = min(max(values) + buffer, 95)
+    ax.set_ylim(min_y_value, max_y_value)
 
     # Add labels for each data point
     for i, (year, value) in enumerate(zip(years, values)):
-        #if value > 95 than label_pos = 95, if value < -95 than label_pos = -95
-        label_pos = value  # Adjust label position
+        label_pos = max(min(value +2, 90), -90)  # Clamp label position within -90% to +90%
         ax.text(year, label_pos, f'{value:.1f}%', ha='center', va='bottom' if value >= 0 else 'top', fontsize=10)
 
-    # Set custom x-axis labels to include analyst counts where available
-    if analyst_counts is not None and analyst_column:
-        x_labels = [f"{year}* ({analyst_counts.loc[analyst_counts['Year'] == year, analyst_column].iloc[0] if year in analyst_counts['Year'].values else 'N/A'})" for year in years]
-        ax.set_xticks(years)
-        ax.set_xticklabels(x_labels)
+    # Set custom x-axis labels
+    x_labels = [
+        f"{year}* ({analyst_counts.loc[analyst_counts['Year'] == year, analyst_column].iloc[0]})" if year in forecast_years else str(
+            year) for year in years]
+    ax.set_xticks(years)
+    ax.set_xticklabels(x_labels)
 
     ax.set_title(title)
-    ax.set_xlabel('Year')
+    ax.set_xlabel('Year | * = Forecasted Data')
     ax.set_ylabel(ylabel)
     ax.axhline(y=0, color='black', linewidth=0.8)  # Horizontal line at y=0
     ax.grid(axis='y', linestyle='--', alpha=0.7)
@@ -533,6 +531,7 @@ def generate_yoy_line_chart(data, title, ylabel, output_path, analyst_counts=Non
     plt.savefig(output_path)
     plt.close(fig)
     print(f"Chart saved to {output_path}")
+
 
 
 
@@ -548,9 +547,10 @@ def generate_revenue_yoy_change_chart(yoy_table, ticker, output_dir, analyst_cou
         analyst_counts (pd.DataFrame): Analyst count data.
         analyst_column (str): The column to use for analyst counts.
     """
+    chart_type = "revenue"
     revenue_changes = pd.to_numeric(yoy_table.loc['Revenue Growth (%)'].replace('%', '', regex=True), errors='coerce').dropna()
     output_path = f"{output_dir}{ticker}_revenue_yoy_change.png"
-    generate_yoy_line_chart(revenue_changes, f"{ticker} Revenue Year-over-Year Change", "Revenue YoY (%)", output_path, analyst_counts, analyst_column)
+    generate_yoy_line_chart(chart_type, revenue_changes, f"{ticker} Revenue Year-over-Year Change", "Revenue YoY (%)", output_path, analyst_counts, analyst_column)
 
 def generate_eps_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts, analyst_column):
     """
@@ -563,9 +563,10 @@ def generate_eps_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts,
         analyst_counts (pd.DataFrame): Analyst count data.
         analyst_column (str): The column to use for analyst counts.
     """
+    chart_type = "eps"
     eps_changes = pd.to_numeric(yoy_table.loc['EPS Growth (%)'].replace('%', '', regex=True), errors='coerce').dropna()
     output_path = f"{output_dir}{ticker}_eps_yoy_change.png"
-    generate_yoy_line_chart(eps_changes, f"{ticker} EPS Year-over-Year Change", "EPS YoY (%)", output_path, analyst_counts, analyst_column)
+    generate_yoy_line_chart(chart_type,eps_changes, f"{ticker} EPS Year-over-Year Change", "EPS YoY (%)", output_path, analyst_counts, analyst_column)
 
 
 
