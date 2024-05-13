@@ -173,19 +173,14 @@ def valuation_update(ticker, cursor, treasury_yield):
     db_path = "Stock Data.db"
     """Updates the Finviz 5-year EPS growth data for the given ticker and determines the valuation method."""
     finviz_five_yr(ticker, cursor)
-    combined_data, growth_value, current_price = fetch_financial_valuation_data(ticker,
-                                                                                db_path)  # Ensure this function returns combined_data
+    combined_data, growth_value, current_price = fetch_financial_valuation_data(ticker, db_path)  # Ensure this function returns combined_data
 
     # Check if growth values are present
-    if pd.isna(growth_value['nicks_growth_rate'].iloc[0]) and pd.isna(growth_value['FINVIZ_5yr_gwth'].iloc[0]):
-        print("Growth values are missing. Skipping valuation.")
-    else:
-        valuation_method = determine_valuation_method(
-            combined_data)  # Use the combined_data to determine the valuation method
+    if not growth_value.empty and not (pd.isna(growth_value['nicks_growth_rate'].iloc[0]) and pd.isna(growth_value['FINVIZ_5yr_gwth'].iloc[0])):
+        valuation_method = determine_valuation_method(combined_data)  # Use the combined_data to determine the valuation method
         print(f"Valuation Method for {ticker}: {valuation_method}")
         if valuation_method == "eps valuation":
             valuation_data = calculate_fair_pe(combined_data, growth_value, treasury_yield)
             plot_valuation_chart(valuation_data, current_price, ticker, growth_value)
-
-
-
+    else:
+        print("Growth values are missing. Skipping valuation.")
