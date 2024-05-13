@@ -28,7 +28,7 @@ from valuation_update import valuation_update
 
 
 # Constants
-TICKERS_FILE_PATH = 'tickers.csv'
+TICKERS_FILE_PATH = 'tickers aapl.csv'
 db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'index.html'
@@ -297,7 +297,7 @@ def main():
 
             generate_html_table(prepared_data, ticker)
 
-            valuation_update(ticker, cursor)
+            valuation_update(ticker, cursor, treasury_yield)
 
 
 

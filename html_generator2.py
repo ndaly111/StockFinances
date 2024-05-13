@@ -121,7 +121,10 @@ def ensure_templates_exist():
             </div>
         </div>
         <hr>
-
+        <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
+        <div><br>
+        <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
+        <br><br><br><hr></div>
     
         <footer>
             <a href="../index.html" class="home-button">Back to Home</a>
@@ -187,8 +190,9 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
                 f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available"),
             'revenue_yoy_change_chart_path': f"{charts_output_dir}{ticker}_revenue_yoy_change.png",
             # Add path to revenue YoY change chart
-            'eps_yoy_change_chart_path': f"{charts_output_dir}{ticker}_eps_yoy_change.png"
+            'eps_yoy_change_chart_path': f"{charts_output_dir}{ticker}_eps_yoy_change.png",
             # Add path to EPS YoY change chart
+            'valuation_chart': f"{charts_output_dir}{ticker}_valuation_chart.png"
         }
 
         # Create the HTML page for this specific ticker
