@@ -125,7 +125,13 @@ def ensure_templates_exist():
         <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
         <div><br>
             <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
-            <br><br><br><hr></div>
+            <br><br>
+            <div class="valuation-tables">
+                {{ ticker_data.valuation_info_table | safe }}
+                {{ ticker_data.valuation_data_table | safe }}
+            </div>
+            <br><br><br><hr>
+        </div>
         {% endif %}
 
     
@@ -183,18 +189,26 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
         ticker_data = {
             'ticker': ticker,
             'company_name': company_name,
-            'ticker_info': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_ticker_info.html", "Ticker info not available"),
+            'ticker_info': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_ticker_info.html",
+                                                           "Ticker info not available"),
             'revenue_net_income_chart_path': f"{charts_output_dir}{ticker}_revenue_net_income_chart.png",
             'eps_chart_path': f"{charts_output_dir}{ticker}_eps_chart.png",
-            'financial_table': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_rev_net_table.html", "Financial table not available"),
+            'financial_table': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_rev_net_table.html",
+                                                               "Financial table not available"),
             'forecast_rev_net_chart_path': f"{charts_output_dir}{ticker}_Revenue_Net_Income_Forecast.png",
             'forecast_eps_chart_path': f"{charts_output_dir}{ticker}_EPS_Forecast.png",
-            'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html", "No Year-Over-Year Growth data available"),
+            'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_yoy_growth_tbl.html",
+                                                                     "No Year-Over-Year Growth data available"),
             'balance_sheet_chart_path': f"{charts_output_dir}{ticker}_balance_sheet_chart.png",
-            'balance_sheet_table_html': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available"),
+            'balance_sheet_table_html': get_file_content_or_placeholder(
+                f"{charts_output_dir}{ticker}_balance_sheet_table.html", "Balance sheet data not available"),
             'revenue_yoy_change_chart_path': f"{charts_output_dir}{ticker}_revenue_yoy_change.png",
             'eps_yoy_change_chart_path': f"{charts_output_dir}{ticker}_eps_yoy_change.png",
-            'valuation_chart': valuation_chart
+            'valuation_chart': valuation_chart,
+            'valuation_info_table': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_valuation_info.html",
+                                                                    "Valuation info not available"),
+            'valuation_data_table': get_file_content_or_placeholder(f"{charts_output_dir}{ticker}_valuation_table.html",
+                                                                    "Valuation data not available")
         }
 
         create_ticker_page(ticker, ticker_data, output_dir)

@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 def finviz_five_yr(ticker, cursor):
     """Fetches and stores the 5-year EPS growth percentage from Finviz into the database."""
@@ -16,7 +17,6 @@ def finviz_five_yr(ticker, cursor):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
-        # XPath equivalent: //td[text()='EPS next 5Y']/following-sibling::td
         estimate_cell = soup.find('td', text='EPS next 5Y')
         if estimate_cell:
             next_td = estimate_cell.find_next_sibling('td')
@@ -36,7 +36,6 @@ def finviz_five_yr(ticker, cursor):
             print(f"Could not find the 5-year EPS growth estimate for {ticker} on Finviz.")
     else:
         print(f"Failed to retrieve Finviz data for {ticker}, status code: {response.status_code}")
-
 
 def fetch_financial_valuation_data(ticker, db_path):
     print(f"Fetching financial valuation data for: {ticker}")
@@ -74,31 +73,19 @@ def fetch_financial_valuation_data(ticker, db_path):
         WHERE ticker = ?;
         """
         growth_value = pd.read_sql_query(growth_query, conn, params=(ticker,))
-        print("growth value",growth_value)
-
+        print("growth value", growth_value)
 
         # Combine TTM and forecast data into a single DataFrame
         combined_data = pd.concat([ttm_data, forecast_data]).reset_index(drop=True)
 
         return combined_data, growth_value, current_price
 
-
 def determine_valuation_method(combined_data):
-    """
-    Determines the valuation method based on the EPS values in the combined data.
-
-    Args:
-        combined_data (pd.DataFrame): DataFrame containing the combined financial data including EPS.
-
-    Returns:
-        str: The valuation method based on EPS.
-    """
-    # Check if the DataFrame is empty or if the EPS column doesn't exist
+    """Determines the valuation method based on the EPS values in the combined data."""
     if combined_data.empty or 'EPS' not in combined_data.columns:
         print("No data available to determine the valuation method.")
         return None
 
-    # Check the EPS values in the first two rows
     if len(combined_data) >= 2 and all(combined_data.loc[:1, 'EPS'] < 0):
         print("First two EPS values are negative. Using sales valuation method.")
         return "sales valuation"
@@ -107,30 +94,24 @@ def determine_valuation_method(combined_data):
         return "eps valuation"
 
 def calculate_fair_pe(combined_data, growth_values, treasury_yield):
-    # Ensure treasury_yield is a float
-    treasury_yield = (float(treasury_yield)/100)
+    treasury_yield = (float(treasury_yield) / 100)
     print('treasury yield', treasury_yield)
 
-    # Handle possible None values and ensure type correctness
-    nicks_growth_rate = float(growth_values['nicks_growth_rate'].iloc[0] if growth_values['nicks_growth_rate'].iloc[0] is not None else 0)
-    nicks_growth_rate = nicks_growth_rate/100
-    finviz_growth_rate = float(growth_values['FINVIZ_5yr_gwth'].iloc[0] if growth_values['FINVIZ_5yr_gwth'].iloc[0] is not None else 0)
-    finviz_growth_rate = finviz_growth_rate/100
-    # Calculate fair P/E ratios
-    nicks_fair_pe = ((nicks_growth_rate - treasury_yield + 1)**10) * 10
-    print("nicks fair pe",nicks_fair_pe)
-    finviz_fair_pe = ((finviz_growth_rate - treasury_yield + 1)**10) * 10
+    nicks_growth_rate = float(growth_values['nicks_growth_rate'].iloc[0] if growth_values['nicks_growth_rate'].iloc[0] is not None else 0) / 100
+    finviz_growth_rate = float(growth_values['FINVIZ_5yr_gwth'].iloc[0] if growth_values['FINVIZ_5yr_gwth'].iloc[0] is not None else 0) / 100
+
+    nicks_fair_pe = ((nicks_growth_rate - treasury_yield + 1) ** 10) * 10
+    print("nicks fair pe", nicks_fair_pe)
+    finviz_fair_pe = ((finviz_growth_rate - treasury_yield + 1) ** 10) * 10
     print("finviz fair pe", finviz_fair_pe)
 
-    # Calculate valuations
     combined_data['Nicks_Valuation'] = combined_data['EPS'] * nicks_fair_pe
     combined_data['Finviz_Valuation'] = combined_data['EPS'] * finviz_fair_pe
 
     print("Valuation calculations based on EPS valuation method:")
     print(combined_data[['Year', 'Nicks_Valuation', 'Finviz_Valuation']])
 
-    return combined_data[['Year', 'Nicks_Valuation', 'Finviz_Valuation']]
-
+    return combined_data[['Year', 'Nicks_Valuation', 'Finviz_Valuation']], nicks_fair_pe, finviz_fair_pe
 
 def plot_valuation_chart(valuation_data, current_price, ticker, growth_value):
     """
@@ -144,12 +125,10 @@ def plot_valuation_chart(valuation_data, current_price, ticker, growth_value):
 
     # Plotting the valuation lines if the growth values are not None
     if not pd.isna(growth_value['nicks_growth_rate'].iloc[0]):
-        ax.plot(valuation_data['Year'], valuation_data['Nicks_Valuation'], label='Nicks Valuation', color='blue',
-                marker='o')
+        ax.plot(valuation_data['Year'], valuation_data['Nicks_Valuation'], label='Nicks Valuation', color='blue', marker='o')
 
     if not pd.isna(growth_value['FINVIZ_5yr_gwth'].iloc[0]):
-        ax.plot(valuation_data['Year'], valuation_data['Finviz_Valuation'], label='Finviz Valuation', color='green',
-                marker='o')
+        ax.plot(valuation_data['Year'], valuation_data['Finviz_Valuation'], label='Finviz Valuation', color='green', marker='o')
 
     # Adding a scatter plot for the current price at all points for visual comparison
     ax.plot(valuation_data['Year'], [current_price] * len(valuation_data), color='orange', label='Current Price')
@@ -169,23 +148,119 @@ def plot_valuation_chart(valuation_data, current_price, ticker, growth_value):
     plt.close()
 
 
+import yfinance as yf
+
+def format_number(value):
+    """Formats numbers to billions, millions, or thousands with appropriate suffixes."""
+    if value >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
+    elif value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M"
+    elif value >= 1_000:
+        return f"{value / 1_000:.2f}K"
+    else:
+        return f"{value:.2f}"
+
+def format_currency(value):
+    """Formats numbers as currency with billions, millions, or thousands with appropriate suffixes."""
+    if value >= 1_000_000_000:
+        return f"${value / 1_000_000_000:.2f}B"
+    elif value >= 1_000_000:
+        return f"${value / 1_000_000:.2f}M"
+    elif value >= 1_000:
+        return f"${value / 1_000:.2f}K"
+    else:
+        return f"${value:.2f}"
+
+def fetch_stock_data(ticker):
+    stock = yf.Ticker(ticker)
+    current_price = stock.info.get('currentPrice')
+    forward_eps = stock.info.get('forwardEps')
+    pe_ratio = stock.info.get('trailingPE', None)
+    price_to_sales = stock.info.get('priceToSalesTrailing12Months', None)
+    forward_pe_ratio = current_price / forward_eps if forward_eps else None
+
+    return current_price, pe_ratio, price_to_sales, forward_pe_ratio
+
+def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_pe, finviz_fair_pe, valuation_method):
+    # Ensure treasury_yield is a float
+    treasury_yield = float(treasury_yield)
+
+    # Fetch stock data
+    current_price, pe_ratio, price_to_sales, forward_pe_ratio = fetch_stock_data(ticker)
+
+    # Format the necessary values
+    current_price_formatted = f"${current_price:.2f}"
+    nicks_fair_pe_formatted = f"{nicks_fair_pe:.0f}"
+    finviz_fair_pe_formatted = f"{finviz_fair_pe:.0f}"
+    treasury_yield_formatted = f"{treasury_yield:.1f}%"
+    nicks_growth_rate_formatted = f"{growth_values['nicks_growth_rate'].iloc[0]:.0f}%"
+    finviz_growth_rate_formatted = f"{growth_values['FINVIZ_5yr_gwth'].iloc[0]:.0f}%"
+
+    if valuation_method == "eps valuation":
+        current_valuation_metric = f"{pe_ratio:.1f}" if pe_ratio else "N/A"
+        valuation_metric_label = "Current P/E"
+    else:
+        current_valuation_metric = f"{price_to_sales:.1f}" if price_to_sales else "N/A"
+        valuation_metric_label = "Current P/S"
+
+    table_1_data = {
+        "Share Price": [current_price_formatted],
+        "Growth Rate": [f"Nicks: {nicks_growth_rate_formatted} Finviz: {finviz_growth_rate_formatted}"],
+        "Treasury Yield": [treasury_yield_formatted],
+        "Fair P/E": [f"Nicks: {nicks_fair_pe_formatted} Finviz: {finviz_fair_pe_formatted}"],
+        valuation_metric_label: [current_valuation_metric]
+    }
+    table_1_df = pd.DataFrame(table_1_data)
+
+    table_1_html = table_1_df.to_html(index=False, escape=False)
+    table_1_path = os.path.join('charts', f"{ticker}_valuation_info.html")
+    with open(table_1_path, "w") as file:
+        file.write(table_1_html)
+
+    # Apply formatting to valuation data
+    combined_data['Nicks_Valuation'] = combined_data['Nicks_Valuation'].apply(format_currency)
+    combined_data['Finviz_Valuation'] = combined_data['Finviz_Valuation'].apply(format_currency)
+    combined_data['Nicks vs Share Price'] = combined_data['Nicks_Valuation'].apply(lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
+    combined_data['Finviz vs Share Price'] = combined_data['Finviz_Valuation'].apply(lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
+
+    if valuation_method == "eps valuation":
+        combined_data['Basis'] = combined_data['EPS'].apply(lambda x: f"{x:.2f} EPS" if pd.notna(x) else "")
+    else:  # sales valuation
+        combined_data['Basis'] = combined_data['Revenue'].apply(lambda x: f"{x:.2f} Revenue" if pd.notna(x) else "")
+
+    table_2_data = {
+        "Basis": combined_data['Basis'],
+        "Year": combined_data['Year'],
+        "Nicks Valuation": combined_data['Nicks_Valuation'],
+        "Nicks vs Share Price": combined_data['Nicks vs Share Price'],
+        "Finviz Valuation": combined_data['Finviz_Valuation'],
+        "Finviz vs Share Price": combined_data['Finviz vs Share Price']
+    }
+    table_2_df = pd.DataFrame(table_2_data)
+
+    table_2_html = table_2_df.to_html(index=False, escape=False)
+    table_2_path = os.path.join('charts', f"{ticker}_valuation_table.html")
+    with open(table_2_path, "w") as file:
+        file.write(table_2_html)
+
+    print(f"Saved valuation info to {table_1_path} and valuation table to {table_2_path}")
+
 def valuation_update(ticker, cursor, treasury_yield):
     db_path = "Stock Data.db"
     """Updates the Finviz 5-year EPS growth data for the given ticker and determines the valuation method."""
     finviz_five_yr(ticker, cursor)
-    combined_data, growth_value, current_price = fetch_financial_valuation_data(ticker,
-                                                                                db_path)  # Ensure this function returns combined_data
+    combined_data, growth_values, current_price = fetch_financial_valuation_data(ticker, db_path)
 
-    # Check if growth values are present
-    if pd.isna(growth_value['nicks_growth_rate'].iloc[0]) and pd.isna(growth_value['FINVIZ_5yr_gwth'].iloc[0]):
-        print("Growth values are missing. Skipping valuation.")
+    if growth_values.empty or pd.isna(growth_values['nicks_growth_rate'].iloc[0]) or pd.isna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
+        print("Growth values are missing or not valid. Skipping valuation.")
     else:
-        valuation_method = determine_valuation_method(
-            combined_data)  # Use the combined_data to determine the valuation method
+        valuation_method = determine_valuation_method(combined_data)
         print(f"Valuation Method for {ticker}: {valuation_method}")
         if valuation_method == "eps valuation":
-            valuation_data = calculate_fair_pe(combined_data, growth_value, treasury_yield)
-            plot_valuation_chart(valuation_data, current_price, ticker, growth_value)
-
+            valuation_data, nicks_fair_pe, finviz_fair_pe = calculate_fair_pe(combined_data, growth_values, treasury_yield)
+            plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
+            generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price,
+                                      nicks_fair_pe, finviz_fair_pe, valuation_method)
 
 
