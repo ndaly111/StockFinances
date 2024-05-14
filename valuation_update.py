@@ -206,8 +206,8 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
 
     table_1_data = {
         "Share Price": [current_price_formatted],
-        "Growth Rate": [f"Nicks: {nicks_growth_rate_formatted} Finviz: {finviz_growth_rate_formatted}"],
         "Treasury Yield": [treasury_yield_formatted],
+        "Growth Rate": [f"Nicks: {nicks_growth_rate_formatted} Finviz: {finviz_growth_rate_formatted}"],
         "Fair P/E": [f"Nicks: {nicks_fair_pe_formatted} Finviz: {finviz_fair_pe_formatted}"],
         valuation_metric_label: [current_valuation_metric]
     }
