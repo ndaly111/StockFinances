@@ -28,7 +28,7 @@ from valuation_update import valuation_update
 
 
 # Constants
-TICKERS_FILE_PATH = 'tickers aapl.csv'
+TICKERS_FILE_PATH = 'tickers.csv'
 db_path = 'Stock Data.db'
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'index.html'
