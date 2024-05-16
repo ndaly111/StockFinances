@@ -304,3 +304,5 @@ def valuation_update(ticker, cursor, treasury_yield):
             plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
             generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price,
                                       nicks_fair_ps, finviz_fair_ps, valuation_method)
+
+
