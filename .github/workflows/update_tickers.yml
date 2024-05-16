@@ -1,32 +1,57 @@
-name: Deploy GitHub Pages
+name: Deploy Update Form
 
 on:
   push:
     branches:
       - main  # Or any branch you want to trigger the deployment
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Grants permission to push changes
 
 jobs:
-  deploy:
+  deploy-form:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt  # If you have dependencies, otherwise remove this step
+
       - name: Setup Pages Directory
         run: |
           mkdir -p public
           cp update_form.html public/index.html
 
-      - name: Deploy to GitHub Pages
-        env:
-          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+      - name: Set up Git identity
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git clone --depth 1 --branch gh-pages https://github.com/${{ github.repository }} gh-pages || git init gh-pages
-          cd gh-pages
-          cp -r ../public/* ./
-          git add .
-          git commit -m "Deploy GitHub Pages" || echo "No changes to commit"
-          git push https://${ACTIONS_DEPLOY_KEY}@github.com/${{ github.repository }} gh-pages
+          git config --global user.name 'ndaly111'
+          git config --global user.email 'ndaly111@gmail.com'
+
+      - name: Checkout gh-pages branch
+        run: |
+          git fetch origin
+          git checkout gh-pages || git checkout --orphan gh-pages
+
+      - name: Copy files to gh-pages branch
+        run: |
+          cp -r public/* .
+
+      - name: Add all changes to gh-pages
+        run: |
+          git add .  # This will add all new and modified files to the commit
+          git commit -m "Update website content" --allow-empty  # This commits the changes
+
+      - name: Push changes to gh-pages
+        run: git push origin gh-pages --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
