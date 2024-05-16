@@ -76,18 +76,13 @@
         <p id="message"></p>
     </div>
     <script>
-        async function dispatchEvent(eventType, payload) {
-            const response = await fetch('https://api.github.com/repos/ndaly111/StockFinances/dispatches', {
+        async function submitForm(url, data) {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': 'Update_Database',  // Replace with your actual PAT for debugging
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    event_type: eventType,
-                    client_payload: payload
-                })
+                body: JSON.stringify(data)
             });
 
             return response;
@@ -98,7 +93,7 @@
             const action = document.getElementById('action').value;
             const ticker = document.getElementById('ticker').value.toUpperCase();
 
-            const response = await dispatchEvent('manage_ticker', { action, ticker });
+            const response = await submitForm('/manage_ticker', { action, ticker });
 
             if (response.ok) {
                 document.getElementById('message').textContent = 'Update dispatched successfully.';
@@ -114,9 +109,9 @@
             event.preventDefault();
             const ticker = document.getElementById('update_ticker').value.toUpperCase();
             const growth_rate = document.getElementById('growth_rate').value;
-            const profit_margin = document.getElementById('profit_margin').value;
+            const profit_margin = document.getElementById('profit_margin').value || null;
 
-            const response = await dispatchEvent('update_growth', { ticker, growth_rate, profit_margin });
+            const response = await submitForm('/update_growth', { ticker, growth_rate, profit_margin });
 
             if (response.ok) {
                 document.getElementById('message').textContent = 'Update dispatched successfully.';

@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import yfinance as yf
+import csv
 
 def finviz_five_yr(ticker, cursor):
     """Fetches and stores the 5-year EPS growth percentage from Finviz into the database."""
@@ -261,6 +262,26 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
         file.write(table_2_html)
 
     print(f"Saved valuation info to {table_1_path} and valuation table to {table_2_path}")
+
+def process_update_growth_csv(file_path, cursor):
+    """Reads the update_growth.csv file and updates the database with the new growth rates and profit margins."""
+    if not os.path.exists(file_path):
+        return
+
+    with open(file_path, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            ticker, growth_rate, profit_margin = row
+            profit_margin = None if profit_margin == '0' else profit_margin
+            cursor.execute('''
+                UPDATE Tickers_Info
+                SET nicks_growth_rate = ?, projected_profit_margin = ?
+                WHERE ticker = ?;
+            ''', (growth_rate, profit_margin, ticker))
+            cursor.connection.commit()
+            print(f"Updated {ticker}: Growth Rate = {growth_rate}, Profit Margin = {profit_margin}")
+
+    os.remove(file_path)
 
 def valuation_update(ticker, cursor, treasury_yield):
     db_path = "Stock Data.db"
