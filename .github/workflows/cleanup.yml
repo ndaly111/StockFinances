@@ -1,4 +1,4 @@
-name: Run Python Script
+name: Clean Database
 
 on:
   schedule:
