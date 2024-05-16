@@ -1,3 +1,85 @@
+name: Update Tickers
+
+on:
+  repository_dispatch:
+    types: [manage_ticker, update_growth]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  handle-dispatch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas
+
+      - name: Handle Dispatch
+        run: |
+          echo "Handling dispatch for action ${{ github.event.client_payload.action }}"
+          echo "${{ toJson(github.event.client_payload) }}" > payload.json
+
+          python -c "
+import sqlite3
+import json
+
+with open('payload.json', 'r') as f:
+    payload = json.load(f)
+
+action = payload.get('action')
+ticker = payload.get('ticker').upper()
+
+conn = sqlite3.connect('Stock Data.db')
+cursor = conn.cursor()
+
+if action == 'add':
+    cursor.execute('''
+        INSERT INTO Tickers_Info (ticker)
+        VALUES (?)
+        ON CONFLICT(ticker) DO NOTHING;
+    ''', (ticker,))
+    conn.commit()
+    print(f'Added ticker {ticker}')
+elif action == 'remove':
+    cursor.execute('''
+        DELETE FROM Tickers_Info WHERE ticker = ?;
+    ''', (ticker,))
+    conn.commit()
+    print(f'Removed ticker {ticker}')
+elif action == 'update_growth':
+    growth_rate = float(payload['growth_rate'].rstrip('%'))
+    profit_margin = payload.get('profit_margin')
+    if profit_margin:
+        profit_margin = float(profit_margin.rstrip('%'))
+    else:
+        profit_margin = None
+
+    cursor.execute('''
+        UPDATE Tickers_Info
+        SET nicks_growth_rate = ?, profit_margin = ?
+        WHERE ticker = ?;
+    ''', (growth_rate, profit_margin, ticker))
+    conn.commit()
+    print(f'Updated ticker {ticker} with growth rate {growth_rate} and profit margin {profit_margin}')
+
+conn.close()
+"
+
+### Updated `update_form.html`
+
+Ensure your HTML file correctly sends requests using the updated token. Replace the token placeholder in the fetch request with the actual token you generated.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
