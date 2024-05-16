@@ -19,14 +19,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt  # If you have dependencies, otherwise remove this step
-
       - name: Setup Pages Directory
         run: |
           mkdir -p public
@@ -34,8 +26,8 @@ jobs:
 
       - name: Set up Git identity
         run: |
-          git config --global user.name 'ndaly111'
-          git config --global user.email 'ndaly111@gmail.com'
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
       - name: Checkout gh-pages branch
         run: |
@@ -55,3 +47,72 @@ jobs:
         run: git push origin gh-pages --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  handle-dispatch:
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas
+
+      - name: Handle Dispatch
+        run: |
+          echo "Handling dispatch for action ${{ github.event.client_payload.action }}"
+
+          if [ "${{ github.event.client_payload.action }}" = "update" ]; then
+            python -c "
+import sqlite3
+
+# Database connection
+db_path = 'Stock Data.db'
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+ticker = '${{ github.event.client_payload.ticker }}'
+growth_rate = float('${{ github.event.client_payload.growth_rate }}'.rstrip('%'))
+profit_margin = float('${{ github.event.client_payload.profit_margin }}'.rstrip('%'))
+
+# Update or insert the ticker info
+cursor.execute('''
+    INSERT INTO Tickers_Info (ticker, nicks_growth_rate, profit_margin)
+    VALUES (?, ?, ?)
+    ON CONFLICT(ticker) DO UPDATE SET
+    nicks_growth_rate=excluded.nicks_growth_rate,
+    profit_margin=excluded.profit_margin;
+''', (ticker, growth_rate, profit_margin))
+
+conn.commit()
+conn.close()
+
+print('Updated ticker', ticker, 'with growth rate', growth_rate, 'and profit margin', profit_margin)
+            "
+          elif [ "${{ github.event.client_payload.action }}" = "remove" ]; then
+            python -c "
+import sqlite3
+
+# Database connection
+db_path = 'Stock Data.db'
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+ticker = '${{ github.event.client_payload.ticker }}'
+
+# Remove the ticker
+cursor.execute('''
+    DELETE FROM Tickers_Info WHERE ticker = ?;
+''', (ticker,))
+
+conn.commit()
+conn.close()
+
+print('Removed ticker', ticker)
+            "
