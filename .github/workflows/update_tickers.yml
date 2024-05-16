@@ -29,7 +29,7 @@ jobs:
           echo "Handling dispatch for action ${{ github.event.client_payload.action }}"
           echo "${{ toJson(github.event.client_payload) }}" > payload.json
 
-          python -c "
+          python - <<EOF
 import sqlite3
 import json
 
@@ -73,4 +73,4 @@ elif action == 'update_growth':
     print(f'Updated ticker {ticker} with growth rate {growth_rate} and profit margin {profit_margin}')
 
 conn.close()
-"
+EOF
