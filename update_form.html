@@ -81,11 +81,9 @@
             const action = document.getElementById('action').value;
             const ticker = document.getElementById('ticker').value.toUpperCase();
 
-            const response = await fetch('https://api.github.com/repos/ndaly111/StockFinances/dispatches', {
+            const response = await fetch('/api/dispatch', {
                 method: 'POST',
                 headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `token PERSONAL_ACCESS_TOKEN`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -113,11 +111,9 @@
             const growth_rate = document.getElementById('growth_rate').value;
             const profit_margin = document.getElementById('profit_margin').value;
 
-            const response = await fetch('https://api.github.com/repos/ndaly111/StockFinances/dispatches', {
+            const response = await fetch('/api/dispatch', {
                 method: 'POST',
                 headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `token PERSONAL_ACCESS_TOKEN`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
