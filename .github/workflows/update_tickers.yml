@@ -1,9 +1,9 @@
 name: Update Tickers
 
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [manage_ticker, update_growth]
-  workflow_dispatch:
 
 permissions:
   contents: write
