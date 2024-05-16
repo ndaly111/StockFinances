@@ -1,11 +1,10 @@
-# valuation_update.py
-
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import yfinance as yf
 
 def finviz_five_yr(ticker, cursor):
     """Fetches and stores the 5-year EPS growth percentage from Finviz into the database."""
@@ -39,7 +38,6 @@ def finviz_five_yr(ticker, cursor):
 
 def fetch_financial_valuation_data(ticker, db_path):
     print(f"Fetching financial valuation data for: {ticker}")
-    import yfinance as yf
 
     stock = yf.Ticker(ticker)
 
@@ -68,7 +66,7 @@ def fetch_financial_valuation_data(ticker, db_path):
         print("Forecast data fetched:", forecast_data)
 
         growth_query = """
-        SELECT nicks_growth_rate, FINVIZ_5yr_gwth
+        SELECT nicks_growth_rate, FINVIZ_5yr_gwth, projected_profit_margin
         FROM Tickers_Info
         WHERE ticker = ?;
         """
@@ -113,6 +111,27 @@ def calculate_fair_pe(combined_data, growth_values, treasury_yield):
 
     return combined_data[['Year', 'Nicks_Valuation', 'Finviz_Valuation']], nicks_fair_pe, finviz_fair_pe
 
+def calculate_fair_ps(combined_data, growth_values, treasury_yield):
+    treasury_yield = (float(treasury_yield) / 100)
+    print('treasury yield', treasury_yield)
+
+    nicks_growth_rate = float(growth_values['nicks_growth_rate'].iloc[0] if growth_values['nicks_growth_rate'].iloc[0] is not None else 0) / 100
+    finviz_growth_rate = float(growth_values['FINVIZ_5yr_gwth'].iloc[0] if growth_values['FINVIZ_5yr_gwth'].iloc[0] is not None else 0) / 100
+    projected_profit_margin = float(growth_values['projected_profit_margin'].iloc[0] if growth_values['projected_profit_margin'].iloc[0] is not None else 0) / 100
+
+    nicks_fair_ps = (((nicks_growth_rate - treasury_yield + 1) ** 10) * 10) * projected_profit_margin
+    print("nicks fair ps", nicks_fair_ps)
+    finviz_fair_ps = (((finviz_growth_rate - treasury_yield + 1) ** 10) * 10) * projected_profit_margin
+    print("finviz fair ps", finviz_fair_ps)
+
+    combined_data['Nicks_Valuation'] = combined_data['Revenue'] * nicks_fair_ps
+    combined_data['Finviz_Valuation'] = combined_data['Revenue'] * finviz_fair_ps
+
+    print("Valuation calculations based on Sales valuation method:")
+    print(combined_data[['Year', 'Nicks_Valuation', 'Finviz_Valuation']])
+
+    return combined_data[['Year', 'Nicks_Valuation', 'Finviz_Valuation']], nicks_fair_ps, finviz_fair_ps
+
 def plot_valuation_chart(valuation_data, current_price, ticker, growth_value):
     """
     Plots the valuation data with the current stock price.
@@ -147,8 +166,15 @@ def plot_valuation_chart(valuation_data, current_price, ticker, growth_value):
     print(f"Figure saved to {fig_path}")
     plt.close()
 
+def fetch_stock_data(ticker):
+    stock = yf.Ticker(ticker)
+    current_price = stock.info.get('currentPrice')
+    forward_eps = stock.info.get('forwardEps')
+    pe_ratio = stock.info.get('trailingPE', None)
+    price_to_sales = stock.info.get('priceToSalesTrailing12Months', None)
+    forward_pe_ratio = current_price / forward_eps if forward_eps else None
 
-import yfinance as yf
+    return current_price, pe_ratio, price_to_sales, forward_pe_ratio
 
 def format_number(value):
     """Formats numbers to billions, millions, or thousands with appropriate suffixes."""
@@ -172,17 +198,7 @@ def format_currency(value):
     else:
         return f"${value:.2f}"
 
-def fetch_stock_data(ticker):
-    stock = yf.Ticker(ticker)
-    current_price = stock.info.get('currentPrice')
-    forward_eps = stock.info.get('forwardEps')
-    pe_ratio = stock.info.get('trailingPE', None)
-    price_to_sales = stock.info.get('priceToSalesTrailing12Months', None)
-    forward_pe_ratio = current_price / forward_eps if forward_eps else None
-
-    return current_price, pe_ratio, price_to_sales, forward_pe_ratio
-
-def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_pe, finviz_fair_pe, valuation_method):
+def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_val, finviz_fair_val, valuation_method):
     # Ensure treasury_yield is a float
     treasury_yield = float(treasury_yield)
 
@@ -191,8 +207,8 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
 
     # Format the necessary values
     current_price_formatted = f"${current_price:.2f}"
-    nicks_fair_pe_formatted = f"{nicks_fair_pe:.0f}"
-    finviz_fair_pe_formatted = f"{finviz_fair_pe:.0f}"
+    nicks_fair_val_formatted = f"{nicks_fair_val:.0f}"
+    finviz_fair_val_formatted = f"{finviz_fair_val:.0f}"
     treasury_yield_formatted = f"{treasury_yield:.1f}%"
     nicks_growth_rate_formatted = f"{growth_values['nicks_growth_rate'].iloc[0]:.0f}%"
     finviz_growth_rate_formatted = f"{growth_values['FINVIZ_5yr_gwth'].iloc[0]:.0f}%"
@@ -208,7 +224,7 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
         "Share Price": [current_price_formatted],
         "Treasury Yield": [treasury_yield_formatted],
         "Growth Rate": [f"Nicks: {nicks_growth_rate_formatted} Finviz: {finviz_growth_rate_formatted}"],
-        "Fair P/E": [f"Nicks: {nicks_fair_pe_formatted} Finviz: {finviz_fair_pe_formatted}"],
+        "Fair P/E": [f"Nicks: {nicks_fair_val_formatted} Finviz: {finviz_fair_val_formatted}"],
         valuation_metric_label: [current_valuation_metric]
     }
     table_1_df = pd.DataFrame(table_1_data)
@@ -262,5 +278,8 @@ def valuation_update(ticker, cursor, treasury_yield):
             plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
             generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price,
                                       nicks_fair_pe, finviz_fair_pe, valuation_method)
-
-
+        elif valuation_method == "sales valuation":
+            valuation_data, nicks_fair_ps, finviz_fair_ps = calculate_fair_ps(combined_data, growth_values, treasury_yield)
+            plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
+            generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price,
+                                      nicks_fair_ps, finviz_fair_ps, valuation_method)

@@ -284,7 +284,7 @@ def main():
 
             print("generating HTML2")
             # Call html_generator2 function after all tickers have been processed
-            html_generator2(sorted_tickers, financial_data)
+        html_generator2(sorted_tickers, financial_data)
 
 
     finally:

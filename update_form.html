@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Tickers</title>
+</head>
+<body>
+    <h1>Update Tickers</h1>
+    <form action="https://github.com/USERNAME/REPOSITORY_NAME/actions" method="post">
+        <label for="action">Action</label>
+        <select id="action" name="action">
+            <option value="add">Add Ticker</option>
+            <option value="remove">Remove Ticker</option>
+            <option value="update">Update Ticker</option>
+        </select>
+        <br>
+        <label for="ticker">Ticker</label>
+        <input type="text" id="ticker" name="ticker" required>
+        <br>
+        <label for="growth_rate">Growth Rate (%)</label>
+        <input type="number" id="growth_rate" name="growth_rate">
+        <br>
+        <label for="profit_margin">Profit Margin (%)</label>
+        <input type="number" id="profit_margin" name="profit_margin">
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
