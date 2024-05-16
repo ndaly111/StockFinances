@@ -1,55 +1,15 @@
-name: Deploy Update Form
+name: Update Tickers
 
 on:
-  push:
-    branches:
-      - main  # Or any branch you want to trigger the deployment
-  schedule:
-    - cron: '0 8 * * *'
+  repository_dispatch:
+    types: [update_ticker]
   workflow_dispatch:
 
 permissions:
-  contents: write  # Grants permission to push changes
+  contents: write
 
 jobs:
-  deploy-form:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup Pages Directory
-        run: |
-          mkdir -p public
-          cp update_form.html public/index.html
-
-      - name: Set up Git identity
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-      - name: Checkout gh-pages branch
-        run: |
-          git fetch origin
-          git checkout gh-pages || git checkout --orphan gh-pages
-
-      - name: Copy files to gh-pages branch
-        run: |
-          cp -r public/* .
-
-      - name: Add all changes to gh-pages
-        run: |
-          git add .  # This will add all new and modified files to the commit
-          git commit -m "Update website content" --allow-empty  # This commits the changes
-
-      - name: Push changes to gh-pages
-        run: git push origin gh-pages --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   handle-dispatch:
-    if: github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -67,52 +27,43 @@ jobs:
       - name: Handle Dispatch
         run: |
           echo "Handling dispatch for action ${{ github.event.client_payload.action }}"
+          echo "${{ github.event.client_payload }}" > payload.json
 
-          if [ "${{ github.event.client_payload.action }}" = "update" ]; then
-            python -c "
+          python -c "
 import sqlite3
+import json
 
-# Database connection
-db_path = 'Stock Data.db'
-conn = sqlite3.connect(db_path)
+with open('payload.json', 'r') as f:
+    payload = json.load(f)
+
+action = payload['action']
+ticker = payload['ticker'].upper()
+
+conn = sqlite3.connect('Stock Data.db')
 cursor = conn.cursor()
 
-ticker = '${{ github.event.client_payload.ticker }}'
-growth_rate = float('${{ github.event.client_payload.growth_rate }}'.rstrip('%'))
-profit_margin = float('${{ github.event.client_payload.profit_margin }}'.rstrip('%'))
+if action == 'add_update':
+    growth_rate = float(payload['growth_rate'].rstrip('%'))
+    profit_margin = float(payload['profit_margin'].rstrip('%'))
 
-# Update or insert the ticker info
-cursor.execute('''
-    INSERT INTO Tickers_Info (ticker, nicks_growth_rate, profit_margin)
-    VALUES (?, ?, ?)
-    ON CONFLICT(ticker) DO UPDATE SET
-    nicks_growth_rate=excluded.nicks_growth_rate,
-    profit_margin=excluded.profit_margin;
-''', (ticker, growth_rate, profit_margin))
+    cursor.execute('''
+        INSERT INTO Tickers_Info (ticker, nicks_growth_rate, profit_margin)
+        VALUES (?, ?, ?)
+        ON CONFLICT(ticker) DO UPDATE SET
+        nicks_growth_rate=excluded.nicks_growth_rate,
+        profit_margin=excluded.profit_margin;
+    ''', (ticker, growth_rate, profit_margin))
 
-conn.commit()
+    conn.commit()
+    print(f'Updated ticker {ticker} with growth rate {growth_rate} and profit margin {profit_margin}')
+
+elif action == 'remove':
+    cursor.execute('''
+        DELETE FROM Tickers_Info WHERE ticker = ?;
+    ''', (ticker,))
+
+    conn.commit()
+    print(f'Removed ticker {ticker}')
+
 conn.close()
-
-print('Updated ticker', ticker, 'with growth rate', growth_rate, 'and profit margin', profit_margin)
-            "
-          elif [ "${{ github.event.client_payload.action }}" = "remove" ]; then
-            python -c "
-import sqlite3
-
-# Database connection
-db_path = 'Stock Data.db'
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
-
-ticker = '${{ github.event.client_payload.ticker }}'
-
-# Remove the ticker
-cursor.execute('''
-    DELETE FROM Tickers_Info WHERE ticker = ?;
-''', (ticker,))
-
-conn.commit()
-conn.close()
-
-print('Removed ticker', ticker)
-            "
+"
