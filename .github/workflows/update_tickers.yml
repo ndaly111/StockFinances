@@ -80,3 +80,4 @@ elif action == 'update_growth':
 conn.close()
 print("Finished Python script")  # Debugging: Indicate end of script
 EOF
+
