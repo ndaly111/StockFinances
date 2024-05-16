@@ -76,24 +76,31 @@
         <p id="message"></p>
     </div>
     <script>
+        const dispatch_url = 'https://api.github.com/repos/ndaly111/StockFinances/dispatches';
+        
+        async function dispatchEvent(eventType, payload) {
+            const response = await fetch(dispatch_url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${'YOUR_PERSONAL_ACCESS_TOKEN'}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event_type: eventType,
+                    client_payload: payload
+                })
+            });
+
+            return response;
+        }
+
         document.getElementById('manage-form').addEventListener('submit', async function(event) {
             event.preventDefault();
             const action = document.getElementById('action').value;
             const ticker = document.getElementById('ticker').value.toUpperCase();
 
-            const response = await fetch('/api/dispatch', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    event_type: 'manage_ticker',
-                    client_payload: {
-                        action: action,
-                        ticker: ticker
-                    }
-                })
-            });
+            const response = await dispatchEvent('manage_ticker', { action, ticker });
 
             if (response.ok) {
                 document.getElementById('message').textContent = 'Update dispatched successfully.';
@@ -111,20 +118,7 @@
             const growth_rate = document.getElementById('growth_rate').value;
             const profit_margin = document.getElementById('profit_margin').value;
 
-            const response = await fetch('/api/dispatch', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    event_type: 'update_growth',
-                    client_payload: {
-                        ticker: ticker,
-                        growth_rate: growth_rate,
-                        profit_margin: profit_margin
-                    }
-                })
-            });
+            const response = await dispatchEvent('update_growth', { ticker, growth_rate, profit_margin });
 
             if (response.ok) {
                 document.getElementById('message').textContent = 'Update dispatched successfully.';
