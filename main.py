@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
 import requests
 from html_generator2 import html_generator2
-from valuation_update import valuation_update
+from valuation_update import (valuation_update, process_update_growth_csv)
 
 
 
@@ -30,6 +30,7 @@ from valuation_update import valuation_update
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
 db_path = 'Stock Data.db'
+file_path = "update_growth.csv"
 charts_output_dir = 'charts/'
 HTML_OUTPUT_FILE = 'index.html'
 PDF_OUTPUT_FILE = '/Users/nicholasdaly/Library/Mobile Documents/com~apple~CloudDocs/Stock Data/stock_charts.pdf'
@@ -83,6 +84,8 @@ def fetch_financial_data(ticker, cursor):
     # Fetch existing data
     ticker_data = fetch_ticker_data(ticker, cursor)
     print("Ticker data:", ticker_data)
+
+
 
     # Determine if annual data is missing
     missing_data = determine_if_annual_data_missing(ticker_data)
@@ -250,12 +253,15 @@ def main():
     sorted_tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=False)
     print("---main loop 1 sorted tickers")
 
+
     conn = establish_database_connection(db_path)
     if conn is None:
         return
 
     try:
         cursor = conn.cursor()
+        print("cursor", cursor)
+        process_update_growth_csv(file_path, db_path)
         for ticker in sorted_tickers:
             print("main loop start")
             print(f"Processing ticker: {ticker}")

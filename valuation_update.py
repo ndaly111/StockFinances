@@ -263,25 +263,58 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
 
     print(f"Saved valuation info to {table_1_path} and valuation table to {table_2_path}")
 
-def process_update_growth_csv(file_path, cursor):
+
+
+def process_update_growth_csv(file_path, db_path):
     """Reads the update_growth.csv file and updates the database with the new growth rates and profit margins."""
     if not os.path.exists(file_path):
+        print(f"{file_path} does not exist. No updates to process.")
         return
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
 
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
-            ticker, growth_rate, profit_margin = row
-            profit_margin = None if profit_margin == '0' else profit_margin
-            cursor.execute('''
-                UPDATE Tickers_Info
-                SET nicks_growth_rate = ?, projected_profit_margin = ?
-                WHERE ticker = ?;
-            ''', (growth_rate, profit_margin, ticker))
-            cursor.connection.commit()
-            print(f"Updated {ticker}: Growth Rate = {growth_rate}, Profit Margin = {profit_margin}")
+            if len(row) == 2:
+                ticker, growth_rate = row
+                profit_margin = None
+            elif len(row) == 3:
+                ticker, growth_rate, profit_margin = row
+                profit_margin = None if profit_margin == '0' else profit_margin
+            else:
+                print(f"Invalid row format: {row}")
+                continue
 
-    os.remove(file_path)
+            ticker = ticker.upper()  # Normalize ticker to uppercase
+            growth_rate = float(growth_rate)
+            if profit_margin is not None:
+                profit_margin = float(profit_margin)
+
+            print(f"Before Update: {ticker} =>", cursor.execute('SELECT ticker, nicks_growth_rate, projected_profit_margin FROM Tickers_Info WHERE ticker = ?', (ticker,)).fetchall())
+
+            print(f"Updating {ticker}: Growth Rate = {growth_rate}, Profit Margin = {profit_margin}")
+            try:
+                cursor.execute('''
+                    UPDATE Tickers_Info
+                    SET nicks_growth_rate = ?, projected_profit_margin = ?
+                    WHERE ticker = ?;
+                ''', (growth_rate, profit_margin, ticker))
+                conn.commit()
+                print(f"Updated {ticker}: Growth Rate = {growth_rate}, Profit Margin = {profit_margin}")
+
+                print(f"After Update: {ticker} =>", cursor.execute('SELECT ticker, nicks_growth_rate, projected_profit_margin FROM Tickers_Info WHERE ticker = ?', (ticker,)).fetchall())
+            except sqlite3.Error as e:
+                print(f"Error updating {ticker}: {e}")
+
+    conn.close()
+    # Wipe the file contents
+    open(file_path, 'w').close()
+    print(f"{file_path} processed and data wiped.")
+
+
+
 
 def valuation_update(ticker, cursor, treasury_yield):
     db_path = "Stock Data.db"

@@ -81,6 +81,26 @@ def update_database_with_fetched_data(cursor, financial_data):
             print(f"No update needed for {row['Symbol']} on {row['Date']}.")
     cursor.connection.commit()
 
+def update_short_name_if_needed(cursor, ticker):
+    """Updates the short_name field in Tickers_Info table if it is null or blank."""
+    cursor.execute("""
+        SELECT short_name FROM Tickers_Info WHERE ticker = ?
+    """, (ticker,))
+    result = cursor.fetchone()
+
+    if result and (result[0] is None or result[0].strip() == ''):
+        stock = yf.Ticker(ticker)
+        short_name = stock.info.get('shortName')
+        if short_name:
+            cursor.execute("""
+                UPDATE Tickers_Info
+                SET short_name = ?
+                WHERE ticker = ?;
+            """, (short_name, ticker))
+            cursor.connection.commit()
+            print(f"Updated short name for {ticker}: {short_name}")
+        else:
+            print(f"No short name found for {ticker} in Yahoo Finance.")
 
 
 def main():
@@ -94,6 +114,11 @@ def main():
     # Loop through each ticker, fetch data, and update the database
     for ticker in tickers:
         print(f"Processing {ticker}...")
+
+        # Update short name if needed
+        update_short_name_if_needed(cursor, ticker)
+
+        # Fetch and update annual financial data
         financial_data = fetch_annual_data_from_yahoo(ticker)
         if not financial_data.empty:
             update_database_with_fetched_data(cursor, financial_data)
@@ -104,6 +129,7 @@ def main():
     # Close the database connection
     conn.close()
     print("All tickers processed.")
+
 
 if __name__ == "__main__":
     main()
