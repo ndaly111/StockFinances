@@ -1,5 +1,9 @@
 import sqlite3
 import pandas as pd
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Data
 data = {
@@ -8,14 +12,14 @@ data = {
         "CCL", "RCL", "NCLH", "F", "MSFT", "NFLX", "GE", "CRM", "UBER", "DKNG",
         "GM", "DIS", "AMD", "NVDA", "ADBE", "COIN", "SNAP", "INTC", "DPZ", "HOOD",
         "EVGO", "BABA", "PLTR", "PYPL", "V", "MU", "VZ", "CMG", "MA", "Sbux", "MRNA",
-        "PFE", "LRCX", "FSLR", "SCHW", "GTIM", "BIRD", "BA", "CELH"
+        "PFE", "LRCX", "FSLR", "SCHW", "GTIM", "BIRD", "BA", "CELH", "COST"
     ],
     "Expected Growth": [
         "12.0%", "20.0%", "13.0%", "8.0%", "20.0%", "4.0%", "5.0%", "2.0%", "8.0%",
         "2.0%", "3.0%", "5.0%", "5.0%", "13.0%", "15.0%", "0.0%", "20.0%", "20.0%",
         "20.0%", "2.5%", "8.0%", "10.0%", "15.0%", "12.0%", "14.3%", "25.0%", "2.5%",
         "11.5%", "20.0%", "45.0%", "4.0%", "25.0%", "18.0%", "12.0%", "12.0%", "0.0%",
-        "20.0%", "17.5%", "9.0%", "0.0%", "9.0%", "6%", "6%", "6%", "6%", "0%", "5%", "20%"
+        "20.0%", "17.5%", "9.0%", "0.0%", "9.0%", "6%", "6%", "6%", "6%", "0%", "5%", "20%", "11%"
     ]
 }
 
@@ -25,6 +29,7 @@ df['Expected Growth'] = df['Expected Growth'].str.rstrip('%').astype(float)  # S
 
 # Database connection
 db_path = "Stock Data.db"  # Path to your SQLite database
+logging.info(f"Connecting to database at {db_path}")
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
@@ -41,9 +46,11 @@ for index, row in df.iterrows():
         SET nicks_growth_rate = ?
         WHERE ticker = ?;
     ''', (row['Expected Growth'], row['TICKER']))
+    logging.info(f"Updated {row['TICKER']} with growth rate {row['Expected Growth']}")
 
 # Commit changes and close the connection
 conn.commit()
 conn.close()
 
+logging.info("Growth rates have been successfully updated.")
 print("Growth rates have been successfully updated.")

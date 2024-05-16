@@ -1,0 +1,48 @@
+name: Update Tickers
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action (add, remove, update)'
+        required: true
+        default: 'add'
+      ticker:
+        description: 'Ticker symbol'
+        required: true
+      growth_rate:
+        description: 'Growth Rate (%)'
+        required: false
+      profit_margin:
+        description: 'Profit Margin (%)'
+        required: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install pandas
+        pip install sqlite3
+
+    - name: Update tickers
+      run: |
+        python update_tickers.py ${{ github.event.inputs.action }} ${{ github.event.inputs.ticker }} ${{ github.event.inputs.growth_rate }} ${{ github.event.inputs.profit_margin }}
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add tickers.csv Stock\ Data.db
+        git commit -m "Update ticker: ${{ github.event.inputs.ticker }}"
+        git push
