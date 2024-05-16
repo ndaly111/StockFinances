@@ -30,7 +30,7 @@ jobs:
           echo "${{ toJson(github.event.client_payload) }}" > payload.json
           cat payload.json  # Debugging: Output the payload
 
-          python - <<EOF
+          python <<EOF
 import sqlite3
 import json
 
@@ -80,4 +80,3 @@ elif action == 'update_growth':
 conn.close()
 print("Finished Python script")  # Debugging: Indicate end of script
 EOF
-
