@@ -27,7 +27,7 @@ jobs:
       - name: Handle Dispatch
         run: |
           echo "Handling dispatch for action ${{ github.event.client_payload.action }}"
-          echo "${{ github.event.client_payload }}" > payload.json
+          echo "${{ toJson(github.event.client_payload) }}" > payload.json
 
           python -c "
 import sqlite3
