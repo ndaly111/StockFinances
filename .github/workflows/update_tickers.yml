@@ -19,7 +19,14 @@ jobs:
           cp update_form.html public/index.html
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git clone --depth 1 --branch gh-pages https://github.com/${{ github.repository }} gh-pages || git init gh-pages
+          cd gh-pages
+          cp -r ../public/* ./
+          git add .
+          git commit -m "Deploy GitHub Pages" || echo "No changes to commit"
+          git push https://${ACTIONS_DEPLOY_KEY}@github.com/${{ github.repository }} gh-pages
