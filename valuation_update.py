@@ -7,6 +7,8 @@ import os
 import yfinance as yf
 import csv
 
+
+
 def finviz_five_yr(ticker, cursor):
     """Fetches and stores the 5-year EPS growth percentage from Finviz into the database."""
     url = f'https://finviz.com/quote.ashx?t={ticker}'
@@ -21,21 +23,26 @@ def finviz_five_yr(ticker, cursor):
         if estimate_cell:
             next_td = estimate_cell.find_next_sibling('td')
             estimate_value = next_td.text.strip('%')  # Remove the '%' symbol
-            try:
-                estimate_value = float(estimate_value)  # Convert to float
-                cursor.execute(f'''
-                    UPDATE 'Tickers_Info'
-                    SET FINVIZ_5yr_gwth = ? 
-                    WHERE ticker = ?;
-                ''', (estimate_value, ticker))
-                cursor.connection.commit()
-                print(f"Stored Finviz 5-Year Growth for {ticker}: {estimate_value}")
-            except ValueError:
-                print(f"Invalid estimate value '{next_td.text}' for ticker {ticker}.")
+            if estimate_value:  # Check if estimate_value is not empty
+                try:
+                    estimate_value = float(estimate_value)  # Convert to float
+                    cursor.execute(f'''
+                        UPDATE 'Tickers_Info'
+                        SET FINVIZ_5yr_gwth = ? 
+                        WHERE ticker = ?;
+                    ''', (estimate_value, ticker))
+                    cursor.connection.commit()
+                    print(f"Stored Finviz 5-Year Growth for {ticker}: {estimate_value}")
+                except ValueError:
+                    print(f"Invalid estimate value '{next_td.text}' for ticker {ticker}.")
+            else:
+                print(f"Empty estimate value for ticker {ticker}.")
         else:
             print(f"Could not find the 5-year EPS growth estimate for {ticker} on Finviz.")
     else:
         print(f"Failed to retrieve Finviz data for {ticker}, status code: {response.status_code}")
+
+
 
 def fetch_financial_valuation_data(ticker, db_path):
     print(f"Fetching financial valuation data for: {ticker}")
@@ -141,7 +148,7 @@ def plot_valuation_chart(valuation_data, current_price, ticker, growth_value):
         valuation_data (pd.DataFrame): DataFrame containing years, Nicks_Valuation, and Finviz_Valuation.
         current_price (float): Current price of the stock.
     """
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     # Plotting the valuation lines if the growth values are not None
     if not pd.isna(growth_value['nicks_growth_rate'].iloc[0]):
@@ -151,21 +158,25 @@ def plot_valuation_chart(valuation_data, current_price, ticker, growth_value):
         ax.plot(valuation_data['Year'], valuation_data['Finviz_Valuation'], label='Finviz Valuation', color='green', marker='o')
 
     # Adding a scatter plot for the current price at all points for visual comparison
-    ax.plot(valuation_data['Year'], [current_price] * len(valuation_data), color='orange', label='Current Price')
+    ax.plot(valuation_data['Year'], [current_price] * len(valuation_data), color='orange', label='Current Price', linestyle='--', marker='x')
 
     # Adding labels and title
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Valuation')
-    ax.set_title(f'Valuation Comparison for {ticker}')
-    ax.legend()
+    ax.set_xlabel('Year', fontsize=12)
+    ax.set_ylabel('Valuation (USD)', fontsize=12)
+    ax.set_title(f'Valuation Comparison for {ticker}', fontsize=14, fontweight='bold')
+    ax.legend(fontsize=10)
 
-    # Show the plot
-    plt.grid(True)
+    # Enhance the grid lines
+    ax.grid(True, linestyle='--', alpha=0.7)
+
+    # Increase font size for ticks
+    ax.tick_params(axis='both', which='major', labelsize=10)
 
     fig_path = f"charts/{ticker}_valuation_chart.png"
-    plt.savefig(fig_path)
+    plt.savefig(fig_path, bbox_inches='tight')
     print(f"Figure saved to {fig_path}")
     plt.close()
+
 
 def fetch_stock_data(ticker):
     stock = yf.Ticker(ticker)
@@ -199,7 +210,9 @@ def format_currency(value):
     else:
         return f"${value:.2f}"
 
-def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_val, finviz_fair_val, valuation_method):
+
+def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_val,
+                              finviz_fair_val, valuation_method):
     # Ensure treasury_yield is a float
     treasury_yield = float(treasury_yield)
 
@@ -211,8 +224,11 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
     nicks_fair_val_formatted = f"{nicks_fair_val:.0f}"
     finviz_fair_val_formatted = f"{finviz_fair_val:.0f}"
     treasury_yield_formatted = f"{treasury_yield:.1f}%"
-    nicks_growth_rate_formatted = f"{growth_values['nicks_growth_rate'].iloc[0]:.0f}%"
-    finviz_growth_rate_formatted = f"{growth_values['FINVIZ_5yr_gwth'].iloc[0]:.0f}%"
+
+    nicks_growth_rate_formatted = f"{growth_values['nicks_growth_rate'].iloc[0]:.0f}%" if pd.notna(
+        growth_values['nicks_growth_rate'].iloc[0]) else "N/A"
+    finviz_growth_rate_formatted = f"{growth_values['FINVIZ_5yr_gwth'].iloc[0]:.0f}%" if pd.notna(
+        growth_values['FINVIZ_5yr_gwth'].iloc[0]) else "N/A"
 
     if valuation_method == "eps valuation":
         current_valuation_metric = f"{pe_ratio:.1f}" if pe_ratio else "N/A"
@@ -230,7 +246,7 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
     }
     table_1_df = pd.DataFrame(table_1_data)
 
-    table_1_html = table_1_df.to_html(index=False, escape=False)
+    table_1_html = table_1_df.to_html(index=False, escape=False, classes='table table-striped', justify='left')
     table_1_path = os.path.join('charts', f"{ticker}_valuation_info.html")
     with open(table_1_path, "w") as file:
         file.write(table_1_html)
@@ -238,13 +254,16 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
     # Apply formatting to valuation data
     combined_data['Nicks_Valuation'] = combined_data['Nicks_Valuation'].apply(format_currency)
     combined_data['Finviz_Valuation'] = combined_data['Finviz_Valuation'].apply(format_currency)
-    combined_data['Nicks vs Share Price'] = combined_data['Nicks_Valuation'].apply(lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
-    combined_data['Finviz vs Share Price'] = combined_data['Finviz_Valuation'].apply(lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
+    combined_data['Nicks vs Share Price'] = combined_data['Nicks_Valuation'].apply(
+        lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
+    combined_data['Finviz vs Share Price'] = combined_data['Finviz_Valuation'].apply(
+        lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
 
     if valuation_method == "eps valuation":
         combined_data['Basis'] = combined_data['EPS'].apply(lambda x: f"{x:.2f} EPS" if pd.notna(x) else "")
     else:  # sales valuation
-        combined_data['Basis'] = combined_data['Revenue'].apply(lambda x: f"{x:.2f} Revenue" if pd.notna(x) else "")
+        combined_data['Basis'] = combined_data['Revenue'].apply(
+            lambda x: f"{format_number(x)} Revenue" if pd.notna(x) else "")
 
     table_2_data = {
         "Basis": combined_data['Basis'],
@@ -256,13 +275,12 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
     }
     table_2_df = pd.DataFrame(table_2_data)
 
-    table_2_html = table_2_df.to_html(index=False, escape=False)
+    table_2_html = table_2_df.to_html(index=False, escape=False, classes='table table-striped', justify='left')
     table_2_path = os.path.join('charts', f"{ticker}_valuation_table.html")
     with open(table_2_path, "w") as file:
         file.write(table_2_html)
 
     print(f"Saved valuation info to {table_1_path} and valuation table to {table_2_path}")
-
 
 
 def process_update_growth_csv(file_path, db_path):
@@ -288,11 +306,21 @@ def process_update_growth_csv(file_path, db_path):
                 continue
 
             ticker = ticker.upper()  # Normalize ticker to uppercase
-            growth_rate = float(growth_rate)
-            if profit_margin is not None:
-                profit_margin = float(profit_margin)
 
-            print(f"Before Update: {ticker} =>", cursor.execute('SELECT ticker, nicks_growth_rate, projected_profit_margin FROM Tickers_Info WHERE ticker = ?', (ticker,)).fetchall())
+            # Check if growth_rate is not an empty string
+            if growth_rate.strip():
+                try:
+                    growth_rate = float(growth_rate)
+                except ValueError:
+                    print(f"Invalid growth rate '{growth_rate}' for ticker {ticker}. Skipping update.")
+                    continue
+            else:
+                print(f"No growth rate provided for ticker {ticker}. Skipping update.")
+                continue
+
+            print(f"Before Update: {ticker} =>", cursor.execute(
+                'SELECT ticker, nicks_growth_rate, projected_profit_margin FROM Tickers_Info WHERE ticker = ?',
+                (ticker,)).fetchall())
 
             print(f"Updating {ticker}: Growth Rate = {growth_rate}, Profit Margin = {profit_margin}")
             try:
@@ -304,7 +332,9 @@ def process_update_growth_csv(file_path, db_path):
                 conn.commit()
                 print(f"Updated {ticker}: Growth Rate = {growth_rate}, Profit Margin = {profit_margin}")
 
-                print(f"After Update: {ticker} =>", cursor.execute('SELECT ticker, nicks_growth_rate, projected_profit_margin FROM Tickers_Info WHERE ticker = ?', (ticker,)).fetchall())
+                print(f"After Update: {ticker} =>", cursor.execute(
+                    'SELECT ticker, nicks_growth_rate, projected_profit_margin FROM Tickers_Info WHERE ticker = ?',
+                    (ticker,)).fetchall())
             except sqlite3.Error as e:
                 print(f"Error updating {ticker}: {e}")
 
@@ -314,15 +344,13 @@ def process_update_growth_csv(file_path, db_path):
     print(f"{file_path} processed and data wiped.")
 
 
-
-
 def valuation_update(ticker, cursor, treasury_yield):
     db_path = "Stock Data.db"
     """Updates the Finviz 5-year EPS growth data for the given ticker and determines the valuation method."""
     finviz_five_yr(ticker, cursor)
     combined_data, growth_values, current_price = fetch_financial_valuation_data(ticker, db_path)
 
-    if growth_values.empty or pd.isna(growth_values['nicks_growth_rate'].iloc[0]) or pd.isna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
+    if growth_values.empty and pd.isna(growth_values['nicks_growth_rate'].iloc[0]) and pd.isna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
         print("Growth values are missing or not valid. Skipping valuation.")
     else:
         valuation_method = determine_valuation_method(combined_data)

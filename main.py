@@ -28,7 +28,7 @@ from valuation_update import (valuation_update, process_update_growth_csv)
 
 
 # Constants
-TICKERS_FILE_PATH = 'tickers.csv'
+TICKERS_FILE_PATH = 'tickers aapl.csv'
 db_path = 'Stock Data.db'
 file_path = "update_growth.csv"
 charts_output_dir = 'charts/'
