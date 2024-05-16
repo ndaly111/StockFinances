@@ -1,9 +1,9 @@
 name: Update Tickers
 
 on:
-  workflow_dispatch:
   repository_dispatch:
     types: [manage_ticker, update_growth]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -28,13 +28,18 @@ jobs:
         run: |
           echo "Handling dispatch for action ${{ github.event.client_payload.action }}"
           echo "${{ toJson(github.event.client_payload) }}" > payload.json
+          cat payload.json  # Debugging: Output the payload
 
           python - <<EOF
 import sqlite3
 import json
 
+print("Starting Python script")  # Debugging: Indicate start of script
+
 with open('payload.json', 'r') as f:
     payload = json.load(f)
+
+print("Payload:", payload)  # Debugging: Output the payload
 
 action = payload.get('action')
 ticker = payload.get('ticker').upper()
@@ -73,4 +78,5 @@ elif action == 'update_growth':
     print(f'Updated ticker {ticker} with growth rate {growth_rate} and profit margin {profit_margin}')
 
 conn.close()
+print("Finished Python script")  # Debugging: Indicate end of script
 EOF
