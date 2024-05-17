@@ -75,7 +75,6 @@ def fetch_financial_valuation_data(ticker, db_path):
     print(f"Fetching financial valuation data for: {ticker}")
 
     stock = yf.Ticker(ticker)
-
     current_price = stock.info.get('currentPrice')
 
     with sqlite3.connect(db_path) as conn:
@@ -112,6 +111,7 @@ def fetch_financial_valuation_data(ticker, db_path):
         combined_data = pd.concat([ttm_data, forecast_data]).reset_index(drop=True)
 
         return combined_data, growth_value, current_price, forecast_data
+
 
 def determine_valuation_method(combined_data):
     """Determines the valuation method based on the EPS values in the combined data."""
@@ -405,73 +405,83 @@ def process_update_growth_csv(file_path, db_path):
     print(f"{file_path} processed and data wiped.")
 
 
-
-
 def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data):
     db_path = "Stock Data.db"
     """Updates the Finviz 5-year EPS growth data for the given ticker and determines the valuation method."""
     finviz_five_yr(ticker, cursor)
     combined_data, growth_values, current_price, forecast_data = fetch_financial_valuation_data(ticker, db_path)
-    print('combined data',combined_data)
+    print('combined data', combined_data)
 
     if forecast_data.empty:
+        print(f"No forecast data for {ticker}. Skipping...")
         return
 
-    if growth_values.empty and pd.isna(growth_values['nicks_growth_rate'].iloc[0]) and pd.isna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
+    if growth_values.empty or (
+            pd.isna(growth_values['nicks_growth_rate'].iloc[0]) and pd.isna(growth_values['FINVIZ_5yr_gwth'].iloc[0])):
         print("Growth values are missing or not valid. Skipping valuation.")
         return
-    else:
-        valuation_method = determine_valuation_method(combined_data)
-        print(f"Valuation Method for {ticker}: {valuation_method}")
-        if valuation_method == "eps valuation":
-            valuation_data, nicks_fair_pe, finviz_fair_pe = calculate_fair_pe(combined_data, growth_values, treasury_yield)
-            plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
-            generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_pe, finviz_fair_pe, valuation_method)
-        elif valuation_method == "sales valuation":
-            valuation_data, nicks_fair_ps, finviz_fair_ps = calculate_fair_ps(combined_data, growth_values, treasury_yield, current_price, marketcap, ticker)
-            plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
-            generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_ps, finviz_fair_ps, valuation_method)
 
-        # Collect data for the dashboard table
-        try:
-            nicks_ttm_valuation = float(combined_data['Nicks_Valuation'].iloc[0].replace('$', '').replace('B', '').replace('M', '').replace('K', ''))
-            nicks_forward_valuation = float(combined_data['Nicks_Valuation'].iloc[1].replace('$', '').replace('B', '').replace('M', '').replace('K', ''))
-            nicks_ttm_value = ((nicks_ttm_valuation / current_price) - 1) * 100
-            nicks_forward_value = ((nicks_forward_valuation / current_price) - 1) * 100
+    valuation_method = determine_valuation_method(combined_data)
+    print(f"Valuation Method for {ticker}: {valuation_method}")
 
-            if pd.notna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
-                finviz_ttm_valuation = float(combined_data['Finviz_Valuation'].iloc[0].replace('$', '').replace('B', '').replace('M', '').replace('K', ''))
-                finviz_forward_valuation = float(combined_data['Finviz_Valuation'].iloc[1].replace('$', '').replace('B', '').replace('M', '').replace('K', ''))
-                finviz_ttm_value = ((finviz_ttm_valuation / current_price) - 1) * 100
-                finviz_forward_value = ((finviz_forward_valuation / current_price) - 1) * 100
-            else:
-                finviz_ttm_valuation = "-"
-                finviz_forward_valuation = "-"
-                finviz_ttm_value = "-"
-                finviz_forward_value = "-"
-        except ValueError as e:
-            print(f"Error converting valuation values to float for ticker {ticker}: {e}")
-            nicks_ttm_valuation = "-"
-            nicks_forward_valuation = "-"
-            nicks_ttm_value = "-"
-            nicks_forward_value = "-"
+    if valuation_method == "eps valuation":
+        valuation_data, nicks_fair_pe, finviz_fair_pe = calculate_fair_pe(combined_data, growth_values, treasury_yield)
+        plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
+        generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_pe,
+                                  finviz_fair_pe, valuation_method)
+    elif valuation_method == "sales valuation":
+        valuation_data, nicks_fair_ps, finviz_fair_ps = calculate_fair_ps(combined_data, growth_values, treasury_yield,
+                                                                          current_price, marketcap, ticker)
+        plot_valuation_chart(valuation_data, current_price, ticker, growth_values)
+        generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_ps,
+                                  finviz_fair_ps, valuation_method)
+
+    # Collect data for the dashboard table
+    try:
+        nicks_ttm_valuation = float(
+            combined_data['Nicks_Valuation'].iloc[0].replace('$', '').replace('B', '').replace('M', '').replace('K',
+                                                                                                                ''))
+        nicks_forward_valuation = float(
+            combined_data['Nicks_Valuation'].iloc[1].replace('$', '').replace('B', '').replace('M', '').replace('K',
+                                                                                                                ''))
+        nicks_ttm_value = ((nicks_ttm_valuation / current_price) - 1) * 100
+        nicks_forward_value = ((nicks_forward_valuation / current_price) - 1) * 100
+
+        if pd.notna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
+            finviz_ttm_valuation = float(
+                combined_data['Finviz_Valuation'].iloc[0].replace('$', '').replace('B', '').replace('M', '').replace(
+                    'K', ''))
+            finviz_forward_valuation = float(
+                combined_data['Finviz_Valuation'].iloc[1].replace('$', '').replace('B', '').replace('M', '').replace(
+                    'K', ''))
+            finviz_ttm_value = ((finviz_ttm_valuation / current_price) - 1) * 100
+            finviz_forward_value = ((finviz_forward_valuation / current_price) - 1) * 100
+        else:
             finviz_ttm_valuation = "-"
             finviz_forward_valuation = "-"
             finviz_ttm_value = "-"
             finviz_forward_value = "-"
+    except (ValueError, IndexError) as e:
+        print(f"Error converting valuation values to float for ticker {ticker}: {e}")
+        nicks_ttm_valuation = "-"
+        nicks_forward_valuation = "-"
+        nicks_ttm_value = "-"
+        nicks_forward_value = "-"
+        finviz_ttm_valuation = "-"
+        finviz_forward_valuation = "-"
+        finviz_ttm_value = "-"
+        finviz_forward_value = "-"
 
-        dashboard_data.append([
-            ticker,
-            f"${current_price:.2f}",
-            f"${nicks_ttm_valuation:.2f}" if isinstance(nicks_ttm_valuation, float) else nicks_ttm_valuation,
-            f"{nicks_ttm_value:.1f}%" if isinstance(nicks_ttm_value, float) else nicks_ttm_value,
-            f"${nicks_forward_valuation:.2f}" if isinstance(nicks_forward_valuation,
-                                                            float) else nicks_forward_valuation,
-            f"{nicks_forward_value:.1f}%" if isinstance(nicks_forward_value, float) else nicks_forward_value,
-            f"${finviz_ttm_valuation:.2f}" if isinstance(finviz_ttm_valuation, float) else finviz_ttm_valuation,
-            f"{finviz_ttm_value:.1f}%" if isinstance(finviz_ttm_value, float) else finviz_ttm_value,
-            f"${finviz_forward_valuation:.2f}" if isinstance(finviz_forward_valuation,
-                                                             float) else finviz_forward_valuation,
-            f"{finviz_forward_value:.1f}%" if isinstance(finviz_forward_value, float) else finviz_forward_value
-        ])
+    dashboard_data.append([
+        ticker,
+        f"${current_price:.2f}",
+        f"${nicks_ttm_valuation:.2f}" if isinstance(nicks_ttm_valuation, float) else nicks_ttm_valuation,
+        f"{nicks_ttm_value:.1f}%" if isinstance(nicks_ttm_value, float) else nicks_ttm_value,
+        f"${nicks_forward_valuation:.2f}" if isinstance(nicks_forward_valuation, float) else nicks_forward_valuation,
+        f"{nicks_forward_value:.1f}%" if isinstance(nicks_forward_value, float) else nicks_forward_value,
+        f"${finviz_ttm_valuation:.2f}" if isinstance(finviz_ttm_valuation, float) else finviz_ttm_valuation,
+        f"{finviz_ttm_value:.1f}%" if isinstance(finviz_ttm_value, float) else finviz_ttm_value,
+        f"${finviz_forward_valuation:.2f}" if isinstance(finviz_forward_valuation, float) else finviz_forward_valuation,
+        f"{finviz_forward_value:.1f}%" if isinstance(finviz_forward_value, float) else finviz_forward_value
+    ])
 
