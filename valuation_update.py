@@ -111,7 +111,7 @@ def fetch_financial_valuation_data(ticker, db_path):
         # Combine TTM and forecast data into a single DataFrame
         combined_data = pd.concat([ttm_data, forecast_data]).reset_index(drop=True)
 
-        return combined_data, growth_value, current_price
+        return combined_data, growth_value, current_price, forecast_data
 
 def determine_valuation_method(combined_data):
     """Determines the valuation method based on the EPS values in the combined data."""
@@ -411,10 +411,15 @@ def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data):
     db_path = "Stock Data.db"
     """Updates the Finviz 5-year EPS growth data for the given ticker and determines the valuation method."""
     finviz_five_yr(ticker, cursor)
-    combined_data, growth_values, current_price = fetch_financial_valuation_data(ticker, db_path)
+    combined_data, growth_values, current_price, forecast_data = fetch_financial_valuation_data(ticker, db_path)
+    print('combined data',combined_data)
+
+    if forecast_data.empty:
+        return
 
     if growth_values.empty and pd.isna(growth_values['nicks_growth_rate'].iloc[0]) and pd.isna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
         print("Growth values are missing or not valid. Skipping valuation.")
+        return
     else:
         valuation_method = determine_valuation_method(combined_data)
         print(f"Valuation Method for {ticker}: {valuation_method}")
