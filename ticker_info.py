@@ -29,17 +29,19 @@ def fetch_stock_data(ticker, treasury_yield):
     # Format close price as $xx.xx or return '-' if current_price is None
     formatted_close_price = f"${current_price:.2f}" if current_price is not None else '-'
 
+    marketcap = stock.info.get('marketCap')
+
     # Create the dictionary with proper formatting or placeholders if a value is None
     data = {
         'Close Price': formatted_close_price,
-        'Market Cap': stock.info.get('marketCap'),
+        'Market Cap': marketcap,
         'P/E Ratio': "{:.1f}".format(pe_ratio) if pe_ratio is not None else '-',
         'Forward P/E Ratio': "{:.1f}".format(forward_pe_ratio) if forward_pe_ratio is not None else '-',
         'Implied Growth*': implied_growth_formatted,
         'Implied Forward Growth*': implied_forward_growth_formatted,
         'P/B Ratio': "{:.1f}".format(price_to_book) if price_to_book is not None else '-',
     }
-    return data
+    return data, marketcap
 
 
 def calculate_implied_growth(pe_ratio, treasury_yield):
@@ -74,8 +76,8 @@ def format_number(value):
 
 
 def prepare_data_for_display(ticker, treasury_yield):
-    fetched_data = fetch_stock_data(ticker, treasury_yield)
-    return fetched_data
+    fetched_data, marketcap = fetch_stock_data(ticker, treasury_yield)
+    return fetched_data, marketcap
 
 
 def generate_html_table(data, ticker):

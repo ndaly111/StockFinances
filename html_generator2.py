@@ -7,6 +7,7 @@ db_path = 'Stock Data.db'
 
 env = Environment(loader=FileSystemLoader('templates'))
 
+
 def ensure_directory_exists(directory):
     print(f"Checking if directory {directory} exists...")
     if not os.path.exists(directory):
@@ -41,6 +42,39 @@ def ensure_templates_exist():
         <meta charset="UTF-8">
         <title>Nick's Stock Financials</title>
         <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+        <style>
+            .positive {
+                color: green;
+            }
+            .negative {
+                color: red;
+            }
+        </style>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#sortable-table').DataTable({
+                    "pageLength": 100,
+                    "createdRow": function(row, data, dataIndex) {
+                        $('td', row).each(function() {
+                            var cellValue = $(this).text();
+                            if (cellValue.includes('%')) {
+                                var value = parseFloat(cellValue.replace('%', ''));
+                                if (!isNaN(value)) {
+                                    if (value < 0) {
+                                        $(this).addClass('negative');
+                                    } else {
+                                        $(this).addClass('positive');
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
     </head>
     <body>
         <header>
@@ -51,15 +85,18 @@ def ensure_templates_exist():
             <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
             {% endfor %}
         </nav>
-        <!-- Placeholder for future content or table -->
+        
+        <br><br><br>
         <div>
-            <p>Welcome to the financial dashboard. Select a company above to view more details.</p>
+            <!-- Main sortable table -->
+            {{ dashboard_table | safe }}
         </div>
         <footer>
             <p>Nick's Financial Data Dashboard</p>
         </footer>
     </body>
     </html>
+
     """
 
     # Define the ticker-specific template content
@@ -77,12 +114,12 @@ def ensure_templates_exist():
             <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
             <h2>Ticker - {{ ticker_data.ticker }}</h2>
         </header>
-    
+
         <!-- Section for ticker information and summary -->
         <section>
             <p>{{ ticker_data.ticker_info | safe }}</p>
         </section>
-    
+
         <!-- Section for financial charts and tables -->
         <div>
             <img src="../{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart">
@@ -101,7 +138,7 @@ def ensure_templates_exist():
                 {{ ticker_data.yoy_growth_table_html | safe }}
             </div>
         </div>
-        
+
         <!-- New Carousel for YoY Growth Charts -->
         <div><br><br><h1>{{ ticker_data.ticker }} - Y/Y % Change</h1></div>
         <div class="carousel-container">
@@ -134,16 +171,12 @@ def ensure_templates_exist():
         </div>
         {% endif %}
 
-    
         <footer>
             <a href="../index.html" class="home-button">Back to Home</a>
             <br><br><br><br><br>
-            
         </footer>
     </body>
     </html>
-
-
     """
 
     templates_dir = 'templates'
@@ -151,19 +184,14 @@ def ensure_templates_exist():
     create_template(os.path.join(templates_dir, 'ticker_template.html'), ticker_template_content)
 
 
-def create_home_page(tickers, output_dir):
+def create_home_page(tickers, output_dir, full_dashboard_html, avg_values):
     print(f"Creating home page in {output_dir}...")
     template = env.get_template('home_template.html')
     home_page_path = os.path.join(output_dir, 'index.html')
     with open(home_page_path, 'w') as file:
-        file.write(template.render(tickers=tickers))
+        file.write(template.render(tickers=tickers, dashboard_table=full_dashboard_html, dashboard_data=avg_values))
     print(f"Home page created at {home_page_path}")
 
-def get_company_short_name(ticker, cursor):
-    """Fetch the short name of the company for a given ticker."""
-    cursor.execute('SELECT short_name FROM Tickers_Info WHERE ticker = ?', (ticker,))
-    company_info = cursor.fetchone()
-    return company_info[0] if company_info else ticker
 
 
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
@@ -223,6 +251,7 @@ def get_file_content_or_placeholder(file_path, placeholder="No data available"):
         print(f"File {file_path} not found. Using placeholder.")
         return placeholder
 
+
 def create_ticker_page(ticker, ticker_data, output_dir):
     print(f"Creating page for ticker: {ticker}")
     template = env.get_template('ticker_template.html')
@@ -233,11 +262,80 @@ def create_ticker_page(ticker, ticker_data, output_dir):
     print(f"Generated page for {ticker} at {page_path}")
 
 
-def html_generator2(tickers, financial_data):
+def generate_dashboard_table(dashboard_data):
+    dashboard_df = pd.DataFrame(dashboard_data, columns=[
+        "Ticker", "Share Price", "Nicks TTM Valuation", "Nicks TTM Value",
+        "Nicks Forward Valuation", "Nicks Forward Value", "Finviz TTM Valuation",
+        "Finviz TTM Value", "Finviz Forward Valuation", "Finviz Forward Value"
+    ])
+
+    # Calculate average TTM and Forward Valuation values
+    avg_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
+    avg_nicks_forward = dashboard_df["Nicks Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
+    avg_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
+    avg_finviz_forward = dashboard_df["Finviz Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
+
+    # Calculate medians
+    median_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
+    median_nicks_forward = dashboard_df["Nicks Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
+    median_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
+    median_finviz_forward = dashboard_df["Finviz Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
+
+    avg_values = {
+        'Nicks_TTM_Value_Average': avg_nicks_ttm,
+        'Nicks_Forward_Value_Average': avg_nicks_forward,
+        'Finviz_TTM_Value_Average': avg_finviz_ttm,
+        'Nicks_TTM_Value_Median': median_nicks_ttm,
+        'Nicks_Forward_Value_Median': median_nicks_forward,
+        'Finviz_TTM_Value_Median': median_finviz_ttm,
+        'Finviz_Forward_Value_Median': median_finviz_forward
+    }
+
+    avg_values_df = pd.DataFrame([
+        ["Average", f"{avg_nicks_ttm:.1f}%", f"{avg_nicks_forward:.1f}%", f"{avg_finviz_ttm:.1f}%", f"{avg_finviz_forward:.1f}%"],
+        ["Median", f"{median_nicks_ttm:.1f}%", f"{median_nicks_forward:.1f}%", f"{median_finviz_ttm:.1f}%", f"{median_finviz_forward:.1f}%"]
+    ], columns=["Metric", "Nicks TTM Value", "Nicks Forward Value", "Finviz TTM Value", "Finviz Forward Value"])
+
+    avg_values_html = avg_values_df.to_html(index=False, escape=False, classes='table table-striped', justify='left')
+
+    # Append the main dashboard data table
+    dashboard_html = dashboard_df.to_html(index=False, escape=False, classes='table table-striped', justify='left', table_id="sortable-table")
+
+    full_dashboard_html = avg_values_html + dashboard_html
+
+    dashboard_path = os.path.join('charts', "dashboard.html")
+    with open(dashboard_path, "w") as file:
+        file.write(full_dashboard_html)
+
+    print(f"Dashboard saved to {dashboard_path}")
+
+    return full_dashboard_html, avg_values
+
+
+def create_home_page(tickers, output_dir, dashboard_html, avg_values):
+    print(f"Creating home page in {output_dir}...")
+    template = env.get_template('home_template.html')
+    home_page_path = os.path.join(output_dir, 'index.html')
+    with open(home_page_path, 'w') as file:
+        file.write(template.render(tickers=tickers, dashboard_table=dashboard_html, dashboard_data=avg_values))
+    print(f"Home page created at {home_page_path}")
+
+
+
+def get_company_short_name(ticker, cursor):
+    """Fetch the company short name for a given ticker."""
+    cursor.execute("SELECT short_name FROM Tickers_Info WHERE ticker = ?", (ticker,))
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+    else:
+        return ticker
+
+def html_generator2(tickers, financial_data, full_dashboard_html, avg_values):
     output_dir = '.'  # Define the main directory for output
     print("Starting HTML generation process...")
     ensure_templates_exist()
-    create_home_page(tickers, output_dir)
+    create_home_page(tickers, output_dir, full_dashboard_html, avg_values)
     for ticker in tickers:
         if ticker in financial_data:
             print(f"Processing ticker: {ticker}")

@@ -2,6 +2,7 @@
 import os
 import sqlite3
 import ticker_manager
+from datetime import datetime
 from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries,handle_ttm_duplicates)
 from chart_generator import (prepare_data_for_charts, generate_financial_charts)
 from html_generator import (create_html_for_tickers)
@@ -20,7 +21,7 @@ from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
 import requests
-from html_generator2 import html_generator2
+from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import (valuation_update, process_update_growth_csv)
 
 
@@ -133,6 +134,46 @@ def fetch_financial_data(ticker, cursor):
 
     return combined_data
 
+# Add the log_average_valuations function
+def log_average_valuations(avg_values):
+    if TICKERS_FILE_PATH != 'tickers.csv':
+        print("Skipping average valuation update, as TICKERS_FILE_PATH is not 'tickers aapl.csv'.")
+        return
+
+    avg_ttm_valuation = avg_values['Nicks_TTM_Value_Average']
+    avg_forward_valuation = avg_values['Nicks_Forward_Value_Average']
+    avg_finviz_valuation = avg_values['Finviz_TTM_Value_Average']
+
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+
+        # Create the table if it doesn't exist
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS AverageValuations (
+                id INTEGER PRIMARY KEY,
+                date DATE,
+                avg_ttm_valuation REAL,
+                avg_forward_valuation REAL,
+                avg_finviz_valuation REAL
+            );
+        ''')
+
+        # Check if a record already exists for the current date
+        cursor.execute('''
+            SELECT 1 FROM AverageValuations WHERE date = ?;
+        ''', (current_date,))
+        if cursor.fetchone():
+            print(f"Average valuations for {current_date} already recorded. Skipping.")
+        else:
+            # Insert the new average values
+            cursor.execute('''
+                INSERT INTO AverageValuations (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
+                VALUES (?, ?, ?, ?);
+            ''', (current_date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation))
+            conn.commit()
+            print(f"Inserted average valuations for {current_date} into AverageValuations.")
 
 
 def balancesheet_chart(ticker, charts_output_dir):
@@ -222,6 +263,8 @@ def generate_html_report(sorted_tickers, financial_data, output_dir, output_file
     print(f"HTML report generated at {html_full_path}")
     return html_full_path
 
+
+
 def fetch_10_year_treasury_yield():
     """
     Fetches the latest 10-year Treasury note yield from the FRED website.
@@ -244,15 +287,16 @@ def fetch_10_year_treasury_yield():
         return "N/A"
 
 
+# Main function (remaining code)
 def main():
     print("main start")
     financial_data = {}
+    dashboard_data = []
     treasury_yield = fetch_10_year_treasury_yield()
 
     # Manage tickers and establish database connection
     sorted_tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=False)
     print("---main loop 1 sorted tickers")
-
 
     conn = establish_database_connection(db_path)
     if conn is None:
@@ -299,22 +343,26 @@ def main():
             # Generate HTML report after all tickers have been processed
             generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
 
-            prepared_data = prepare_data_for_display(ticker,treasury_yield)
+            prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
 
             generate_html_table(prepared_data, ticker)
 
-            valuation_update(ticker, cursor, treasury_yield)
+            valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
 
+        # Generate the dashboard table HTML
+        full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
 
+        # Log average valuations to the database
+        log_average_valuations(avg_values)
 
         print("generating HTML2")
         # Call html_generator2 function after all tickers have been processed
-        html_generator2(sorted_tickers, financial_data)
-
+        html_generator2(sorted_tickers, financial_data, full_dashboard_html, avg_values)
 
     finally:
         if conn:
             conn.close()
+
 
 if __name__ == "__main__":
     main()
