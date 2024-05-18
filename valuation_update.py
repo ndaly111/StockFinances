@@ -514,6 +514,7 @@ def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data):
         finviz_forward_valuation = "-"
         finviz_ttm_value = "-"
         finviz_forward_value = "-"
+        #commit
 
     dashboard_data.append([
         ticker,
