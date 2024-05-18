@@ -1,0 +1,63 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Nick's Stock Financials</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+        <style>
+            .positive {
+                color: green;
+            }
+            .negative {
+                color: red;
+            }
+        </style>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#sortable-table').DataTable({
+                    "pageLength": 100,
+                    "createdRow": function(row, data, dataIndex) {
+                        $('td', row).each(function() {
+                            var cellValue = $(this).text();
+                            if (cellValue.includes('%')) {
+                                var value = parseFloat(cellValue.replace('%', ''));
+                                if (!isNaN(value)) {
+                                    if (value < 0) {
+                                        $(this).addClass('negative');
+                                    } else {
+                                        $(this).addClass('positive');
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <header>
+            <h1>Financial Overview</h1>
+        </header>
+        <nav class="navigation">
+            {% for ticker in tickers %}
+            <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
+            {% endfor %}
+        </nav>
+        
+        <br><br><br>
+        <div>
+            <!-- Main sortable table -->
+            {{ dashboard_table | safe }}
+        </div>
+        <footer>
+            <p>Nick's Financial Data Dashboard</p>
+        </footer>
+    </body>
+    </html>
+
+    
