@@ -270,17 +270,23 @@ def generate_dashboard_table(dashboard_data):
         "Finviz TTM Value", "Finviz Forward Valuation", "Finviz Forward Value"
     ])
 
+    def parse_percentage(value):
+        try:
+            return float(value.strip('%')) if value != "-" else None
+        except ValueError:
+            return None
+
     # Calculate average TTM and Forward Valuation values
-    avg_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
-    avg_nicks_forward = dashboard_df["Nicks Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
-    avg_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
-    avg_finviz_forward = dashboard_df["Finviz Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
+    avg_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(parse_percentage).mean()
+    avg_nicks_forward = dashboard_df["Nicks Forward Value"].apply(parse_percentage).mean()
+    avg_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(parse_percentage).mean()
+    avg_finviz_forward = dashboard_df["Finviz Forward Value"].apply(parse_percentage).mean()
 
     # Calculate medians
-    median_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
-    median_nicks_forward = dashboard_df["Nicks Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
-    median_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
-    median_finviz_forward = dashboard_df["Finviz Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
+    median_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(parse_percentage).median()
+    median_nicks_forward = dashboard_df["Nicks Forward Value"].apply(parse_percentage).median()
+    median_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(parse_percentage).median()
+    median_finviz_forward = dashboard_df["Finviz Forward Value"].apply(parse_percentage).median()
 
     avg_values = {
         'Nicks_TTM_Value_Average': avg_nicks_ttm,
@@ -311,6 +317,7 @@ def generate_dashboard_table(dashboard_data):
     print(f"Dashboard saved to {dashboard_path}")
 
     return full_dashboard_html, avg_values
+
 
 
 def create_home_page(tickers, output_dir, dashboard_html, avg_values):
