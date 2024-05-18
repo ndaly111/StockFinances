@@ -1,4 +1,4 @@
-name: Run Python Script
+name: Run Python Script and Deploy to GitHub Pages
 
 on:
   schedule:
@@ -31,16 +31,27 @@ jobs:
       run: |
         git config --global user.name 'ndaly111'
         git config --global user.email 'ndaly111@gmail.com'
-        
-    - name: Checkout gh-pages branch
-      run: git checkout gh-pages || git checkout --orphan gh-pages
-    
-    - name: Add all changes to gh-pages
+    - name: Commit and push changes to main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git add .  # This will add all new and modified files to the commit
         git commit -m "Update website content" --allow-empty  # This commits the changes
-    
-    - name: Push changes to gh-pages
-      run: git push origin gh-pages --force
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main --force
+    - name: Clone repository
+      uses: actions/checkout@v2
+      with:
+        ref: main  # Ensure we are cloning the main branch
+        path: main_repo  # Clone the main branch to a directory named main_repo
+
+    - name: Check out gh-pages branch
+      run: |
+        git clone --branch=gh-pages https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
+        cd gh-pages
+        cp -r ../main_repo/* .  # Copy all files from the main branch directory to the gh-pages directory
+    - name: Commit and push changes to gh-pages
+      run: |
+        cd gh-pages
+        git add .
+        git commit -m "Deploy to GitHub Pages" --allow-empty
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages --force
