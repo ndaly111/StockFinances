@@ -36,6 +36,7 @@ def log_valuation_data(ticker, nicks_ttm_valuation, nicks_forward_valuation, fin
         conn.commit()
         print(f"Inserted valuation data for {ticker} into ValuationHistory.")
 
+
 def finviz_five_yr(ticker, cursor):
     """Fetches and stores the 5-year EPS growth percentage from Finviz into the database."""
     url = f'https://finviz.com/quote.ashx?t={ticker}'
@@ -53,6 +54,20 @@ def finviz_five_yr(ticker, cursor):
             if estimate_value:  # Check if estimate_value is not empty
                 try:
                     estimate_value = float(estimate_value)  # Convert to float
+
+                    # Check if ticker exists in the table
+                    cursor.execute(f'''
+                        SELECT 1 FROM Tickers_Info WHERE ticker = ?;
+                    ''', (ticker,))
+                    if not cursor.fetchone():
+                        # Insert ticker if it does not exist
+                        cursor.execute(f'''
+                            INSERT INTO Tickers_Info (ticker) VALUES (?);
+                        ''', (ticker,))
+                        cursor.connection.commit()
+                        print(f"Inserted new ticker {ticker} into Tickers_Info.")
+
+                    # Update the table with the new growth estimate
                     cursor.execute(f'''
                         UPDATE 'Tickers_Info'
                         SET FINVIZ_5yr_gwth = ? 
@@ -68,7 +83,6 @@ def finviz_five_yr(ticker, cursor):
             print(f"Could not find the 5-year EPS growth estimate for {ticker} on Finviz.")
     else:
         print(f"Failed to retrieve Finviz data for {ticker}, status code: {response.status_code}")
-
 
 
 def fetch_financial_valuation_data(ticker, db_path):
@@ -146,8 +160,6 @@ def calculate_fair_pe(combined_data, growth_values, treasury_yield):
 
     return combined_data[['Year', 'Nicks_Valuation', 'Finviz_Valuation']], nicks_fair_pe, finviz_fair_pe
 
-
-import yfinance as yf  # Ensure yfinance is imported at the top of the file
 
 
 def calculate_fair_ps(combined_data, growth_values, treasury_yield, current_price, marketcap, ticker):
@@ -242,16 +254,9 @@ def format_number(value):
     else:
         return f"{value:.2f}"
 
-def format_currency(value):
-    """Formats numbers as currency with billions, millions, or thousands with appropriate suffixes."""
-    if value >= 1_000_000_000:
-        return f"${value / 1_000_000_000:.2f}B"
-    elif value >= 1_000_000:
-        return f"${value / 1_000_000:.2f}M"
-    elif value >= 1_000:
-        return f"${value / 1_000:.2f}K"
-    else:
-        return f"${value:.2f}"
+
+def valuation_format(value):
+    return f"${value:,.2f}"
 
 
 def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yield, current_price, nicks_fair_val, finviz_fair_val, valuation_method):
@@ -262,8 +267,12 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
     current_price, pe_ratio, price_to_sales, forward_pe_ratio = fetch_stock_data(ticker)
 
     # Format the necessary values
-    current_price_formatted = f"${current_price:.2f}"
+    current_price_formatted = f"${current_price:,.2f}"
     treasury_yield_formatted = f"{treasury_yield:.1f}%"
+
+    nicks_growth_rate_formatted = f"{growth_values['nicks_growth_rate'].iloc[0]:.0f}%" if pd.notna(growth_values['nicks_growth_rate'].iloc[0]) else "N/A"
+    finviz_growth_rate_formatted = f"{growth_values['FINVIZ_5yr_gwth'].iloc[0]:.0f}%" if pd.notna(growth_values['FINVIZ_5yr_gwth'].iloc[0]) else "N/A"
+    expected_margin_formatted = f"{growth_values['projected_profit_margin'].iloc[0]:.0f}%" if pd.notna(growth_values['projected_profit_margin'].iloc[0]) else "N/A"
 
     if valuation_method == "eps valuation":
         nicks_fair_val_formatted = f"{nicks_fair_val:.0f}"
@@ -271,21 +280,19 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
         current_valuation_metric = f"{pe_ratio:.1f}" if pe_ratio else "N/A"
         valuation_metric_label = "Current P/E"
         fair_value_label = f"Fair P/E: Nicks: {nicks_fair_val_formatted}, Finviz: {finviz_fair_val_formatted}"
+        estimates = f"Nicks Growth: {nicks_growth_rate_formatted}, Finviz Growth: {finviz_growth_rate_formatted}"
     else:
         nicks_fair_val_formatted = f"{nicks_fair_val:.3f}"
         finviz_fair_val_formatted = f"{finviz_fair_val:.3f}"
         current_valuation_metric = f"{price_to_sales:.1f}" if price_to_sales else "N/A"
         valuation_metric_label = "Current P/S"
-        fair_value_label = f"Fair P/S: Nicks: {nicks_fair_val_formatted}"
-
-    nicks_growth_rate_formatted = f"{growth_values['nicks_growth_rate'].iloc[0]:.0f}%" if pd.notna(growth_values['nicks_growth_rate'].iloc[0]) else "N/A"
-    finviz_growth_rate_formatted = f"{growth_values['FINVIZ_5yr_gwth'].iloc[0]:.0f}%" if pd.notna(growth_values['FINVIZ_5yr_gwth'].iloc[0]) else "N/A"
-    expected_margin_formatted = f"{growth_values['projected_profit_margin'].iloc[0]:.0f}%" if pd.notna(growth_values['projected_profit_margin'].iloc[0]) else "N/A"
+        fair_value_label = f"Nicks: {nicks_fair_val_formatted} P/S"
+        estimates = f"Nicks Growth: {nicks_growth_rate_formatted}, Expected Margin: {expected_margin_formatted}"
 
     table_1_data = {
         "Share Price": [current_price_formatted],
         "Treasury Yield": [treasury_yield_formatted],
-        "Estimates": [f"Nicks Growth: {nicks_growth_rate_formatted}, Expected Margin: {expected_margin_formatted}"],
+        "Estimates": [estimates],
         "Fair Value": [fair_value_label],
         valuation_metric_label: [current_valuation_metric]
     }
@@ -296,13 +303,17 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
     with open(table_1_path, "w") as file:
         file.write(table_1_html)
 
+    # Function to remove commas and convert to float
+    def remove_commas_and_convert(value):
+        return float(value.replace(',', ''))
+
     # Apply formatting to valuation data
-    combined_data['Nicks_Valuation'] = combined_data['Nicks_Valuation'].apply(format_currency)
-    combined_data['Finviz_Valuation'] = combined_data['Finviz_Valuation'].apply(format_currency)
+    combined_data['Nicks_Valuation'] = combined_data['Nicks_Valuation'].apply(valuation_format)
+    combined_data['Finviz_Valuation'] = combined_data['Finviz_Valuation'].apply(valuation_format)
     combined_data['Nicks vs Share Price'] = combined_data['Nicks_Valuation'].apply(
-        lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
+        lambda x: f"{((remove_commas_and_convert(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
     combined_data['Finviz vs Share Price'] = combined_data['Finviz_Valuation'].apply(
-        lambda x: f"{((float(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
+        lambda x: f"{((remove_commas_and_convert(x.strip('$BMK')) / current_price - 1) * 100):.1f}%")
 
     # Conditional formatting for positive and negative values
     def format_color(value):
@@ -341,7 +352,6 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
         file.write(table_2_html)
 
     print(f"Saved valuation info to {table_1_path} and valuation table to {table_2_path}")
-
 
 
 def process_update_growth_csv(file_path, db_path):
@@ -440,20 +450,20 @@ def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data):
     try:
         nicks_ttm_valuation = float(
             combined_data['Nicks_Valuation'].iloc[0].replace('$', '').replace('B', '').replace('M', '').replace('K',
-                                                                                                                ''))
+                                                                                                                '').replace(',',''))
         nicks_forward_valuation = float(
             combined_data['Nicks_Valuation'].iloc[1].replace('$', '').replace('B', '').replace('M', '').replace('K',
-                                                                                                                ''))
+                                                                                                                '').replace(',',''))
         nicks_ttm_value = ((nicks_ttm_valuation / current_price) - 1) * 100
         nicks_forward_value = ((nicks_forward_valuation / current_price) - 1) * 100
 
         if pd.notna(growth_values['FINVIZ_5yr_gwth'].iloc[0]):
             finviz_ttm_valuation = float(
                 combined_data['Finviz_Valuation'].iloc[0].replace('$', '').replace('B', '').replace('M', '').replace(
-                    'K', ''))
+                    'K', '',).replace(',',''))
             finviz_forward_valuation = float(
                 combined_data['Finviz_Valuation'].iloc[1].replace('$', '').replace('B', '').replace('M', '').replace(
-                    'K', ''))
+                    'K', '').replace(',',''))
             finviz_ttm_value = ((finviz_ttm_valuation / current_price) - 1) * 100
             finviz_forward_value = ((finviz_forward_valuation / current_price) - 1) * 100
         else:
