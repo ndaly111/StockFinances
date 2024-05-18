@@ -2,6 +2,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import pandas as pd
 import sqlite3
+import yfinance as yf
 
 db_path = 'Stock Data.db'
 
@@ -269,17 +270,23 @@ def generate_dashboard_table(dashboard_data):
         "Finviz TTM Value", "Finviz Forward Valuation", "Finviz Forward Value"
     ])
 
+    def parse_percentage(value):
+        try:
+            return float(value.strip('%')) if value != "-" else None
+        except ValueError:
+            return None
+
     # Calculate average TTM and Forward Valuation values
-    avg_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
-    avg_nicks_forward = dashboard_df["Nicks Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
-    avg_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
-    avg_finviz_forward = dashboard_df["Finviz Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).mean()
+    avg_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(parse_percentage).mean()
+    avg_nicks_forward = dashboard_df["Nicks Forward Value"].apply(parse_percentage).mean()
+    avg_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(parse_percentage).mean()
+    avg_finviz_forward = dashboard_df["Finviz Forward Value"].apply(parse_percentage).mean()
 
     # Calculate medians
-    median_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
-    median_nicks_forward = dashboard_df["Nicks Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
-    median_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
-    median_finviz_forward = dashboard_df["Finviz Forward Value"].apply(lambda x: float(x.strip('%')) if x != "-" else None).median()
+    median_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(parse_percentage).median()
+    median_nicks_forward = dashboard_df["Nicks Forward Value"].apply(parse_percentage).median()
+    median_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(parse_percentage).median()
+    median_finviz_forward = dashboard_df["Finviz Forward Value"].apply(parse_percentage).median()
 
     avg_values = {
         'Nicks_TTM_Value_Average': avg_nicks_ttm,
@@ -312,6 +319,7 @@ def generate_dashboard_table(dashboard_data):
     return full_dashboard_html, avg_values
 
 
+
 def create_home_page(tickers, output_dir, dashboard_html, avg_values):
     print(f"Creating home page in {output_dir}...")
     template = env.get_template('home_template.html')
@@ -321,15 +329,24 @@ def create_home_page(tickers, output_dir, dashboard_html, avg_values):
     print(f"Home page created at {home_page_path}")
 
 
-
 def get_company_short_name(ticker, cursor):
     """Fetch the company short name for a given ticker."""
     cursor.execute("SELECT short_name FROM Tickers_Info WHERE ticker = ?", (ticker,))
     result = cursor.fetchone()
-    if result:
+
+    if result and result[0]:  # Check if result exists and is not empty
         return result[0]
     else:
-        return ticker
+        stock = yf.Ticker(ticker)
+        short_name = stock.info.get('shortName', '').strip()  # Fetch and strip any surrounding whitespace
+
+        if short_name:  # Check if short name is not empty
+            # Update the database with the fetched short name
+            cursor.execute("UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?", (short_name, ticker))
+            cursor.connection.commit()
+            return short_name
+        else:
+            return ticker
 
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values):
     output_dir = '.'  # Define the main directory for output

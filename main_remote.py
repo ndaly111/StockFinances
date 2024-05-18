@@ -117,9 +117,9 @@ def fetch_financial_data(ticker, cursor):
 
     return combined_data
 
-def log_average_valuations(avg_values):
+def log_average_valuations(avg_values, TICKERS_FILE_PATH):
     if TICKERS_FILE_PATH != 'tickers.csv':
-        print("Skipping average valuation update, as TICKERS_FILE_PATH is not 'tickers aapl.csv'.")
+        print("Skipping average valuation update, as TICKERS_FILE_PATH is not 'tickers.csv'.")
         return
 
     avg_ttm_valuation = avg_values['Nicks_TTM_Value_Average']
@@ -134,8 +134,7 @@ def log_average_valuations(avg_values):
         # Create the table if it doesn't exist
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS AverageValuations (
-                id INTEGER PRIMARY KEY,
-                date DATE,
+                date DATE PRIMARY KEY,
                 avg_ttm_valuation REAL,
                 avg_forward_valuation REAL,
                 avg_finviz_valuation REAL
@@ -332,7 +331,7 @@ def main():
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
 
         # Log average valuations to the database
-        log_average_valuations(avg_values)
+        log_average_valuations(avg_values, TICKERS_FILE_PATH)
 
         print("generating HTML2")
         # Call html_generator2 function after all tickers have been processed
