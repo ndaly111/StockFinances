@@ -354,6 +354,10 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
     print(f"Saved valuation info to {table_1_path} and valuation table to {table_2_path}")
 
 
+import os
+import sqlite3
+import csv
+
 def process_update_growth_csv(file_path, db_path):
     """Reads the update_growth.csv file and updates the database with the new growth rates and profit margins."""
     if not os.path.exists(file_path):
@@ -389,6 +393,15 @@ def process_update_growth_csv(file_path, db_path):
                 print(f"No growth rate provided for ticker {ticker}. Skipping update.")
                 continue
 
+            # Check if the ticker exists in the database
+            cursor.execute('SELECT ticker FROM Tickers_Info WHERE ticker = ?', (ticker,))
+            result = cursor.fetchone()
+
+            if not result:
+                # Insert the new ticker into the database
+                cursor.execute('INSERT INTO Tickers_Info (ticker) VALUES (?)', (ticker,))
+                print(f"Inserted new ticker: {ticker}")
+
             print(f"Before Update: {ticker} =>", cursor.execute(
                 'SELECT ticker, nicks_growth_rate, projected_profit_margin FROM Tickers_Info WHERE ticker = ?',
                 (ticker,)).fetchall())
@@ -408,6 +421,12 @@ def process_update_growth_csv(file_path, db_path):
                     (ticker,)).fetchall())
             except sqlite3.Error as e:
                 print(f"Error updating {ticker}: {e}")
+
+    conn.close()
+    # Wipe the file contents
+    open(file_path, 'w').close()
+    print(f"{file_path} processed and data wiped.")
+
 
     conn.close()
     # Wipe the file contents
