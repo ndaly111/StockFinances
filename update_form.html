@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Ticker Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="text"], input[type="submit"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background: #218838;
+        }
+        p {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Tickers</h1>
+        <form id="manage-form">
+            <label for="action">Action:</label>
+            <select id="action" name="action" required>
+                <option value="add">Add</option>
+                <option value="remove">Remove</option>
+            </select>
+            <label for="ticker">Ticker:</label>
+            <input type="text" id="ticker" name="ticker" required><br>
+            <input type="submit" value="Update">
+        </form>
+        <hr>
+        <h1>Update Growth Info</h1>
+        <form id="update-form">
+            <label for="update_ticker">Ticker:</label>
+            <input type="text" id="update_ticker" name="update_ticker" required><br>
+            <label for="growth_rate">Expected Growth (%):</label>
+            <input type="text" id="growth_rate" name="growth_rate" required><br>
+            <label for="profit_margin">Expected Profit Margin (%):</label>
+            <input type="text" id="profit_margin" name="profit_margin"><br>
+            <input type="submit" value="Update">
+        </form>
+        <p id="message"></p>
+    </div>
+    <script>
+        async function submitForm(url, data) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            return response;
+        }
+
+        document.getElementById('manage-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const action = document.getElementById('action').value;
+            const ticker = document.getElementById('ticker').value.toUpperCase();
+
+            const response = await submitForm('/manage_ticker', { action, ticker });
+
+            if (response.ok) {
+                document.getElementById('message').textContent = 'Update dispatched successfully.';
+                document.getElementById('message').style.color = 'green';
+            } else {
+                const errorData = await response.json();
+                document.getElementById('message').textContent = `Failed to dispatch update: ${errorData.message}`;
+                document.getElementById('message').style.color = 'red';
+            }
+        });
+
+        document.getElementById('update-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const ticker = document.getElementById('update_ticker').value.toUpperCase();
+            const growth_rate = document.getElementById('growth_rate').value;
+            const profit_margin = document.getElementById('profit_margin').value || null;
+
+            const response = await submitForm('/update_growth', { ticker, growth_rate, profit_margin });
+
+            if (response.ok) {
+                document.getElementById('message').textContent = 'Update dispatched successfully.';
+                document.getElementById('message').style.color = 'green';
+            } else {
+                const errorData = await response.json();
+                document.getElementById('message').textContent = `Failed to dispatch update: ${errorData.message}`;
+                document.getElementById('message').style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
