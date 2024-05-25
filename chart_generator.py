@@ -137,8 +137,10 @@ def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_p
     bars2 = ax.bar(positions + width / 2, df['Net_Income'] / scale_factor, width, label=f'Net Income ({label_ending})', color='blue')
     ax.set_ylabel(ylabel)
 
-    max_revenue = max(df['Revenue'] / scale_factor)
-    min_net_income = min(df['Net_Income'] / scale_factor)
+    clean_df = df.dropna()
+
+    max_revenue = max(clean_df['Revenue'] / scale_factor)
+    min_net_income = min(clean_df['Net_Income'] / scale_factor)
     upper_limit = max_revenue * 1.2
     lower_limit = min_net_income * 1.2 if min_net_income < 0 else 0
 
@@ -208,10 +210,11 @@ def generate_eps_chart(ticker, charts_output_dir, financial_data_df):
                         ha='center', va='bottom', color="black")
 
     add_eps_value_labels(ax, eps_bars)
+    clean_financial_data_df = financial_data_df.dropna()
 
     # Calculate y-axis limits
-    max_eps = max(financial_data_df['EPS'])
-    min_eps = min(financial_data_df['EPS'])
+    max_eps = max(clean_financial_data_df['EPS'])
+    min_eps = min(clean_financial_data_df['EPS'])
 
     if max_eps <0:
         upper_limit = 0
