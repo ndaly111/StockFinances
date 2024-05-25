@@ -31,12 +31,12 @@ jobs:
           cat payload.json  # Debugging: Output the payload
           python <<EOF
 
-print("Starting Python script")  # Debugging: Indicate start of script
+
 
 with open('payload.json', 'r') as f:
     payload = json.load(f)
 
-print("Payload:", payload)  # Debugging: Output the payload
+print("Payload:", payload)  
 
 action = payload.get('action')
 ticker = payload.get('ticker').upper()
