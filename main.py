@@ -3,7 +3,7 @@ import os
 import sqlite3
 import ticker_manager
 from datetime import datetime
-from annual_and_ttm_update2 import annual_and_ttm_update
+from annual_and_ttm_update import annual_and_ttm_update
 from html_generator import (create_html_for_tickers)
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data,
