@@ -30,8 +30,6 @@ jobs:
           echo "${{ toJson(github.event.client_payload) }}" > payload.json
           cat payload.json  # Debugging: Output the payload
           python <<EOF
-import sqlite3
-import json
 
 print("Starting Python script")  # Debugging: Indicate start of script
 
