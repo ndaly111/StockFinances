@@ -3,10 +3,8 @@ import os
 import sqlite3
 import ticker_manager
 from datetime import datetime
-from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries,handle_ttm_duplicates)
-from chart_generator import (prepare_data_for_charts, generate_financial_charts)
+from annual_and_ttm_update import annual_and_ttm_update
 from html_generator import (create_html_for_tickers)
-from html_to_pdf_converter import html_to_pdf
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data,
     check_missing_balance_sheet_data,
@@ -29,7 +27,7 @@ from valuation_update import (valuation_update, process_update_growth_csv)
 
 
 # Constants
-TICKERS_FILE_PATH = 'tickers.csv'
+TICKERS_FILE_PATH = 'tickers aapl.csv'
 db_path = 'Stock Data.db'
 file_path = "update_growth.csv"
 charts_output_dir = 'charts/'
@@ -77,62 +75,6 @@ def establish_database_connection(db_path):
     print("Database exists. Establishing connection...")
     return sqlite3.connect(db_full_path)
 
-
-def fetch_financial_data(ticker, cursor):
-    print("main 3 fetch financial data")
-    print(f"Fetching financial data for ticker: {ticker}")
-
-    # Fetch existing data
-    ticker_data = fetch_ticker_data(ticker, cursor)
-    print("Ticker data:", ticker_data)
-
-
-
-    # Determine if annual data is missing
-    missing_data = determine_if_annual_data_missing(ticker_data)
-    print("Missing annual data:", missing_data)
-
-    # Calculate next annual check date based on the latest data
-    check_annual_data = calculate_next_annual_check_date_from_data(ticker_data)
-    print("Check annual data:", check_annual_data)
-
-    # Check for null fields in annual data
-    null_data_present = check_null_fields_annual(ticker, ticker_data)
-    print("Null data present:", null_data_present)
-
-    # If data is missing or needs checking, fetch new data from Yahoo Finance
-    if missing_data or check_annual_data or null_data_present:
-        annual_data = fetch_annual_data_from_yahoo(ticker)
-        if annual_data is not None:
-            store_annual_data(ticker, annual_data, cursor)
-            print("Stored new annual data for ticker:", ticker)
-
-    if handle_ttm_duplicates(ticker, cursor):
-        print("Fetching new TTM data for ticker after clearing duplicates:", ticker)
-        ttm_data_from_yahoo = fetch_ttm_data_from_yahoo(ticker)
-        if ttm_data_from_yahoo:
-            store_ttm_data(ticker, ttm_data_from_yahoo, cursor)
-            print("Stored new TTM data for ticker:", ticker)
-        return ttm_data_from_yahoo
-
-        # Continue with existing checks and data fetching if no duplicates were found
-    ttm_data = fetch_ttm_data(ticker, cursor)
-    if ttm_data is None or check_null_fields_ttm(ttm_data) or is_ttm_data_blank(ttm_data) or is_ttm_data_outdated(
-            ttm_data):
-        ttm_data_from_yahoo = fetch_ttm_data_from_yahoo(ticker)
-        if ttm_data_from_yahoo:
-            store_ttm_data(ticker, ttm_data_from_yahoo, cursor)
-            print("Stored new TTM data for ticker:", ticker)
-        return ttm_data_from_yahoo
-    return ttm_data
-
-    # Combine the annual and TTM data into one DataFrame
-    ticker_data_df = pd.DataFrame(ticker_data)
-    ttm_data_df = pd.DataFrame([ttm_data])  # Assuming ttm_data is a single dictionary
-    combined_data = pd.concat([ticker_data_df, ttm_data_df], ignore_index=True)
-    prompt_and_update_partial_entries(ticker,cursor, is_remote=False)
-
-    return combined_data
 
 # Add the log_average_valuations function
 def log_average_valuations(avg_values):
@@ -220,22 +162,6 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
 
 
 
-def generate_charts(ticker, cursor, output_dir, financial_data):
-    print("main 6 generate charts")
-    """
-    Generates charts for the given ticker using its financial data.
-
-    :param ticker: The ticker symbol for which to generate charts.
-    :param cursor: The database cursor to fetch data (not used in this modified version).
-    :param output_dir: The directory where charts will be saved.
-    :param financial_data: The financial data for the given ticker.
-    """
-    if not financial_data.empty:
-        print(f"Generating charts for {ticker}...")
-        generate_financial_charts(ticker, output_dir, financial_data)
-        print(f"Charts generated for {ticker} and saved to {output_dir}")
-    else:
-        print(f"No data available to generate charts for {ticker}.")
 
 
 def generate_html_report(sorted_tickers, financial_data, output_dir, output_file):
@@ -311,8 +237,7 @@ def main():
             print(f"Processing ticker: {ticker}")
 
             # Existing data fetching and processing
-            combined_data = fetch_financial_data(ticker, cursor)
-            print("---m combined data")
+            annual_and_ttm_update(ticker,db_path)
 
             # Fetch and update balance sheet data
             fetch_and_update_balance_sheet_data(ticker, cursor)
@@ -321,18 +246,6 @@ def main():
             # Generate balance sheet chart and table
             balancesheet_chart(ticker, charts_output_dir)
             print("---m generate balance sheet chart and table")
-
-            print("---m define ticker financial data")
-            ticker_financial_data = prepare_data_for_charts(ticker, cursor)
-            print(type(ticker_financial_data))  # Should print <class 'pandas.core.frame.DataFrame'>
-            print(ticker_financial_data.empty)  # Should print False if there is data
-
-            if not ticker_financial_data.empty:
-                print("Financial data has data, generating charts")
-                financial_data[ticker] = ticker_financial_data
-                generate_financial_charts(ticker, charts_output_dir, financial_data[ticker])
-            else:
-                print(f"No data available to generate charts for {ticker}.")
 
             combined_df = scrape_and_prepare_data(ticker)
             print("---m combined df")

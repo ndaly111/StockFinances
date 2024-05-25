@@ -3,10 +3,8 @@ import os
 import sqlite3
 import ticker_manager
 from datetime import datetime
-from data_fetcher import (fetch_ticker_data, determine_if_annual_data_missing,calculate_next_annual_check_date_from_data, check_null_fields_annual, fetch_annual_data_from_yahoo,store_annual_data,fetch_ttm_data,check_null_fields_ttm, is_ttm_data_outdated,is_ttm_data_blank,fetch_ttm_data_from_yahoo,store_ttm_data,prompt_and_update_partial_entries,handle_ttm_duplicates)
-from chart_generator import (prepare_data_for_charts, generate_financial_charts)
+from annual_and_ttm_update import annual_and_ttm_update
 from html_generator import (create_html_for_tickers)
-from html_to_pdf_converter import html_to_pdf
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data,
     check_missing_balance_sheet_data,
@@ -201,48 +199,8 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
 
 
 
-def generate_charts(ticker, cursor, output_dir, financial_data):
-    print("main 6 generate charts")
-    """
-    Generates charts for the given ticker using its financial data.
-
-    :param ticker: The ticker symbol for which to generate charts.
-    :param cursor: The database cursor to fetch data (not used in this modified version).
-    :param output_dir: The directory where charts will be saved.
-    :param financial_data: The financial data for the given ticker.
-    """
-    if not financial_data.empty:
-        print(f"Generating charts for {ticker}...")
-        generate_financial_charts(ticker, output_dir, financial_data)
-        print(f"Charts generated for {ticker} and saved to {output_dir}")
-    else:
-        print(f"No data available to generate charts for {ticker}.")
 
 
-def generate_html_report(sorted_tickers, financial_data, output_dir, output_file):
-    print("main 7 generate html")
-    """
-    Generates an HTML report for the financial data of tickers.
-
-    :param sorted_tickers: The list of ticker symbols processed.
-    :param financial_data: A dictionary containing financial data for each ticker.
-    :param output_dir: The directory where the HTML report will be saved.
-    :param output_file: The name of the HTML file to be generated.
-    """
-    # Assume `create_html_for_tickers` is implemented to generate the HTML content
-    html_content = create_html_for_tickers(sorted_tickers, financial_data, output_dir)
-
-    # Ensure html_content is not None
-    if html_content is None:
-        raise ValueError("No HTML content to write. The create_html_for_tickers function returned None.")
-
-    # Write the HTML content to a file
-    html_full_path = os.path.join(output_dir, output_file)
-    with open(html_full_path, 'w') as file:
-        file.write(html_content)
-
-    print(f"HTML report generated at {html_full_path}")
-    return html_full_path
 
 
 def fetch_10_year_treasury_yield():
@@ -289,8 +247,7 @@ def main():
             print(f"Processing ticker: {ticker}")
 
             # Existing data fetching and processing
-            combined_data = fetch_financial_data(ticker, cursor)
-            print("---m combined data")
+            annual_and_ttm_update(ticker, db_path)
 
             # Fetch and update balance sheet data
             fetch_and_update_balance_sheet_data(ticker, cursor)
@@ -299,18 +256,6 @@ def main():
             # Generate balance sheet chart and table
             balancesheet_chart(ticker, charts_output_dir)
             print("---m generate balance sheet chart and table")
-
-            print("---m define ticker financial data")
-            ticker_financial_data = prepare_data_for_charts(ticker, cursor)
-            print(type(ticker_financial_data))  # Should print <class 'pandas.core.frame.DataFrame'>
-            print(ticker_financial_data.empty)  # Should print False if there is data
-
-            if not ticker_financial_data.empty:
-                print("Financial data has data, generating charts")
-                financial_data[ticker] = ticker_financial_data
-                generate_financial_charts(ticker, charts_output_dir, financial_data[ticker])
-            else:
-                print(f"No data available to generate charts for {ticker}.")
 
             combined_df = scrape_and_prepare_data(ticker)
             print("---m combined df")

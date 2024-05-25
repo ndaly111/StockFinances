@@ -255,7 +255,7 @@ def generate_valuation_tables(ticker, combined_data, growth_values, treasury_yie
 
     fair_pe_string = (
         f"Nicks:&nbsp;{nicks_fair_pe:.0f}<br>"
-        f"FINVIZ:&nbsp;{finviz_fair_pe:.0f}" if finviz_fair_pe is not None else "FINVIZ: N/A"
+        f"Finviz:&nbsp;{finviz_fair_pe:.0f}" if finviz_fair_pe is not None else "Finviz: N/A"
     )
 
     table_1_data = {

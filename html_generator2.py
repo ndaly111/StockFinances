@@ -354,8 +354,6 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values):
     ensure_templates_exist()
     create_home_page(tickers, output_dir, full_dashboard_html, avg_values)
     for ticker in tickers:
-        if ticker in financial_data:
-            print(f"Processing ticker: {ticker}")
-            prepare_and_generate_ticker_pages([ticker], output_dir, 'charts/')
-        else:
-            print(f"No data available for ticker: {ticker}")
+        prepare_and_generate_ticker_pages([ticker], output_dir, 'charts/')
+    else:
+        print(f"No data available for ticker: {ticker}")
