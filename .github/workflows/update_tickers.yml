@@ -29,7 +29,6 @@ jobs:
           echo "Handling dispatch for action ${{ github.event.client_payload.action }}"
           echo "${{ toJson(github.event.client_payload) }}" > payload.json
           cat payload.json  # Debugging: Output the payload
-
           python <<EOF
 import sqlite3
 import json
