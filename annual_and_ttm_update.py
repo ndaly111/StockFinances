@@ -64,7 +64,9 @@ def clean_financial_data(df):
     # Fill NaN values using forward fill, then backward fill as a fallback
     df.ffill(inplace=True)
     df.bfill(inplace=True)
+    df.infer_objects(copy=False)  # Ensure future behavior for downcasting
     return df
+
 
 
 def fetch_annual_data_from_yahoo(ticker):
@@ -433,13 +435,15 @@ def generate_financial_charts(ticker, charts_output_dir, financial_data):
 
 
 def format_value(value):
-    """Format the value as currency with appropriate suffix (B for billions, M for millions)."""
+    """Format the value as currency with appropriate suffix (B for billions, M for millions, K for thousands)."""
     if pd.isna(value):
         return "N/A"
     if abs(value) >= 1e9:
-        return f"${value / 1e9:,.2f}B"
+        return f"${value / 1e9:,.1f}B"
+    elif abs(value) >= 1e6:
+        return f"${value / 1e6:,.1f}M"
     else:
-        return f"${value / 1e6:,.2f}M"
+        return f"${value / 1e3:,.1f}K"
 
 def calculate_and_format_changes(df):
     # Ensure the DataFrame is sorted by 'Date' to calculate changes correctly
@@ -451,7 +455,7 @@ def calculate_and_format_changes(df):
     # Convert columns to float if they are not already, assuming they are strings with $ and M symbols
     for column in financial_columns:
         if df[column].dtype == 'object':
-            df[column] = df[column].replace('[\$,M]', '', regex=True).astype(float) * 1e6
+            df[column] = df[column].replace('[\$,MK]', '', regex=True).astype(float) * 1e3
 
     # Calculate and format the yearly changes
     for column in financial_columns:
@@ -471,7 +475,6 @@ def calculate_and_format_changes(df):
     return df
 
 
-
 def generate_financial_data_table_html(ticker, df, charts_output_dir):
     df = calculate_and_format_changes(df)
     html_table = df.to_html(classes="financial-data", border=0, na_rep='N/A', index=False)
@@ -482,8 +485,6 @@ def generate_financial_data_table_html(ticker, df, charts_output_dir):
     with open(table_file_path, 'w', encoding='utf-8') as f:
         f.write(html_table)
     print(f"Financial data table for {ticker} saved to {table_file_path}")
-
-
 
 def annual_and_ttm_update(ticker, db_path):
     conn = get_db_connection(db_path)
@@ -518,7 +519,6 @@ def annual_and_ttm_update(ticker, db_path):
         latest_ttm_date = max([datetime.strptime(row['Quarter'], '%Y-%m-%d') for row in ttm_data])
         ttm_update_needed = needs_update(latest_ttm_date, 4) or check_null_fields(ttm_data, ['TTM_Revenue', 'TTM_Net_Income', 'TTM_EPS'])
 
-
     # Fetch and store new data if needed
     if annual_update_needed:
         new_annual_data = fetch_annual_data_from_yahoo(ticker)
@@ -536,6 +536,7 @@ def annual_and_ttm_update(ticker, db_path):
 
     conn.close()
     logging.debug(f"Update for {ticker} completed")
+
 
 if __name__ == "__main__":
     ticker = "PG"  # Example ticker, replace with desired ticker
