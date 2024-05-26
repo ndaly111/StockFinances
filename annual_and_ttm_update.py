@@ -7,8 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-
-
 # Database connection setup
 def get_db_connection(db_path):
     return sqlite3.connect(db_path)
@@ -56,7 +54,7 @@ def check_null_fields(data, fields):
             if entry.get(field) in [None, '']:
                 logging.debug(f"Null field found: {field} in entry {entry}")
                 return True
-    return False
+    return True
 
 def clean_financial_data(df):
     # Drop rows where all specified columns are NaN
@@ -66,8 +64,6 @@ def clean_financial_data(df):
     df.bfill(inplace=True)
     df.infer_objects(copy=False)  # Ensure future behavior for downcasting
     return df
-
-
 
 def fetch_annual_data_from_yahoo(ticker):
     logging.info("Fetching annual data from Yahoo Finance")
@@ -149,7 +145,6 @@ def store_annual_data(ticker, annual_data, cursor):
         except sqlite3.Error as e:
             logging.error(f"Database error while storing/updating annual data for {ticker}: {e}")
 
-
 def store_ttm_data(ticker, ttm_data, cursor):
     logging.info("Storing TTM data")
     ttm_values = (
@@ -209,75 +204,23 @@ def chart_needs_update(chart_path, last_data_update, ttm_update=False, annual_up
     print("---no chart generation conditions met")
     return False
 
-def prepare_data_for_charts(ticker, cursor):
-    print("Preparing data for charts")
-    # Fetch annual data including Last_Updated
-    cursor.execute("SELECT Date, Revenue, Net_Income, EPS, Last_Updated FROM Annual_Data WHERE Symbol = ? ORDER BY Date", (ticker,))
-    annual_data = cursor.fetchall()
-    print("---fetching all annual data", annual_data)
+def create_formatted_dataframe(df):
+    def format_value(value):
+        """Format the value as currency with appropriate suffix (B for billions, M for millions, K for thousands)."""
+        if pd.isna(value):
+            return "N/A"
+        if abs(value) >= 1e9:
+            return f"${value / 1e9:,.1f}B"
+        elif abs(value) >= 1e6:
+            return f"${value / 1e6:,.1f}M"
+        else:
+            return f"${value / 1e3:,.1f}K"
 
-    # Fetch TTM data including Last_Updated
-    cursor.execute("SELECT 'TTM' AS Date, TTM_Revenue AS Revenue, TTM_Net_Income AS Net_Income, TTM_EPS AS EPS, Last_Updated FROM TTM_Data WHERE Symbol = ?", (ticker,))
-    ttm_data = cursor.fetchall()
-    print("---fetching all ttm data from database", ttm_data)
+    df['Formatted_Revenue'] = df['Revenue'].apply(format_value)
+    df['Formatted_Net_Income'] = df['Net_Income'].apply(format_value)
+    df['Formatted_EPS'] = df['EPS'].apply(lambda x: f"${x:.2f}" if pd.notna(x) else "N/A")
+    return df
 
-    # Fetch TTM data including Last_Updated
-    cursor.execute(
-        "SELECT 'TTM' AS Date, TTM_Revenue AS Revenue, TTM_Net_Income AS Net_Income, TTM_EPS AS EPS, Quarter AS Quarter, Last_Updated FROM TTM_Data WHERE Symbol = ?",
-        (ticker,))
-    ttm_datab = cursor.fetchall()
-    print("---fetching all ttm data from database", ttm_data)
-
-    # Convert to DataFrame and ensure correct data types
-    annual_df = pd.DataFrame(annual_data, columns=['Date', 'Revenue', 'Net_Income', 'EPS', 'Last_Updated'])
-    ttm_df = pd.DataFrame(ttm_data, columns=['Date', 'Revenue', 'Net_Income', 'EPS', 'Last_Updated'])
-    ttm_dfb = pd.DataFrame(ttm_datab, columns=['Date', 'Revenue', 'Net_Income', 'EPS', 'Quarter','Last_Updated'])
-    print("---converting df to correct names", annual_df, ttm_df)
-
-    # Ensure all 'Last_Updated' entries are Timestamps
-    annual_df['Last_Updated'] = pd.to_datetime(annual_df['Last_Updated'])
-    ttm_df['Last_Updated'] = pd.to_datetime(ttm_df['Last_Updated'])
-    print("---converting all last updated entries are timestamps")
-
-    # Assuming 'Last_Updated' is in the format 'YYYY-MM-DD HH:MM:SS'
-    if not ttm_df.empty and 'Last_Updated' in ttm_df:
-        print("---checking if ttm df is not empty")
-
-        # Extract the last quarter end date
-        last_quarter_end = ttm_dfb.loc[0, 'Quarter']
-        print("---last quarter", last_quarter_end)
-        # Check if 'Date' already formatted with 'TTM' to prevent "TTM TTM"
-        if not str(last_quarter_end).startswith('TTM'):
-            ttm_df.at[0, 'Date'] = f'TTM {last_quarter_end}'
-        print('---extracting last quarter date', last_quarter_end)
-
-    # Check if annual_data and ttm_data are empty
-    if not annual_data and not ttm_data:
-        print("---checking if annual and ttm data is empty", pd)
-
-        return pd.DataFrame()
-
-    # Combine annual data and TTM data
-    combined_df = pd.concat([annual_df, ttm_df], ignore_index=True)
-    print("---combining annual df and ttm df")
-
-    # Handle nulls and ensure correct data types
-    combined_df['Revenue'] = pd.to_numeric(combined_df['Revenue'], errors='coerce')
-    combined_df['Net_Income'] = pd.to_numeric(combined_df['Net_Income'], errors='coerce')
-    combined_df['EPS'] = pd.to_numeric(combined_df['EPS'], errors='coerce')
-    print("---handling null data")
-
-    # Clean the combined DataFrame
-    combined_df = clean_financial_data(combined_df)
-
-    # Sort the DataFrame to ensure 'TTM' appears last
-    combined_df['Date'] = combined_df['Date'].astype(str)
-    combined_df.sort_values(by='Date', inplace=True)
-    print("sorting df with TTM last")
-
-    print("---combined df: ", combined_df)
-
-    return combined_df
 
 
 def generate_eps_chart(ticker, charts_output_dir, financial_data_df):
@@ -287,53 +230,37 @@ def generate_eps_chart(ticker, charts_output_dir, financial_data_df):
 
     eps_chart_path = os.path.join(charts_output_dir, f"{ticker}_eps_chart.png")
 
+    # Ensure the EPS values are numeric
+    financial_data_df['EPS'] = pd.to_numeric(financial_data_df['EPS'], errors='coerce')
+
     positions = np.arange(len(financial_data_df))
     width = 0.4
     fig, ax = plt.subplots(figsize=(8, 5))
     eps_bars = ax.bar(positions, financial_data_df['EPS'], width, label='EPS', color='teal')
 
-    ax.grid(True, linestyle='-', linewidth='0.5', color='grey')
+    # Adding grid lines for each tick and a thicker line at y=0
+    ax.grid(True, which='both', linestyle='--', linewidth='0.5', color='grey', axis='y')
+    ax.axhline(0, color='black', linewidth=1)  # Thicker line at y=0
     ax.axhline(0, color='black', linewidth='2')
     ax.set_ylabel('Earnings Per Share (EPS)')
     ax.set_title(f'EPS Chart for {ticker}')
     ax.set_xticks(positions)
     ax.set_xticklabels(financial_data_df['Date'], rotation=0)
 
-    def add_eps_value_labels(ax, bars):
-        for bar in bars:
-            height = bar.get_height()
-            label = f'${height:.2f}'
+    # Calculate the buffer
+    eps_values = financial_data_df['EPS'].abs()
+    buffer = eps_values.max() * 0.2
 
-            label_y_offset = 12
-
-            if height < 0:  # For negative values
-                label_y_offset = -12
-
-            ax.annotate(label,
-                        xy=(bar.get_x() + bar.get_width() / 2, height),
-                        xytext=(0, label_y_offset),
-                        textcoords="offset points",
-                        ha='center', va='bottom', color="black")
-
-    add_eps_value_labels(ax, eps_bars)
-
-    # Calculate y-axis limits
-    max_eps = max(financial_data_df['EPS'])
-    min_eps = min(financial_data_df['EPS'])
-
-    if max_eps < 0:
-        upper_limit = 0
-    else:
-        upper_limit = max_eps * 1.25
-    if min_eps < 0:
-        adjusted_eps_limit = min_eps * 1.25
-        lower_limit = min(adjusted_eps_limit, -adjusted_eps_limit)
-    else:
-        lower_limit = 0
+    # Calculate upper and lower limits
+    max_value = eps_values.max()
+    min_value = financial_data_df['EPS'].min()
+    upper_limit = max_value + buffer
+    lower_limit = min_value - buffer if min_value < 0 else 0
 
     # Set the new y-axis limits
     ax.set_ylim(lower_limit, upper_limit)
 
+    add_eps_value_labels(ax, eps_bars, financial_data_df)
     plt.tight_layout()
 
     # Ensure the directory exists
@@ -342,17 +269,32 @@ def generate_eps_chart(ticker, charts_output_dir, financial_data_df):
     plt.savefig(eps_chart_path)
     plt.close(fig)
 
+def add_eps_value_labels(ax, bars, df):
+    for bar in bars:
+        height = bar.get_height()
+        # Use the formatted EPS values directly from the DataFrame
+        label = df.loc[df['EPS'] == height, 'Formatted_EPS'].values[0]
+        y_offset = 12 if height >= 0 else -12
+        ax.annotate(label,
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, y_offset),
+                    textcoords="offset points",
+                    ha='center', va='bottom', color="black")
 
 def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_path):
     print("Generating revenue and net income chart")
-    df = financial_data_df
-    print("---revenue net income chart data frame", df)
+    df = create_formatted_dataframe(financial_data_df)
+
+    # Ensure the Revenue and Net_Income values are numeric
+    df['Revenue'] = pd.to_numeric(df['Revenue'].replace('[\$,]', '', regex=True), errors='coerce')
+    df['Net_Income'] = pd.to_numeric(df['Net_Income'].replace('[\$,]', '', regex=True), errors='coerce')
 
     df['Date'] = df['Date'].astype(str)
     positions = np.arange(len(df))
     width = 0.3
     fig, ax = plt.subplots(figsize=(10, 6))
 
+    # Calculate scale factor and label ending
     max_net_income = df['Net_Income'].max()
     if abs(max_net_income) >= 1e9:
         scale_factor = 1e9
@@ -363,17 +305,23 @@ def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_p
         label_ending = 'M'
         ylabel = 'Amount (Millions $)'
 
-    bars1 = ax.bar(positions - width / 2, df['Revenue'] / scale_factor, width, label=f'Revenue ({label_ending})',
-                   color='green')
-    bars2 = ax.bar(positions + width / 2, df['Net_Income'] / scale_factor, width, label=f'Net Income ({label_ending})',
-                   color='blue')
+    # Calculate the buffer
+    revenue_net_income_values = pd.concat([df['Revenue'], df['Net_Income']]) / scale_factor
+    abs_rev_net_income_values = revenue_net_income_values.abs()
+    buffer = abs_rev_net_income_values.max() * 0.2
+
+    # Calculate upper and lower limits
+    max_value = revenue_net_income_values.max()
+    min_value = df['Net_Income'].min() / scale_factor
+    upper_limit = max_value + buffer
+    lower_limit = min_value - buffer if min_value < 0 else 0
+
+    # Create bars
+    bars1 = ax.bar(positions - width / 2, df['Revenue'] / scale_factor, width, label=f'Revenue ({label_ending})', color='green')
+    bars2 = ax.bar(positions + width / 2, df['Net_Income'] / scale_factor, width, label=f'Net Income ({label_ending})', color='blue')
     ax.set_ylabel(ylabel)
 
-    max_revenue = max(df['Revenue'] / scale_factor)
-    min_net_income = min(df['Net_Income'] / scale_factor)
-    upper_limit = max_revenue * 1.2
-    lower_limit = min_net_income * 1.2 if min_net_income < 0 else 0
-
+    # Set the new y-axis limits
     ax.set_ylim(lower_limit, upper_limit)
     ax.set_title(f'Revenue and Net Income for {ticker}')
     ax.set_xticks(positions)
@@ -384,16 +332,8 @@ def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_p
     ax.grid(True, which='both', linestyle='--', linewidth='0.5', color='grey', axis='y')
     ax.axhline(0, color='black', linewidth=1)  # Thicker line at y=0
 
-    def add_value_labels(ax, bars):
-        for bar in bars:
-            height = bar.get_height()
-            label = f'{height:.1f}{label_ending}'
-            y_offset = 3 if height >= 0 else -12
-            ax.annotate(label, xy=(bar.get_x() + bar.get_width() / 2, height), xytext=(0, y_offset),
-                        textcoords="offset points", ha='center', va='bottom')
-
-    add_value_labels(ax, bars1)
-    add_value_labels(ax, bars2)
+    add_value_labels(ax, bars1, df, 'Formatted_Revenue', scale_factor)
+    add_value_labels(ax, bars2, df, 'Formatted_Net_Income', scale_factor)
     plt.tight_layout()
 
     # Ensure the directory exists
@@ -402,7 +342,21 @@ def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_p
     plt.savefig(revenue_chart_path)
     plt.close()
 
-
+def add_value_labels(ax, bars, df, column, scale_factor):
+    for bar in bars:
+        height = bar.get_height()
+        # Scale back to match the original values
+        scaled_value = height * scale_factor
+        # Use the correct column for comparison
+        column_name = 'Net_Income' if 'Net_Income' in column else 'Revenue'
+        label = df.loc[np.isclose(df[column_name], scaled_value, atol=1e-2), column].values
+        if len(label) > 0:
+            label = label[0]
+        else:
+            label = "N/A"  # Fallback label in case no match is found
+        y_offset = 3 if height >= 0 else -12
+        ax.annotate(label, xy=(bar.get_x() + bar.get_width() / 2, height), xytext=(0, y_offset),
+                    textcoords="offset points", ha='center', va='bottom')
 
 def generate_financial_charts(ticker, charts_output_dir, financial_data):
     print("Generating financial charts")
@@ -434,16 +388,7 @@ def generate_financial_charts(ticker, charts_output_dir, financial_data):
     generate_financial_data_table_html(ticker, financial_data, charts_output_dir)
 
 
-def format_value(value):
-    """Format the value as currency with appropriate suffix (B for billions, M for millions, K for thousands)."""
-    if pd.isna(value):
-        return "N/A"
-    if abs(value) >= 1e9:
-        return f"${value / 1e9:,.1f}B"
-    elif abs(value) >= 1e6:
-        return f"${value / 1e6:,.1f}M"
-    else:
-        return f"${value / 1e3:,.1f}K"
+
 
 def calculate_and_format_changes(df):
     # Ensure the DataFrame is sorted by 'Date' to calculate changes correctly
@@ -465,19 +410,33 @@ def calculate_and_format_changes(df):
         # Format the changes as percentages with one decimal place
         df[change_column] = df[change_column].apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "N/A")
 
-    # Format the financial numbers with appropriate suffixes
-    for column in financial_columns:
-        if column != 'EPS':  # For Revenue and Net_Income
-            df[column] = df[column].apply(format_value)
-        else:  # For EPS
-            df[column] = df[column].apply(lambda x: f"${x:.2f}")
-
     return df
 
+def style_changes(val):
+    if isinstance(val, str) and '%' in val:
+        color = 'red' if '-' in val else 'green'
+        return f'color: {color};'
+    return ''
 
 def generate_financial_data_table_html(ticker, df, charts_output_dir):
     df = calculate_and_format_changes(df)
-    html_table = df.to_html(classes="financial-data", border=0, na_rep='N/A', index=False)
+
+    # Drop raw data columns, keep only formatted and change columns
+    columns_to_keep = ['Date', 'Formatted_Revenue', 'Formatted_Net_Income', 'Formatted_EPS', 'Revenue_Change', 'Net_Income_Change', 'EPS_Change']
+    df = df[columns_to_keep]
+
+    # Rename columns for better headers
+    df.columns = ['Date', 'Revenue', 'Net Income', 'EPS', 'Revenue Change', 'Net Income Change', 'EPS Change']
+
+    # Calculate average changes and add as the last row
+    avg_changes = df[['Revenue Change', 'Net Income Change', 'EPS Change']].replace('N/A', np.nan).apply(lambda x: pd.to_numeric(x.str.replace('%', ''), errors='coerce')).mean()
+    avg_changes = avg_changes.apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "N/A")
+    avg_row = pd.Series(['Average'] + [''] * 3 + avg_changes.tolist(), index=df.columns)
+    df = pd.concat([df, pd.DataFrame([avg_row])], ignore_index=True)
+
+    # Create styled HTML table
+    styled_table = df.style.applymap(style_changes, subset=['Revenue Change', 'Net Income Change', 'EPS Change'])
+    html_table = styled_table.to_html()
 
     # Save the HTML table to a file
     table_file_path = os.path.join(charts_output_dir, f"{ticker}_rev_net_table.html")
@@ -485,6 +444,85 @@ def generate_financial_data_table_html(ticker, df, charts_output_dir):
     with open(table_file_path, 'w', encoding='utf-8') as f:
         f.write(html_table)
     print(f"Financial data table for {ticker} saved to {table_file_path}")
+
+
+
+def prepare_data_for_charts(ticker, cursor):
+    print("Preparing data for charts")
+    # Fetch annual data including Last_Updated
+    cursor.execute("SELECT Date, Revenue, Net_Income, EPS, Last_Updated FROM Annual_Data WHERE Symbol = ? ORDER BY Date", (ticker,))
+    annual_data = cursor.fetchall()
+    print("---fetching all annual data", annual_data)
+
+    # Fetch TTM data including Last_Updated
+    cursor.execute("SELECT 'TTM' AS Date, TTM_Revenue AS Revenue, TTM_Net_Income AS Net_Income, TTM_EPS AS EPS, Last_Updated FROM TTM_Data WHERE Symbol = ?", (ticker,))
+    ttm_data = cursor.fetchall()
+    print("---fetching all ttm data from database", ttm_data)
+
+    # Fetch TTM data including Last_Updated
+    cursor.execute(
+        "SELECT 'TTM' AS Date, TTM_Revenue AS Revenue, TTM_Net_Income AS Net_Income, TTM_EPS AS EPS, Quarter AS Quarter, Last_Updated FROM TTM_Data WHERE Symbol = ?",
+        (ticker,))
+    ttm_datab = cursor.fetchall()
+    print("---fetching all ttm data from database", ttm_data)
+
+    # Convert to DataFrame and ensure correct data types
+    annual_df = pd.DataFrame(annual_data, columns=['Date', 'Revenue', 'Net_Income', 'EPS', 'Last_Updated'])
+    ttm_df = pd.DataFrame(ttm_data, columns=['Date', 'Revenue', 'Net_Income', 'EPS', 'Last_Updated'])
+    ttm_dfb = pd.DataFrame(ttm_datab, columns=['Date', 'Revenue', 'Net_Income', 'EPS', 'Quarter', 'Last_Updated'])
+    print("---converting df to correct names", annual_df, ttm_df)
+
+    # Ensure all 'Last_Updated' entries are Timestamps
+    annual_df['Last_Updated'] = pd.to_datetime(annual_df['Last_Updated'])
+    ttm_df['Last_Updated'] = pd.to_datetime(ttm_df['Last_Updated'])
+    print("---converting all last updated entries are timestamps")
+
+    # Assuming 'Last_Updated' is in the format 'YYYY-MM-DD HH:MM:SS'
+    if not ttm_df.empty and 'Last_Updated' in ttm_df:
+        print("---checking if ttm df is not empty")
+
+        # Extract the last quarter end date
+        last_quarter_end = ttm_dfb.loc[0, 'Quarter']
+        print("---last quarter", last_quarter_end)
+        # Check if 'Date' already formatted with 'TTM' to prevent "TTM TTM"
+        if not str(last_quarter_end).startswith('TTM'):
+            ttm_df.at[0, 'Date'] = f'TTM {last_quarter_end}'
+        print('---extracting last quarter date', last_quarter_end)
+
+    # Check if annual_data and ttm_data are empty
+    if not annual_data and not ttm_data:
+        print("---checking if annual and ttm data is empty", pd)
+
+        return pd.DataFrame()
+
+    # Exclude empty or all-NA columns before concatenation
+    annual_df.dropna(axis=1, how='all', inplace=True)
+    ttm_df.dropna(axis=1, how='all', inplace=True)
+
+    # Combine annual data and TTM data
+    combined_df = pd.concat([annual_df, ttm_df], ignore_index=True)
+    print("---combining annual df and ttm df")
+
+    # Handle nulls and ensure correct data types
+    combined_df['Revenue'] = pd.to_numeric(combined_df['Revenue'], errors='coerce')
+    combined_df['Net_Income'] = pd.to_numeric(combined_df['Net_Income'], errors='coerce')
+    combined_df['EPS'] = pd.to_numeric(combined_df['EPS'], errors='coerce')
+    print("---handling null data")
+
+    # Clean the combined DataFrame
+    combined_df = clean_financial_data(combined_df)
+
+    # Sort the DataFrame to ensure 'TTM' appears last
+    combined_df['Date'] = combined_df['Date'].astype(str)
+    combined_df.sort_values(by='Date', inplace=True)
+    print("sorting df with TTM last")
+
+    # Create formatted values
+    combined_df = create_formatted_dataframe(combined_df)
+
+    print("---combined df: ", combined_df)
+
+    return combined_df
 
 def annual_and_ttm_update(ticker, db_path):
     conn = get_db_connection(db_path)
@@ -536,7 +574,6 @@ def annual_and_ttm_update(ticker, db_path):
 
     conn.close()
     logging.debug(f"Update for {ticker} completed")
-
 
 if __name__ == "__main__":
     ticker = "PG"  # Example ticker, replace with desired ticker
