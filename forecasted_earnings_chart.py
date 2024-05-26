@@ -235,8 +235,8 @@ def add_value_labels(ax):
         offset = 0.05 * max(ax.get_ylim())
         y = height - offset if height < 0 else height + offset
         label_text = f'{height / 1e6:.1f}M' if abs(height) < 1e9 else f'{height / 1e9:.1f}B'
-        ax.text(x, y, label_text, ha='center', va='bottom' if height > 0 else 'top', color='black')
-
+        va = 'bottom' if height >= 0 else 'top'
+        ax.text(x, y, label_text, ha='center', va=va, color='black')
 
 
 
@@ -307,7 +307,8 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
         x = rect.get_x() + rect.get_width() / 2
         y = height
         label_text = f'{height:.2f}'  # Format label with two decimal places
-        ax.text(x, y, label_text, ha='center', va='bottom')
+        va = 'bottom' if height >= 0 else 'top'
+        ax.text(x, y, label_text, ha='center', va=va)
 
     # Set labels and title
     ax.set_xlabel('Date')
