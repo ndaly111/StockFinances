@@ -336,30 +336,33 @@ def calculate_yoy_growth(combined_data, analyst_counts):
 
     return yoy_table_transposed
 
-def style_negative(v, props=''):
+def style_negative(value):
     try:
-        return props if float(v.strip('%')) < 0 else None
-    except ValueError:
-        return None
+        value_float = float(str(value).replace('%', '').strip())
+        return 'color: red;' if value_float < 0 else ''
+    except (ValueError, TypeError):
+        return ''
 
-def style_positive(v, props=''):
+def style_positive(value):
     try:
-        return props if float(v.strip('%')) > 0 else None
-    except ValueError:
-        return None
+        value_float = float(str(value).replace('%', '').strip())
+        return 'color: green;' if value_float > 0 else ''
+    except (ValueError, TypeError):
+        return ''
 
 def save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker):
     filename = f"{ticker}_yoy_growth_tbl"
-    html_table = (yoy_growth_table.style
-                  .applymap(style_negative, props='color:red;')
-                  .applymap(style_positive, props='color:green;')
-                  .set_table_styles({
-                      'Revenue Growth (%)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
-                      'Revenue Analysts (#)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
-                      'EPS Growth (%)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
-                      'EPS Analysts (#)': [{'selector': 'td', 'props': [('text-align', 'center')]}]
-                  })
-                  .to_html())
+    styled_table = (yoy_growth_table.style
+                    .applymap(style_negative)
+                    .applymap(style_positive)
+                    .set_table_styles({
+                        'Revenue Growth (%)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
+                        'Revenue Analysts (#)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
+                        'EPS Growth (%)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
+                        'EPS Analysts (#)': [{'selector': 'td', 'props': [('text-align', 'center')]}]
+                    }))
+    html_table = styled_table.to_html()
+
     html_string = f'''
     <html>
     <head>
@@ -395,6 +398,7 @@ def save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker):
     with open(full_path, 'w') as f:
         f.write(html_string)
     print(f"YoY Growth Table saved to {full_path}")
+
 
 
 
