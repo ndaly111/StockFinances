@@ -71,6 +71,8 @@ def scrape_annual_estimates(ticker):
 
     def convert_to_date(header):
         parts = header.split('(')[-1].strip(')').split('/')
+        if len(parts) != 2:
+            return None
         year = parts[1]
         month = parts[0]
         last_days = {
@@ -80,7 +82,7 @@ def scrape_annual_estimates(ticker):
         day = last_days[month.zfill(2)]
         return f"{year}-{month.zfill(2)}-{day}"
 
-    headers = [convert_to_date(header) for header in headers[-2:]]
+    headers = [convert_to_date(header) for header in headers[-2:] if header and header != 'ND']
 
     # Debugging prints
     print("Sales Estimates Length:", len(sales_estimates))
@@ -88,6 +90,10 @@ def scrape_annual_estimates(ticker):
     print("Sales Counts Length:", len(sales_counts))
     print("Earnings Counts Length:", len(earnings_counts))
     print("Headers Length:", len(headers))
+
+    if len(headers) == 0:
+        print("No valid headers found.")
+        return pd.DataFrame()
 
     # Ensure all arrays are the same length
     min_length = min(len(headers), len(sales_estimates), len(earnings_estimates), len(sales_counts), len(earnings_counts))
@@ -144,6 +150,8 @@ def store_in_database(df, ticker, db_path, table_name):
     cursor = conn.cursor()
     for _, row in df.iterrows():
         date_str = row['Year']
+        if pd.isna(date_str):
+            continue  # Skip rows with no valid date
         revenue = row['Revenue']
         eps = row['EPS']
         revenue_analysts = row['ForwardRevenueAnalysts']
