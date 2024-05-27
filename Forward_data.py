@@ -4,140 +4,159 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 
+def update_database_schema(db_path, table_name):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
 
+    # Check if 'ForwardEPSAnalysts' and 'ForwardRevenueAnalysts' columns exist and add them if not
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'ForwardEPSAnalysts' not in columns:
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN ForwardEPSAnalysts INTEGER")
+    if 'ForwardRevenueAnalysts' not in columns:
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN ForwardRevenueAnalysts INTEGER")
+    conn.commit()
+    conn.close()
 
-
-
-
-def scrape_annual_estimates(ticker,table_id):
-    print("forward_data 1 scrape annual estimates")
-    ticker = ticker.replace("-", ".")
-    print("---ticker", ticker)
-    url = f'https://fintel.io/sfo/us/{ticker}'  # URL formatted with the ticker variable
-    print("---url",url)
+def scrape_annual_estimates(ticker):
+    print("Scraping annual estimates from Zacks")
+    ticker = ticker.replace('-', '.')
+    url = f'https://www.zacks.com/stock/quote/{ticker}/detailed-earning-estimates'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
 
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.select_one(f'#{table_id}')
-        print("---fetching table")
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+        return pd.DataFrame()
+    except Exception as err:
+        print(f"Other error occurred: {err}")
+        return pd.DataFrame()
 
-        if not table:
-            print(f"Table with ID #{table_id} not found.")
-            return pd.DataFrame()  # Return an empty DataFrame
+    soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Extracting headers and rows
+    sales_table = soup.select_one('#detailed_estimate_full_body #detailed_earnings_estimates:nth-of-type(1) table')
+    earnings_table = soup.select_one('#detailed_estimate_full_body #detailed_earnings_estimates:nth-of-type(2) table')
+
+    if not sales_table or not earnings_table:
+        print("Data tables not found.")
+        return pd.DataFrame()
+
+    def extract_data(table):
         headers = [th.get_text(strip=True) for th in table.find_all('th')]
         rows = []
         for tr in table.find_all('tr'):
             cols = [td.get_text(strip=True) for td in tr.find_all('td')]
-            if cols:  # This ensures that header rows are not included
+            if cols:
                 rows.append(cols)
-
-        # Convert to DataFrame
         df = pd.DataFrame(rows, columns=headers)
+        df.replace('NA', pd.NA, inplace=True)
+        return df.dropna(how='all')
 
+    sales_df = extract_data(sales_table)
+    earnings_df = extract_data(earnings_table)
 
-        # Display the headers to check if they match the expected column names
-        print("Headers found in table:")
+    def get_estimates_and_counts(df):
+        estimates = df[df.iloc[:, 0].str.contains("Zacks Consensus Estimate", na=False)].iloc[:, -2:].values.flatten()
+        counts = df[df.iloc[:, 0].str.contains("# of Estimates", na=False)].iloc[:, -2:].values.flatten()
+        return estimates, counts
 
+    sales_estimates, sales_counts = get_estimates_and_counts(sales_df)
+    earnings_estimates, earnings_counts = get_estimates_and_counts(earnings_df)
 
-        # Assuming 'Date' is the correct column name for the years
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Handle any parsing errors
-        df = df.dropna(subset=['Date'])  # Drop rows where 'Date' could not be parsed
+    headers = [th.get_text(strip=True) for th in sales_table.find_all('th') if "Year" in th.get_text()]
 
-        # Filter to keep only rows where 'Date' is within the next three years
-        current_year = pd.Timestamp.now().year
-        future_years = [current_year + i for i in range(0, 4)]
-        df = df[df['Date'].dt.year.isin(future_years)]
+    def convert_to_date(header):
+        parts = header.split('(')[-1].strip(')').split('/')
+        if len(parts) != 2:
+            return None
+        year = parts[1]
+        month = parts[0]
+        last_days = {
+            '01': '31', '02': '28', '03': '31', '04': '30', '05': '31', '06': '30',
+            '07': '31', '08': '31', '09': '30', '10': '31', '11': '30', '12': '31'
+        }
+        day = last_days[month.zfill(2)]
+        return f"{year}-{month.zfill(2)}-{day}"
 
-        # Assuming that 'Annual' is part of the column name for annual revenue
-        annual_revenue_cols = [col for col in df.columns if 'Annual' in col]
-        print("Annual revenue columns found:")
-        print(annual_revenue_cols)
+    headers = [convert_to_date(header) for header in headers[-2:] if header and header != 'ND']
 
-        # Filter out the rows where annual revenue is not available ('--' or empty)
-        for col in annual_revenue_cols:
-            df = df[df[col] != '--']
-            df = df[df[col].astype(str).str.strip().astype(bool)]
-            # Convert Revenue from string in millions to float, then multiply by 1 million
+    # Debugging prints
+    print("Sales Estimates Length:", len(sales_estimates))
+    print("Earnings Estimates Length:", len(earnings_estimates))
+    print("Sales Counts Length:", len(sales_counts))
+    print("Earnings Counts Length:", len(earnings_counts))
+    print("Headers Length:", len(headers))
 
-        # Convert revenue in millions if processing revenue table
-        if table_id == 'revenue':
-            df['Revenue Average Annually (MM)'] = df['Revenue Average Annually (MM)'].replace(
-                {'\$': '', ',': '', '--': None}, regex=True).astype(float) * 1e6
+    if len(headers) == 0:
+        print("No valid headers found.")
+        return pd.DataFrame()
 
-        # Return the DataFrame with the first three consecutive years' data
-        print("---final dataframe",df)
-        return df.iloc[:3] if len(df) >= 3 else df
-    else:
-        print(f"Failed to retrieve data, status code: {response.status_code}")
-        return pd.DataFrame()  # Return an empty DataFrame
+    # Ensure all arrays are the same length
+    min_length = min(len(headers), len(sales_estimates), len(earnings_estimates), len(sales_counts), len(earnings_counts))
+    headers = headers[:min_length]
+    sales_estimates = sales_estimates[:min_length]
+    earnings_estimates = earnings_estimates[:min_length]
+    sales_counts = sales_counts[:min_length]
+    earnings_counts = earnings_counts[:min_length]
 
+    combined_df = pd.DataFrame({
+        'Year': headers,
+        'Revenue': sales_estimates,
+        'EPS': earnings_estimates,
+        'ForwardRevenueAnalysts': sales_counts,
+        'ForwardEPSAnalysts': earnings_counts
+    })
+
+    print("Combined DataFrame before conversion:", combined_df)
+
+    def convert_to_float(value):
+        if pd.isna(value):
+            return pd.NA
+        try:
+            if 'B' in value:
+                return float(value.replace('B', '')) * 1e9
+            elif 'M' in value:
+                return float(value.replace('M', '')) * 1e6
+            else:
+                return float(value)
+        except:
+            return pd.NA
+
+    combined_df['Revenue'] = combined_df['Revenue'].apply(convert_to_float)
+    combined_df['EPS'] = combined_df['EPS'].apply(convert_to_float)
+    combined_df['ForwardRevenueAnalysts'] = combined_df['ForwardRevenueAnalysts'].astype(int, errors='ignore')
+    combined_df['ForwardEPSAnalysts'] = combined_df['ForwardEPSAnalysts'].astype(int, errors='ignore')
+
+    print("Scraped DataFrame:", combined_df)
+    return combined_df
 
 def scrape_and_prepare_data(ticker):
-    eps_df = scrape_annual_estimates(ticker, 'eps')
-    revenue_df = scrape_annual_estimates(ticker, 'revenue')
-
-    # Check if both DataFrames are empty, and if so, return an empty DataFrame immediately
-    if eps_df.empty and revenue_df.empty:
+    data_df = scrape_annual_estimates(ticker)
+    if data_df.empty:
         print(f"No forecast data found for {ticker}.")
         return pd.DataFrame()
-
-    try:
-        # Preparing DataFrames for merging
-        if not eps_df.empty:
-            eps_df.set_index('Date', inplace=True)
-        if not revenue_df.empty:
-            revenue_df.set_index('Date', inplace=True)
-
-        # Merging DataFrames, considering that one or both might be empty
-        if not eps_df.empty and not revenue_df.empty:
-            combined_df = eps_df.merge(revenue_df, left_index=True, right_index=True, how='outer')
-        elif not eps_df.empty:
-            combined_df = eps_df
-        else:
-            combined_df = revenue_df
-
-        print(f"Combined DataFrame for {ticker}:")
-        print(combined_df)
-    except Exception as e:
-        print(f"Error preparing data for {ticker}: {e}")
-        return pd.DataFrame()
-
-    return combined_df.reset_index()  # Resetting index to bring 'Date' back as a column
-
+    print(f"Prepared DataFrame for {ticker}:")
+    print(data_df)
+    return data_df.reset_index(drop=True)
 
 def store_in_database(df, ticker, db_path, table_name):
-    print(f"Storing combined data in database for {ticker}")
+    print(f"Storing data in database for {ticker}")
+    update_database_schema(db_path, table_name)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-
-    # Special rule for BRK.B or BRK-B tickers
-    eps_scale_factor = 1500 if ticker in ['BRK.B', 'BRK-B'] else 1
-    print("---scale factor", eps_scale_factor)
-
     for _, row in df.iterrows():
-        date_str = row['Date'].strftime('%Y-%m-%d')
-        revenue = row.get('Revenue Average Annually (MM)', 0)
-
-        # Convert EPS to a float, handling any conversion errors
-        try:
-            eps_raw = row.get('EPS Average (Annual)', '0')  # Default to '0' if key not found
-            eps_raw = eps_raw.replace(',', '')  # Remove commas
-            eps = float(eps_raw) / eps_scale_factor
-        except ValueError as e:
-            print(f"Error converting EPS: {e}")
-            print(f"Warning: Unable to convert EPS value '{eps_raw}' to float for {ticker} on {date_str}. Defaulting to 0.")
-            eps = 0.0
-
-        eps_analysts = row.get('Number of Analysts (Annually)_x', 0)
-        revenue_analysts = row.get('Number of Analysts (Annually)_y', 0)
+        date_str = row['Year']
+        if pd.isna(date_str):
+            continue  # Skip rows with no valid date
+        revenue = row['Revenue']
+        eps = row['EPS']
+        revenue_analysts = row['ForwardRevenueAnalysts']
+        eps_analysts = row['ForwardEPSAnalysts']
         last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
         insert_query = f'''
         INSERT INTO {table_name} (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated, ForwardEPSAnalysts, ForwardRevenueAnalysts)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -148,7 +167,6 @@ def store_in_database(df, ticker, db_path, table_name):
             ForwardRevenueAnalysts = EXCLUDED.ForwardRevenueAnalysts,
             LastUpdated = EXCLUDED.LastUpdated;
         '''
-
         cursor.execute(insert_query, (
             ticker,
             date_str,
@@ -158,21 +176,6 @@ def store_in_database(df, ticker, db_path, table_name):
             eps_analysts,
             revenue_analysts
         ))
-
     conn.commit()
     conn.close()
     print("Data stored successfully.")
-
-
-
-# Example usage
-#ticker = 'AAPL'  # Replace with any ticker
-#db_path = 'Stock Data.db'  # Ensure the path is correct
-#table_name = 'ForwardFinancialData'
-
-#combined_df = scrape_and_prepare_data(ticker)
-
-#if not combined_df.empty:
-    #store_in_database(combined_df, ticker, db_path, table_name)
-
-

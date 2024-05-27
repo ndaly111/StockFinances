@@ -478,6 +478,7 @@ def generate_eps_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts,
     generate_yoy_line_chart(chart_type, eps_changes, f"{ticker} EPS Year-over-Year Change", "EPS YoY (%)", output_path,
                             analyst_counts, analyst_column)
 
+
 def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     historical_data, forecast_data, analyst_counts, shares_outstanding = fetch_financial_data(ticker, db_path)
     combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker)
