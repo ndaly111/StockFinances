@@ -1,13 +1,14 @@
 import yfinance as yf
 import pandas as pd
+import investpy
 
 def get_qqq_holdings():
-    qqq = yf.Ticker("QQQ")
-    holdings = qqq.fund_holdings['holdings']
+    # Use investpy to fetch QQQ ETF holdings
+    etf_holdings = investpy.etfs.get_etf_holdings(etf='Invesco QQQ Trust', country='united states')
     
     # Extract stock symbols and holding percentages
-    stocks = [holding['symbol'] for holding in holdings]
-    percentages = [holding['holdingPercent'] for holding in holdings]
+    stocks = etf_holdings['asset']
+    percentages = etf_holdings['weight']
     
     # Create a DataFrame
     df = pd.DataFrame({
