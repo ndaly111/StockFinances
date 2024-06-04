@@ -72,48 +72,7 @@ def establish_database_connection(db_path):
     return sqlite3.connect(db_full_path)
 
 
-def fetch_financial_data(ticker, cursor):
-    print("main 3 fetch financial data")
-    print(f"Fetching financial data for ticker: {ticker}")
 
-    # Fetch existing data
-    ticker_data = fetch_ticker_data(ticker, cursor)
-    print("Ticker data:", ticker_data)
-
-    # Determine if annual data is missing
-    missing_data = determine_if_annual_data_missing(ticker_data)
-    print("Missing annual data:", missing_data)
-
-    # Calculate next annual check date based on the latest data
-    check_annual_data = calculate_next_annual_check_date_from_data(ticker_data)
-    print("Check annual data:", check_annual_data)
-
-    # Check for null fields in annual data
-    null_data_present = check_null_fields_annual(ticker, ticker_data)
-    print("Null data present:", null_data_present)
-
-    # If data is missing or needs checking, fetch new data from Yahoo Finance
-    if missing_data or check_annual_data or null_data_present:
-        annual_data = fetch_annual_data_from_yahoo(ticker)
-        if annual_data is not None:
-            store_annual_data(ticker, annual_data, cursor)
-            print("Stored new annual data for ticker:", ticker)
-
-    ttm_data = fetch_ttm_data(ticker, cursor)
-    if ttm_data is None or check_null_fields_ttm(ttm_data) or is_ttm_data_blank(ttm_data) or is_ttm_data_outdated(
-            ttm_data):
-        ttm_data_from_yahoo = fetch_ttm_data_from_yahoo(ticker)
-        if ttm_data_from_yahoo:
-            store_ttm_data(ticker, ttm_data_from_yahoo, cursor)
-            print("Stored new TTM data for ticker:", ticker)
-
-    # Combine the annual and TTM data into one DataFrame
-    ticker_data_df = pd.DataFrame(ticker_data)
-    ttm_data_df = pd.DataFrame([ttm_data])  # Assuming ttm_data is a single dictionary
-    combined_data = pd.concat([ticker_data_df, ttm_data_df], ignore_index=True)
-
-
-    return combined_data
 
 def log_average_valuations(avg_values, TICKERS_FILE_PATH):
     if TICKERS_FILE_PATH != 'tickers.csv':
