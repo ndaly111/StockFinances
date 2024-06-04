@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import sqlite3
 import yfinance as yf
-#pushd
+#push
 db_path = 'Stock Data.db'
 
 env = Environment(loader=FileSystemLoader('templates'))
