@@ -9,7 +9,6 @@ from typing import Optional
 
 logging.basicConfig(level=logging.INFO)
 
-
 def update_database_schema(db_path: str, table_name: str) -> None:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -22,7 +21,6 @@ def update_database_schema(db_path: str, table_name: str) -> None:
     conn.commit()
     conn.close()
 
-
 def extract_data(table) -> pd.DataFrame:
     headers = [th.get_text(strip=True) for th in table.find_all('th')]
     rows = table.find_all('tr')[1:]
@@ -32,8 +30,10 @@ def extract_data(table) -> pd.DataFrame:
         if len(cells) != len(headers):
             continue
         data.append([cell.get_text(strip=True) for cell in cells])
-    return pd.DataFrame(data, columns=headers)
-
+    df = pd.DataFrame(data, columns=headers)
+    logging.info(f"Extracted DataFrame columns: {df.columns}")
+    logging.info(f"Extracted DataFrame head:\n{df.head()}")
+    return df
 
 def get_last_day_of_month(date_str: str) -> str:
     month, year = date_str.split('/')
@@ -42,9 +42,29 @@ def get_last_day_of_month(date_str: str) -> str:
     last_day = calendar.monthrange(year, month)[1]
     return f"{year}-{month:02d}-{last_day:02d}"
 
+def convert_to_numeric(value: str) -> float:
+    logging.info(f"Converting value: {value}")
+    if isinstance(value, str):
+        value = value.replace(',', '').strip()
+        multiplier = 1
+        if 'B' in value:
+            multiplier = 10**9
+            value = value.replace('B', '')
+        elif 'M' in value:
+            multiplier = 10**6
+            value = value.replace('M', '')
+        elif 'T' in value:
+            multiplier = 10**12
+            value = value.replace('T', '')
+        try:
+            return float(value) * multiplier
+        except ValueError:
+            logging.warning(f"Value conversion error for: {value}")
+            return 0.0
+    return value
 
-def scrape_annual_estimates(ticker: str) -> pd.DataFrame:
-    logging.info("Scraping annual estimates from Zacks")
+def scrape_annual_estimates_from_web(ticker: str) -> pd.DataFrame:
+    logging.info(f"Scraping annual estimates from Zacks for ticker: {ticker}")
     ticker = ticker.replace('-', '.')
     url = f'https://www.zacks.com/stock/quote/{ticker}/detailed-earning-estimates'
     headers = {
@@ -63,70 +83,89 @@ def scrape_annual_estimates(ticker: str) -> pd.DataFrame:
 
     soup = BeautifulSoup(response.content, 'html.parser')
 
-    sales_table = soup.select_one('#detailed_estimate_full_body #detailed_earnings_estimates:nth-of-type(1) table')
-    earnings_table = soup.select_one('#detailed_estimate_full_body #detailed_earnings_estimates:nth-of-type(2) table')
+    sections = soup.find_all('section', id='detailed_earnings_estimates')
+    if len(sections) < 2:
+        logging.warning("Relevant sections not found.")
+        return pd.DataFrame()
+
+    sales_section = sections[0]
+    earnings_section = sections[1]
+
+    sales_table = sales_section.find('table')
+    earnings_table = earnings_section.find('table')
 
     if not sales_table or not earnings_table:
-        logging.warning("Data tables not found.")
+        logging.warning("Relevant tables not found.")
         return pd.DataFrame()
 
     sales_df = extract_data(sales_table)
     earnings_df = extract_data(earnings_table)
 
-    combined_df = pd.concat([sales_df, earnings_df], axis=1)
+    logging.info(f"Sales DataFrame columns: {sales_df.columns}")
+    logging.info(f"Earnings DataFrame columns: {earnings_df.columns}")
 
-    logging.info(f"Columns before renaming: {combined_df.columns}")
+    if sales_df.empty or earnings_df.empty:
+        logging.warning("No relevant data found in the extracted tables.")
+        return pd.DataFrame()
 
-    combined_df.columns = [
-        'Period', 'CurrentQtr_Revenue', 'NextQtr_Revenue', 'CurrentYear_Revenue', 'NextYear_Revenue',
-        'Period2', 'CurrentQtr_EPS', 'NextQtr_EPS', 'CurrentYear_EPS', 'NextYear_EPS'
-    ]
+    revenue_analysts_row = sales_df[sales_df[sales_df.columns[0]].str.contains('# of Estimates')]
+    eps_analysts_row = earnings_df[earnings_df[earnings_df.columns[0]].str.contains('# of Estimates')]
 
-    combined_df = combined_df[['Period', 'CurrentYear_Revenue', 'NextYear_Revenue', 'CurrentYear_EPS', 'NextYear_EPS']]
+    if revenue_analysts_row.empty or eps_analysts_row.empty:
+        logging.warning("Analysts count not found.")
+        return pd.DataFrame()
 
-    combined_df.fillna(0, inplace=True)
+    revenue_analysts = revenue_analysts_row.iloc[0, 1].replace(',', '')
+    eps_analysts = eps_analysts_row.iloc[0, 1].replace(',', '')
 
-    def convert_to_numeric(value: str) -> float:
-        if isinstance(value, str):
-            value = value.replace('B', '').replace('M', '')
-            try:
-                return float(value) * (10 ** 9 if 'B' in value else 10 ** 6)
-            except ValueError:
-                return 0
-        return value
+    if not revenue_analysts.isdigit() or not eps_analysts.isdigit():
+        logging.warning("Analysts count is not numeric.")
+        return pd.DataFrame()
 
-    combined_df['CurrentYear_Revenue'] = combined_df['CurrentYear_Revenue'].apply(convert_to_numeric)
-    combined_df['NextYear_Revenue'] = combined_df['NextYear_Revenue'].apply(convert_to_numeric)
-    combined_df['CurrentYear_EPS'] = combined_df['CurrentYear_EPS'].astype(float, errors='ignore')
-    combined_df['NextYear_EPS'] = combined_df['NextYear_EPS'].astype(float, errors='ignore')
+    revenue_analysts = int(revenue_analysts)
+    eps_analysts = int(eps_analysts)
 
-    combined_df['CurrentYear_Date'] = combined_df['Period'].apply(
-        lambda x: get_last_day_of_month(x.split('(')[-1][:-1]) if isinstance(x, str) and '/' in x else None)
+    current_year_period = sales_df.columns[3]
+    next_year_period = sales_df.columns[4]
 
-    if 'Period2' in combined_df.columns:
-        combined_df['NextYear_Date'] = combined_df['Period2'].apply(
-            lambda x: get_last_day_of_month(x.split('(')[-1][:-1]) if isinstance(x, str) and '/' in x else None)
-    else:
-        combined_df['NextYear_Date'] = None
+    current_year_date = get_last_day_of_month(current_year_period.split('(')[-1][:-1])
+    next_year_date = get_last_day_of_month(next_year_period.split('(')[-1][:-1])
+
+    def safe_convert(value):
+        try:
+            return float(value.replace(',', ''))
+        except ValueError:
+            return None
+
+    combined_length = min(len(sales_df), len(earnings_df))
+    combined_df = pd.DataFrame({
+        'Period': sales_df.iloc[:combined_length, 0],
+        'CurrentYear_Revenue': sales_df.iloc[:combined_length, 3].apply(convert_to_numeric),
+        'NextYear_Revenue': sales_df.iloc[:combined_length, 4].apply(convert_to_numeric),
+        'CurrentYear_EPS': earnings_df.iloc[:combined_length, 3].apply(safe_convert),
+        'NextYear_EPS': earnings_df.iloc[:combined_length, 4].apply(safe_convert),
+        'CurrentYear_Date': [current_year_date] * combined_length,
+        'NextYear_Date': [next_year_date] * combined_length,
+        'ForwardRevenueAnalysts': [revenue_analysts] * combined_length,
+        'ForwardEPSAnalysts': [eps_analysts] * combined_length
+    })
+
+    combined_df = combined_df.dropna(subset=['CurrentYear_Revenue', 'NextYear_Revenue', 'CurrentYear_EPS', 'NextYear_EPS'])
 
     logging.info("Scraped DataFrame:\n%s", combined_df)
     return combined_df
-
-
-def scrape_and_prepare_data(ticker: str) -> pd.DataFrame:
-    data_df = scrape_annual_estimates(ticker)
-    if data_df.empty:
-        logging.info(f"No forecast data found for {ticker}.")
-        return pd.DataFrame()
-    logging.info(f"Prepared DataFrame for {ticker}:\n%s", data_df)
-    return data_df.reset_index(drop=True)
-
 
 def store_in_database(df: pd.DataFrame, ticker: str, db_path: str, table_name: str) -> None:
     logging.info(f"Storing data in database for {ticker}")
     update_database_schema(db_path, table_name)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    cursor.execute(f"DELETE FROM {table_name} WHERE Ticker = ? AND Date < ?", (ticker, today))
+
+    cursor.execute(f"DELETE FROM {table_name} WHERE Ticker = ?", (ticker,))
+
     for _, row in df.iterrows():
         current_year_date: Optional[str] = row['CurrentYear_Date']
         next_year_date: Optional[str] = row['NextYear_Date']
@@ -137,37 +176,58 @@ def store_in_database(df: pd.DataFrame, ticker: str, db_path: str, table_name: s
         revenue_next: float = row['NextYear_Revenue']
         eps_current: float = row['CurrentYear_EPS']
         eps_next: float = row['NextYear_EPS']
-        revenue_analysts = 0  # Placeholder as it's not clear from the data
-        eps_analysts = 0  # Placeholder as it's not clear from the data
+        revenue_analysts: int = row['ForwardRevenueAnalysts']
+        eps_analysts: int = row['ForwardEPSAnalysts']
         last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        insert_query = f'''
-        INSERT INTO {table_name} (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated, ForwardEPSAnalysts, ForwardRevenueAnalysts)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(Ticker, Date) DO UPDATE SET
-            ForwardRevenue = EXCLUDED.ForwardRevenue,
-            ForwardEPS = EXCLUDED.ForwardEPS,
-            ForwardEPSAnalysts = EXCLUDED.ForwardEPSAnalysts,
-            ForwardRevenueAnalysts = EXCLUDED.ForwardRevenueAnalysts,
-            LastUpdated = EXCLUDED.LastUpdated;
-        '''
-        cursor.execute(insert_query, (
-            ticker,
-            current_year_date,
-            eps_current,
-            revenue_current,
-            last_updated,
-            eps_analysts,
-            revenue_analysts
-        ))
-        cursor.execute(insert_query, (
-            ticker,
-            next_year_date,
-            eps_next,
-            revenue_next,
-            last_updated,
-            eps_analysts,
-            revenue_analysts
-        ))
+        if revenue_current != 0 and revenue_next != 0:
+            data_to_insert = [
+                (
+                    ticker,
+                    current_year_date,
+                    eps_current,
+                    revenue_current,
+                    last_updated,
+                    eps_analysts,
+                    revenue_analysts
+                ),
+                (
+                    ticker,
+                    next_year_date,
+                    eps_next,
+                    revenue_next,
+                    last_updated,
+                    eps_analysts,
+                    revenue_analysts
+                )
+            ]
+            for data in data_to_insert:
+                logging.info(f"Inserting data: {data}")
+                insert_query = f'''
+                INSERT INTO {table_name} (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated, ForwardEPSAnalysts, ForwardRevenueAnalysts)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(Ticker, Date) DO UPDATE SET
+                    ForwardRevenue = EXCLUDED.ForwardRevenue,
+                    ForwardEPS = EXCLUDED.ForwardEPS,
+                    ForwardEPSAnalysts = EXCLUDED.ForwardEPSAnalysts,
+                    ForwardRevenueAnalysts = EXCLUDED.ForwardRevenueAnalysts,
+                    LastUpdated = EXCLUDED.LastUpdated;
+                '''
+                cursor.execute(insert_query, data)
     conn.commit()
     conn.close()
     logging.info("Data stored successfully.")
+
+def scrape_forward_data(ticker: str, db_path: str, table_name: str) -> None:
+    data_df = scrape_annual_estimates_from_web(ticker)
+    if data_df.empty:
+        logging.info(f"No forecast data found for {ticker}.")
+    else:
+        logging.info(f"Prepared DataFrame for {ticker}:\n%s", data_df)
+        store_in_database(data_df, ticker, db_path, table_name)
+
+# Example usage
+ticker = 'AAPL'
+db_path = 'Stock Data.db'
+table_name = 'ForwardFinancialData'
+#updated
+#scrape_forward_data(ticker, db_path, table_name)
