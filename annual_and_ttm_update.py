@@ -181,12 +181,24 @@ def handle_ttm_duplicates(ticker, cursor):
         return False
 
 def remove_invalid_ttm_entries(ticker, cursor):
-  logging.info("Removing invalid TTM entries with no year attached")
+  logging.info("Removing invalid or duplicate TTM entries")
   try:
-    # Delete entries where the 'Quarter' field contains only 'TTM'
-    cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ? AND (Quarter = 'TTM' OR Quarter LIKE 'TTM %')", (ticker,))
+    # Remove entries where 'Quarter' contains only 'TTM'
+    cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ? AND Quarter = 'TTM'", (ticker,))
+    
+    # Ensure that we only have one TTM entry for each quarter
+    cursor.execute("""
+      DELETE FROM TTM_Data
+      WHERE Symbol = ? AND
+      Quarter LIKE 'TTM %' AND
+      EXISTS (
+        SELECT 1 FROM TTM_Data AS t
+        WHERE t.Symbol = TTM_Data.Symbol AND t.Quarter = TTM_Data.Quarter AND t.ROWID > TTM_Data.ROWID
+      );
+    """, (ticker,))
+    
     cursor.connection.commit()
-    logging.info(f"Invalid TTM entries removed for {ticker}")
+    logging.info(f"Invalid or duplicate TTM entries removed for {ticker}")
   except sqlite3.Error as e:
     logging.error(f"Database error while removing invalid TTM entries for {ticker}: {e}")
 
