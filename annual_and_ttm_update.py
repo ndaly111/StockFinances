@@ -8,8 +8,15 @@ import matplotlib.pyplot as plt
 import os
 
 # Database connection setup
+# Database connection setup with indexing
 def get_db_connection(db_path):
-    return sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_symbol ON Annual_Data(Symbol);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_symbol_quarter ON TTM_Data(Symbol, Quarter);")
+    cursor.connection.commit()
+    return conn
+
 
 def fetch_ticker_data(ticker, cursor):
     try:
@@ -65,6 +72,9 @@ def clean_financial_data(df):
     df.infer_objects(copy=False)  # Ensure future behavior for downcasting
     return df
 
+from functools import lru_cache
+
+@lru_cache(maxsize=32)
 def fetch_annual_data_from_yahoo(ticker):
     logging.info("Fetching annual data from Yahoo Finance")
     try:
@@ -93,6 +103,33 @@ def fetch_annual_data_from_yahoo(ticker):
     except Exception as e:
         logging.error(f"Error fetching data from Yahoo Finance for {ticker}: {e}")
         return pd.DataFrame()
+
+@lru_cache(maxsize=32)
+def fetch_ttm_data_from_yahoo(ticker):
+    logging.info("Fetching TTM data from Yahoo Finance")
+    try:
+        stock = yf.Ticker(ticker)
+        ttm_financials = stock.quarterly_financials
+        if ttm_financials is None or ttm_financials.empty:
+            logging.info(f"No TTM financial data available for {ticker}.")
+            return None
+
+        ttm_data = {}
+        try:
+            ttm_data['TTM_Revenue'] = ttm_financials.loc['Total Revenue', :].iloc[:4].sum()
+            ttm_data['TTM_Net_Income'] = ttm_financials.loc['Net Income', :].iloc[:4].sum()
+        except KeyError:
+            ttm_data['TTM_Revenue'] = None
+            ttm_data['TTM_Net_Income'] = None
+
+        ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
+        ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding', None)
+        ttm_data['Quarter'] = ttm_financials.columns[0].strftime('%Y-%m-%d')
+        return ttm_data
+    except Exception as e:
+        logging.error(f"Error fetching TTM data from Yahoo Finance for {ticker}: {e}")
+        return None
+
 
 def fetch_ttm_data_from_yahoo(ticker):
     logging.info("Fetching TTM data from Yahoo Finance")
@@ -164,43 +201,35 @@ def store_ttm_data(ticker, ttm_data, cursor):
     except sqlite3.Error as e:
         logging.error(f"Database error while storing/updating TTM data for {ticker}: {e}")
 
+
 def handle_ttm_duplicates(ticker, cursor):
     logging.info("Checking for duplicate TTM entries for ticker")
     try:
-        cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ?", (ticker,))
+        # Fetch all rows for the ticker, ordered by date descending (latest first)
+        cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ? ORDER BY Quarter DESC", (ticker,))
         results = cursor.fetchall()
+
+        # Keep the most recent entry and delete the others
         if len(results) > 1:
             logging.info(f"Multiple TTM entries detected for {ticker}")
-            cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ?", (ticker,))
+
+            # Keep the most recent entry (first one due to ORDER BY DESC)
+            most_recent_entry = results[0]
+            most_recent_quarter = most_recent_entry[5]  # Assuming Quarter is the 6th column (index 5)
+
+            # Delete all other entries except the most recent one
+            cursor.execute(
+                "DELETE FROM TTM_Data WHERE Symbol = ? AND Quarter != ?",
+                (ticker, most_recent_quarter)
+            )
             cursor.connection.commit()
-            logging.info(f"Cleared duplicate TTM entries for {ticker}")
+            logging.info(f"Cleared duplicate TTM entries for {ticker}, keeping only the most recent quarter.")
             return True
         return False
     except sqlite3.Error as e:
         logging.error(f"Database error during duplicate check: {e}")
         return False
 
-def remove_invalid_ttm_entries(ticker, cursor):
-  logging.info("Removing invalid or duplicate TTM entries")
-  try:
-    # Remove entries where 'Quarter' contains only 'TTM'
-    cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ? AND Quarter = 'TTM'", (ticker,))
-    
-    # Ensure that we only have one TTM entry for each quarter
-    cursor.execute("""
-      DELETE FROM TTM_Data
-      WHERE Symbol = ? AND
-      Quarter LIKE 'TTM %' AND
-      EXISTS (
-        SELECT 1 FROM TTM_Data AS t
-        WHERE t.Symbol = TTM_Data.Symbol AND t.Quarter = TTM_Data.Quarter AND t.ROWID > TTM_Data.ROWID
-      );
-    """, (ticker,))
-    
-    cursor.connection.commit()
-    logging.info(f"Invalid or duplicate TTM entries removed for {ticker}")
-  except sqlite3.Error as e:
-    logging.error(f"Database error while removing invalid TTM entries for {ticker}: {e}")
 
 def chart_needs_update(chart_path, last_data_update, ttm_update=False, annual_update=False):
     print("Checking if chart needs update")
@@ -547,56 +576,63 @@ def prepare_data_for_charts(ticker, cursor):
     return combined_df
 
 def annual_and_ttm_update(ticker, db_path):
-  conn = get_db_connection(db_path)
-  cursor = conn.cursor()
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
 
-  # Fetch existing data
-  annual_data = fetch_ticker_data(ticker, cursor)
-  if annual_data is None or len(annual_data) == 0:
-    # Fetch new data from Yahoo Finance if not present in the database
-    new_annual_data = fetch_annual_data_from_yahoo(ticker)
-    if not new_annual_data.empty:
-      store_annual_data(ticker, new_annual_data, cursor)
-      annual_data = new_annual_data
+    # Fetch existing data
+    annual_data = fetch_ticker_data(ticker, cursor)
+    if annual_data is None or len(annual_data) == 0:
+        # Fetch new data from Yahoo Finance if not present in the database
+        new_annual_data = fetch_annual_data_from_yahoo(ticker)
+        if not new_annual_data.empty:
+            store_annual_data(ticker, new_annual_data, cursor)
+            annual_data = new_annual_data
 
-  ttm_data = fetch_ttm_data(ticker, cursor)
-  
-  # Remove invalid TTM entries before processing
-  remove_invalid_ttm_entries(ticker, cursor)
-  
-  if ttm_data is None or len(ttm_data) == 0:
-    # Fetch new data from Yahoo Finance if not present in the database
-    new_ttm_data = fetch_ttm_data_from_yahoo(ticker)
-    if new_ttm_data:
-      store_ttm_data(ticker, new_ttm_data, cursor)
-      ttm_data = [new_ttm_data]
+    ttm_data = fetch_ttm_data(ticker, cursor)
+    if ttm_data is None or len(ttm_data) == 0:
+        # Fetch new data from Yahoo Finance if not present in the database
+        new_ttm_data = fetch_ttm_data_from_yahoo(ticker)
+        if new_ttm_data:
+            store_ttm_data(ticker, new_ttm_data, cursor)
+            ttm_data = [new_ttm_data]
 
-  # Check for updates
-  annual_update_needed = False
-  ttm_update_needed = False
+    # Handle duplicates in TTM data
+    handle_ttm_duplicates(ticker, cursor)
 
-  if annual_data:
-    latest_annual_date = get_latest_annual_data_date(annual_data)
-    annual_update_needed = needs_update(latest_annual_date, 13) or check_null_fields(annual_data, ['Revenue', 'Net_Income', 'EPS'])
+    # Check for updates
+    annual_update_needed = False
+    ttm_update_needed = False
 
-  if ttm_data:
-    latest_ttm_date = max([datetime.strptime(row['Quarter'], '%Y-%m-%d') for row in ttm_data])
-    ttm_update_needed = needs_update(latest_ttm_date, 4) or check_null_fields(ttm_data, ['TTM_Revenue', 'TTM_Net_Income', 'TTM_EPS'])
+    if annual_data:
+        latest_annual_date = get_latest_annual_data_date(annual_data)
+        annual_update_needed = needs_update(latest_annual_date, 13) or check_null_fields(annual_data, ['Revenue', 'Net_Income', 'EPS'])
 
-  # Fetch and store new data if needed
-  if annual_update_needed:
-    new_annual_data = fetch_annual_data_from_yahoo(ticker)
-    if not new_annual_data.empty:
-      store_annual_data(ticker, new_annual_data, cursor)
+    if ttm_data:
+        latest_ttm_date = max([datetime.strptime(row['Quarter'], '%Y-%m-%d') for row in ttm_data])
+        ttm_update_needed = needs_update(latest_ttm_date, 4) or check_null_fields(ttm_data, ['TTM_Revenue', 'TTM_Net_Income', 'TTM_EPS'])
 
-  if ttm_update_needed:
-    new_ttm_data = fetch_ttm_data_from_yahoo(ticker)
-    if new_ttm_data:
-      store_ttm_data(ticker, new_ttm_data, cursor)
+    # Fetch and store new data if needed
+    if annual_update_needed:
+        new_annual_data = fetch_annual_data_from_yahoo(ticker)
+        if not new_annual_data.empty:
+            store_annual_data(ticker, new_annual_data, cursor)
 
-  combined_df = prepare_data_for_charts(ticker, cursor)
-  charts_output_dir = "charts"
-  generate_financial_charts(ticker, charts_output_dir, combined_df)
+    if ttm_update_needed:
+        new_ttm_data = fetch_ttm_data_from_yahoo(ticker)
+        if new_ttm_data:
+            store_ttm_data(ticker, new_ttm_data, cursor)
 
-  conn.close()
-  logging.debug(f"Update for {ticker} completed")
+    combined_df = prepare_data_for_charts(ticker, cursor)
+    charts_output_dir = "charts"
+    generate_financial_charts(ticker, charts_output_dir, combined_df)
+
+    conn.close()
+    logging.debug(f"Update for {ticker} completed")
+
+
+
+if __name__ == "__main__":
+    ticker = "PG"  # Example ticker, replace with desired ticker
+    db_path = "Stock Data.db"
+    charts_output_dir = "charts"
+    annual_and_ttm_update(ticker, db_path)
