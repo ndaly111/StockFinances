@@ -41,10 +41,16 @@ def fetch_ttm_data(ticker, cursor):
         return None
 
 def get_latest_annual_data_date(ticker_data):
-    dates = [datetime.strptime(row['Date'], '%Y-%m-%d') for row in ticker_data if row['Symbol'] == ticker_data[0]['Symbol']]
+    # Check if the data returned is a list of dictionaries or tuples
+    if isinstance(ticker_data[0], dict):
+        dates = [datetime.strptime(row['Date'], '%Y-%m-%d') for row in ticker_data if row['Symbol'] == ticker_data[0]['Symbol']]
+    else:
+        # Assuming 'Date' is the third element (index 2) and 'Symbol' is the first (index 0)
+        dates = [datetime.strptime(row[2], '%Y-%m-%d') for row in ticker_data if row[0] == ticker_data[0][0]]
     latest_date = max(dates) if dates else None
     logging.debug(f"Latest annual data date: {latest_date}")
     return latest_date
+
 
 def calculate_next_check_date(latest_date, months):
     next_check_date = latest_date + timedelta(days=months * 30)
@@ -603,11 +609,11 @@ def annual_and_ttm_update(ticker, db_path):
     annual_update_needed = False
     ttm_update_needed = False
 
-    if annual_data:
+    if annual_data is not None and not pd.DataFrame(annual_data).empty:
         latest_annual_date = get_latest_annual_data_date(annual_data)
         annual_update_needed = needs_update(latest_annual_date, 13) or check_null_fields(annual_data, ['Revenue', 'Net_Income', 'EPS'])
 
-    if ttm_data:
+    if ttm_data is not None and not pd.DataFrame(ttm_data).empty:
         latest_ttm_date = max([datetime.strptime(row['Quarter'], '%Y-%m-%d') for row in ttm_data])
         ttm_update_needed = needs_update(latest_ttm_date, 4) or check_null_fields(ttm_data, ['TTM_Revenue', 'TTM_Net_Income', 'TTM_EPS'])
 
@@ -628,6 +634,7 @@ def annual_and_ttm_update(ticker, db_path):
 
     conn.close()
     logging.debug(f"Update for {ticker} completed")
+
 
 
 
