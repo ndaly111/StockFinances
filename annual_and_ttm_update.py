@@ -603,11 +603,11 @@ def annual_and_ttm_update(ticker, db_path):
     annual_update_needed = False
     ttm_update_needed = False
 
-    if annual_data:
+    if annual_data is not None and not pd.DataFrame(annual_data).empty:
         latest_annual_date = get_latest_annual_data_date(annual_data)
         annual_update_needed = needs_update(latest_annual_date, 13) or check_null_fields(annual_data, ['Revenue', 'Net_Income', 'EPS'])
 
-    if ttm_data:
+    if ttm_data is not None and not pd.DataFrame(ttm_data).empty:
         latest_ttm_date = max([datetime.strptime(row['Quarter'], '%Y-%m-%d') for row in ttm_data])
         ttm_update_needed = needs_update(latest_ttm_date, 4) or check_null_fields(ttm_data, ['TTM_Revenue', 'TTM_Net_Income', 'TTM_EPS'])
 
@@ -628,6 +628,7 @@ def annual_and_ttm_update(ticker, db_path):
 
     conn.close()
     logging.debug(f"Update for {ticker} completed")
+
 
 
 
