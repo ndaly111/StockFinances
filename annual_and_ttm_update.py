@@ -41,10 +41,16 @@ def fetch_ttm_data(ticker, cursor):
         return None
 
 def get_latest_annual_data_date(ticker_data):
-    dates = [datetime.strptime(row['Date'], '%Y-%m-%d') for row in ticker_data if row['Symbol'] == ticker_data[0]['Symbol']]
+    # Check if the data returned is a list of dictionaries or tuples
+    if isinstance(ticker_data[0], dict):
+        dates = [datetime.strptime(row['Date'], '%Y-%m-%d') for row in ticker_data if row['Symbol'] == ticker_data[0]['Symbol']]
+    else:
+        # Assuming 'Date' is the third element (index 2) and 'Symbol' is the first (index 0)
+        dates = [datetime.strptime(row[2], '%Y-%m-%d') for row in ticker_data if row[0] == ticker_data[0][0]]
     latest_date = max(dates) if dates else None
     logging.debug(f"Latest annual data date: {latest_date}")
     return latest_date
+
 
 def calculate_next_check_date(latest_date, months):
     next_check_date = latest_date + timedelta(days=months * 30)
