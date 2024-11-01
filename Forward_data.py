@@ -46,7 +46,7 @@ def get_last_day_of_month(date_str: str) -> str:
 def scrape_annual_estimates(ticker: str) -> pd.DataFrame:
     logging.info("Scraping annual estimates from Zacks")
     ticker = ticker.replace('-', '.')
-    url = f'https://www.zacks.com/stock/quote/{ticker}/detailed-earning-estimates'
+    url = f'https://www.zacks.com/stock/quote/{ticker}/detailed-earnings-estimates'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
