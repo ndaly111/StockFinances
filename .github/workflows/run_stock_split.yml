@@ -30,6 +30,6 @@ jobs:
     # Step 4: Run the Python script
     - name: Run stock split script
       run: |
-        python apply_stock_split.py
+        python db_annual_TTM_update.py
       env:
         DB_PATH: 'Stock Data.db'  # Set this path if you want to customize in the script
