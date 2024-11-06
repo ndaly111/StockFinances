@@ -14,7 +14,7 @@ from balance_sheet_data_fetcher import (
 )
 from balancesheet_chart import (fetch_balance_sheet_data,plot_chart,format_value, create_and_save_table)
 import pandas as pd
-from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_in_database)
+from Forward_data import (scrape_forward_data)
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from bs4 import BeautifulSoup
 from ticker_info import (prepare_data_for_display,generate_html_table)
@@ -216,11 +216,7 @@ def main():
             balancesheet_chart(ticker, charts_output_dir)
             print("---m generate balance sheet chart and table")
 
-            combined_df = scrape_and_prepare_data(ticker)
-            print("---m combined df")
-
-            if not combined_df.empty:
-                store_in_database(combined_df, ticker, db_path, table_name)
+            scrape_forward_data(ticker, db_path, table_name)
 
             # Generate HTML report after all tickers have been processed
             generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
