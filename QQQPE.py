@@ -1,23 +1,31 @@
 import requests
 import pandas as pd
 import yfinance as yf
-from io import StringIO
+from io import BytesIO
 from datetime import datetime
 
-# URL to download QQQ holdings CSV data
-holdings_url = 'https://www.invesco.com/us/financial-products/etfs/holdings/download-holdings?ticker=QQQ'
+# URL to download QQQ holdings Excel data
+holdings_url = 'https://www.invesco.com/QQQ-etf/en/holdings/download?audienceType=Institutional'
 
-# Fetch the holdings CSV data
-response = requests.get(holdings_url)
+# Headers to mimic a browser request (if necessary)
+headers = {
+    'User-Agent': 'Mozilla/5.0',
+    'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'Referer': 'https://www.invesco.com/QQQ-etf/en/holdings'
+}
+
+# Fetch the holdings Excel data
+response = requests.get(holdings_url, headers=headers)
 
 if response.status_code == 200:
-    csv_content = response.content.decode('utf-8')
+    # The content is in Excel format
+    excel_content = response.content
 
-    # Read the CSV content using pandas
-    holdings = pd.read_csv(StringIO(csv_content))
+    # Read the Excel content using pandas
+    holdings = pd.read_excel(BytesIO(excel_content), sheet_name=0)
 
     # Ensure the necessary columns are present
-    if {'Ticker', 'Weight (%)'}.issubset(holdings.columns):
+    if {'Security Name', 'Ticker', 'Weight (%)'}.issubset(holdings.columns):
         holdings.rename(columns={'Ticker': 'Symbol', 'Weight (%)': 'Weight'}, inplace=True)
 
         # Initialize variables
