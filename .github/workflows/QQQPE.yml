@@ -1,0 +1,33 @@
+name: Update QQQ P/E Ratio
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Runs daily at 8 AM UTC
+  workflow_dispatch:     # Allows manual trigger
+
+jobs:
+  update-pe-ratio:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas yfinance requests
+
+      - name: Run the script
+        run: |
+          python QQQPE.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update QQQ P/E Ratio
+          file_pattern: qqq_pe_ratio.html
