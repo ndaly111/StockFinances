@@ -40,11 +40,6 @@ def fetch_ttm_data(ticker, cursor):
         logging.error(f"Database error: {e}")
         return None
 
-
-from datetime import datetime
-import logging
-import pandas as pd
-
 def get_latest_annual_data_date(ticker_data):
     # Check if ticker_data is a pandas DataFrame
     if isinstance(ticker_data, pd.DataFrame):
@@ -98,14 +93,20 @@ def get_latest_annual_data_date(ticker_data):
     return None
 
 
+from datetime import timedelta
+
 def calculate_next_check_date(latest_date, months):
-    next_check_date = latest_date + timedelta(days=months * 30)
-    return next_check_date
+    if latest_date is None:
+        return None  # Prevents TypeError if no date is available
+
+    return latest_date + timedelta(days=months * 30)
 
 def needs_update(latest_date, months):
+    if latest_date is None:
+        return True  # If there's no last update date, we assume an update is needed
+
     next_check_date = calculate_next_check_date(latest_date, months)
-    update_needed = datetime.now().date() > next_check_date.date()
-    return update_needed
+    return next_check_date is None or next_check_date <= datetime.now()
 
 def check_null_fields(data, fields):
     for entry in data:
