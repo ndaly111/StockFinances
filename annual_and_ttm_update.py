@@ -41,14 +41,23 @@ def fetch_ttm_data(ticker, cursor):
         return None
 
 
-def get_latest_annual_data_date(ticker_data):
-    if not ticker_data:
-        logging.warning("No data found for the ticker. Returning None.")
-        return None  # Handle empty case gracefully
+from datetime import datetime
+import logging
+import pandas as pd
 
-    # Check the structure of the first item safely
-    first_entry = ticker_data[0]
-    
+def get_latest_annual_data_date(ticker_data):
+    # Check if ticker_data is a pandas DataFrame
+    if isinstance(ticker_data, pd.DataFrame):
+        if ticker_data.empty:
+            logging.warning("Ticker data is an empty DataFrame. Returning None.")
+            return None  # Handle empty DataFrame safely
+    elif not ticker_data:  # Handle case where ticker_data is a list or other type
+        logging.warning("Ticker data is empty or None. Returning None.")
+        return None
+
+    # Get the first row for reference
+    first_entry = ticker_data.iloc[0] if isinstance(ticker_data, pd.DataFrame) else ticker_data[0]
+
     if isinstance(first_entry, dict):
         if 'Date' not in first_entry or 'Symbol' not in first_entry:
             logging.warning("Missing expected keys in ticker_data dictionary. Returning None.")
@@ -74,13 +83,19 @@ def get_latest_annual_data_date(ticker_data):
         except Exception as e:
             logging.error(f"Error parsing dates from list/tuple format: {e}")
             return None
-    else:
-        logging.warning("Unexpected data format in ticker_data. Returning None.")
-        return None
 
-    latest_date = max(dates) if dates else None
-    logging.debug(f"Latest annual data date: {latest_date}")
-    return latest_date
+    elif isinstance(ticker_data, pd.DataFrame) and 'Date' in ticker_data.columns:
+        try:
+            dates = pd.to_datetime(ticker_data['Date'], format='%Y-%m-%d')
+            latest_date = dates.max()
+            logging.debug(f"Latest annual data date (DataFrame): {latest_date}")
+            return latest_date
+        except Exception as e:
+            logging.error(f"Error parsing dates from DataFrame: {e}")
+            return None
+
+    logging.warning("Unexpected data format in ticker_data. Returning None.")
+    return None
 
 
 def calculate_next_check_date(latest_date, months):
