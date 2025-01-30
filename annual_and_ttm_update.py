@@ -41,25 +41,72 @@ def fetch_ttm_data(ticker, cursor):
         return None
 
 def get_latest_annual_data_date(ticker_data):
-    # Check if the data returned is a list of dictionaries or tuples
-    if isinstance(ticker_data[0], dict):
-        dates = [datetime.strptime(row['Date'], '%Y-%m-%d') for row in ticker_data if row['Symbol'] == ticker_data[0]['Symbol']]
-    else:
-        # Assuming 'Date' is the third element (index 2) and 'Symbol' is the first (index 0)
-        dates = [datetime.strptime(row[2], '%Y-%m-%d') for row in ticker_data if row[0] == ticker_data[0][0]]
-    latest_date = max(dates) if dates else None
-    logging.debug(f"Latest annual data date: {latest_date}")
-    return latest_date
+    # Check if ticker_data is a pandas DataFrame
+    if isinstance(ticker_data, pd.DataFrame):
+        if ticker_data.empty:
+            logging.warning("Ticker data is an empty DataFrame. Returning None.")
+            return None  # Handle empty DataFrame safely
+    elif not ticker_data:  # Handle case where ticker_data is a list or other type
+        logging.warning("Ticker data is empty or None. Returning None.")
+        return None
 
+    # Get the first row for reference
+    first_entry = ticker_data.iloc[0] if isinstance(ticker_data, pd.DataFrame) else ticker_data[0]
+
+    if isinstance(first_entry, dict):
+        if 'Date' not in first_entry or 'Symbol' not in first_entry:
+            logging.warning("Missing expected keys in ticker_data dictionary. Returning None.")
+            return None  # Avoid KeyError
+        
+        try:
+            dates = [
+                datetime.strptime(row['Date'], '%Y-%m-%d') 
+                for row in ticker_data 
+                if row.get('Symbol') == first_entry['Symbol']
+            ]
+        except Exception as e:
+            logging.error(f"Error parsing dates: {e}")
+            return None
+
+    elif isinstance(first_entry, (list, tuple)) and len(first_entry) > 2:
+        try:
+            dates = [
+                datetime.strptime(row[2], '%Y-%m-%d') 
+                for row in ticker_data 
+                if row[0] == first_entry[0]
+            ]
+        except Exception as e:
+            logging.error(f"Error parsing dates from list/tuple format: {e}")
+            return None
+
+    elif isinstance(ticker_data, pd.DataFrame) and 'Date' in ticker_data.columns:
+        try:
+            dates = pd.to_datetime(ticker_data['Date'], format='%Y-%m-%d')
+            latest_date = dates.max()
+            logging.debug(f"Latest annual data date (DataFrame): {latest_date}")
+            return latest_date
+        except Exception as e:
+            logging.error(f"Error parsing dates from DataFrame: {e}")
+            return None
+
+    logging.warning("Unexpected data format in ticker_data. Returning None.")
+    return None
+
+
+from datetime import timedelta
 
 def calculate_next_check_date(latest_date, months):
-    next_check_date = latest_date + timedelta(days=months * 30)
-    return next_check_date
+    if latest_date is None:
+        return None  # Prevents TypeError if no date is available
+
+    return latest_date + timedelta(days=months * 30)
 
 def needs_update(latest_date, months):
+    if latest_date is None:
+        return True  # If there's no last update date, we assume an update is needed
+
     next_check_date = calculate_next_check_date(latest_date, months)
-    update_needed = datetime.now().date() > next_check_date.date()
-    return update_needed
+    return next_check_date is None or next_check_date <= datetime.now()
 
 def check_null_fields(data, fields):
     for entry in data:
