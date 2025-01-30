@@ -40,13 +40,44 @@ def fetch_ttm_data(ticker, cursor):
         logging.error(f"Database error: {e}")
         return None
 
+
 def get_latest_annual_data_date(ticker_data):
-    # Check if the data returned is a list of dictionaries or tuples
-    if isinstance(ticker_data[0], dict):
-        dates = [datetime.strptime(row['Date'], '%Y-%m-%d') for row in ticker_data if row['Symbol'] == ticker_data[0]['Symbol']]
+    if not ticker_data:
+        logging.warning("No data found for the ticker. Returning None.")
+        return None  # Handle empty case gracefully
+
+    # Check the structure of the first item safely
+    first_entry = ticker_data[0]
+    
+    if isinstance(first_entry, dict):
+        if 'Date' not in first_entry or 'Symbol' not in first_entry:
+            logging.warning("Missing expected keys in ticker_data dictionary. Returning None.")
+            return None  # Avoid KeyError
+        
+        try:
+            dates = [
+                datetime.strptime(row['Date'], '%Y-%m-%d') 
+                for row in ticker_data 
+                if row.get('Symbol') == first_entry['Symbol']
+            ]
+        except Exception as e:
+            logging.error(f"Error parsing dates: {e}")
+            return None
+
+    elif isinstance(first_entry, (list, tuple)) and len(first_entry) > 2:
+        try:
+            dates = [
+                datetime.strptime(row[2], '%Y-%m-%d') 
+                for row in ticker_data 
+                if row[0] == first_entry[0]
+            ]
+        except Exception as e:
+            logging.error(f"Error parsing dates from list/tuple format: {e}")
+            return None
     else:
-        # Assuming 'Date' is the third element (index 2) and 'Symbol' is the first (index 0)
-        dates = [datetime.strptime(row[2], '%Y-%m-%d') for row in ticker_data if row[0] == ticker_data[0][0]]
+        logging.warning("Unexpected data format in ticker_data. Returning None.")
+        return None
+
     latest_date = max(dates) if dates else None
     logging.debug(f"Latest annual data date: {latest_date}")
     return latest_date
