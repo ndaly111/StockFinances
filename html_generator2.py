@@ -264,25 +264,38 @@ def create_ticker_page(ticker, ticker_data, output_dir):
 
 
 def generate_dashboard_table(dashboard_data):
+    # Create the DataFrame using all columns from your data
     dashboard_df = pd.DataFrame(dashboard_data, columns=[
         "Ticker", "Share Price", "Nicks TTM Valuation", "Nicks TTM Value",
         "Nicks Forward Valuation", "Nicks Forward Value", "Finviz TTM Valuation",
         "Finviz TTM Value", "Finviz Forward Valuation", "Finviz Forward Value"
     ])
 
+    # Remove the valuation columns so only the value columns remain
+    dashboard_df.drop(columns=[
+        "Nicks TTM Valuation", "Nicks Forward Valuation", 
+        "Finviz TTM Valuation", "Finviz Forward Valuation"
+    ], inplace=True)
+
+    # Convert the Ticker column into hyperlinks pointing to the ticker pages
+    dashboard_df["Ticker"] = dashboard_df["Ticker"].apply(
+        lambda ticker: f'<a href="pages/{ticker}_page.html">{ticker}</a>'
+    )
+
+    # Helper function to parse percentage values from strings
     def parse_percentage(value):
         try:
             return float(value.strip('%')) if value != "-" else None
         except ValueError:
             return None
 
-    # Calculate average TTM and Forward Valuation values
+    # Calculate averages for the value columns
     avg_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(parse_percentage).mean()
     avg_nicks_forward = dashboard_df["Nicks Forward Value"].apply(parse_percentage).mean()
     avg_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(parse_percentage).mean()
     avg_finviz_forward = dashboard_df["Finviz Forward Value"].apply(parse_percentage).mean()
 
-    # Calculate medians
+    # Calculate medians for the value columns
     median_nicks_ttm = dashboard_df["Nicks TTM Value"].apply(parse_percentage).median()
     median_nicks_forward = dashboard_df["Nicks Forward Value"].apply(parse_percentage).median()
     median_finviz_ttm = dashboard_df["Finviz TTM Value"].apply(parse_percentage).median()
@@ -298,6 +311,7 @@ def generate_dashboard_table(dashboard_data):
         'Finviz_Forward_Value_Median': median_finviz_forward
     }
 
+    # Create a summary table for averages and medians
     avg_values_df = pd.DataFrame([
         ["Average", f"{avg_nicks_ttm:.1f}%", f"{avg_nicks_forward:.1f}%", f"{avg_finviz_ttm:.1f}%", f"{avg_finviz_forward:.1f}%"],
         ["Median", f"{median_nicks_ttm:.1f}%", f"{median_nicks_forward:.1f}%", f"{median_finviz_ttm:.1f}%", f"{median_finviz_forward:.1f}%"]
@@ -305,7 +319,7 @@ def generate_dashboard_table(dashboard_data):
 
     avg_values_html = avg_values_df.to_html(index=False, escape=False, classes='table table-striped', justify='left')
 
-    # Append the main dashboard data table
+    # Create the main dashboard table
     dashboard_html = dashboard_df.to_html(index=False, escape=False, classes='table table-striped', justify='left', table_id="sortable-table")
 
     full_dashboard_html = avg_values_html + dashboard_html
@@ -317,8 +331,6 @@ def generate_dashboard_table(dashboard_data):
     print(f"Dashboard saved to {dashboard_path}")
 
     return full_dashboard_html, avg_values
-
-
 
 def create_home_page(tickers, output_dir, dashboard_html, avg_values):
     print(f"Creating home page in {output_dir}...")
