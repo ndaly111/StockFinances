@@ -109,12 +109,22 @@ def needs_update(latest_date, months):
     return next_check_date is None or next_check_date <= datetime.now()
 
 def check_null_fields(data, fields):
+    """Checks if any of the specified fields contain null or empty values in the dataset."""
+    if not isinstance(data, list):  # Ensure data is a list of entries
+        print(f"Warning: Expected list, got {type(data)} instead. Returning False.")
+        return False
+
     for entry in data:
+        if not isinstance(entry, dict):  # Prevent AttributeError
+            print(f"Warning: Expected dictionary, got {type(entry)} instead. Skipping entry.")
+            continue  # Skip invalid entries
+
         for field in fields:
             if entry.get(field) in [None, '']:
-                logging.debug(f"Null field found: {field} in entry {entry}")
+                print(f"Null or empty value found for field '{field}' in {entry}. Update needed.")
                 return True
-    return True
+
+    return False
 
 def clean_financial_data(df):
     # Drop rows where all specified columns are NaN
