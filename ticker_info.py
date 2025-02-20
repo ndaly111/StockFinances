@@ -1,37 +1,67 @@
 import yfinance as yf
 import os
-
 from bs4 import BeautifulSoup
 
-
 def fetch_stock_data(ticker, treasury_yield):
-    import yfinance as yf  # Assuming yfinance is imported here
+    """
+    Safely fetches stock info using yfinance, avoiding 'NoneType' errors and
+    also handling fallback logic for currentPrice.
+    """
+    try:
+        stock = yf.Ticker(ticker)
+        raw_info = stock.info  # This can return None or raise an error
+        if raw_info is not None:
+            info = raw_info
+        else:
+            info = {}
+            print(f"Warning: yfinance returned None info for ticker '{ticker}'")
+    except Exception as e:
+        print(f"Error retrieving market data for {ticker}: {e}")
+        # Fallback to an empty dict to avoid crashing
+        info = {}
 
-    stock = yf.Ticker(ticker)
-    current_price = stock.info.get('currentPrice')
-    forward_eps = stock.info.get('forwardEps')
-    pe_ratio = stock.info.get('trailingPE', None)
-    price_to_book = stock.info.get('priceToBook')
-    forward_pe_ratio = current_price / forward_eps if forward_eps else None
+    # Safely pull values from the 'info' dictionary
+    current_price = info.get('currentPrice', None)
+    # Fallback attempts
+    if current_price is None:
+        current_price = info.get('regularMarketPrice', None)
+    if current_price is None:
+        current_price = info.get('previousClose', None)
+    if current_price is None:
+        bid = info.get('bid', None)
+        ask = info.get('ask', None)
+        if bid and ask:
+            current_price = (bid + ask) / 2
 
-    # Ensure treasury_yield is a float and convert from percentage to decimal
-    treasury_yield = float(treasury_yield) / 100 if treasury_yield and treasury_yield != '-' else None
+    forward_eps = info.get('forwardEps', None)
+    pe_ratio = info.get('trailingPE', None)
+    price_to_book = info.get('priceToBook', None)
+    marketcap = info.get('marketCap', None)
+
+    if current_price is not None and forward_eps:
+        forward_pe_ratio = current_price / forward_eps
+    else:
+        forward_pe_ratio = None
+
+    # Ensure treasury_yield is a float and convert from percentage to decimal if possible
+    if treasury_yield and treasury_yield != '-':
+        treasury_yield = float(treasury_yield) / 100
+    else:
+        treasury_yield = None
 
     # Calculate implied growth for trailing P/E
     implied_growth = calculate_implied_growth(pe_ratio, treasury_yield) if pe_ratio is not None else '-'
     implied_growth_formatted = f"{implied_growth * 100:.1f}%" if implied_growth != '-' else 'N/A'
 
     # Calculate implied growth for forward P/E
-    implied_forward_growth = calculate_implied_growth(forward_pe_ratio,
-                                                      treasury_yield) if forward_pe_ratio is not None else '-'
+    implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield) \
+        if forward_pe_ratio is not None else '-'
     implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if implied_forward_growth != '-' else '-'
 
-    # Format close price as $xx.xx or return '-' if current_price is None
+    # Format close price or placeholder if None
     formatted_close_price = f"${current_price:.2f}" if current_price is not None else '-'
 
-    marketcap = stock.info.get('marketCap')
-
-    # Create the dictionary with proper formatting or placeholders if a value is None
+    # Create the data dictionary
     data = {
         'Close Price': formatted_close_price,
         'Market Cap': marketcap,
@@ -41,25 +71,24 @@ def fetch_stock_data(ticker, treasury_yield):
         'Implied Forward Growth*': implied_forward_growth_formatted,
         'P/B Ratio': "{:.1f}".format(price_to_book) if price_to_book is not None else '-',
     }
+
     return data, marketcap
 
 
 def calculate_implied_growth(pe_ratio, treasury_yield):
+    """
+    Calculates an 'implied growth' figure based on P/E ratio and risk-free rate.
+    """
     if pe_ratio is None or treasury_yield is None:
         return '-'
     else:
+        # Simple example of a custom implied-growth formula
         return ((pe_ratio / 10) ** (1/10)) + treasury_yield - 1
 
 
 def format_number(value):
     """
     Formats large numbers into a more readable form (e.g., in millions, billions, or trillions).
-
-    Args:
-        value (int or float): The value to format.
-
-    Returns:
-        str: Formatted string representing the number.
     """
     if value is None:
         return "N/A"
@@ -73,25 +102,19 @@ def format_number(value):
         return f"${value:.2f}"
 
 
-
-
 def prepare_data_for_display(ticker, treasury_yield):
+    """
+    Fetches the stock data (price, ratios, etc.) safely for further processing.
+    """
     fetched_data, marketcap = fetch_stock_data(ticker, treasury_yield)
     return fetched_data, marketcap
 
 
 def generate_html_table(data, ticker):
     """
-    Generates a minimalist horizontal HTML table from a dictionary of data and saves it to an HTML file.
-
-    Args:
-        data (dict): Data to be formatted into an HTML table.
-        ticker (str): Stock ticker symbol used to name the file.
-
-    Returns:
-        str: The filename of the saved HTML file.
+    Generates a minimalist horizontal HTML table from a dictionary of data
+    and saves it to an HTML file, applying minor styling.
     """
-    # Define minimalist CSS for the table
     html_content = """
     <style>
         table {
@@ -100,7 +123,7 @@ def generate_html_table(data, ticker):
             margin-right: auto;
             border-collapse: collapse;
             text-align: center;
-            font-family: 'Arial', sans-serif; /* Using Arial as an example of a sans-serif font */
+            font-family: 'Arial', sans-serif;
         }
         th, td {
             padding: 8px 12px;
@@ -109,12 +132,12 @@ def generate_html_table(data, ticker):
     <table>
     <tr>"""
 
-    # Add headers to the first row
+    # Headers
     for key in data:
         html_content += f"<th>{key}</th>"
     html_content += "</tr><tr>"
 
-    # Add values to the second row, only format 'Market Cap'
+    # Values
     for key, value in data.items():
         if key == 'Market Cap' and isinstance(value, (int, float)):
             formatted_value = format_number(value)
@@ -123,7 +146,6 @@ def generate_html_table(data, ticker):
         html_content += f"<td>{formatted_value}</td>"
     html_content += "</tr></table>"
 
-    # Save the HTML content to a file
     file_path = f"charts/{ticker}_ticker_info.html"
     with open(file_path, 'w') as file:
         file.write(html_content)
@@ -131,16 +153,11 @@ def generate_html_table(data, ticker):
     return file_path
 
 
-
 if __name__ == "__main__":
-    ticker = 'AAPL'  # Example ticker
-    user_pe = 15.0  # Example fair P/E provided by the user
-    user_ps = 4.0  # Example fair P/S provided by the user
-    growth_rate = '5%'  # Example growth rate provided by the user
+    # Example usage
+    ticker = 'AAPL'
+    treasury_yield = '3.5'  # e.g. 3.5 means 3.5% yield
 
-    # Prepare and fetch data
-    prepared_data = prepare_data_for_display(ticker, treasury_yield)
-
-    # Generate HTML table and save to file
+    prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
     html_file_path = generate_html_table(prepared_data, ticker)
     print(f"HTML content has been written to {html_file_path}")
