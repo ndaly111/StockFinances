@@ -69,23 +69,46 @@ def fetch_financial_data(ticker, db_path):
         return historical_data, forecast_data, analyst_counts, shares_outstanding
 
 def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker):
-    market_data = yf.Ticker(ticker)
-    current_price = market_data.info.get('regularMarketPrice', None)
+    """
+    Updated: Added try/except and extra checks to avoid errors when yfinance returns None or fails.
+    """
+    # Safely attempt to get market data
+    market_data = None
+    info = {}
+    try:
+        market_data = yf.Ticker(ticker)
+        # Sometimes market_data.info can be None or can raise an error
+        temp_info = market_data.info
+        if temp_info is not None:
+            info = temp_info
+        else:
+            print(f"Warning: market_data.info returned None for {ticker}.")
+    except Exception as e:
+        print(f"Error retrieving market data for {ticker}: {e}")
+        # Fallback to empty info dict to avoid crashing
+        info = {}
+
+    # Now fetch current_price and market_cap from the safe 'info' dict
+    current_price = info.get('regularMarketPrice', None)
     if not current_price:
-        current_price = market_data.info.get('previousClose', None)
+        current_price = info.get('previousClose', None)
     if not current_price:
-        bid = market_data.info.get('bid', None)
-        ask = market_data.info.get('ask', None)
+        bid = info.get('bid', None)
+        ask = info.get('ask', None)
         if bid and ask:
             current_price = (bid + ask) / 2
+        else:
+            current_price = None
 
-    market_cap = market_data.info.get('marketCap', None)
+    market_cap = info.get('marketCap', None)
 
+    # Mark data as historical or forecast
     historical_data['Type'] = 'Historical'
     forecast_data['Type'] = 'Forecast'
 
     forecast_data['EPS'] = pd.to_numeric(forecast_data['EPS'], errors='coerce')
 
+    # If we have a current_price and market_cap, recalc Net_Income in forecast
     if current_price and market_cap:
         forecast_data['Net_Income'] = (forecast_data['EPS'] / current_price) * market_cap
     else:
@@ -399,9 +422,6 @@ def save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker):
         f.write(html_string)
     print(f"YoY Growth Table saved to {full_path}")
 
-
-
-
 def generate_yoy_line_chart(chart_type, data, title, ylabel, output_path, analyst_counts=None, analyst_column=None):
     fig, ax = plt.subplots(figsize=(8, 5))
 
@@ -440,7 +460,8 @@ def generate_yoy_line_chart(chart_type, data, title, ylabel, output_path, analys
         ax.text(year, label_pos, f'{value:.1f}%', ha='center', va=va, fontsize=10)
 
     x_labels = [
-        f"{year}* ({analyst_counts.loc[analyst_counts['Year'] == year, analyst_column].iloc[0]})" if year in forecast_years else str(year)
+        f"{year}* ({analyst_counts.loc[analyst_counts['Year'] == year, analyst_column].iloc[0]})" 
+        if year in forecast_years else str(year)
         for year in years
     ]
     ax.set_xticks(years)
@@ -478,7 +499,6 @@ def generate_eps_yoy_change_chart(yoy_table, ticker, output_dir, analyst_counts,
     generate_yoy_line_chart(chart_type, eps_changes, f"{ticker} EPS Year-over-Year Change", "EPS YoY (%)", output_path,
                             analyst_counts, analyst_column)
 
-
 def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
     historical_data, forecast_data, analyst_counts, shares_outstanding = fetch_financial_data(ticker, db_path)
     combined_data = prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker)
@@ -507,7 +527,7 @@ def generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir):
 
     print(f"Completed generating charts and tables for {ticker}.")
 
-# Example usage
+# Example usage:
 # ticker = 'AAPL'
 # db_path = 'Stock Data.db'
 # generate_forecast_charts_and_tables(ticker, db_path, 'charts/')
