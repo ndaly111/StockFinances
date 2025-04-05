@@ -82,7 +82,6 @@ def scrape_annual_estimates_from_web(ticker: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     soup = BeautifulSoup(response.content, 'html.parser')
-
     sections = soup.find_all('section', id='detailed_earnings_estimates')
     if len(sections) < 2:
         logging.warning("Relevant sections not found.")
@@ -93,7 +92,6 @@ def scrape_annual_estimates_from_web(ticker: str) -> pd.DataFrame:
 
     sales_table = sales_section.find('table')
     earnings_table = earnings_section.find('table')
-
     if not sales_table or not earnings_table:
         logging.warning("Relevant tables not found.")
         return pd.DataFrame()
@@ -103,57 +101,74 @@ def scrape_annual_estimates_from_web(ticker: str) -> pd.DataFrame:
 
     logging.info(f"Sales DataFrame columns: {sales_df.columns}")
     logging.info(f"Earnings DataFrame columns: {earnings_df.columns}")
-
     if sales_df.empty or earnings_df.empty:
         logging.warning("No relevant data found in the extracted tables.")
         return pd.DataFrame()
 
-    revenue_analysts_row = sales_df[sales_df[sales_df.columns[0]].str.contains('# of Estimates')]
-    eps_analysts_row = earnings_df[earnings_df[earnings_df.columns[0]].str.contains('# of Estimates')]
-
+    # Extract analyst counts from rows containing "# of Estimates"
+    revenue_analysts_row = sales_df[sales_df[sales_df.columns[0]].str.contains('# of Estimates', case=False, na=False)]
+    eps_analysts_row = earnings_df[earnings_df[earnings_df.columns[0]].str.contains('# of Estimates', case=False, na=False)]
     if revenue_analysts_row.empty or eps_analysts_row.empty:
         logging.warning("Analysts count not found.")
         return pd.DataFrame()
 
     revenue_analysts = revenue_analysts_row.iloc[0, 1].replace(',', '')
     eps_analysts = eps_analysts_row.iloc[0, 1].replace(',', '')
-
     if not revenue_analysts.isdigit() or not eps_analysts.isdigit():
         logging.warning("Analysts count is not numeric.")
         return pd.DataFrame()
-
     revenue_analysts = int(revenue_analysts)
     eps_analysts = int(eps_analysts)
 
+    # Determine the forecast periods (assuming columns at index 3 and 4 contain the period info)
     current_year_period = sales_df.columns[3]
     next_year_period = sales_df.columns[4]
-
     current_year_date = get_last_day_of_month(current_year_period.split('(')[-1][:-1])
     next_year_date = get_last_day_of_month(next_year_period.split('(')[-1][:-1])
 
+    # Helper function for safe numeric conversion
     def safe_convert(value):
         try:
             return float(value.replace(',', ''))
         except ValueError:
             return None
 
-    combined_length = min(len(sales_df), len(earnings_df))
-    combined_df = pd.DataFrame({
-        'Period': sales_df.iloc[:combined_length, 0],
-        'CurrentYear_Revenue': sales_df.iloc[:combined_length, 3].apply(convert_to_numeric),
-        'NextYear_Revenue': sales_df.iloc[:combined_length, 4].apply(convert_to_numeric),
-        'CurrentYear_EPS': earnings_df.iloc[:combined_length, 3].apply(safe_convert),
-        'NextYear_EPS': earnings_df.iloc[:combined_length, 4].apply(safe_convert),
-        'CurrentYear_Date': [current_year_date] * combined_length,
-        'NextYear_Date': [next_year_date] * combined_length,
-        'ForwardRevenueAnalysts': [revenue_analysts] * combined_length,
-        'ForwardEPSAnalysts': [eps_analysts] * combined_length
-    })
+    # Filter to get only the consensus row from each DataFrame
+    consensus_revenue_row = sales_df[sales_df[sales_df.columns[0]].str.contains('Consensus', case=False, na=False)]
+    consensus_eps_row = earnings_df[earnings_df[earnings_df.columns[0]].str.contains('Consensus', case=False, na=False)]
+    if consensus_revenue_row.empty or consensus_eps_row.empty:
+        logging.warning("Consensus estimates not found.")
+        return pd.DataFrame()
 
-    combined_df = combined_df.dropna(subset=['CurrentYear_Revenue', 'NextYear_Revenue', 'CurrentYear_EPS', 'NextYear_EPS'])
+    # Extract consensus estimates (assuming current year is in column index 3 and next year in index 4)
+    current_year_revenue = convert_to_numeric(consensus_revenue_row.iloc[0, 3])
+    next_year_revenue = convert_to_numeric(consensus_revenue_row.iloc[0, 4])
+    current_year_eps = safe_convert(consensus_eps_row.iloc[0, 3])
+    next_year_eps = safe_convert(consensus_eps_row.iloc[0, 4])
 
-    logging.info("Scraped DataFrame:\n%s", combined_df)
+    # Build a DataFrame with two rows (current and next year) using the consensus estimates
+    data = [
+        {
+            'Period': 'Current Year',
+            'Date': current_year_date,
+            'ForwardRevenue': current_year_revenue,
+            'ForwardEPS': current_year_eps,
+            'ForwardRevenueAnalysts': revenue_analysts,
+            'ForwardEPSAnalysts': eps_analysts
+        },
+        {
+            'Period': 'Next Year',
+            'Date': next_year_date,
+            'ForwardRevenue': next_year_revenue,
+            'ForwardEPS': next_year_eps,
+            'ForwardRevenueAnalysts': revenue_analysts,
+            'ForwardEPSAnalysts': eps_analysts
+        }
+    ]
+    combined_df = pd.DataFrame(data)
+    logging.info("Scraped Consensus Estimates DataFrame:\n%s", combined_df)
     return combined_df
+
 
 def store_in_database(df: pd.DataFrame, ticker: str, db_path: str, table_name: str) -> None:
     logging.info(f"Storing data in database for {ticker}")
