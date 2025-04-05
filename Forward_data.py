@@ -9,6 +9,9 @@ from typing import Optional
 
 logging.basicConfig(level=logging.INFO)
 
+# -----------------------------
+# Database Schema Update
+# -----------------------------
 def update_database_schema(db_path: str, table_name: str) -> None:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -21,6 +24,9 @@ def update_database_schema(db_path: str, table_name: str) -> None:
     conn.commit()
     conn.close()
 
+# -----------------------------
+# Helper Functions
+# -----------------------------
 def extract_data(table) -> pd.DataFrame:
     headers = [th.get_text(strip=True) for th in table.find_all('th')]
     rows = table.find_all('tr')[1:]
@@ -61,8 +67,11 @@ def convert_to_numeric(value: str) -> float:
         except ValueError:
             logging.warning(f"Value conversion error for: {value}")
             return 0.0
-    return value
+    return float(value)
 
+# -----------------------------
+# Scrape Consensus Estimates
+# -----------------------------
 def scrape_annual_estimates_from_web(ticker: str) -> pd.DataFrame:
     logging.info(f"Scraping annual estimates from Zacks for ticker: {ticker}")
     ticker = ticker.replace('-', '.')
@@ -146,7 +155,8 @@ def scrape_annual_estimates_from_web(ticker: str) -> pd.DataFrame:
     current_year_eps = safe_convert(consensus_eps_row.iloc[0, 3])
     next_year_eps = safe_convert(consensus_eps_row.iloc[0, 4])
 
-    # Build a DataFrame with two rows (current and next year) using the consensus estimates
+    # Build a DataFrame with two rows (current and next year) using the consensus estimates.
+    # Note: The updated DataFrame will have a single 'Date' column for each row.
     data = [
         {
             'Period': 'Current Year',
@@ -169,65 +179,60 @@ def scrape_annual_estimates_from_web(ticker: str) -> pd.DataFrame:
     logging.info("Scraped Consensus Estimates DataFrame:\n%s", combined_df)
     return combined_df
 
-
+# -----------------------------
+# Store Data in Database
+# -----------------------------
 def store_in_database(df: pd.DataFrame, ticker: str, db_path: str, table_name: str) -> None:
+    """
+    Inserts the scraped consensus estimates into the database.
+    Expects the DataFrame to have the following columns:
+      'Date', 'ForwardRevenue', 'ForwardEPS', 'ForwardRevenueAnalysts', 'ForwardEPSAnalysts'
+    Inserts records into the table with columns:
+      Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated, ForwardEPSAnalysts, ForwardRevenueAnalysts
+    """
     logging.info(f"Storing data in database for {ticker}")
     update_database_schema(db_path, table_name)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
+    # Optional: Delete existing records for this ticker (legacy code deletes by ticker)
     today = datetime.now().strftime('%Y-%m-%d')
     cursor.execute(f"DELETE FROM {table_name} WHERE Ticker = ? AND Date < ?", (ticker, today))
-
     cursor.execute(f"DELETE FROM {table_name} WHERE Ticker = ?", (ticker,))
 
+    # Iterate through each row of the new DataFrame
     for _, row in df.iterrows():
-        current_year_date: Optional[str] = row['CurrentYear_Date']
-        next_year_date: Optional[str] = row['NextYear_Date']
-        if current_year_date is None or next_year_date is None:
+        date_val: Optional[str] = row['Date']
+        if not date_val:
             logging.warning(f"Skipping row due to missing date: {row}")
             continue
-        revenue_current: float = row['CurrentYear_Revenue']
-        revenue_next: float = row['NextYear_Revenue']
-        eps_current: float = row['CurrentYear_EPS']
-        eps_next: float = row['NextYear_EPS']
+        revenue: float = row['ForwardRevenue']
+        eps: float = row['ForwardEPS']
         revenue_analysts: int = row['ForwardRevenueAnalysts']
         eps_analysts: int = row['ForwardEPSAnalysts']
         last_updated = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if revenue_current != 0 and revenue_next != 0:
-            data_to_insert = [
-                (
-                    ticker,
-                    current_year_date,
-                    eps_current,
-                    revenue_current,
-                    last_updated,
-                    eps_analysts,
-                    revenue_analysts
-                ),
-                (
-                    ticker,
-                    next_year_date,
-                    eps_next,
-                    revenue_next,
-                    last_updated,
-                    eps_analysts,
-                    revenue_analysts
-                )
-            ]
-            for data in data_to_insert:
-                logging.info(f"Inserting data: {data}")
-                insert_query = f'''
-                INSERT INTO {table_name} (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated, ForwardEPSAnalysts, ForwardRevenueAnalysts)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(Ticker, Date) DO UPDATE SET
-                    ForwardRevenue = EXCLUDED.ForwardRevenue,
-                    ForwardEPS = EXCLUDED.ForwardEPS,
-                    ForwardEPSAnalysts = EXCLUDED.ForwardEPSAnalysts,
-                    ForwardRevenueAnalysts = EXCLUDED.ForwardRevenueAnalysts,
-                    LastUpdated = EXCLUDED.LastUpdated;
-                '''
-                cursor.execute(insert_query, data)
+        
+        data = (
+            ticker,
+            date_val,
+            eps,
+            revenue,
+            last_updated,
+            eps_analysts,
+            revenue_analysts
+        )
+        logging.info(f"Inserting data: {data}")
+        insert_query = f'''
+            INSERT INTO {table_name} (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated, ForwardEPSAnalysts, ForwardRevenueAnalysts)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(Ticker, Date) DO UPDATE SET
+                ForwardEPS = EXCLUDED.ForwardEPS,
+                ForwardRevenue = EXCLUDED.ForwardRevenue,
+                ForwardEPSAnalysts = EXCLUDED.ForwardEPSAnalysts,
+                ForwardRevenueAnalysts = EXCLUDED.ForwardRevenueAnalysts,
+                LastUpdated = EXCLUDED.LastUpdated;
+        '''
+        cursor.execute(insert_query, data)
     conn.commit()
     conn.close()
     logging.info("Data stored successfully.")
@@ -237,12 +242,14 @@ def scrape_forward_data(ticker: str, db_path: str, table_name: str) -> None:
     if data_df.empty:
         logging.info(f"No forecast data found for {ticker}.")
     else:
-        logging.info(f"Prepared DataFrame for {ticker}:\n%s", data_df)
+        logging.info(f"Prepared DataFrame for {ticker}:\n{data_df}")
         store_in_database(data_df, ticker, db_path, table_name)
 
-# Example usage
+# -----------------------------
+# Example usage (Legacy Code)
+# -----------------------------
 ticker = 'AAPL'
 db_path = 'Stock Data.db'
 table_name = 'ForwardFinancialData'
-#updated
-#scrape_forward_data(ticker, db_path, table_name)
+# Uncomment the line below to run the scraping and database insertion
+# scrape_forward_data(ticker, db_path, table_name)
