@@ -352,3 +352,4 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, sp
     create_home_page(tickers, output_dir, full_dashboard_html, avg_values, spy_qqq_growth_html)
     for ticker in tickers:
         prepare_and_generate_ticker_pages([ticker], output_dir, 'charts/')
+        
