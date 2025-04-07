@@ -1,7 +1,10 @@
 name: Publish TQQQ P/E Page
 
+permissions:
+  contents: write
+
 on:
-  # Remove 'workflow_dispatch' if you do not want manual runs.
+  # Allows manual runs from the Actions tab
   workflow_dispatch:
   schedule:
     # 7:00 AM EDT (≈11:00 UTC), Monday–Friday
