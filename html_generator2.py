@@ -3,6 +3,8 @@ import os
 import pandas as pd
 import sqlite3
 import yfinance as yf
+from ticker_info import get_company_short_name  # NEW: Import the missing helper function
+
 #push
 db_path = 'Stock Data.db'
 
