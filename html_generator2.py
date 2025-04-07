@@ -106,13 +106,13 @@ def ensure_templates_exist():
         </nav>
         
         <br><br><br>
-        <div>
-            <!-- Main sortable table -->
-            {{ dashboard_table | safe }}
-        </div>
         <div id="spy-qqq-growth">
             <!-- SPY & QQQ Growth Metrics -->
             {{ spy_qqq_growth | safe }}
+        </div>
+        <div>
+            <!-- Main sortable table -->
+            {{ dashboard_table | safe }}
         </div>
         <footer>
             <p>Nick's Financial Data Dashboard</p>
