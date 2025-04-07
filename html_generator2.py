@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import sqlite3
 import yfinance as yf
-from ticker_info import get_company_short_name  # NEW: Import the missing helper function
+from ticker_info import get_company_short_name  # <-- ADDED: Import the missing helper function
 
 #push
 db_path = 'Stock Data.db'
@@ -352,4 +352,3 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, sp
     create_home_page(tickers, output_dir, full_dashboard_html, avg_values, spy_qqq_growth_html)
     for ticker in tickers:
         prepare_and_generate_ticker_pages([ticker], output_dir, 'charts/')
-        
