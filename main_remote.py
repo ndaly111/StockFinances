@@ -233,9 +233,15 @@ def main():
         # Log average valuations to the database
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
 
+        # Generate SPY & QQQ growth metrics table using the new module.
+        # This will fetch the treasury yield (if needed) and calculate the metrics.
+        from index_growth_table import index_growth
+        spy_qqq_growth_html = index_growth(treasury_yield)
+
         print("generating HTML2")
-        # Call html_generator2 function after all tickers have been processed
-        html_generator2(sorted_tickers, financial_data, full_dashboard_html, avg_values)
+        # Call html_generator2 with the extra parameter for the SPY/QQQ growth table.
+        # (Ensure that html_generator2() is updated to accept this fifth parameter.)
+        html_generator2(sorted_tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html)
 
     finally:
         if conn:
