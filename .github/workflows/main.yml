@@ -1,0 +1,67 @@
+name: Publish TQQQ P/E Page
+
+on:
+  # Remove 'workflow_dispatch' if you do not want manual runs.
+  workflow_dispatch:
+  schedule:
+    # 7:00 AM EDT (≈11:00 UTC), Monday–Friday
+    - cron: '0 11 * * 1-5'
+    # 9:30 AM EDT (≈13:30 UTC), Monday–Friday
+    - cron: '30 13 * * 1-5'
+    # 10:00 AM EDT (≈14:00 UTC), Monday–Friday
+    - cron: '0 14 * * 1-5'
+    # 11:00 AM EDT (≈15:00 UTC), Monday–Friday
+    - cron: '0 15 * * 1-5'
+    # 12:00 PM EDT (≈16:00 UTC), Monday–Friday
+    - cron: '0 16 * * 1-5'
+    # 1:00 PM EDT (≈17:00 UTC), Monday–Friday
+    - cron: '0 17 * * 1-5'
+    # 2:00 PM EDT (≈18:00 UTC), Monday–Friday
+    - cron: '0 18 * * 1-5'
+    # 3:00 PM EDT (≈19:00 UTC), Monday–Friday
+    - cron: '0 19 * * 1-5'
+    # 4:00 PM EDT (≈20:00 UTC), Monday–Friday
+    - cron: '0 20 * * 1-5'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance
+
+      - name: Run TQQQ P/E ratio script
+        # Capture the script output (date/time + ratio) into 'output.txt'
+        run: |
+          python tqqq_pe_ratio.py > output.txt
+
+      - name: Generate HTML page
+        run: |
+          mkdir -p docs/TQQQ
+          echo "<!DOCTYPE html>" > docs/TQQQ/index.html
+          echo "<html><head><meta charset='UTF-8'><title>TQQQ PE Ratio</title></head><body>" >> docs/TQQQ/index.html
+          echo "<h1>TQQQ P/E Ratio</h1>" >> docs/TQQQ/index.html
+          echo "<pre>" >> docs/TQQQ/index.html
+          cat output.txt >> docs/TQQQ/index.html
+          echo "</pre>" >> docs/TQQQ/index.html
+          echo "</body></html>" >> docs/TQQQ/index.html
+
+      - name: Commit changes
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions@github.com"
+          git add docs/TQQQ/index.html
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update TQQQ page [skip ci]"
+          git push
