@@ -192,3 +192,16 @@ def create_home_page(tickers, output_dir, dashboard_html, avg_values, spy_qqq_gr
             spy_qqq_growth=spy_qqq_growth_html
         ))
     print(f"Home page created at {home_page_path}")
+
+def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
+    output_dir = '.'  # Define the main directory for output
+    print("Starting HTML generation process...")
+
+    ensure_templates_exist()
+
+    # Create the main index (home) page
+    create_home_page(tickers, output_dir, full_dashboard_html, avg_values, spy_qqq_growth_html)
+
+    # Generate individual pages for each ticker
+    for ticker in tickers:
+        prepare_and_generate_ticker_pages([ticker], output_dir, 'charts/')
