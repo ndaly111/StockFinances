@@ -8,7 +8,6 @@ db_path = 'Stock Data.db'
 
 env = Environment(loader=FileSystemLoader('templates'))
 
-
 def ensure_directory_exists(directory):
     print(f"Checking if directory {directory} exists...")
     if not os.path.exists(directory):
@@ -16,7 +15,6 @@ def ensure_directory_exists(directory):
         os.makedirs(directory)
     else:
         print(f"Directory {directory} already exists.")
-
 
 def create_template(template_path, content):
     print(f"Creating/updating template at: {template_path}")
@@ -32,7 +30,6 @@ def create_template(template_path, content):
     with open(template_path, 'w') as file:
         file.write(content)
     print(f"Template {template_path} has been updated or created.")
-
 
 def ensure_templates_exist():
     print("Ensuring that all necessary templates exist...")
@@ -186,20 +183,18 @@ def ensure_templates_exist():
     create_template(os.path.join(templates_dir, 'home_template.html'), home_template_content)
     create_template(os.path.join(templates_dir, 'ticker_template.html'), ticker_template_content)
 
-
-def create_home_page(tickers, output_dir, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
+def create_home_page(tickers, output_dir, dashboard_html, avg_values, spy_qqq_growth_html=""):
     print(f"Creating home page in {output_dir}...")
     template = env.get_template('home_template.html')
     home_page_path = os.path.join(output_dir, 'index.html')
     with open(home_page_path, 'w') as file:
         file.write(template.render(
             tickers=tickers,
-            dashboard_table=full_dashboard_html,
+            dashboard_table=dashboard_html,
             dashboard_data=avg_values,
             spy_qqq_growth=spy_qqq_growth_html
         ))
     print(f"Home page created at {home_page_path}")
-
 
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
     """Prepares and generates individual HTML pages for each ticker using provided charts."""
@@ -248,7 +243,6 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
 
         create_ticker_page(ticker, ticker_data, output_dir)
 
-
 def get_file_content_or_placeholder(file_path, placeholder="No data available"):
     print(f"Retrieving content from {file_path} or using placeholder...")
     try:
@@ -258,7 +252,6 @@ def get_file_content_or_placeholder(file_path, placeholder="No data available"):
         print(f"File {file_path} not found. Using placeholder.")
         return placeholder
 
-
 def create_ticker_page(ticker, ticker_data, output_dir):
     print(f"Creating page for ticker: {ticker}")
     template = env.get_template('ticker_template.html')
@@ -267,7 +260,6 @@ def create_ticker_page(ticker, ticker_data, output_dir):
     with open(page_path, 'w') as file:
         file.write(template.render(ticker_data=ticker_data))
     print(f"Generated page for {ticker} at {page_path}")
-
 
 def generate_dashboard_table(dashboard_data):
     # Create the DataFrame using all columns from your data
@@ -338,7 +330,6 @@ def generate_dashboard_table(dashboard_data):
 
     return full_dashboard_html, avg_values
 
-
 def create_home_page(tickers, output_dir, dashboard_html, avg_values, spy_qqq_growth_html=""):
     print(f"Creating home page in {output_dir}...")
     template = env.get_template('home_template.html')
@@ -352,7 +343,6 @@ def create_home_page(tickers, output_dir, dashboard_html, avg_values, spy_qqq_gr
         ))
     print(f"Home page created at {home_page_path}")
 
-
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
     output_dir = '.'  # Define the main directory for output
     print("Starting HTML generation process...")
@@ -360,5 +350,3 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, sp
     create_home_page(tickers, output_dir, full_dashboard_html, avg_values, spy_qqq_growth_html)
     for ticker in tickers:
         prepare_and_generate_ticker_pages([ticker], output_dir, 'charts/')
-    else:
-        print(f"No data available for ticker: {ticker}")
