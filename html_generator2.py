@@ -56,34 +56,19 @@ def ensure_templates_exist():
     print("Ensuring that all necessary templates exist...")
     home_template_content = """
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang=\"en\">
     <head>
-        <meta charset="UTF-8">
+        <meta charset=\"UTF-8\">
         <title>Nick's Stock Financials</title>
-        <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+        <link rel=\"stylesheet\" href=\"style.css\">
+        <link rel=\"stylesheet\" href=\"https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css\">
         <style>
             .positive { color: green; }
             .negative { color: red; }
-            body {
-                width: 90%;
-                margin: auto;
-                font-family: Arial, sans-serif;
-            }
-            table {
-                margin: auto;
-                width: 100%;
-            }
-            header, nav, footer {
-                text-align: center;
-                margin: 20px 0;
-            }
-            h1, h2 {
-                text-align: center;
-            }
+            .center-table { margin: 0 auto; width: 80%; }
         </style>
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+        <script src=\"https://code.jquery.com/jquery-3.5.1.js\"></script>
+        <script src=\"https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js\"></script>
         <script>
             $(document).ready(function() {
                 $('#sortable-table').DataTable({
@@ -111,27 +96,23 @@ def ensure_templates_exist():
         <header>
             <h1>Financial Overview</h1>
         </header>
-        <nav class="navigation">
+        <nav class=\"navigation\">
             {% for ticker in tickers %}
-            <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
+            <a href=\"pages/{{ ticker }}_page.html\" class=\"home-button\">{{ ticker }}</a> |
             {% endfor %}
         </nav>
 
-        <div id="spy-qqq-growth">
-            <h2>SPY & QQQ Growth Metrics</h2>
-            {{ spy_qqq_growth | safe }}
+        <br><br><br>
+        <div id=\"spy-qqq-growth\">
+            <!-- SPY & QQQ Growth Metrics -->
+            <div class=\"center-table\">
+                {{ spy_qqq_growth | safe }}
+            </div>
         </div>
-
-        <div id="average-metrics">
-            <h2>Average and Median Metrics</h2>
-            {{ avg_values_html | safe }}
+        <div>
+            <!-- Main sortable table -->
+            {{ dashboard_table | safe }}
         </div>
-
-        <div id="dashboard-table">
-            <h2>Main Dashboard</h2>
-            {{ dashboard_html | safe }}
-        </div>
-
         <footer>
             <p>Nick's Financial Data Dashboard</p>
         </footer>
