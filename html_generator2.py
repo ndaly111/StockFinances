@@ -56,19 +56,19 @@ def ensure_templates_exist():
     print("Ensuring that all necessary templates exist...")
     home_template_content = """
     <!DOCTYPE html>
-    <html lang=\"en\">
+    <html lang="en">
     <head>
-        <meta charset=\"UTF-8\">
+        <meta charset="UTF-8">
         <title>Nick's Stock Financials</title>
-        <link rel=\"stylesheet\" href=\"style.css\">
-        <link rel=\"stylesheet\" href=\"https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css\">
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
         <style>
             .positive { color: green; }
             .negative { color: red; }
             .center-table { margin: 0 auto; width: 80%; }
         </style>
-        <script src=\"https://code.jquery.com/jquery-3.5.1.js\"></script>
-        <script src=\"https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js\"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
         <script>
             $(document).ready(function() {
                 $('#sortable-table').DataTable({
@@ -96,18 +96,16 @@ def ensure_templates_exist():
         <header>
             <h1>Financial Overview</h1>
         </header>
-        <nav class=\"navigation\">
+        <nav class="navigation">
             {% for ticker in tickers %}
-            <a href=\"pages/{{ ticker }}_page.html\" class=\"home-button\">{{ ticker }}</a> |
+            <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
             {% endfor %}
         </nav>
 
         <br><br><br>
-        <div id=\"spy-qqq-growth\">
+        <div id="spy-qqq-growth" class="center-table">
             <!-- SPY & QQQ Growth Metrics -->
-            <div class=\"center-table\">
-                {{ spy_qqq_growth | safe }}
-            </div>
+            {{ spy_qqq_growth | safe }}
         </div>
         <div>
             <!-- Main sortable table -->
@@ -119,10 +117,14 @@ def ensure_templates_exist():
     </body>
     </html>
     """
+
+    ticker_template_content = ...  # keep your existing unchanged template here
+
     templates_dir = 'templates'
     create_template(os.path.join(templates_dir, 'home_template.html'), home_template_content)
     create_template(os.path.join(templates_dir, 'ticker_template.html'), ticker_template_content)
-
+    
+    
 def create_home_page(tickers, output_dir, dashboard_html, avg_values, spy_qqq_growth_html=""):
     print(f"Creating home page in {output_dir}...")
     template = env.get_template('home_template.html')
