@@ -63,11 +63,23 @@ def ensure_templates_exist():
         <link rel="stylesheet" href="style.css">
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
         <style>
-            .positive {
-                color: green;
+            .positive { color: green; }
+            .negative { color: red; }
+            body {
+                width: 90%;
+                margin: auto;
+                font-family: Arial, sans-serif;
             }
-            .negative {
-                color: red;
+            table {
+                margin: auto;
+                width: 100%;
+            }
+            header, nav, footer {
+                text-align: center;
+                margin: 20px 0;
+            }
+            h1, h2 {
+                text-align: center;
             }
         </style>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
@@ -104,102 +116,28 @@ def ensure_templates_exist():
             <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
             {% endfor %}
         </nav>
-        
-        <br><br><br>
+
         <div id="spy-qqq-growth">
-            <!-- SPY & QQQ Growth Metrics -->
+            <h2>SPY & QQQ Growth Metrics</h2>
             {{ spy_qqq_growth | safe }}
         </div>
-        <div>
-            <!-- Main sortable table -->
-            {{ dashboard_table | safe }}
+
+        <div id="average-metrics">
+            <h2>Average and Median Metrics</h2>
+            {{ avg_values_html | safe }}
         </div>
+
+        <div id="dashboard-table">
+            <h2>Main Dashboard</h2>
+            {{ dashboard_html | safe }}
+        </div>
+
         <footer>
             <p>Nick's Financial Data Dashboard</p>
         </footer>
     </body>
     </html>
     """
-
-    ticker_template_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>{{ ticker_data.ticker }} - Financial Overview</title>
-        <link rel="stylesheet" href="../style.css">
-    </head>
-    <body>
-        <header>
-            <a href="../index.html" class="home-button">Home</a>
-            <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
-            <h2>Ticker - {{ ticker_data.ticker }}</h2>
-        </header>
-
-        <!-- Section for ticker information and summary -->
-        <section>
-            <p>{{ ticker_data.ticker_info | safe }}</p>
-        </section>
-
-        <!-- Section for financial charts and tables -->
-        <div>
-            <img src="../{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart">
-            <img src="../{{ ticker_data.eps_chart_path }}" alt="EPS Chart">
-            {{ ticker_data.financial_table | safe }}
-        </div>
-        <div><br><br><hr><br><h1>{{ ticker_data.ticker }} - Forecast Data</h1></div>
-        <div class="carousel-container">
-            <div class="carousel-item">
-                <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
-            </div>
-            <div class="carousel-item">
-                <img src="../{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
-            </div>
-            <div class="carousel-item">
-                {{ ticker_data.yoy_growth_table_html | safe }}
-            </div>
-        </div>
-
-        <!-- New Carousel for YoY Growth Charts -->
-        <div><br><br><h1>{{ ticker_data.ticker }} - Y/Y % Change</h1></div>
-        <div class="carousel-container">
-            <div class="carousel-item">
-                <img src="../{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue Year-over-Year Change Chart">
-            </div>
-            <div class="carousel-item">
-                <img src="../{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS Year-over-Year Change Chart">
-            </div>
-        </div>
-        <div class="balance-sheet-container">
-            <div class="balance-sheet-table">
-                {{ ticker_data.balance_sheet_table_html | safe }}
-            </div>
-            <div class="balance-sheet-chart">
-                <img src="../{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart">
-            </div>
-        </div>
-        <hr>
-        {% if ticker_data.valuation_chart %}
-        <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
-        <div><br>
-            <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
-            <br><br>
-            <div class="valuation-tables">
-                {{ ticker_data.valuation_info_table | safe }}
-                {{ ticker_data.valuation_data_table | safe }}
-            </div>
-            <br><br><br><hr>
-        </div>
-        {% endif %}
-
-        <footer>
-            <a href="../index.html" class="home-button">Back to Home</a>
-            <br><br><br><br><br>
-        </footer>
-    </body>
-    </html>
-    """
-
     templates_dir = 'templates'
     create_template(os.path.join(templates_dir, 'home_template.html'), home_template_content)
     create_template(os.path.join(templates_dir, 'ticker_template.html'), ticker_template_content)
