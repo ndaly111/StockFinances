@@ -51,15 +51,6 @@ def ensure_templates_exist():
             .negative {
                 color: red;
             }
-            /* NEW: CSS class to center the SPY/QQQ table */
-            .center-table {
-                margin: 0 auto;
-                width: 80%;
-                text-align: center;
-            }
-            .center-table table {
-                margin: 0 auto;
-            }
         </style>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -96,15 +87,12 @@ def ensure_templates_exist():
             {% endfor %}
         </nav>
         
-        <!-- NEW: Insert the SPY/QQQ Growth Metrics table and center it -->
         <br><br><br>
         <div id="spy-qqq-growth" class="center-table">
-            <!-- SPY &amp; QQQ Growth Metrics -->
+            <!-- SPY & QQQ Growth Metrics -->
             {{ spy_qqq_growth | safe }}
         </div>
         <br><br>
-        
-        <br><br><br>
         <div>
             <!-- Main sortable table -->
             {{ dashboard_table | safe }}
@@ -114,6 +102,7 @@ def ensure_templates_exist():
         </footer>
     </body>
     </html>
+
     """
 
     # Define the ticker-specific template content
@@ -201,16 +190,14 @@ def ensure_templates_exist():
     create_template(os.path.join(templates_dir, 'ticker_template.html'), ticker_template_content)
 
 
-def create_home_page(tickers, output_dir, full_dashboard_html, avg_values, spy_qqq_growth=""):
+def create_home_page(tickers, output_dir, full_dashboard_html, avg_values):
     print(f"Creating home page in {output_dir}...")
     template = env.get_template('home_template.html')
     home_page_path = os.path.join(output_dir, 'index.html')
     with open(home_page_path, 'w') as file:
-        file.write(template.render(tickers=tickers,
-                                   dashboard_table=full_dashboard_html,
-                                   dashboard_data=avg_values,
-                                   spy_qqq_growth=spy_qqq_growth))
+        file.write(template.render(tickers=tickers, dashboard_table=full_dashboard_html, dashboard_data=avg_values))
     print(f"Home page created at {home_page_path}")
+
 
 
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
@@ -350,14 +337,39 @@ def generate_dashboard_table(dashboard_data):
 
     return full_dashboard_html, avg_values
 
+def create_home_page(tickers, output_dir, dashboard_html, avg_values):
+    print(f"Creating home page in {output_dir}...")
+    template = env.get_template('home_template.html')
+    home_page_path = os.path.join(output_dir, 'index.html')
+    with open(home_page_path, 'w') as file:
+        file.write(template.render(tickers=tickers, dashboard_table=dashboard_html, dashboard_data=avg_values))
+    print(f"Home page created at {home_page_path}")
+
+
+def get_company_short_name(ticker, cursor):
+    """Fetch the company short name for a given ticker."""
+    cursor.execute("SELECT short_name FROM Tickers_Info WHERE ticker = ?", (ticker,))
+    result = cursor.fetchone()
+
+    if result and result[0]:  # Check if result exists and is not empty
+        return result[0]
+    else:
+        stock = yf.Ticker(ticker)
+        short_name = stock.info.get('shortName', '').strip()  # Fetch and strip any surrounding whitespace
+
+        if short_name:  # Check if short name is not empty
+            # Update the database with the fetched short name
+            cursor.execute("UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?", (short_name, ticker))
+            cursor.connection.commit()
+            return short_name
+        else:
+            return ticker
 
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values):
     output_dir = '.'  # Define the main directory for output
     print("Starting HTML generation process...")
     ensure_templates_exist()
-    # NEW: Define the SPY/QQQ table content here (adjust as needed)
-    spy_qqq_growth = "<p>Example SPY &amp; QQQ growth content</p>"
-    create_home_page(tickers, output_dir, full_dashboard_html, avg_values, spy_qqq_growth)
+    create_home_page(tickers, output_dir, full_dashboard_html, avg_values)
     for ticker in tickers:
         prepare_and_generate_ticker_pages([ticker], output_dir, 'charts/')
     else:
