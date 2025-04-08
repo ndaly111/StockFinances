@@ -7,12 +7,9 @@
         <link rel="stylesheet" href="style.css">
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
         <style>
-            .positive {
-                color: green;
-            }
-            .negative {
-                color: red;
-            }
+            .positive { color: green; }
+            .negative { color: red; }
+            .center-table { margin: 0 auto; width: 80%; }
         </style>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -48,9 +45,9 @@
             <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
             {% endfor %}
         </nav>
-        
+
         <br><br><br>
-        <div id="spy-qqq-growth">
+        <div id="spy-qqq-growth" class="center-table">
             <!-- SPY & QQQ Growth Metrics -->
             {{ spy_qqq_growth | safe }}
         </div>
