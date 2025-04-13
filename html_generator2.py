@@ -151,9 +151,6 @@ def ensure_templates_exist():
             <div class="carousel-item">
                 <img src="../{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
             </div>
-            <div class="carousel-item">
-                {{ ticker_data.yoy_growth_table_html | safe }}
-            </div>
         </div>
     
         <div><br><br><h1>{{ ticker_data.ticker }} - Y/Y % Change</h1></div>
@@ -163,6 +160,9 @@ def ensure_templates_exist():
             </div>
             <div class="carousel-item">
                 <img src="../{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS Year-over-Year Change Chart">
+            </div>
+            <div class="carousel-item">
+                {{ ticker_data.yoy_growth_table_html | safe }}
             </div>
         </div>
     
