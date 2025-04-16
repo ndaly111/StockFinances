@@ -78,4 +78,8 @@ if upcoming_rows:
     table_html = "<table class='center-table'><thead><tr><th>Ticker</th><th>Upcoming Earnings Date</th></tr></thead><tbody>"
     table_html += ''.join(upcoming_rows)
     table_html += "</tbody></table>"
-    with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f
+    with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write(table_html)
+else:
+    with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write("<p>No upcoming earnings scheduled.</p>")
