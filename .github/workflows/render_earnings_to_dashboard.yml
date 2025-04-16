@@ -1,5 +1,5 @@
 name: Generate Earnings and Rebuild Homepage
-
+ 
 on:
   schedule:
     - cron: '30 13 * * *'  # 9:30 AM ET
