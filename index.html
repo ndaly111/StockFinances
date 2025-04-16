@@ -10,6 +10,7 @@
             .positive { color: green; }
             .negative { color: red; }
             .center-table { margin: 0 auto; width: 80%; }
+            .highlight-soon { background-color: #fff3cd; }
         </style>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -40,6 +41,69 @@
         <header>
             <h1>Financial Overview</h1>
         </header>
+
+        <div class="center-table">
+            <h2>Past Earnings (Last 7 Days)</h2>
+            <table class="dataframe center-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Ticker</th>
+      <th>Earnings Date</th>
+      <th>EPS Estimate</th>
+      <th>Reported EPS</th>
+      <th>Surprise</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BAC</td>
+      <td>2025-04-15</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>2025-04-15</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td>DAL</td>
+      <td>2025-04-09</td>
+      <td>0.38</td>
+      <td>0.46</td>
+      <td><span class="positive">+20.42%</span></td>
+    </tr>
+    <tr>
+      <td>GS</td>
+      <td>2025-04-14</td>
+      <td>12.35</td>
+      <td>14.12</td>
+      <td><span class="positive">+14.33%</span></td>
+    </tr>
+    <tr>
+      <td>JPM</td>
+      <td>2025-04-11</td>
+      <td>4.61</td>
+      <td>5.07</td>
+      <td><span class="positive">+9.88%</span></td>
+    </tr>
+    <tr>
+      <td>UAL</td>
+      <td>2025-04-15</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+
+            <h2>Upcoming Earnings</h2>
+            <p>No upcoming earnings scheduled.</p>
+        </div>
+
         <nav class="navigation">
             
             <a href="pages/AAL_page.html" class="home-button">AAL</a> |
@@ -228,11 +292,9 @@
 
         <br><br><br>
         <div id="spy-qqq-growth" class="center-table">
-            <!-- SPY & QQQ Growth Metrics -->
-            <table border='1' cellspacing='0' cellpadding='4'><tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr><tr><td>SPY</td><td>24.0</td><td>13.4%</td></tr><tr><td>QQQ</td><td>29.4</td><td>15.7%</td></tr></table>
+            No data available
         </div>
         <div>
-            <!-- Main sortable table -->
             <table border="1" class="dataframe table table-striped">
   <thead>
     <tr style="text-align: left;">
