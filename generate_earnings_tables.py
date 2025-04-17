@@ -35,16 +35,28 @@ for ticker in tickers:
             if isinstance(df, pd.DataFrame):
                 recent = df[(df.index.date >= seven_days_ago) & (df.index.date <= today)]
                 for date, row in recent.iterrows():
-                    surprise = row['Surprise(%)']
+                    surprise = row.get('Surprise(%)', None)
                     surprise_str = f"{surprise:+.2f}%" if pd.notna(surprise) else "-"
                     css_class = 'positive' if surprise > 0 else 'negative' if surprise < 0 else ''
                     surprise_html = f'<span class="{css_class}">{surprise_str}</span>' if css_class else surprise_str
+
+                    eps_estimate = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
+                    reported_eps = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
+
+                    revenue_est = row.get('Revenue Estimate')
+                    revenue_estimate = f"${revenue_est:,.0f}" if pd.notna(revenue_est) else "-"
+
+                    reported_rev = row.get('Reported Revenue')
+                    reported_revenue = f"${reported_rev:,.0f}" if pd.notna(reported_rev) else "-"
+
                     past_rows.append([
                         ticker,
                         date.date().isoformat(),
-                        f"{row['EPS Estimate']:.2f}" if pd.notna(row['EPS Estimate']) else "-",
-                        f"{row['Reported EPS']:.2f}" if pd.notna(row['Reported EPS']) else "-",
-                        surprise_html
+                        eps_estimate,
+                        reported_eps,
+                        surprise_html,
+                        revenue_estimate,
+                        reported_revenue
                     ])
         except Exception:
             pass
@@ -65,7 +77,10 @@ for ticker in tickers:
 
 # Save Past Earnings Table
 if past_rows:
-    df_past = pd.DataFrame(past_rows, columns=['Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS', 'Surprise'])
+    df_past = pd.DataFrame(past_rows, columns=[
+        'Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS',
+        'Surprise', 'Revenue Estimate', 'Reported Revenue'
+    ])
     html_past = df_past.to_html(escape=False, index=False, classes='center-table', border=0)
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(html_past)
