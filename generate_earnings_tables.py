@@ -68,19 +68,21 @@ for ticker in tickers:
                 earnings_date = pd.to_datetime(cal.loc['Earnings Date']).date()
                 if earnings_date >= today:
                     highlight_class = 'highlight-soon' if earnings_date <= three_days_from_now else ''
-                    upcoming_rows.append(f'<tr class="{highlight_class}"><td>{ticker}</td><td>{earnings_date}</td></tr>')
+                    upcoming_rows.append((earnings_date, f'<tr class="{highlight_class}"><td>{ticker}</td><td>{earnings_date}</td></tr>'))
         except Exception:
             pass
 
     except Exception as e:
         print(f"Failed to process {ticker}: {e}")
 
-# Save Past Earnings Table
+# Save Past Earnings Table (sorted by date descending)
 if past_rows:
     df_past = pd.DataFrame(past_rows, columns=[
         'Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS',
         'Surprise', 'Revenue Estimate', 'Reported Revenue'
     ])
+    df_past['Earnings Date'] = pd.to_datetime(df_past['Earnings Date'])
+    df_past.sort_values(by='Earnings Date', ascending=False, inplace=True)
     html_past = df_past.to_html(escape=False, index=False, classes='center-table', border=0)
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(html_past)
@@ -88,10 +90,11 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# Save Upcoming Earnings Table
+# Save Upcoming Earnings Table (sorted by soonest date ascending)
 if upcoming_rows:
+    sorted_upcoming = sorted(upcoming_rows, key=lambda x: x[0])
     table_html = "<table class='center-table'><thead><tr><th>Ticker</th><th>Upcoming Earnings Date</th></tr></thead><tbody>"
-    table_html += ''.join(upcoming_rows)
+    table_html += ''.join(row_html for _, row_html in sorted_upcoming)
     table_html += "</tbody></table>"
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(table_html)
