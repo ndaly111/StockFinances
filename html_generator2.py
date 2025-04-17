@@ -91,6 +91,14 @@ def ensure_templates_exist():
         </nav>
     
         <br><br><br>
+        <div class="center-table">
+            <h2>Past Earnings (Last 7 Days)</h2>
+            {{ earnings_past | safe }}
+    
+            <h2>Upcoming Earnings</h2>
+            {{ earnings_upcoming | safe }}
+        </div>
+        <br>
         <div id="spy-qqq-growth" class="center-table">
             {{ spy_qqq_growth | safe }}
         </div>
@@ -99,13 +107,7 @@ def ensure_templates_exist():
             {{ dashboard_table | safe }}
         </div>
     
-        <div class="center-table">
-            <h2>Past Earnings (Last 7 Days)</h2>
-            {{ earnings_past | safe }}
-    
-            <h2>Upcoming Earnings</h2>
-            {{ earnings_upcoming | safe }}
-        </div>
+        
     
         <footer>
             <p>Nick's Financial Data Dashboard</p>
