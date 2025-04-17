@@ -1,18 +1,24 @@
 name: Generate Earnings and Rebuild Homepage
- 
+
 on:
   schedule:
     - cron: '30 13 * * *'  # 9:30 AM ET
     - cron: '0 22 * * *'   # 6:00 PM ET
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Check out main branch
         uses: actions/checkout@v3
+        with:
+          ref: main
+          path: main_repo
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -20,21 +26,34 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
+        working-directory: main_repo
         run: |
           pip install yfinance pandas jinja2
 
       - name: Generate Earnings Tables
+        working-directory: main_repo
         run: python generate_earnings_tables.py
 
       - name: Rebuild Homepage with Earnings
+        working-directory: main_repo
         run: python render_earnings_to_dashboard.py
 
-      - name: Commit and Push Changes
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html charts/earnings_past.html charts/earnings_upcoming.html
-          git commit -m "Automated update: earnings and homepage" || echo "No changes to commit"
-          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:main
+
+      - name: Clone gh-pages branch
+        run: |
+          git clone --branch=gh-pages https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
+
+      - name: Copy updated site to gh-pages
+        run: |
+          cp -r main_repo/* gh-pages/
+
+      - name: Commit and Push to gh-pages
+        working-directory: gh-pages
+        run: |
+          git add .
+          git commit -m "Deploy earnings update to GitHub Pages" --allow-empty
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages --force
