@@ -83,28 +83,32 @@ def ensure_templates_exist():
         <header>
             <h1>Financial Overview</h1>
         </header>
-
-        <div class="center-table">
-            <h2>Past Earnings (Last 7 Days)</h2>
-            {{ earnings_past | safe }}
-
-            <h2>Upcoming Earnings</h2>
-            {{ earnings_upcoming | safe }}
-        </div>
-
+    
         <nav class="navigation">
             {% for ticker in tickers %}
             <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
             {% endfor %}
         </nav>
-
+    
         <br><br><br>
+        <div class="center-table">
+            <h2>Past Earnings (Last 7 Days)</h2>
+            {{ earnings_past | safe }}
+    
+            <h2>Upcoming Earnings</h2>
+            {{ earnings_upcoming | safe }}
+        </div>
+        <br>
         <div id="spy-qqq-growth" class="center-table">
             {{ spy_qqq_growth | safe }}
         </div>
+    
         <div>
             {{ dashboard_table | safe }}
         </div>
+    
+        
+    
         <footer>
             <p>Nick's Financial Data Dashboard</p>
         </footer>
