@@ -15,18 +15,42 @@ Functions:
     - index_growth(treasury_yield=None): Returns the full HTML table for SPY and QQQ.
 """
 
+import time
 import yfinance as yf
 
 
-def fetch_trailing_pe(ticker):
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info or {}
-        pe_ratio = info.get('trailingPE', None)
-        return pe_ratio
-    except Exception as e:
-        print(f"Error fetching data for {ticker}: {e}")
-        return None
+def fetch_trailing_pe(ticker, retries=3, delay=1):
+    """
+    Returns trailing P/E for ticker, retrying if None,
+    and falling back to price/EPS if necessary.
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info or {}
+            pe = info.get('trailingPE')
+            if pe is not None:
+                return pe
+
+            # Fallback: compute PE from price & EPS
+            price = info.get('previousClose') or info.get('regularMarketPrice')
+            eps = info.get('trailingEps')
+            if price is not None and eps is not None:
+                computed = price / eps
+                print(f"[Fallback] {ticker} PE = {price:.2f} / {eps:.2f} = {computed:.2f}")
+                return computed
+
+            # Debug: show what keys were returned
+            print(f"Attempt {attempt} for {ticker}: no trailingPE. Keys: {list(info.keys())}")
+
+        except Exception as e:
+            print(f"Error fetching {ticker} (attempt {attempt}): {e}")
+
+        if attempt < retries:
+            time.sleep(delay)
+
+    print(f"Failed to fetch trailingPE for {ticker} after {retries} tries")
+    return None
 
 
 def fetch_treasury_yield():
@@ -73,7 +97,7 @@ def index_growth(treasury_yield=None):
             treasury_yield = float(str(treasury_yield_raw).replace('%', '').strip()) / 100
         else:
             treasury_yield = 0.035  # default fallback for 3.5%
-    
+
     tickers = ["SPY", "QQQ"]
     rows = ["<tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr>"]
 
