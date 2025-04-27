@@ -58,19 +58,24 @@ for ticker in tickers:
                         revenue_estimate,
                         reported_revenue
                     ])
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Error processing past earnings for {ticker}: {e}")
 
         # Upcoming Earnings
         try:
             cal = stock.calendar
             if 'Earnings Date' in cal.index:
-                earnings_date = pd.to_datetime(cal.loc['Earnings Date']).date()
+                earnings_dates = pd.to_datetime(cal.loc['Earnings Date'])
+                if isinstance(earnings_dates, pd.Series):
+                    earnings_date = earnings_dates.iloc[0].date()
+                else:
+                    earnings_date = earnings_dates.date()
+
                 if earnings_date >= today:
                     highlight_class = 'highlight-soon' if earnings_date <= three_days_from_now else ''
                     upcoming_rows.append((earnings_date, f'<tr class="{highlight_class}"><td>{ticker}</td><td>{earnings_date}</td></tr>'))
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Error processing upcoming earnings for {ticker}: {e}")
 
     except Exception as e:
         print(f"Failed to process {ticker}: {e}")
@@ -83,9 +88,15 @@ if past_rows:
     ])
     df_past['Earnings Date'] = pd.to_datetime(df_past['Earnings Date'])
     df_past.sort_values(by='Earnings Date', ascending=False, inplace=True)
+
+    # Add small date range note
+    date_range_note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
+
     html_past = df_past.to_html(escape=False, index=False, classes='center-table', border=0)
+    full_html_past = date_range_note + html_past
+
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
-        f.write(html_past)
+        f.write(full_html_past)
 else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
@@ -101,3 +112,9 @@ if upcoming_rows:
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No upcoming earnings scheduled.</p>")
+
+# Print processing summary
+print("=== Earnings Summary ===")
+print(f"Tickers processed: {len(tickers)}")
+print(f"Past earnings events found: {len(past_rows)}")
+print(f"Upcoming earnings events scheduled: {len(upcoming_rows)}")
