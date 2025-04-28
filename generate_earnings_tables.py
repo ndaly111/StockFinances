@@ -1,4 +1,4 @@
-# generate_earnings_tables_debugged.py
+# generate_earnings_tables_debug.py
 
 import os
 import pandas as pd
@@ -6,23 +6,26 @@ from datetime import datetime, timedelta
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
-# Constants
-TICKERS_FILE_PATH = 'tickers.csv'
-OUTPUT_DIR = 'charts'
-PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
-UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
+# ==== DISABLE PEEWEE CACHING (avoids "No module named peewee") ====
+yf.set_tz_cache_location(None)
 
-today = datetime.now().date()
-seven_days_ago = today - timedelta(days=7)
+# Constants
+TICKERS_FILE_PATH    = 'tickers.csv'
+OUTPUT_DIR          = 'charts'
+PAST_HTML_PATH      = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+UPCOMING_HTML_PATH  = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
+
+today              = datetime.now().date()
+seven_days_ago     = today - timedelta(days=7)
 three_days_from_now = today + timedelta(days=3)
 
-# Ensure output directory exists
+# Ensure output dir
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Load tickers
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
 
-past_rows = []
+past_rows     = []
 upcoming_rows = []
 
 print("\n=== Starting earnings data collection ===\n")
@@ -31,36 +34,39 @@ for ticker in tickers:
     print(f"\n--- Processing {ticker} ---")
     try:
         stock = yf.Ticker(ticker)
-        cal = stock.calendar
+        cal   = stock.calendar
 
-        # Print calendar to see structure
-        print(f"Calendar for {ticker}:")
-        print(cal)
+        # --- DEBUG: show calendar structure ---
+        print("  calendar type:", type(cal))
+        if isinstance(cal, dict):
+            print("  calendar keys:", list(cal.keys()))
+            print("  raw 'Earnings Date':", cal.get('Earnings Date'))
+        else:
+            print("  calendar (non-dict):\n", cal)
 
-        # Past Earnings
+        # --- Past Earnings (unchanged) ---
         try:
             df = stock.earnings_dates
             if isinstance(df, pd.DataFrame):
                 recent = df[(df.index.date >= seven_days_ago) & (df.index.date <= today)]
                 if not recent.empty:
-                    print(f"Past earnings found for {ticker}: {list(recent.index.date)}")
+                    print("  Past earnings:", list(recent.index.date))
                 else:
-                    print(f"No past earnings for {ticker} in the last 7 days.")
-
+                    print("  No past earnings in last 7 days.")
                 for date, row in recent.iterrows():
-                    surprise = row.get('Surprise(%)', None)
-                    surprise_str = f"{surprise:+.2f}%" if pd.notna(surprise) else "-"
-                    css_class = 'positive' if surprise > 0 else 'negative' if surprise < 0 else ''
+                    surprise      = row.get('Surprise(%)', None)
+                    surprise_str  = f"{surprise:+.2f}%" if pd.notna(surprise) else "-"
+                    css_class     = 'positive' if surprise > 0 else 'negative' if surprise < 0 else ''
                     surprise_html = f'<span class="{css_class}">{surprise_str}</span>' if css_class else surprise_str
 
-                    eps_estimate = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
-                    reported_eps = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
+                    eps_estimate   = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
+                    reported_eps   = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
 
-                    revenue_est = row.get('Revenue Estimate')
-                    revenue_estimate = f"${revenue_est:,.0f}" if pd.notna(revenue_est) else "-"
+                    revenue_est    = row.get('Revenue Estimate')
+                    revenue_str    = f"${revenue_est:,.0f}" if pd.notna(revenue_est) else "-"
 
-                    reported_rev = row.get('Reported Revenue')
-                    reported_revenue = f"${reported_rev:,.0f}" if pd.notna(reported_rev) else "-"
+                    reported_rev   = row.get('Reported Revenue')
+                    reported_rev_str = f"${reported_rev:,.0f}" if pd.notna(reported_rev) else "-"
 
                     past_rows.append([
                         ticker,
@@ -68,82 +74,85 @@ for ticker in tickers:
                         eps_estimate,
                         reported_eps,
                         surprise_html,
-                        revenue_estimate,
-                        reported_revenue
+                        revenue_str,
+                        reported_rev_str
                     ])
             else:
-                print(f"No earnings_dates dataframe available for {ticker}.")
+                print("  No past-earnings DataFrame available.")
         except Exception as e:
-            print(f"Error processing past earnings for {ticker}: {e}")
+            print(f"  Error in past earnings block: {e}")
 
-        # Upcoming Earnings (new correct dictionary handling)
+        # --- Upcoming Earnings (DICT HANDLING) ---
         try:
             if isinstance(cal, dict) and 'Earnings Date' in cal:
-                earnings_dates = cal['Earnings Date']
-                if isinstance(earnings_dates, list) and len(earnings_dates) > 0:
-                    earnings_date = earnings_dates[0]
+                ed_raw = cal['Earnings Date']
+                # unwrap list vs single
+                if isinstance(ed_raw, list) and ed_raw:
+                    earnings_date = ed_raw[0]
                 else:
-                    earnings_date = earnings_dates  # Assume single date
+                    earnings_date = ed_raw
 
+                # if it's a pandas Timestamp
                 if isinstance(earnings_date, pd.Timestamp):
                     earnings_date = earnings_date.date()
 
+                print("  Parsed earnings_date:", earnings_date)
+
                 if earnings_date >= today:
-                    highlight_class = 'highlight-soon' if earnings_date <= three_days_from_now else ''
-                    upcoming_rows.append((earnings_date, f'<tr class="{highlight_class}"><td>{ticker}</td><td>{earnings_date}</td></tr>'))
-                    print(f"Upcoming earnings detected for {ticker} on {earnings_date}")
+                    highlight = 'highlight-soon' if earnings_date <= three_days_from_now else ''
+                    upcoming_rows.append((
+                        earnings_date,
+                        f'<tr class="{highlight}"><td>{ticker}</td><td>{earnings_date}</td></tr>'
+                    ))
+                    print(f"  → Upcoming earnings for {ticker} on {earnings_date}")
                 else:
-                    print(f"Earnings date for {ticker} ({earnings_date}) is in the past.")
+                    print(f"  → Earnings date {earnings_date} is in the past")
             else:
-                print(f"No upcoming earnings date found for {ticker}.")
+                print("  No 'Earnings Date' key in calendar")
         except Exception as e:
-            print(f"Error processing upcoming earnings for {ticker}: {e}")
+            print(f"  Error in upcoming earnings block: {e}")
 
     except Exception as e:
         print(f"Failed to process {ticker}: {e}")
 
 print("\n=== Finished collecting earnings data ===\n")
 
-# Save Past Earnings Table (sorted by date descending)
+# --- Save Past Earnings Table ---
 if past_rows:
     df_past = pd.DataFrame(past_rows, columns=[
         'Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS',
         'Surprise', 'Revenue Estimate', 'Reported Revenue'
     ])
     df_past['Earnings Date'] = pd.to_datetime(df_past['Earnings Date'])
-    df_past.sort_values(by='Earnings Date', ascending=False, inplace=True)
+    df_past.sort_values('Earnings Date', ascending=False, inplace=True)
 
-    # Add small date range note
-    date_range_note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
-
-    html_past = df_past.to_html(escape=False, index=False, classes='center-table', border=0)
-    full_html_past = date_range_note + html_past
-
+    note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
+    html = df_past.to_html(escape=False, index=False, classes='center-table', border=0)
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
-        f.write(full_html_past)
-    print(f"Past earnings table saved to {PAST_HTML_PATH}")
+        f.write(note + html)
+    print("Past earnings table saved.")
 else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
     print("No past earnings to save.")
 
-# Save Upcoming Earnings Table (sorted by soonest date ascending)
+# --- Save Upcoming Earnings Table ---
 if upcoming_rows:
-    sorted_upcoming = sorted(upcoming_rows, key=lambda x: x[0])
-    table_html = "<table class='center-table'><thead><tr><th>Ticker</th><th>Upcoming Earnings Date</th></tr></thead><tbody>"
-    table_html += ''.join(row_html for _, row_html in sorted_upcoming)
-    table_html += "</tbody></table>"
+    upcoming_rows.sort(key=lambda x: x[0])
+    tbl = "<table class='center-table'><thead><tr><th>Ticker</th><th>Upcoming Earnings Date</th></tr></thead><tbody>"
+    tbl += ''.join(row for _, row in upcoming_rows)
+    tbl += "</tbody></table>"
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
-        f.write(table_html)
-    print(f"Upcoming earnings table saved to {UPCOMING_HTML_PATH}")
+        f.write(tbl)
+    print("Upcoming earnings table saved.")
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No upcoming earnings scheduled.</p>")
     print("No upcoming earnings to save.")
 
-# Print processing summary
+# --- Summary ---
 print("\n=== Earnings Summary ===")
 print(f"Tickers processed: {len(tickers)}")
-print(f"Past earnings events found: {len(past_rows)}")
-print(f"Upcoming earnings events scheduled: {len(upcoming_rows)}")
+print(f"Past events found: {len(past_rows)}")
+print(f"Upcoming events found: {len(upcoming_rows)}")
 print("=== Done ===\n")
