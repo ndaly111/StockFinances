@@ -1,4 +1,4 @@
-# generate_earnings_tables_debug.py
+# generate_earnings_tables_debugged.py
 
 import os
 import pandas as pd
@@ -33,7 +33,7 @@ for ticker in tickers:
         stock = yf.Ticker(ticker)
         cal = stock.calendar
 
-        # Print calendar to see what structure it has
+        # Print calendar to see structure
         print(f"Calendar for {ticker}:")
         print(cal)
 
@@ -76,14 +76,17 @@ for ticker in tickers:
         except Exception as e:
             print(f"Error processing past earnings for {ticker}: {e}")
 
-        # Upcoming Earnings
+        # Upcoming Earnings (new correct dictionary handling)
         try:
-            if not cal.empty and 'Earnings Date' in cal.index:
-                earnings_dates = pd.to_datetime(cal.loc['Earnings Date'])
-                if isinstance(earnings_dates, pd.Series):
-                    earnings_date = earnings_dates.iloc[0].date()
+            if isinstance(cal, dict) and 'Earnings Date' in cal:
+                earnings_dates = cal['Earnings Date']
+                if isinstance(earnings_dates, list) and len(earnings_dates) > 0:
+                    earnings_date = earnings_dates[0]
                 else:
-                    earnings_date = earnings_dates.date()
+                    earnings_date = earnings_dates  # Assume single date
+
+                if isinstance(earnings_date, pd.Timestamp):
+                    earnings_date = earnings_date.date()
 
                 if earnings_date >= today:
                     highlight_class = 'highlight-soon' if earnings_date <= three_days_from_now else ''
