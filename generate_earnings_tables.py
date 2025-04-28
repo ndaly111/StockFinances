@@ -1,4 +1,4 @@
-# generate_earnings_tables.py
+# generate_earnings_tables_debug.py
 
 import os
 import pandas as pd
@@ -25,15 +25,28 @@ tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
 past_rows = []
 upcoming_rows = []
 
+print("\n=== Starting earnings data collection ===\n")
+
 for ticker in tickers:
+    print(f"\n--- Processing {ticker} ---")
     try:
         stock = yf.Ticker(ticker)
+        cal = stock.calendar
+
+        # Print calendar to see what structure it has
+        print(f"Calendar for {ticker}:")
+        print(cal)
 
         # Past Earnings
         try:
             df = stock.earnings_dates
             if isinstance(df, pd.DataFrame):
                 recent = df[(df.index.date >= seven_days_ago) & (df.index.date <= today)]
+                if not recent.empty:
+                    print(f"Past earnings found for {ticker}: {list(recent.index.date)}")
+                else:
+                    print(f"No past earnings for {ticker} in the last 7 days.")
+
                 for date, row in recent.iterrows():
                     surprise = row.get('Surprise(%)', None)
                     surprise_str = f"{surprise:+.2f}%" if pd.notna(surprise) else "-"
@@ -58,13 +71,14 @@ for ticker in tickers:
                         revenue_estimate,
                         reported_revenue
                     ])
+            else:
+                print(f"No earnings_dates dataframe available for {ticker}.")
         except Exception as e:
             print(f"Error processing past earnings for {ticker}: {e}")
 
         # Upcoming Earnings
         try:
-            cal = stock.calendar
-            if 'Earnings Date' in cal.index:
+            if not cal.empty and 'Earnings Date' in cal.index:
                 earnings_dates = pd.to_datetime(cal.loc['Earnings Date'])
                 if isinstance(earnings_dates, pd.Series):
                     earnings_date = earnings_dates.iloc[0].date()
@@ -74,11 +88,18 @@ for ticker in tickers:
                 if earnings_date >= today:
                     highlight_class = 'highlight-soon' if earnings_date <= three_days_from_now else ''
                     upcoming_rows.append((earnings_date, f'<tr class="{highlight_class}"><td>{ticker}</td><td>{earnings_date}</td></tr>'))
+                    print(f"Upcoming earnings detected for {ticker} on {earnings_date}")
+                else:
+                    print(f"Earnings date for {ticker} ({earnings_date}) is in the past.")
+            else:
+                print(f"No upcoming earnings date found for {ticker}.")
         except Exception as e:
             print(f"Error processing upcoming earnings for {ticker}: {e}")
 
     except Exception as e:
         print(f"Failed to process {ticker}: {e}")
+
+print("\n=== Finished collecting earnings data ===\n")
 
 # Save Past Earnings Table (sorted by date descending)
 if past_rows:
@@ -97,9 +118,11 @@ if past_rows:
 
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(full_html_past)
+    print(f"Past earnings table saved to {PAST_HTML_PATH}")
 else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
+    print("No past earnings to save.")
 
 # Save Upcoming Earnings Table (sorted by soonest date ascending)
 if upcoming_rows:
@@ -109,12 +132,15 @@ if upcoming_rows:
     table_html += "</tbody></table>"
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(table_html)
+    print(f"Upcoming earnings table saved to {UPCOMING_HTML_PATH}")
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No upcoming earnings scheduled.</p>")
+    print("No upcoming earnings to save.")
 
 # Print processing summary
-print("=== Earnings Summary ===")
+print("\n=== Earnings Summary ===")
 print(f"Tickers processed: {len(tickers)}")
 print(f"Past earnings events found: {len(past_rows)}")
 print(f"Upcoming earnings events scheduled: {len(upcoming_rows)}")
+print("=== Done ===\n")
