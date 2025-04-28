@@ -6,21 +6,24 @@ from datetime import datetime, timedelta
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
-# ==== DISABLE PEEWEE CACHING (avoids "No module named peewee") ====
-yf.set_tz_cache_location(None)
-
 # Constants
 TICKERS_FILE_PATH    = 'tickers.csv'
-OUTPUT_DIR          = 'charts'
-PAST_HTML_PATH      = os.path.join(OUTPUT_DIR, 'earnings_past.html')
-UPCOMING_HTML_PATH  = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
+OUTPUT_DIR           = 'charts'
+PAST_HTML_PATH       = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+UPCOMING_HTML_PATH   = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
-today              = datetime.now().date()
-seven_days_ago     = today - timedelta(days=7)
+today               = datetime.now().date()
+seven_days_ago      = today - timedelta(days=7)
 three_days_from_now = today + timedelta(days=3)
 
-# Ensure output dir
+# === Prepare output & tz-cache ===
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# Create a dummy tz cache file so yfinance doesn't try to stat(None)
+dummy_tz_cache = os.path.join(OUTPUT_DIR, 'tz_cache.json')
+# Ensure the file exists (empty is fine)
+open(dummy_tz_cache, 'a').close()
+yf.set_tz_cache_location(dummy_tz_cache)
 
 # Load tickers
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
@@ -33,10 +36,11 @@ print("\n=== Starting earnings data collection ===\n")
 for ticker in tickers:
     print(f"\n--- Processing {ticker} ---")
     try:
+        # Instantiate ticker and fetch calendar
         stock = yf.Ticker(ticker)
         cal   = stock.calendar
 
-        # --- DEBUG: show calendar structure ---
+        # --- DEBUG: calendar structure & raw earnings date ---
         print("  calendar type:", type(cal))
         if isinstance(cal, dict):
             print("  calendar keys:", list(cal.keys()))
@@ -59,13 +63,11 @@ for ticker in tickers:
                     css_class     = 'positive' if surprise > 0 else 'negative' if surprise < 0 else ''
                     surprise_html = f'<span class="{css_class}">{surprise_str}</span>' if css_class else surprise_str
 
-                    eps_estimate   = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
-                    reported_eps   = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
-
-                    revenue_est    = row.get('Revenue Estimate')
-                    revenue_str    = f"${revenue_est:,.0f}" if pd.notna(revenue_est) else "-"
-
-                    reported_rev   = row.get('Reported Revenue')
+                    eps_estimate     = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
+                    reported_eps     = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
+                    revenue_est      = row.get('Revenue Estimate')
+                    revenue_str      = f"${revenue_est:,.0f}" if pd.notna(revenue_est) else "-"
+                    reported_rev     = row.get('Reported Revenue')
                     reported_rev_str = f"${reported_rev:,.0f}" if pd.notna(reported_rev) else "-"
 
                     past_rows.append([
@@ -86,19 +88,21 @@ for ticker in tickers:
         try:
             if isinstance(cal, dict) and 'Earnings Date' in cal:
                 ed_raw = cal['Earnings Date']
-                # unwrap list vs single
                 if isinstance(ed_raw, list) and ed_raw:
                     earnings_date = ed_raw[0]
                 else:
-                    earnings_date = ed_raw
+                    earnings_date = ed_raw  # single date or None
 
-                # if it's a pandas Timestamp
+                # Convert pandas Timestamp if needed
                 if isinstance(earnings_date, pd.Timestamp):
                     earnings_date = earnings_date.date()
 
                 print("  Parsed earnings_date:", earnings_date)
 
-                if earnings_date >= today:
+                if isinstance(earnings_date, datetime):
+                    earnings_date = earnings_date.date()
+
+                if earnings_date and earnings_date >= today:
                     highlight = 'highlight-soon' if earnings_date <= three_days_from_now else ''
                     upcoming_rows.append((
                         earnings_date,
@@ -106,7 +110,7 @@ for ticker in tickers:
                     ))
                     print(f"  → Upcoming earnings for {ticker} on {earnings_date}")
                 else:
-                    print(f"  → Earnings date {earnings_date} is in the past")
+                    print(f"  → No valid future earnings date (got {earnings_date})")
             else:
                 print("  No 'Earnings Date' key in calendar")
         except Exception as e:
@@ -139,9 +143,13 @@ else:
 # --- Save Upcoming Earnings Table ---
 if upcoming_rows:
     upcoming_rows.sort(key=lambda x: x[0])
-    tbl = "<table class='center-table'><thead><tr><th>Ticker</th><th>Upcoming Earnings Date</th></tr></thead><tbody>"
-    tbl += ''.join(row for _, row in upcoming_rows)
-    tbl += "</tbody></table>"
+    tbl = (
+        "<table class='center-table'>"
+        "<thead><tr><th>Ticker</th><th>Upcoming Earnings Date</th></tr></thead>"
+        "<tbody>"
+        + "".join(row for _, row in upcoming_rows) +
+        "</tbody></table>"
+    )
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(tbl)
     print("Upcoming earnings table saved.")
