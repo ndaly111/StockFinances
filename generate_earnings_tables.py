@@ -1,3 +1,5 @@
+# generate_earnings_tables_upgraded_debug.py
+
 import os
 import pandas as pd
 from datetime import datetime, timedelta
@@ -24,16 +26,25 @@ tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
 
 past_rows, upcoming_rows = [], []
 
+print("\n=== STARTING COLLECTION ===\n")
+
 # Collect earnings data
 for ticker in tickers:
+    print(f"\n--- Processing {ticker} ---")
     try:
         stock = yf.Ticker(ticker)
         cal   = stock.calendar
+
+        # DEBUG: print raw calendar
+        print("Calendar contents:", cal)
 
         # Past earnings
         try:
             df = stock.earnings_dates
             if isinstance(df, pd.DataFrame):
+                print(f"Pulled earnings_dates for {ticker}:")
+                print(df.head())
+
                 recent = df[(df.index.date >= seven_days_ago) & (df.index.date <= today)]
                 for date, row in recent.iterrows():
                     surprise      = row.get('Surprise(%)', None)
@@ -44,10 +55,13 @@ for ticker in tickers:
                     eps_est      = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
                     rpt_eps      = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
 
-                    # Check for the presence of revenue columns
                     rev_est      = row.get('Revenue Estimate') if 'Revenue Estimate' in row else None
-                    rev_est_str  = f"${rev_est:,.0f}" if pd.notna(rev_est) else "-"
                     rpt_rev      = row.get('Reported Revenue') if 'Reported Revenue' in row else None
+
+                    # DEBUG: print revenue values before formatting
+                    print(f"  Date: {date.date()}, Revenue Estimate Raw: {rev_est}, Reported Revenue Raw: {rpt_rev}")
+
+                    rev_est_str  = f"${rev_est:,.0f}" if pd.notna(rev_est) else "-"
                     rpt_rev_str  = f"${rpt_rev:,.0f}" if pd.notna(rpt_rev) else "-"
 
                     past_rows.append([
@@ -58,8 +72,10 @@ for ticker in tickers:
                         surprise_str,  # store HTML version separately
                         rev_est_str, rpt_rev_str
                     ])
-        except Exception:
-            pass
+            else:
+                print(f"No earnings_dates dataframe for {ticker}.")
+        except Exception as e:
+            print(f"Error processing past earnings for {ticker}: {e}")
 
         # Upcoming earnings
         try:
@@ -73,12 +89,19 @@ for ticker in tickers:
                     ed_date = ed_date.date()
 
                 if ed_date and ed_date >= today:
+                    print(f"Upcoming earnings detected: {ed_date}")
                     upcoming_rows.append((ed_date, ticker))
-        except Exception:
-            pass
+                else:
+                    print(f"No valid upcoming earnings for {ticker}.")
+            else:
+                print(f"No 'Earnings Date' key in calendar for {ticker}.")
+        except Exception as e:
+            print(f"Error processing upcoming earnings for {ticker}: {e}")
 
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"General error processing {ticker}: {e}")
+
+print("\n=== FINISHED COLLECTION ===\n")
 
 # Save Past Earnings with Summary
 if past_rows:
@@ -117,7 +140,6 @@ else:
 # Save Upcoming Earnings (2 columns layout)
 if upcoming_rows:
     upcoming_rows.sort()
-    # Split into two columns
     half = (len(upcoming_rows) + 1) // 2
     left = upcoming_rows[:half]
     right = upcoming_rows[half:]
