@@ -1,4 +1,4 @@
-# generate_earnings_tables_upgraded_debug.py
+# generate_earnings_tables_upgraded_debug_v2.py
 
 import os
 import pandas as pd
@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
-# Disable peewee caching properly
+# Setup output directory and tz cache
 OUTPUT_DIR = 'charts'
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 tz_cache = os.path.join(OUTPUT_DIR, 'tz_cache.json')
@@ -14,31 +14,27 @@ open(tz_cache, 'a').close()
 yf.set_tz_cache_location(tz_cache)
 
 # Constants
-TICKERS_FILE_PATH    = 'tickers.csv'
-PAST_HTML_PATH       = os.path.join(OUTPUT_DIR, 'earnings_past.html')
-UPCOMING_HTML_PATH   = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
+TICKERS_FILE_PATH = 'tickers.csv'
+PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
-today               = datetime.now().date()
-seven_days_ago      = today - timedelta(days=7)
+today = datetime.now().date()
+seven_days_ago = today - timedelta(days=7)
 three_days_from_now = today + timedelta(days=3)
 
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
 
-past_rows, upcoming_rows = [], []
+past_rows, upcoming_rows, reporting_today = [], [], []
 
 print("\n=== STARTING COLLECTION ===\n")
 
-# Collect earnings data
 for ticker in tickers:
     print(f"\n--- Processing {ticker} ---")
     try:
         stock = yf.Ticker(ticker)
-        cal   = stock.calendar
-
-        # DEBUG: print raw calendar
+        cal = stock.calendar
         print("Calendar contents:", cal)
 
-        # Past earnings
         try:
             df = stock.earnings_dates
             if isinstance(df, pd.DataFrame):
@@ -47,37 +43,31 @@ for ticker in tickers:
 
                 recent = df[(df.index.date >= seven_days_ago) & (df.index.date <= today)]
                 for date, row in recent.iterrows():
-                    surprise      = row.get('Surprise(%)', None)
-                    surprise_val  = float(surprise) if pd.notna(surprise) else None
-                    css_class     = 'positive' if surprise_val and surprise_val > 0 else 'negative' if surprise_val and surprise_val < 0 else ''
-                    surprise_str  = f'<span class="{css_class}">{surprise_val:+.2f}%</span>' if surprise_val is not None else '-'
+                    if date.date() == today:
+                        reporting_today.append(ticker)
 
-                    eps_est      = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
-                    rpt_eps      = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
+                    surprise = row.get('Surprise(%)', None)
+                    surprise_val = float(surprise) if pd.notna(surprise) else None
+                    css_class = 'positive' if surprise_val and surprise_val > 0 else 'negative' if surprise_val and surprise_val < 0 else ''
+                    surprise_str = f'<span class="{css_class}">{surprise_val:+.2f}%</span>' if surprise_val is not None else '-'
 
-                    rev_est      = row.get('Revenue Estimate') if 'Revenue Estimate' in row else None
-                    rpt_rev      = row.get('Reported Revenue') if 'Reported Revenue' in row else None
+                    eps_est = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
+                    rpt_eps = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
 
-                    # DEBUG: print revenue values before formatting
-                    print(f"  Date: {date.date()}, Revenue Estimate Raw: {rev_est}, Reported Revenue Raw: {rpt_rev}")
-
-                    rev_est_str  = f"${rev_est:,.0f}" if pd.notna(rev_est) else "-"
-                    rpt_rev_str  = f"${rpt_rev:,.0f}" if pd.notna(rpt_rev) else "-"
+                    print(f"  Date: {date.date()}, EPS: {rpt_eps}, Surprise: {surprise_str}")
 
                     past_rows.append([
                         ticker,
                         date.date().isoformat(),
                         eps_est, rpt_eps,
-                        surprise_val,  # store numeric value separately
-                        surprise_str,  # store HTML version separately
-                        rev_est_str, rpt_rev_str
+                        surprise_val,
+                        surprise_str
                     ])
             else:
                 print(f"No earnings_dates dataframe for {ticker}.")
         except Exception as e:
             print(f"Error processing past earnings for {ticker}: {e}")
 
-        # Upcoming earnings
         try:
             if isinstance(cal, dict) and 'Earnings Date' in cal:
                 ed = cal['Earnings Date']
@@ -103,19 +93,26 @@ for ticker in tickers:
 
 print("\n=== FINISHED COLLECTION ===\n")
 
-# Save Past Earnings with Summary
+# Save Past Earnings with Reporting Today + Accordion
 if past_rows:
     dfp = pd.DataFrame(past_rows, columns=[
         'Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS',
-        'Surprise Value', 'Surprise HTML', 'Revenue Estimate', 'Reported Revenue'
+        'Surprise Value', 'Surprise HTML'
     ])
     dfp['Earnings Date'] = pd.to_datetime(dfp['Earnings Date'])
     dfp.sort_values('Earnings Date', ascending=False, inplace=True)
 
-    # Build Top 5 Beats and Misses
+    note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
+
+    # Reporting Today line
+    reporting_html = ""
+    if reporting_today:
+        tickers_today = ", ".join(sorted(set(reporting_today)))
+        reporting_html = f"<p><strong>Reporting Today:</strong> {tickers_today}</p>"
+
+    # Top 5 Beats and Misses
     beats = dfp.sort_values('Surprise Value', ascending=False).head(5)
     misses = dfp.sort_values('Surprise Value', ascending=True).head(5)
-
     summary_html = "<h3>Top 5 Earnings Beats</h3><ul>"
     for _, row in beats.iterrows():
         summary_html += f"<li>{row['Ticker']}: {row['Surprise Value']:+.2f}%</li>"
@@ -124,12 +121,20 @@ if past_rows:
         summary_html += f"<li>{row['Ticker']}: {row['Surprise Value']:+.2f}%</li>"
     summary_html += "</ul>"
 
-    table_html = dfp.drop(columns=['Surprise Value']).to_html(
-        escape=False, index=False, classes='center-table', border=0
-    )
+    dfp.drop(columns=['Surprise Value'], inplace=True)
+    table_head = dfp.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
 
-    note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
-    final_html = note + summary_html + table_html
+    if len(dfp) > 10:
+        table_rest = dfp.iloc[10:].to_html(escape=False, index=False, classes='center-table', border=0)
+        table_html = table_head + (
+            "<details><summary>Show More</summary>" +
+            table_rest +
+            "</details>"
+        )
+    else:
+        table_html = table_head
+
+    final_html = note + reporting_html + summary_html + table_html
 
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(final_html)
@@ -137,7 +142,7 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# Save Upcoming Earnings (2 columns layout)
+# Save Upcoming Earnings
 if upcoming_rows:
     upcoming_rows.sort()
     half = (len(upcoming_rows) + 1) // 2
