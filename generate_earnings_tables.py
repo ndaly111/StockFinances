@@ -1,5 +1,3 @@
-# generate_earnings_tables_upgraded.py
-
 import os
 import pandas as pd
 from datetime import datetime, timedelta
@@ -45,9 +43,11 @@ for ticker in tickers:
 
                     eps_est      = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
                     rpt_eps      = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
-                    rev_est      = row.get('Revenue Estimate')
+
+                    # Check for the presence of revenue columns
+                    rev_est      = row.get('Revenue Estimate') if 'Revenue Estimate' in row else None
                     rev_est_str  = f"${rev_est:,.0f}" if pd.notna(rev_est) else "-"
-                    rpt_rev      = row.get('Reported Revenue')
+                    rpt_rev      = row.get('Reported Revenue') if 'Reported Revenue' in row else None
                     rpt_rev_str  = f"${rpt_rev:,.0f}" if pd.notna(rpt_rev) else "-"
 
                     past_rows.append([
