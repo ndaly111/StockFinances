@@ -1,173 +1,158 @@
 # generate_earnings_tables_upgraded_debug_v2.py
 
 import os
+import logging
 import pandas as pd
 from datetime import datetime, timedelta
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
-# Setup output directory and tz cache
+# ——— Configuration ———
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 OUTPUT_DIR = 'charts'
+TICKERS_FILE_PATH = 'tickers.csv'
+PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
+
+# ——— Prepare output directory & yfinance cache ———
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 tz_cache = os.path.join(OUTPUT_DIR, 'tz_cache.json')
 open(tz_cache, 'a').close()
 yf.set_tz_cache_location(tz_cache)
 
-# Constants
-TICKERS_FILE_PATH = 'tickers.csv'
-PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
-UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
-
+# ——— Date boundaries ———
 today = datetime.now().date()
 seven_days_ago = today - timedelta(days=7)
 three_days_from_now = today + timedelta(days=3)
 
+# ——— Read and normalize tickers ———
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
 
-past_rows, upcoming_rows, reporting_today = [], [], []
+past_rows = []
+upcoming_rows = []   # will hold tuples (ticker, date)
+reporting_today = set()
 
-print("\n=== STARTING COLLECTION ===\n")
+logging.info("=== STARTING COLLECTION ===")
 
 for ticker in tickers:
-    print(f"\n--- Processing {ticker} ---")
+    logging.debug(f"Processing {ticker}")
     try:
         stock = yf.Ticker(ticker)
-        cal = stock.calendar
-        print("Calendar contents:", cal)
-
+        cal = stock.calendar  # usually a DataFrame with index like 'Earnings Date'
+        
+        # — Past earnings from .earnings_dates ——
         try:
             df = stock.earnings_dates
-            if isinstance(df, pd.DataFrame):
-                print(f"Pulled earnings_dates for {ticker}:")
-                print(df.head())
-
-                recent = df[(df.index.date >= seven_days_ago) & (df.index.date <= today)]
+            if df is None:
+                logging.debug(f"No earnings_dates for {ticker}")
+            else:
+                # coerce Series→DataFrame
+                df = pd.DataFrame(df) if not isinstance(df, pd.DataFrame) else df.copy()
+                # normalize index to date
+                df.index = pd.to_datetime(df.index).date
+                recent = df.loc[seven_days_ago:today]
+                
                 for date, row in recent.iterrows():
-                    if date.date() == today:
-                        reporting_today.append(ticker)
-
-                    surprise = row.get('Surprise(%)', None)
-                    surprise_val = float(surprise) if pd.notna(surprise) else None
-                    css_class = 'positive' if surprise_val and surprise_val > 0 else 'negative' if surprise_val and surprise_val < 0 else ''
-                    surprise_str = f'<span class="{css_class}">{surprise_val:+.2f}%</span>' if surprise_val is not None else '-'
-
-                    eps_est = f"{row['EPS Estimate']:.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
-                    rpt_eps = f"{row['Reported EPS']:.2f}" if pd.notna(row.get('Reported EPS')) else "-"
-
-                    print(f"  Date: {date.date()}, EPS: {rpt_eps}, Surprise: {surprise_str}")
-
+                    if date == today:
+                        reporting_today.add(ticker)
+                    # numeric surprise
+                    surprise_val = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
+                    css = 'positive' if surprise_val > 0 else 'negative' if surprise_val < 0 else ''
+                    surprise_html = f'<span class="{css}">{surprise_val:+.2f}%</span>' if pd.notna(surprise_val) else '-'
+                    # EPS formatting
+                    eps_est = f"{row.get('EPS Estimate'):.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
+                    rpt_eps = f"{row.get('Reported EPS'):.2f}" if pd.notna(row.get('Reported EPS')) else "-"
                     past_rows.append([
                         ticker,
-                        date.date().isoformat(),
-                        eps_est, rpt_eps,
+                        date.isoformat(),
+                        eps_est,
+                        rpt_eps,
                         surprise_val,
-                        surprise_str
+                        surprise_html
                     ])
-            else:
-                print(f"No earnings_dates dataframe for {ticker}.")
         except Exception as e:
-            print(f"Error processing past earnings for {ticker}: {e}")
+            logging.warning(f"Past earnings error for {ticker}: {e}")
 
+        # — Upcoming earnings via calendar DataFrame ——
         try:
-            if isinstance(cal, dict) and 'Earnings Date' in cal:
-                ed = cal['Earnings Date']
-                if isinstance(ed, list) and ed:
-                    ed_date = ed[0]
+            if isinstance(cal, pd.DataFrame) and 'Earnings Date' in cal.index:
+                raw = cal.loc['Earnings Date'].iat[0]
+                if isinstance(raw, pd.Timestamp):
+                    ed_date = raw.date()
+                elif isinstance(raw, datetime):
+                    ed_date = raw.date()
                 else:
-                    ed_date = ed
-                if isinstance(ed_date, pd.Timestamp):
-                    ed_date = ed_date.date()
-
+                    ed_date = raw  # assume already a date
+                # only future (including today)
                 if ed_date and ed_date >= today:
-                    print(f"Upcoming earnings detected: {ed_date}")
-                    upcoming_rows.append((ed_date, ticker))
-                else:
-                    print(f"No valid upcoming earnings for {ticker}.")
+                    upcoming_rows.append((ticker, ed_date))
             else:
-                print(f"No 'Earnings Date' key in calendar for {ticker}.")
+                logging.debug(f"No calendar entry for {ticker}")
         except Exception as e:
-            print(f"Error processing upcoming earnings for {ticker}: {e}")
+            logging.warning(f"Upcoming earnings error for {ticker}: {e}")
 
     except Exception as e:
-        print(f"General error processing {ticker}: {e}")
+        logging.error(f"General error processing {ticker}: {e}")
 
-print("\n=== FINISHED COLLECTION ===\n")
+logging.info("=== FINISHED COLLECTION ===")
 
-# Save Past Earnings with Reporting Today + Accordion
+
+# ——— Write Past Earnings HTML ———
 if past_rows:
     dfp = pd.DataFrame(past_rows, columns=[
         'Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS',
         'Surprise Value', 'Surprise HTML'
     ])
+    # ensure proper types & sorting
     dfp['Earnings Date'] = pd.to_datetime(dfp['Earnings Date'])
+    dfp['Surprise Value'] = pd.to_numeric(dfp['Surprise Value'], errors='coerce')
     dfp.sort_values('Earnings Date', ascending=False, inplace=True)
 
     note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
-
-    # Reporting Today line
     reporting_html = ""
     if reporting_today:
-        tickers_today = ", ".join(sorted(set(reporting_today)))
-        reporting_html = f"<p><strong>Reporting Today:</strong> {tickers_today}</p>"
+        reporting_html = f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>"
 
-    # Top 5 Beats and Misses
-    beats = dfp.sort_values('Surprise Value', ascending=False).head(5)
-    misses = dfp.sort_values('Surprise Value', ascending=True).head(5)
+    # top 5 beats & misses
+    beats = dfp.nlargest(5, 'Surprise Value')
+    misses = dfp.nsmallest(5, 'Surprise Value')
     summary_html = "<h3>Top 5 Earnings Beats</h3><ul>"
-    for _, row in beats.iterrows():
-        summary_html += f"<li>{row['Ticker']}: {row['Surprise Value']:+.2f}%</li>"
+    for _, r in beats.iterrows():
+        summary_html += f"<li>{r['Ticker']}: {r['Surprise Value']:+.2f}%</li>"
     summary_html += "</ul><h3>Top 5 Earnings Misses</h3><ul>"
-    for _, row in misses.iterrows():
-        summary_html += f"<li>{row['Ticker']}: {row['Surprise Value']:+.2f}%</li>"
+    for _, r in misses.iterrows():
+        summary_html += f"<li>{r['Ticker']}: {r['Surprise Value']:+.2f}%</li>"
     summary_html += "</ul>"
 
     dfp.drop(columns=['Surprise Value'], inplace=True)
-    table_head = dfp.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
-
+    head_html = dfp.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
     if len(dfp) > 10:
-        table_rest = dfp.iloc[10:].to_html(escape=False, index=False, classes='center-table', border=0)
-        table_html = table_head + (
-            "<details><summary>Show More</summary>" +
-            table_rest +
-            "</details>"
-        )
+        rest_html = dfp.iloc[10:].to_html(escape=False, index=False, classes='center-table', border=0)
+        table_html = head_html + f"<details><summary>Show More</summary>{rest_html}</details>"
     else:
-        table_html = table_head
-
-    final_html = note + reporting_html + summary_html + table_html
+        table_html = head_html
 
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
-        f.write(final_html)
+        f.write(note + reporting_html + summary_html + table_html)
 else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# Save Upcoming Earnings
+
+# ——— Write Upcoming Earnings HTML ———
 if upcoming_rows:
-    upcoming_rows.sort()
-    half = (len(upcoming_rows) + 1) // 2
-    left = upcoming_rows[:half]
-    right = upcoming_rows[half:]
-
-    table_html = (
-        "<table class='center-table'><thead><tr><th>Ticker</th><th>Date</th><th>Ticker</th><th>Date</th></tr></thead><tbody>"
-    )
+    df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
+    # split into two columns
+    half = (len(df_up) + 1) // 2
+    left, right = df_up.iloc[:half], df_up.iloc[half:]
+    table = "<table class='center-table'><thead><tr><th>Ticker</th><th>Date</th><th>Ticker</th><th>Date</th></tr></thead><tbody>"
     for i in range(half):
-        row = "<tr>"
-        if i < len(left):
-            row += f"<td>{left[i][1]}</td><td>{left[i][0]}</td>"
-        else:
-            row += "<td></td><td></td>"
-        if i < len(right):
-            row += f"<td>{right[i][1]}</td><td>{right[i][0]}</td>"
-        else:
-            row += "<td></td><td></td>"
-        row += "</tr>"
-        table_html += row
-    table_html += "</tbody></table>"
-
+        l = left.iloc[i] if i < len(left) else {'Ticker':'','Date':''}
+        r = right.iloc[i] if i < len(right) else {'Ticker':'','Date':''}
+        table += f"<tr><td>{l.Ticker}</td><td>{l.Date}</td><td>{r.Ticker}</td><td>{r.Date}</td></tr>"
+    table += "</tbody></table>"
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
-        f.write(table_html)
+        f.write(table)
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No upcoming earnings scheduled.</p>")
