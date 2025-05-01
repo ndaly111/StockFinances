@@ -47,7 +47,7 @@ for ticker in tickers:
             continue
 
         df = pd.DataFrame(df) if not isinstance(df, pd.DataFrame) else df.copy()
-        df.index = pd.to_datetime(df.index).dt.tz_localize(None).normalize()
+        df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
 
         # Past earnings within range
         recent = df.loc[seven_days_ago:today]
