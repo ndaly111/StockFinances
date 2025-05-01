@@ -1,5 +1,3 @@
-# generate_earnings_tables_upgraded_debug_v2.py
-
 import os
 import logging
 import pandas as pd
@@ -23,6 +21,7 @@ yf.set_tz_cache_location(tz_cache_dir)
 # ——— Date boundaries ———
 today = datetime.now().date()
 seven_days_ago = today - timedelta(days=7)
+three_days_out = today + timedelta(days=3)
 
 # ——— Load and normalize tickers ———
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
@@ -38,7 +37,6 @@ for ticker in tickers:
     try:
         stock = yf.Ticker(ticker)
 
-        # Try modern get_earnings_dates; fallback to .earnings_dates
         try:
             df = stock.get_earnings_dates(limit=30)
         except (TypeError, AttributeError):
@@ -49,12 +47,12 @@ for ticker in tickers:
             continue
 
         df = pd.DataFrame(df) if not isinstance(df, pd.DataFrame) else df.copy()
-        df.index = pd.to_datetime(df.index).date
+        df.index = pd.to_datetime(df.index).normalize()
 
         # Past earnings within range
         recent = df.loc[seven_days_ago:today]
         for edate, row in recent.iterrows():
-            if edate == today:
+            if edate.date() == today:
                 reporting_today.add(ticker)
 
             surprise_val = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
@@ -62,18 +60,17 @@ for ticker in tickers:
             surprise_html = f'<span class="{css}">{surprise_val:+.2f}%</span>' if pd.notna(surprise_val) else '-'
             eps_est = f"{row.get('EPS Estimate'):.2f}" if pd.notna(row.get('EPS Estimate')) else "-"
             rpt_eps = f"{row.get('Reported EPS'):.2f}" if pd.notna(row.get('Reported EPS')) else "-"
-            past_rows.append([ticker, edate.isoformat(), eps_est, rpt_eps, surprise_val, surprise_html])
+            past_rows.append([ticker, edate.date().isoformat(), eps_est, rpt_eps, surprise_val, surprise_html])
 
-        # First future earnings date
+        # All future earnings
         future = df.loc[df.index > today]
         if not future.empty:
-            future_date = future.index[0]
-            if isinstance(future_date, pd.Timestamp):
-                future_date = future_date.date()
-            upcoming_rows.append((ticker, future_date))
-            logging.info(f"  Upcoming on {future_date}")
+            for fdate in future.index:
+                future_date = fdate.date() if isinstance(fdate, pd.Timestamp) else fdate
+                upcoming_rows.append((ticker, future_date))
+            logging.info(f"  Upcoming count: {len(future)}")
         else:
-            logging.info("  No upcoming earnings ≥ today")
+            logging.info("  No upcoming earnings")
 
     except Exception as e:
         logging.error(f"General error processing {ticker}: {e}")
@@ -117,20 +114,63 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# ---------- Upcoming Earnings HTML ----------
+# ---------- Upcoming Earnings HTML (with Toggle and Highlighting) ----------
 if upcoming_rows:
     df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
+    df_up['Date'] = pd.to_datetime(df_up['Date'])
+    df_up.sort_values('Date', inplace=True)
+
     half = (len(df_up) + 1) // 2
     left, right = df_up.iloc[:half], df_up.iloc[half:]
-    html = (
-        "<table class='center-table'><thead><tr><th>Ticker</th><th>Date</th>"
-        "<th>Ticker</th><th>Date</th></tr></thead><tbody>"
-    )
+
+    html = """
+    <script>
+    function toggleEarnings() {
+        const btn = document.getElementById('toggle-btn');
+        const longRows = document.querySelectorAll('.long-term');
+        const showingAll = btn.dataset.state === 'all';
+        longRows.forEach(row => {
+            row.style.display = showingAll ? 'none' : 'table-row';
+        });
+        btn.textContent = showingAll ? 'Show All Upcoming Earnings' : 'Show Only Next 3 Days';
+        btn.dataset.state = showingAll ? 'short' : 'all';
+    }
+    </script>
+    <button id="toggle-btn" onclick="toggleEarnings()" data-state="short" style="margin: 10px 0;">Show All Upcoming Earnings</button>
+    <table class='center-table'>
+        <thead><tr><th>Ticker</th><th>Date</th><th>Ticker</th><th>Date</th></tr></thead>
+        <tbody>
+    """
+
     for i in range(half):
         l = left.iloc[i] if i < len(left) else {'Ticker': '', 'Date': ''}
         r = right.iloc[i] if i < len(right) else {'Ticker': '', 'Date': ''}
-        html += f"<tr><td>{l.Ticker}</td><td>{l.Date}</td><td>{r.Ticker}</td><td>{r.Date}</td></tr>"
+
+        def classify(row_date):
+            d = row_date.date() if isinstance(row_date, pd.Timestamp) else row_date
+            if d == today:
+                return 'reporting-today'
+            elif d <= three_days_out:
+                return 'near-term'
+            else:
+                return 'long-term'
+
+        l_class = classify(l['Date']) if isinstance(l, pd.Series) else ''
+        r_class = classify(r['Date']) if isinstance(r, pd.Series) else ''
+        row_class = 'long-term'
+        if 'reporting-today' in (l_class, r_class):
+            row_class = 'reporting-today'
+        elif 'near-term' in (l_class, r_class):
+            row_class = 'near-term'
+
+        display_style = '' if row_class in ('near-term', 'reporting-today') else ' style="display:none;"'
+        bg_color = ' style="background-color:#fff3b0;"' if row_class == 'reporting-today' else ''
+
+        html += f"<tr class='{row_class}'{display_style}{bg_color}>"
+        html += f"<td>{l['Ticker']}</td><td>{l['Date'].date()}</td><td>{r['Ticker']}</td><td>{r['Date'].date()}</td></tr>"
+
     html += "</tbody></table>"
+
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(html)
 else:
