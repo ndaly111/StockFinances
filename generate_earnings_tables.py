@@ -24,10 +24,11 @@ yf.set_tz_cache_location(tz_cache_dir)
 today = datetime.now().date()
 seven_days_ago = today - timedelta(days=7)
 
-# ——— Read and normalize tickers ———
+# ——— Load and normalize tickers ———
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
 
-past_rows, upcoming_rows = [], []
+past_rows = []
+upcoming_rows = []
 reporting_today = set()
 
 logging.info("=== STARTING COLLECTION ===")
@@ -37,20 +38,20 @@ for ticker in tickers:
     try:
         stock = yf.Ticker(ticker)
 
-        # ---- Pull earnings history + next date in one call ----
+        # Try modern get_earnings_dates; fallback to .earnings_dates
         try:
-            df = stock.get_earnings_dates(limit=30, pause=0.01)  # yfinance ≥0.2.x
-        except AttributeError:
-            df = stock.earnings_dates  # fallback for very old yfinance
+            df = stock.get_earnings_dates(limit=30)
+        except (TypeError, AttributeError):
+            df = stock.earnings_dates
+
         if df is None or df.empty:
             logging.info("  No earnings data returned")
             continue
 
-        # ensure DataFrame format
-        df = df.copy()
+        df = pd.DataFrame(df) if not isinstance(df, pd.DataFrame) else df.copy()
         df.index = pd.to_datetime(df.index).date
 
-        # past 7-day block
+        # Past earnings within range
         recent = df.loc[seven_days_ago:today]
         for edate, row in recent.iterrows():
             if edate == today:
@@ -63,11 +64,14 @@ for ticker in tickers:
             rpt_eps = f"{row.get('Reported EPS'):.2f}" if pd.notna(row.get('Reported EPS')) else "-"
             past_rows.append([ticker, edate.isoformat(), eps_est, rpt_eps, surprise_val, surprise_html])
 
-        # first future date (if any)
-        future = df.loc[df.index >= today]
+        # First future earnings date
+        future = df.loc[df.index > today]
         if not future.empty:
-            upcoming_rows.append((ticker, future.index[0]))
-            logging.info(f"  Upcoming on {future.index[0]}")
+            future_date = future.index[0]
+            if isinstance(future_date, pd.Timestamp):
+                future_date = future_date.date()
+            upcoming_rows.append((ticker, future_date))
+            logging.info(f"  Upcoming on {future_date}")
         else:
             logging.info("  No upcoming earnings ≥ today")
 
@@ -76,7 +80,7 @@ for ticker in tickers:
 
 logging.info(f"=== FINISHED COLLECTION: {len(past_rows)} past rows, {len(upcoming_rows)} upcoming rows ===")
 
-# ---------- Build Past Earnings HTML ----------
+# ---------- Past Earnings HTML ----------
 if past_rows:
     dfp = pd.DataFrame(past_rows, columns=[
         'Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS',
@@ -113,7 +117,7 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# ---------- Build Upcoming Earnings HTML ----------
+# ---------- Upcoming Earnings HTML ----------
 if upcoming_rows:
     df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
     half = (len(df_up) + 1) // 2
