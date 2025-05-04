@@ -1,3 +1,5 @@
+# Replace your entire script with this version
+
 import os
 import logging
 import pandas as pd
@@ -5,45 +7,31 @@ from datetime import datetime, timedelta
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
-# ——— Configuration ———
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 OUTPUT_DIR = 'charts'
 TICKERS_FILE_PATH = 'tickers.csv'
 PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
 UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
-# ——— Prepare output directory & yfinance cache ———
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 tz_cache_dir = os.path.join(OUTPUT_DIR, 'tz_cache')
 os.makedirs(tz_cache_dir, exist_ok=True)
 yf.set_tz_cache_location(tz_cache_dir)
 
-# ——— Date boundaries with weekend fallback ———
-true_today = datetime.now().date()
-if true_today.weekday() == 5:  # Saturday
-    today = true_today - timedelta(days=1)
-elif true_today.weekday() == 6:  # Sunday
-    today = true_today - timedelta(days=2)
-else:
-    today = true_today
-seven_days_ago = today - timedelta(days=7)
-three_days_out = true_today + timedelta(days=3)  # Still use real date for future
+today = pd.to_datetime(datetime.now().date())
+seven_days_ago = today - pd.Timedelta(days=7)
+three_days_out = today + pd.Timedelta(days=3)
 
-# ——— Load and normalize tickers ———
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
-
-past_rows = []
-upcoming_rows = []
+past_rows, upcoming_rows = [], []
 reporting_today = set()
 
-logging.info(f"=== STARTING COLLECTION ===")
-logging.info(f"Using today = {today}, true_today = {true_today}, 3 days out = {three_days_out}")
+logging.info("=== STARTING COLLECTION ===")
 
 for ticker in tickers:
     logging.info(f"Processing {ticker}")
     try:
         stock = yf.Ticker(ticker)
-
         try:
             df = stock.get_earnings_dates(limit=30)
         except (TypeError, AttributeError):
@@ -56,10 +44,9 @@ for ticker in tickers:
         df = pd.DataFrame(df) if not isinstance(df, pd.DataFrame) else df.copy()
         df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
 
-        # Past earnings within range
-        recent = df.loc[seven_days_ago:today]
+        recent = df.loc[(df.index >= seven_days_ago) & (df.index <= today)]
         for edate, row in recent.iterrows():
-            if edate.date() == today:
+            if edate == today:
                 reporting_today.add(ticker)
 
             surprise_val = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
@@ -69,33 +56,25 @@ for ticker in tickers:
             rpt_eps = f"{row.get('Reported EPS'):.2f}" if pd.notna(row.get('Reported EPS')) else "-"
             past_rows.append([ticker, edate.date().isoformat(), eps_est, rpt_eps, surprise_val, surprise_html])
 
-        # All future earnings from real current date
-        future = df.loc[df.index > true_today]
-        if not future.empty:
-            for fdate in future.index:
-                future_date = fdate.date() if isinstance(fdate, pd.Timestamp) else fdate
-                upcoming_rows.append((ticker, future_date))
-            logging.info(f"  Upcoming count: {len(future)}")
-        else:
-            logging.info("  No upcoming earnings")
+        future = df.loc[df.index > today]
+        for fdate in future.index:
+            upcoming_rows.append((ticker, fdate.normalize()))
+        logging.info(f"  Upcoming count: {len(future)}")
 
     except Exception as e:
         logging.error(f"General error processing {ticker}: {e}")
 
 logging.info(f"=== FINISHED COLLECTION: {len(past_rows)} past rows, {len(upcoming_rows)} upcoming rows ===")
 
-# ---------- Past Earnings HTML ----------
+# Past earnings HTML
 if past_rows:
-    dfp = pd.DataFrame(past_rows, columns=[
-        'Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS',
-        'Surprise Value', 'Surprise HTML'
-    ])
+    dfp = pd.DataFrame(past_rows, columns=['Ticker', 'Earnings Date', 'EPS Estimate', 'Reported EPS', 'Surprise Value', 'Surprise HTML'])
     dfp['Earnings Date'] = pd.to_datetime(dfp['Earnings Date'])
     dfp['Surprise Value'] = pd.to_numeric(dfp['Surprise Value'], errors='coerce')
     dfp.sort_values('Earnings Date', ascending=False, inplace=True)
 
-    note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
-    reporting_html = f"<p><strong>Reporting Today (based on last weekday):</strong> {', '.join(sorted(reporting_today))}</p>" if reporting_today else ""
+    note = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
+    reporting_html = f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>" if reporting_today else ""
 
     beats = dfp.nlargest(5, 'Surprise Value')
     misses = dfp.nsmallest(5, 'Surprise Value')
@@ -121,7 +100,7 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# ---------- Upcoming Earnings HTML (Toggle + Highlighting) ----------
+# Upcoming earnings HTML
 if upcoming_rows:
     df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
     df_up['Date'] = pd.to_datetime(df_up['Date'])
@@ -150,31 +129,32 @@ if upcoming_rows:
     """
 
     for i in range(half):
-        l = left.iloc[i] if i < len(left) else {'Ticker': '', 'Date': ''}
-        r = right.iloc[i] if i < len(right) else {'Ticker': '', 'Date': ''}
+        l = left.iloc[i] if i < len(left) else {'Ticker': '', 'Date': pd.NaT}
+        r = right.iloc[i] if i < len(right) else {'Ticker': '', 'Date': pd.NaT}
 
         def classify(row_date):
-            d = row_date.date() if isinstance(row_date, pd.Timestamp) else row_date
-            if d == true_today:
+            if pd.isna(row_date):
+                return 'long-term'
+            d = row_date.date()
+            if d == today.date():
                 return 'reporting-today'
-            elif d <= three_days_out:
+            elif d <= three_days_out.date():
                 return 'near-term'
             else:
                 return 'long-term'
 
-        l_class = classify(l['Date']) if isinstance(l, pd.Series) else ''
-        r_class = classify(r['Date']) if isinstance(r, pd.Series) else ''
-        row_class = 'long-term'
-        if 'reporting-today' in (l_class, r_class):
-            row_class = 'reporting-today'
-        elif 'near-term' in (l_class, r_class):
-            row_class = 'near-term'
+        l_class = classify(l['Date'])
+        r_class = classify(r['Date'])
+        row_class = 'reporting-today' if 'reporting-today' in (l_class, r_class) else 'near-term' if 'near-term' in (l_class, r_class) else 'long-term'
 
         display_style = '' if row_class in ('near-term', 'reporting-today') else ' style="display:none;"'
         bg_color = ' style="background-color:#fff3b0;"' if row_class == 'reporting-today' else ''
 
+        l_date_str = l['Date'].date() if pd.notna(l['Date']) else ''
+        r_date_str = r['Date'].date() if pd.notna(r['Date']) else ''
+
         html += f"<tr class='{row_class}'{display_style}{bg_color}>"
-        html += f"<td>{l['Ticker']}</td><td>{l['Date'].date()}</td><td>{r['Ticker']}</td><td>{r['Date'].date()}</td></tr>"
+        html += f"<td>{l['Ticker']}</td><td>{l_date_str}</td><td>{r['Ticker']}</td><td>{r_date_str}</td></tr>"
 
     html += "</tbody></table>"
 
