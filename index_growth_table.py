@@ -20,36 +20,43 @@ import yfinance as yf
 
 
 def fetch_trailing_pe(ticker, retries=3, delay=1):
-    """
-    Returns trailing P/E for ticker, retrying if None,
-    and falling back to price/EPS if necessary.
-    """
     for attempt in range(1, retries + 1):
         try:
             stock = yf.Ticker(ticker)
+
+            # First try info['trailingPE']
             info = stock.info or {}
             pe = info.get('trailingPE')
-            if pe is not None:
+            if pe:
                 return pe
 
-            # Fallback: compute PE from price & EPS
+            # Fallback to calculated PE
             price = info.get('previousClose') or info.get('regularMarketPrice')
             eps = info.get('trailingEps')
-            if price is not None and eps is not None:
+
+            # If info failed, try fast_info for price
+            if price is None:
+                price = getattr(stock, 'fast_info', {}).get('lastPrice')
+
+            if eps is None:
+                try:
+                    eps = stock.earnings.iloc[-1]['Earnings']  # From historical earnings
+                except Exception:
+                    eps = None
+
+            if price and eps:
                 computed = price / eps
                 print(f"[Fallback] {ticker} PE = {price:.2f} / {eps:.2f} = {computed:.2f}")
                 return computed
 
-            # Debug: show what keys were returned
-            print(f"Attempt {attempt} for {ticker}: no trailingPE. Keys: {list(info.keys())}")
+            print(f"Attempt {attempt} failed for {ticker}. No P/E data. Keys in info: {list(info.keys())}")
 
         except Exception as e:
-            print(f"Error fetching {ticker} (attempt {attempt}): {e}")
+            print(f"[Error] Fetching P/E for {ticker} (Attempt {attempt}): {e}")
 
-        if attempt < retries:
-            time.sleep(delay)
+        time.sleep(delay)
 
-    print(f"Failed to fetch trailingPE for {ticker} after {retries} tries")
+    print(f"[Failed] Could not get P/E for {ticker} after {retries} attempts.")
     return None
 
 

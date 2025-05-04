@@ -77,7 +77,7 @@ if past_rows:
     reporting_html = f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>" if reporting_today else ""
 
     beats = dfp.nlargest(5, 'Surprise Value')
-    misses = dfp.nsmallest(5, 'Surprise Value')
+    misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
     summary_html = (
         "<h3>Top 5 Earnings Beats</h3><ul>"
         + "".join(f"<li>{r['Ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in beats.iterrows())
