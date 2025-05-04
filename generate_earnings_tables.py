@@ -18,16 +18,14 @@ tz_cache_dir = os.path.join(OUTPUT_DIR, 'tz_cache')
 os.makedirs(tz_cache_dir, exist_ok=True)
 yf.set_tz_cache_location(tz_cache_dir)
 
-# ——— Date boundaries with weekend fallback ———
-true_today = datetime.now().date()
-if true_today.weekday() == 5:  # Saturday
-    today = true_today - timedelta(days=1)
-elif true_today.weekday() == 6:  # Sunday
-    today = true_today - timedelta(days=2)
-else:
-    today = true_today
+# ——— Date boundaries ———
+today = datetime.now().date()
 seven_days_ago = today - timedelta(days=7)
-three_days_out = true_today + timedelta(days=3)  # Still use real date for future
+three_days_out = today + timedelta(days=3)
+
+true_today = pd.to_datetime(today)  # Convert to datetime for comparison
+true_seven_days_ago = pd.to_datetime(seven_days_ago)
+true_three_days_out = pd.to_datetime(three_days_out)
 
 # ——— Load and normalize tickers ———
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
@@ -36,8 +34,7 @@ past_rows = []
 upcoming_rows = []
 reporting_today = set()
 
-logging.info(f"=== STARTING COLLECTION ===")
-logging.info(f"Using today = {today}, true_today = {true_today}, 3 days out = {three_days_out}")
+logging.info("=== STARTING COLLECTION ===")
 
 for ticker in tickers:
     logging.info(f"Processing {ticker}")
@@ -57,7 +54,7 @@ for ticker in tickers:
         df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
 
         # Past earnings within range
-        recent = df.loc[seven_days_ago:today]
+        recent = df.loc[(df.index >= true_seven_days_ago) & (df.index <= true_today)]
         for edate, row in recent.iterrows():
             if edate.date() == today:
                 reporting_today.add(ticker)
@@ -69,7 +66,7 @@ for ticker in tickers:
             rpt_eps = f"{row.get('Reported EPS'):.2f}" if pd.notna(row.get('Reported EPS')) else "-"
             past_rows.append([ticker, edate.date().isoformat(), eps_est, rpt_eps, surprise_val, surprise_html])
 
-        # All future earnings from real current date
+        # All future earnings
         future = df.loc[df.index > true_today]
         if not future.empty:
             for fdate in future.index:
@@ -95,7 +92,7 @@ if past_rows:
     dfp.sort_values('Earnings Date', ascending=False, inplace=True)
 
     note = f"<p>Showing earnings from {seven_days_ago} to {today}.</p>"
-    reporting_html = f"<p><strong>Reporting Today (based on last weekday):</strong> {', '.join(sorted(reporting_today))}</p>" if reporting_today else ""
+    reporting_html = f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>" if reporting_today else ""
 
     beats = dfp.nlargest(5, 'Surprise Value')
     misses = dfp.nsmallest(5, 'Surprise Value')
@@ -121,7 +118,7 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# ---------- Upcoming Earnings HTML (Toggle + Highlighting) ----------
+# ---------- Upcoming Earnings HTML (with Toggle and Highlighting) ----------
 if upcoming_rows:
     df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
     df_up['Date'] = pd.to_datetime(df_up['Date'])
@@ -155,7 +152,7 @@ if upcoming_rows:
 
         def classify(row_date):
             d = row_date.date() if isinstance(row_date, pd.Timestamp) else row_date
-            if d == true_today:
+            if d == today:
                 return 'reporting-today'
             elif d <= three_days_out:
                 return 'near-term'
