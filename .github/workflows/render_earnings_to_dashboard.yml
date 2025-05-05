@@ -2,7 +2,6 @@ name: Generate Earnings and Rebuild Homepage
 
 on:
   schedule:
-    - cron: '30 13 * * *'  # 9:30 AM ET
     - cron: '0 22 * * *'   # 6:00 PM ET
   workflow_dispatch:
 
