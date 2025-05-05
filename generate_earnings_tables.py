@@ -19,10 +19,9 @@ DB_PATH = os.path.join(OUTPUT_DIR, 'earnings.db')
 PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
 UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
+# Connect & ensure tables
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
-
-# Create tables if they don’t exist
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS earnings_past (
     ticker TEXT,
@@ -47,7 +46,7 @@ CREATE TABLE IF NOT EXISTS earnings_upcoming (
 today             = pd.to_datetime(datetime.now().date())
 seven_days_ago    = today - pd.Timedelta(days=7)
 three_days_out    = today + pd.Timedelta(days=3)
-three_months_out  = today + DateOffset(months=3)
+ninety_days_out   = today + pd.Timedelta(days=90)
 
 tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
 
@@ -88,8 +87,8 @@ for ticker in tickers:
                 datetime.utcnow().isoformat()
             ))
 
-        # Upcoming earnings (only next 3 months)
-        future = df[(df.index > today) & (df.index <= three_months_out)]
+        # Upcoming earnings (only next 90 days)
+        future = df[(df.index > today) & (df.index <= ninety_days_out)]
         for fdate in future.index:
             upcoming_rows.append((ticker, fdate.date()))
             cursor.execute('''
@@ -105,7 +104,7 @@ for ticker in tickers:
     except Exception as e:
         logging.error(f"Error processing {ticker}: {e}")
 
-# Save to DB
+# Commit & close DB
 conn.commit()
 conn.close()
 
@@ -164,14 +163,16 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# --- Render Upcoming Earnings HTML ---
+# --- Render Upcoming Earnings HTML (next 90 days only) ---
 if upcoming_rows:
     df_up = pd.DataFrame(upcoming_rows, columns=['Ticker','Date'])
     df_up['Date'] = pd.to_datetime(df_up['Date'])
+    # Filter & sort
+    df_up = df_up[(df_up['Date'] > today) & (df_up['Date'] <= ninety_days_out)]
     df_up.sort_values('Date', inplace=True)
 
-    half = (len(df_up)+1)//2
-    left, right = df_up.iloc[:half], df_up.iloc[half:]
+    # Group into pairs for row‑wise two‑column display
+    rows = [df_up.iloc[i:i+2] for i in range(0, len(df_up), 2)]
 
     html = """
     <script>
@@ -186,7 +187,7 @@ if upcoming_rows:
         btn.dataset.state = showingAll ? 'short' : 'all';
     }
     </script>
-    <button id="toggle-btn" onclick="toggleEarnings()" data-state="short" style="margin: 10px 0;">
+    <button id="toggle-btn" onclick="toggleEarnings()" data-state="short" style="margin:10px 0;">
       Show All Upcoming Earnings
     </button>
     <table class='center-table'>
@@ -194,33 +195,34 @@ if upcoming_rows:
       <tbody>
     """
 
-    for i in range(half):
-        l = left.iloc[i] if i < len(left) else {'Ticker':'','Date':pd.NaT}
-        r = right.iloc[i] if i < len(right) else {'Ticker':'','Date':pd.NaT}
+    for pair in rows:
+        l = pair.iloc[0]
+        r = pair.iloc[1] if len(pair)>1 else {'Ticker':'','Date':pd.NaT}
 
         def classify(d):
             if pd.isna(d): return 'long-term'
-            d0 = d.date()
-            if d0 == today.date(): return 'reporting-today'
-            elif d0 <= three_days_out.date(): return 'near-term'
-            return ' long-term'
+            dt = d.date()
+            if dt == today.date():        return 'reporting-today'
+            elif dt <= three_days_out.date(): return 'near-term'
+            else:                         return 'long-term'
 
-        l_class = classify(l['Date'])
-        r_class = classify(r['Date'])
-        row_class = (
-            'reporting-today' if 'reporting-today' in (l_class,r_class)
-            else 'near-term'    if 'near-term'    in (l_class,r_class)
-            else 'long-term'
-        )
+        l_class = classify(l['Date']); r_class = classify(r['Date'])
+        row_class = ('reporting-today' if 'reporting-today' in (l_class,r_class)
+                     else 'near-term'    if 'near-term'    in (l_class,r_class)
+                     else 'long-term')
+
         style = '' if row_class in ('near-term','reporting-today') else ' style="display:none;"'
         bg    = ' style="background-color:#fff3b0;"' if row_class=='reporting-today' else ''
 
         l_date = l['Date'].date() if pd.notna(l['Date']) else ''
         r_date = r['Date'].date() if pd.notna(r['Date']) else ''
 
-        html += f"<tr class='{row_class}'{style}{bg}>"
-        html += f"<td>{l['Ticker']}</td><td>{l_date}</td>"
-        html += f"<td>{r['Ticker']}</td><td>{r_date}</td></tr>"
+        html += (
+            f"<tr class='{row_class}'{style}{bg}>"
+            f"<td>{l['Ticker']}</td><td>{l_date}</td>"
+            f"<td>{r['Ticker']}</td><td>{r_date}</td>"
+            "</tr>"
+        )
 
     html += "</tbody></table>"
 
@@ -228,4 +230,4 @@ if upcoming_rows:
         f.write(html)
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
-        f.write("<p>No upcoming earnings scheduled.</p>")
+        f.write("<p>No upcoming earnings in the next 90 days.</p>")
