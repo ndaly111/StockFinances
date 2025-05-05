@@ -4,8 +4,7 @@ import os
 import sqlite3
 import logging
 import pandas as pd
-from pandas import DateOffset
-from datetime import datetime, timedelta
+from datetime import datetime
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
@@ -43,10 +42,9 @@ CREATE TABLE IF NOT EXISTS earnings_upcoming (
 ''')
 
 # Time references
-today             = pd.to_datetime(datetime.now().date())
-seven_days_ago    = today - pd.Timedelta(days=7)
-three_days_out    = today + pd.Timedelta(days=3)
-ninety_days_out   = today + pd.Timedelta(days=90)
+today           = pd.to_datetime(datetime.now().date())
+seven_days_ago  = today - pd.Timedelta(days=7)
+ninety_days_out = today + pd.Timedelta(days=90)
 
 tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
 
@@ -62,7 +60,7 @@ for ticker in tickers:
         if df is None or df.empty:
             continue
 
-        # normalize index to dates only
+        # normalize index
         df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
 
         # Past earnings (last 7 days)
@@ -124,7 +122,7 @@ if not dfp.empty:
     )
     dfp.sort_values('earnings_date', ascending=False, inplace=True)
 
-    note          = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
+    note           = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
     reporting_html = (
         f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>"
         if reporting_today else ""
@@ -134,9 +132,11 @@ if not dfp.empty:
     misses= dfp[dfp['Surprise Value']<0].nsmallest(5, 'Surprise Value')
     summary_html = (
         "<h3>Top 5 Earnings Beats</h3><ul>"
-        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _,r in beats.iterrows())
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" 
+                  for _, r in beats.iterrows())
         + "</ul><h3>Top 5 Earnings Misses</h3><ul>"
-        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _,r in misses.iterrows())
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" 
+                  for _, r in misses.iterrows())
         + "</ul>"
     )
 
@@ -163,7 +163,7 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# --- Render Upcoming Earnings HTML (next 90 days only) ---
+# --- Render Upcoming Earnings HTML (grouped by date) ---
 if upcoming_rows:
     df_up = pd.DataFrame(upcoming_rows, columns=['Ticker','Date'])
     df_up['Date'] = pd.to_datetime(df_up['Date'])
@@ -171,63 +171,17 @@ if upcoming_rows:
     df_up = df_up[(df_up['Date'] > today) & (df_up['Date'] <= ninety_days_out)]
     df_up.sort_values('Date', inplace=True)
 
-    # Group into pairs for row‑wise two‑column display
-    rows = [df_up.iloc[i:i+2] for i in range(0, len(df_up), 2)]
-
-    html = """
-    <script>
-    function toggleEarnings() {
-        const btn = document.getElementById('toggle-btn');
-        const longRows = document.querySelectorAll('.long-term');
-        const showingAll = btn.dataset.state === 'all';
-        longRows.forEach(row => {
-            row.style.display = showingAll ? 'none' : 'table-row';
-        });
-        btn.textContent = showingAll ? 'Show All Upcoming Earnings' : 'Show Only Next 3 Days';
-        btn.dataset.state = showingAll ? 'short' : 'all';
-    }
-    </script>
-    <button id="toggle-btn" onclick="toggleEarnings()" data-state="short" style="margin:10px 0;">
-      Show All Upcoming Earnings
-    </button>
-    <table class='center-table'>
-      <thead><tr><th>Ticker</th><th>Date</th><th>Ticker</th><th>Date</th></tr></thead>
-      <tbody>
-    """
-
-    for pair in rows:
-        l = pair.iloc[0]
-        r = pair.iloc[1] if len(pair)>1 else {'Ticker':'','Date':pd.NaT}
-
-        def classify(d):
-            if pd.isna(d): return 'long-term'
-            dt = d.date()
-            if dt == today.date():        return 'reporting-today'
-            elif dt <= three_days_out.date(): return 'near-term'
-            else:                         return 'long-term'
-
-        l_class = classify(l['Date']); r_class = classify(r['Date'])
-        row_class = ('reporting-today' if 'reporting-today' in (l_class,r_class)
-                     else 'near-term'    if 'near-term'    in (l_class,r_class)
-                     else 'long-term')
-
-        style = '' if row_class in ('near-term','reporting-today') else ' style="display:none;"'
-        bg    = ' style="background-color:#fff3b0;"' if row_class=='reporting-today' else ''
-
-        l_date = l['Date'].date() if pd.notna(l['Date']) else ''
-        r_date = r['Date'].date() if pd.notna(r['Date']) else ''
-
-        html += (
-            f"<tr class='{row_class}'{style}{bg}>"
-            f"<td>{l['Ticker']}</td><td>{l_date}</td>"
-            f"<td>{r['Ticker']}</td><td>{r_date}</td>"
-            "</tr>"
-        )
-
-    html += "</tbody></table>"
+    # Group by date and render
+    html = ""
+    for date, group in df_up.groupby(df_up['Date'].dt.date):
+        html += f"<h3>{date}</h3><ul>"
+        for _, row in group.iterrows():
+            html += f"<li>{row['Ticker']}</li>"
+        html += "</ul>"
 
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(html)
+
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No upcoming earnings in the next 90 days.</p>")
