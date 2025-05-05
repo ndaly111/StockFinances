@@ -301,7 +301,10 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, sp
     earnings_upcoming_html = get_file_content_or_placeholder("charts/earnings_upcoming.html")
 
     create_home_page(
-        tickers, '.', full_dashboard_html, avg_values,
+        tickers=tickers,
+        output_dir='.',
+        dashboard_html=full_dashboard_html,
+        avg_values=avg_values,
         spy_qqq_growth_html=spy_qqq_growth_html,
         earnings_past_html=earnings_past_html,
         earnings_upcoming_html=earnings_upcoming_html
