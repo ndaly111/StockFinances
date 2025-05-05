@@ -4,6 +4,7 @@ import os
 import sqlite3
 import logging
 import pandas as pd
+from pandas import DateOffset
 from datetime import datetime, timedelta
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
@@ -21,7 +22,7 @@ UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 
-# Create tables
+# Create tables if they don’t exist
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS earnings_past (
     ticker TEXT,
@@ -33,7 +34,6 @@ CREATE TABLE IF NOT EXISTS earnings_past (
     PRIMARY KEY (ticker, earnings_date)
 )
 ''')
-
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS earnings_upcoming (
     ticker TEXT,
@@ -44,14 +44,15 @@ CREATE TABLE IF NOT EXISTS earnings_upcoming (
 ''')
 
 # Time references
-today = pd.to_datetime(datetime.now().date())
-seven_days_ago = today - pd.Timedelta(days=7)
-three_days_out = today + pd.Timedelta(days=3)
+today             = pd.to_datetime(datetime.now().date())
+seven_days_ago    = today - pd.Timedelta(days=7)
+three_days_out    = today + pd.Timedelta(days=3)
+three_months_out  = today + DateOffset(months=3)
 
 tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
 
 reporting_today = set()
-upcoming_rows = []
+upcoming_rows   = []
 
 # Collect data
 for ticker in tickers:
@@ -61,18 +62,22 @@ for ticker in tickers:
         df = stock.get_earnings_dates(limit=30)
         if df is None or df.empty:
             continue
+
+        # normalize index to dates only
         df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
 
-        # Past earnings
+        # Past earnings (last 7 days)
         recent = df[(df.index >= seven_days_ago) & (df.index <= today)]
         for edate, row in recent.iterrows():
             surprise = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
-            eps_est = row.get('EPS Estimate')
-            rpt_eps = row.get('Reported EPS')
+            eps_est  = row.get('EPS Estimate')
+            rpt_eps  = row.get('Reported EPS')
             if edate == today:
                 reporting_today.add(ticker)
+
             cursor.execute('''
-                INSERT OR REPLACE INTO earnings_past (ticker, earnings_date, eps_estimate, reported_eps, surprise_percent, timestamp)
+                INSERT OR REPLACE INTO earnings_past 
+                  (ticker, earnings_date, eps_estimate, reported_eps, surprise_percent, timestamp)
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (
                 ticker,
@@ -83,12 +88,13 @@ for ticker in tickers:
                 datetime.utcnow().isoformat()
             ))
 
-        # Upcoming earnings
-        future = df[df.index > today]
+        # Upcoming earnings (only next 3 months)
+        future = df[(df.index > today) & (df.index <= three_months_out)]
         for fdate in future.index:
             upcoming_rows.append((ticker, fdate.date()))
             cursor.execute('''
-                INSERT OR REPLACE INTO earnings_upcoming (ticker, earnings_date, timestamp)
+                INSERT OR REPLACE INTO earnings_upcoming 
+                  (ticker, earnings_date, timestamp)
                 VALUES (?, ?, ?)
             ''', (
                 ticker,
@@ -99,46 +105,55 @@ for ticker in tickers:
     except Exception as e:
         logging.error(f"Error processing {ticker}: {e}")
 
+# Save to DB
 conn.commit()
 conn.close()
 
-# Render Past Earnings HTML
+# --- Render Past Earnings HTML ---
 conn = sqlite3.connect(DB_PATH)
-dfp = pd.read_sql_query(f'''
+dfp = pd.read_sql_query(f"""
 SELECT * FROM earnings_past
 WHERE earnings_date BETWEEN '{seven_days_ago.date()}' AND '{today.date()}'
-''', conn, parse_dates=['earnings_date'])
+""", conn, parse_dates=['earnings_date'])
 conn.close()
 
 if not dfp.empty:
     dfp['Surprise Value'] = pd.to_numeric(dfp['surprise_percent'], errors='coerce')
-    dfp['Surprise HTML'] = dfp['Surprise Value'].apply(lambda x: f'<span class="{"positive" if x > 0 else "negative" if x < 0 else ""}">{x:+.2f}%</span>' if pd.notna(x) else "-")
+    dfp['Surprise HTML'] = dfp['Surprise Value'].apply(
+        lambda x: f'<span class="{"positive" if x>0 else "negative" if x<0 else ""}">{x:+.2f}%</span>'
+                 if pd.notna(x) else "-"
+    )
     dfp.sort_values('earnings_date', ascending=False, inplace=True)
 
-    note = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
-    reporting_html = f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>" if reporting_today else ""
+    note          = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
+    reporting_html = (
+        f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>"
+        if reporting_today else ""
+    )
 
     beats = dfp.nlargest(5, 'Surprise Value')
-    misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
+    misses= dfp[dfp['Surprise Value']<0].nsmallest(5, 'Surprise Value')
     summary_html = (
         "<h3>Top 5 Earnings Beats</h3><ul>"
-        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in beats.iterrows())
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _,r in beats.iterrows())
         + "</ul><h3>Top 5 Earnings Misses</h3><ul>"
-        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in misses.iterrows())
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _,r in misses.iterrows())
         + "</ul>"
     )
 
-    dfp_display = dfp[['ticker', 'earnings_date', 'eps_estimate', 'reported_eps', 'Surprise HTML']].rename(columns={
-        'ticker': 'Ticker',
-        'earnings_date': 'Earnings Date',
-        'eps_estimate': 'EPS Estimate',
-        'reported_eps': 'Reported EPS',
-        'Surprise HTML': 'Surprise'
+    dfp_display = dfp[['ticker','earnings_date','eps_estimate','reported_eps','Surprise HTML']].rename(columns={
+        'ticker':'Ticker','earnings_date':'Earnings Date',
+        'eps_estimate':'EPS Estimate','reported_eps':'Reported EPS',
+        'Surprise HTML':'Surprise'
     })
 
-    head_html = dfp_display.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
+    head_html = dfp_display.head(10).to_html(
+        escape=False, index=False, classes='center-table', border=0
+    )
     if len(dfp_display) > 10:
-        rest_html = dfp_display.iloc[10:].to_html(escape=False, index=False, classes='center-table', border=0)
+        rest_html = dfp_display.iloc[10:].to_html(
+            escape=False, index=False, classes='center-table', border=0
+        )
         table_html = head_html + f"<details><summary>Show More</summary>{rest_html}</details>"
     else:
         table_html = head_html
@@ -149,13 +164,13 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# Render Upcoming Earnings HTML
+# --- Render Upcoming Earnings HTML ---
 if upcoming_rows:
-    df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
+    df_up = pd.DataFrame(upcoming_rows, columns=['Ticker','Date'])
     df_up['Date'] = pd.to_datetime(df_up['Date'])
     df_up.sort_values('Date', inplace=True)
 
-    half = (len(df_up) + 1) // 2
+    half = (len(df_up)+1)//2
     left, right = df_up.iloc[:half], df_up.iloc[half:]
 
     html = """
@@ -171,33 +186,41 @@ if upcoming_rows:
         btn.dataset.state = showingAll ? 'short' : 'all';
     }
     </script>
-    <button id="toggle-btn" onclick="toggleEarnings()" data-state="short" style="margin: 10px 0;">Show All Upcoming Earnings</button>
+    <button id="toggle-btn" onclick="toggleEarnings()" data-state="short" style="margin: 10px 0;">
+      Show All Upcoming Earnings
+    </button>
     <table class='center-table'>
-        <thead><tr><th>Ticker</th><th>Date</th><th>Ticker</th><th>Date</th></tr></thead>
-        <tbody>
+      <thead><tr><th>Ticker</th><th>Date</th><th>Ticker</th><th>Date</th></tr></thead>
+      <tbody>
     """
 
     for i in range(half):
-        l = left.iloc[i] if i < len(left) else {'Ticker': '', 'Date': pd.NaT}
-        r = right.iloc[i] if i < len(right) else {'Ticker': '', 'Date': pd.NaT}
+        l = left.iloc[i] if i < len(left) else {'Ticker':'','Date':pd.NaT}
+        r = right.iloc[i] if i < len(right) else {'Ticker':'','Date':pd.NaT}
 
-        def classify(row_date):
-            if pd.isna(row_date): return 'long-term'
-            d = row_date.date()
-            if d == today.date(): return 'reporting-today'
-            elif d <= three_days_out.date(): return 'near-term'
-            return 'long-term'
+        def classify(d):
+            if pd.isna(d): return 'long-term'
+            d0 = d.date()
+            if d0 == today.date(): return 'reporting-today'
+            elif d0 <= three_days_out.date(): return 'near-term'
+            return ' long-term'
 
         l_class = classify(l['Date'])
         r_class = classify(r['Date'])
-        row_class = 'reporting-today' if 'reporting-today' in (l_class, r_class) else 'near-term' if 'near-term' in (l_class, r_class) else 'long-term'
-        display_style = '' if row_class in ('near-term', 'reporting-today') else ' style="display:none;"'
-        bg_color = ' style="background-color:#fff3b0;"' if row_class == 'reporting-today' else ''
+        row_class = (
+            'reporting-today' if 'reporting-today' in (l_class,r_class)
+            else 'near-term'    if 'near-term'    in (l_class,r_class)
+            else 'long-term'
+        )
+        style = '' if row_class in ('near-term','reporting-today') else ' style="display:none;"'
+        bg    = ' style="background-color:#fff3b0;"' if row_class=='reporting-today' else ''
 
-        l_date_str = l['Date'].date() if pd.notna(l['Date']) else ''
-        r_date_str = r['Date'].date() if pd.notna(r['Date']) else ''
+        l_date = l['Date'].date() if pd.notna(l['Date']) else ''
+        r_date = r['Date'].date() if pd.notna(r['Date']) else ''
 
-        html += f"<tr class='{row_class}'{display_style}{bg_color}><td>{l['Ticker']}</td><td>{l_date_str}</td><td>{r['Ticker']}</td><td>{r_date_str}</td></tr>"
+        html += f"<tr class='{row_class}'{style}{bg}>"
+        html += f"<td>{l['Ticker']}</td><td>{l_date}</td>"
+        html += f"<td>{r['Ticker']}</td><td>{r_date}</td></tr>"
 
     html += "</tbody></table>"
 
