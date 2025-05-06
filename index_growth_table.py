@@ -2,73 +2,102 @@
 """
 Module: index_growth_table.py
 
-This module fetches the trailing P/E ratio for SPY and QQQ,
-automatically retrieves the current 10-year treasury yield if none is provided,
-calculates their implied growth using a custom formula, and
-generates an HTML table displaying these metrics.
-
-Functions:
-    - fetch_trailing_pe(ticker): Returns the trailing P/E ratio for a given ticker.
-    - fetch_treasury_yield(): Retrieves the current 10-year treasury yield from Yahoo Finance.
-    - compute_implied_growth(pe_ratio, treasury_yield): Calculates the implied growth.
-    - create_table_row(ticker, pe_ratio, implied_growth): Returns an HTML row for the ticker.
-    - index_growth(treasury_yield=None): Returns the full HTML table for SPY and QQQ.
+Fetches trailing P/E ratios for SPY and QQQ, caches them in stock data.db,
+retrieves the 10‑year Treasury yield, computes implied growth,
+and writes an HTML table to charts/spy_qqq_growth.html.
 """
 
+import os
 import time
+import sqlite3
 import yfinance as yf
+from datetime import datetime
+
+# Path to your actual database file
+DB_PATH = "stock data.db"
+
+# Ensure the cache table exists in stock data.db
+with sqlite3.connect(DB_PATH) as conn:
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS pe_cache (
+            ticker    TEXT PRIMARY KEY,
+            pe        REAL,
+            timestamp TEXT
+        )
+    ''')
+    conn.commit()
 
 
 def fetch_trailing_pe(ticker, retries=3, delay=1):
+    now = datetime.utcnow()
+    # 1) Check cache
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute("SELECT pe, timestamp FROM pe_cache WHERE ticker = ?", (ticker,))
+        row = c.fetchone()
+        if row:
+            pe_cached, ts = row
+            try:
+                if datetime.fromisoformat(ts).date() == now.date():
+                    return pe_cached
+            except Exception:
+                pass
+
+    # 2) Fetch from yfinance
+    pe = None
     for attempt in range(1, retries + 1):
         try:
             stock = yf.Ticker(ticker)
-
-            # First try info['trailingPE']
             info = stock.info or {}
-            pe = info.get('trailingPE')
+
+            pe = info.get("trailingPE")
             if pe:
-                return pe
+                break
 
-            # Fallback to calculated PE
-            price = info.get('previousClose') or info.get('regularMarketPrice')
-            eps = info.get('trailingEps')
-
-            # If info failed, try fast_info for price
+            price = info.get("previousClose") or info.get("regularMarketPrice")
+            eps   = info.get("trailingEps")
             if price is None:
-                price = getattr(stock, 'fast_info', {}).get('lastPrice')
-
+                price = getattr(stock, "fast_info", {}).get("lastPrice")
             if eps is None:
                 try:
-                    eps = stock.earnings.iloc[-1]['Earnings']  # From historical earnings
+                    eps = stock.quarterly_earnings["Earnings"].iloc[-1]
                 except Exception:
                     eps = None
 
             if price and eps:
-                computed = price / eps
-                print(f"[Fallback] {ticker} PE = {price:.2f} / {eps:.2f} = {computed:.2f}")
-                return computed
+                pe = price / eps
+                break
 
-            print(f"Attempt {attempt} failed for {ticker}. No P/E data. Keys in info: {list(info.keys())}")
-
+            print(f"[Attempt {attempt}] No P/E for {ticker}; info keys: {list(info.keys())}")
         except Exception as e:
-            print(f"[Error] Fetching P/E for {ticker} (Attempt {attempt}): {e}")
+            print(f"[Error][Attempt {attempt}] fetching P/E for {ticker}: {e}")
 
         time.sleep(delay)
 
-    print(f"[Failed] Could not get P/E for {ticker} after {retries} attempts.")
-    return None
+    if pe is None:
+        print(f"[Failed] P/E not found for {ticker} after {retries} tries.")
+        return None
+
+    # 3) Cache result
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute('''
+            INSERT OR REPLACE INTO pe_cache (ticker, pe, timestamp)
+            VALUES (?, ?, ?)
+        ''', (ticker, float(pe), now.isoformat()))
+        conn.commit()
+
+    return pe
 
 
 def fetch_treasury_yield():
     try:
-        treasury_ticker = yf.Ticker("^TNX")
-        info = treasury_ticker.info or {}
-        # Yahoo Finance quotes ^TNX as the yield percentage.
-        yield_value = info.get("regularMarketPrice", None)
-        return yield_value
+        info = yf.Ticker("^TNX").info or {}
+        y = info.get("regularMarketPrice")
+        return float(y) / 100 if y is not None else None
     except Exception as e:
-        print(f"Error fetching treasury yield: {e}")
+        print(f"[Error] fetching treasury yield: {e}")
         return None
 
 
@@ -76,52 +105,39 @@ def compute_implied_growth(pe_ratio, treasury_yield):
     if pe_ratio is None or treasury_yield is None:
         return None
     try:
-        # treasury_yield is expected as a decimal (e.g. 0.0388 for 3.88%)
-        implied_growth = ((pe_ratio / 10) ** (1 / 10)) + treasury_yield - 1
-        return implied_growth
+        return ((pe_ratio / 10) ** (1 / 10)) + treasury_yield - 1
     except Exception as e:
-        print(f"Error calculating implied growth: {e}")
+        print(f"[Error] computing implied growth: {e}")
         return None
 
 
 def create_table_row(ticker, pe_ratio, implied_growth):
-    pe_str = f"{pe_ratio:.1f}" if pe_ratio is not None else "N/A"
+    pe_str     = f"{pe_ratio:.1f}" if pe_ratio is not None else "N/A"
     growth_str = f"{implied_growth * 100:.1f}%" if implied_growth is not None else "N/A"
     return f"<tr><td>{ticker}</td><td>{pe_str}</td><td>{growth_str}</td></tr>"
 
 
 def index_growth(treasury_yield=None):
-    """
-    If a treasury yield is provided, trust and clean it.
-    Otherwise, fetch the treasury yield and fallback to 3.5% if necessary.
-    The final treasury yield is converted to a decimal (e.g., 3.88% -> 0.0388).
-    """
-    if treasury_yield is not None and treasury_yield not in ["N/A", "-", ""]:
-        treasury_yield = float(str(treasury_yield).replace('%', '').strip()) / 100
+    if treasury_yield:
+        treasury_yield = float(str(treasury_yield).strip('%')) / 100
     else:
-        treasury_yield_raw = fetch_treasury_yield()
-        if treasury_yield_raw and str(treasury_yield_raw).strip() not in ["N/A", "-", ""]:
-            treasury_yield = float(str(treasury_yield_raw).replace('%', '').strip()) / 100
-        else:
-            treasury_yield = 0.035  # default fallback for 3.5%
+        treasury_yield = fetch_treasury_yield() or 0.035
 
     tickers = ["SPY", "QQQ"]
     rows = ["<tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr>"]
 
-    for ticker in tickers:
-        pe = fetch_trailing_pe(ticker)
+    for tk in tickers:
+        pe     = fetch_trailing_pe(tk)
         growth = compute_implied_growth(pe, treasury_yield)
-        rows.append(create_table_row(ticker, pe, growth))
+        rows.append(create_table_row(tk, pe, growth))
 
-    table_html = "<table border='1' cellspacing='0' cellpadding='4'>" + "".join(rows) + "</table>"
-    return table_html
+    return "<table border='1' cellspacing='0' cellpadding='4'>" + "".join(rows) + "</table>"
 
 
 if __name__ == "__main__":
-    table = index_growth()
-    import os
     os.makedirs("charts", exist_ok=True)
-    output_file = os.path.join("charts", "spy_qqq_growth.html")
-    with open(output_file, "w") as f:
-        f.write(table)
-    print(f"HTML table for SPY & QQQ growth metrics written to {output_file}")
+    html = index_growth()
+    path = os.path.join("charts", "spy_qqq_growth.html")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"Wrote SPY/QQQ growth table to {path}")
