@@ -13,10 +13,13 @@ import sqlite3
 import yfinance as yf
 from datetime import datetime
 
-# Path to your actual database file
+# Ensure output folder exists
+os.makedirs("charts", exist_ok=True)
+
+# Path to your database in the project root
 DB_PATH = "stock data.db"
 
-# Ensure the cache table exists in stock data.db
+# Create the cache table if missing
 with sqlite3.connect(DB_PATH) as conn:
     c = conn.cursor()
     c.execute('''
@@ -40,9 +43,10 @@ def fetch_trailing_pe(ticker, retries=3, delay=1):
             pe_cached, ts = row
             try:
                 if datetime.fromisoformat(ts).date() == now.date():
+                    print(f"[Cache] {ticker} P/E = {pe_cached:.2f}")
                     return pe_cached
             except Exception:
-                pass
+                pass  # fall through to re-fetch
 
     # 2) Fetch from yfinance
     pe = None
@@ -50,11 +54,11 @@ def fetch_trailing_pe(ticker, retries=3, delay=1):
         try:
             stock = yf.Ticker(ticker)
             info = stock.info or {}
-
             pe = info.get("trailingPE")
             if pe:
                 break
 
+            # Fallback: price / trailingEps
             price = info.get("previousClose") or info.get("regularMarketPrice")
             eps   = info.get("trailingEps")
             if price is None:
@@ -67,19 +71,20 @@ def fetch_trailing_pe(ticker, retries=3, delay=1):
 
             if price and eps:
                 pe = price / eps
+                print(f"[Fallback] {ticker} P/E = {price:.2f}/{eps:.2f} = {pe:.2f}")
                 break
 
-            print(f"[Attempt {attempt}] No P/E for {ticker}; info keys: {list(info.keys())}")
+            print(f"[Attempt {attempt}] No P/E for {ticker}; keys: {list(info.keys())}")
         except Exception as e:
             print(f"[Error][Attempt {attempt}] fetching P/E for {ticker}: {e}")
 
         time.sleep(delay)
 
     if pe is None:
-        print(f"[Failed] P/E not found for {ticker} after {retries} tries.")
+        print(f"[Failed] Could not find P/E for {ticker} after {retries} attempts.")
         return None
 
-    # 3) Cache result
+    # 3) Cache the fresh value
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
         c.execute('''
@@ -87,6 +92,7 @@ def fetch_trailing_pe(ticker, retries=3, delay=1):
             VALUES (?, ?, ?)
         ''', (ticker, float(pe), now.isoformat()))
         conn.commit()
+        print(f"[Cached] {ticker} P/E = {pe:.2f} into {DB_PATH}")
 
     return pe
 
@@ -124,7 +130,7 @@ def index_growth(treasury_yield=None):
         treasury_yield = fetch_treasury_yield() or 0.035
 
     tickers = ["SPY", "QQQ"]
-    rows = ["<tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr>"]
+    rows    = ["<tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr>"]
 
     for tk in tickers:
         pe     = fetch_trailing_pe(tk)
@@ -135,7 +141,6 @@ def index_growth(treasury_yield=None):
 
 
 if __name__ == "__main__":
-    os.makedirs("charts", exist_ok=True)
     html = index_growth()
     path = os.path.join("charts", "spy_qqq_growth.html")
     with open(path, "w", encoding="utf-8") as f:
