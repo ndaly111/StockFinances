@@ -10,13 +10,13 @@ from ticker_manager import read_tickers, modify_tickers
 
 # Setup
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-OUTPUT_DIR = 'charts'
+OUTPUT_DIR        = 'charts'
+DB_PATH           = os.path.join(OUTPUT_DIR, 'earnings.db')
+PAST_HTML_PATH    = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+UPCOMING_HTML_PATH= os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 yf.set_tz_cache_location(os.path.join(OUTPUT_DIR, 'tz_cache'))
-
-DB_PATH = os.path.join(OUTPUT_DIR, 'earnings.db')
-PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
-UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
 # Connect & ensure tables
 conn = sqlite3.connect(DB_PATH)
@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS earnings_upcoming (
 # Time references
 today           = pd.to_datetime(datetime.now().date())
 seven_days_ago  = today - pd.Timedelta(days=7)
+seven_days_out  = today + pd.Timedelta(days=7)
 ninety_days_out = today + pd.Timedelta(days=90)
 
 tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
@@ -56,11 +57,11 @@ for ticker in tickers:
     logging.info(f"Processing {ticker}")
     try:
         stock = yf.Ticker(ticker)
-        df = stock.get_earnings_dates(limit=30)
+        df    = stock.get_earnings_dates(limit=30)
         if df is None or df.empty:
             continue
 
-        # normalize index
+        # normalize index to dates only
         df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
 
         # Past earnings (last 7 days)
@@ -128,21 +129,21 @@ if not dfp.empty:
         if reporting_today else ""
     )
 
-    beats = dfp.nlargest(5, 'Surprise Value')
-    misses= dfp[dfp['Surprise Value']<0].nsmallest(5, 'Surprise Value')
+    beats  = dfp.nlargest(5, 'Surprise Value')
+    misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
     summary_html = (
         "<h3>Top 5 Earnings Beats</h3><ul>"
-        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" 
-                  for _, r in beats.iterrows())
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in beats.iterrows())
         + "</ul><h3>Top 5 Earnings Misses</h3><ul>"
-        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" 
-                  for _, r in misses.iterrows())
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in misses.iterrows())
         + "</ul>"
     )
 
     dfp_display = dfp[['ticker','earnings_date','eps_estimate','reported_eps','Surprise HTML']].rename(columns={
-        'ticker':'Ticker','earnings_date':'Earnings Date',
-        'eps_estimate':'EPS Estimate','reported_eps':'Reported EPS',
+        'ticker':       'Ticker',
+        'earnings_date':'Earnings Date',
+        'eps_estimate': 'EPS Estimate',
+        'reported_eps': 'Reported EPS',
         'Surprise HTML':'Surprise'
     })
 
@@ -163,25 +164,42 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# --- Render Upcoming Earnings HTML (grouped by date) ---
+# --- Render Upcoming Earnings HTML (grouped by date, 7‑day preview + “Show More”) ---
 if upcoming_rows:
     df_up = pd.DataFrame(upcoming_rows, columns=['Ticker','Date'])
     df_up['Date'] = pd.to_datetime(df_up['Date'])
-    # Filter & sort
     df_up = df_up[(df_up['Date'] > today) & (df_up['Date'] <= ninety_days_out)]
     df_up.sort_values('Date', inplace=True)
 
-    # Group by date and render
-    html = ""
+    # split into next 7 days vs. later
+    early = []
+    later = []
     for date, group in df_up.groupby(df_up['Date'].dt.date):
+        if pd.to_datetime(date) <= seven_days_out:
+            early.append((date, group))
+        else:
+            later.append((date, group))
+
+    html = ""
+    # render next 7 days
+    for date, group in early:
         html += f"<h3>{date}</h3><ul>"
         for _, row in group.iterrows():
             html += f"<li>{row['Ticker']}</li>"
         html += "</ul>"
 
+    # render later dates in a details block
+    if later:
+        html += '<details><summary>Show More Upcoming Earnings</summary>'
+        for date, group in later:
+            html += f"<h3>{date}</h3><ul>"
+            for _, row in group.iterrows():
+                html += f"<li>{row['Ticker']}</li>"
+            html += "</ul>"
+        html += "</details>"
+
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(html)
-
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No upcoming earnings in the next 90 days.</p>")
