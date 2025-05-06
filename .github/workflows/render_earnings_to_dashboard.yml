@@ -2,7 +2,7 @@ name: Generate Earnings and Rebuild Homepage
 
 on:
   schedule:
-    - cron: '13 30 * * *'   # 6:00 PM ET
+    - cron: '30 13 * * *'   # 6:00 PM ET
   workflow_dispatch:
 
 permissions:
