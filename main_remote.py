@@ -1,4 +1,4 @@
-# start of main.py
+# start of main_remote.py
 import os
 import sqlite3
 import ticker_manager
@@ -13,7 +13,7 @@ from balance_sheet_data_fetcher import (
     store_fetched_balance_sheet_data
 )
 from balancesheet_chart import (
-    fetch_balance_sheet_data as _fs,  # avoid name clash
+    fetch_balance_sheet_data as _fs,
     plot_chart,
     format_value,
     create_and_save_table
@@ -27,12 +27,12 @@ import requests
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 
-# ←— NEW: import your earnings generator
+# NEW: correctly import your working script
 from generate_earnings_tables import generate_earnings_tables
 
 # Constants
 TICKERS_FILE_PATH     = 'tickers.csv'
-DB_PATH               = 'Stock Data.db'
+DB_PATH               = 'stock data.db'  # corrected name
 file_path             = "update_growth.csv"
 charts_output_dir     = 'charts/'
 is_remote             = True
@@ -96,7 +96,8 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
 def fetch_10_year_treasury_yield():
     url = "https://fred.stlouisfed.org/series/GS10"
     try:
-        r = requests.get(url); r.raise_for_status()
+        r = requests.get(url)
+        r.raise_for_status()
         soup = BeautifulSoup(r.content, 'html.parser')
         span = soup.find("span", class_="series-meta-observation-value")
         return span.text.strip() if span else "N/A"
@@ -104,7 +105,7 @@ def fetch_10_year_treasury_yield():
         return "N/A"
 
 def main():
-    # 0. Prep
+    # Step 0: Prep
     treasury_yield = fetch_10_year_treasury_yield()
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
     conn = establish_database_connection(DB_PATH)
@@ -116,7 +117,7 @@ def main():
         cur = conn.cursor()
         process_update_growth_csv(file_path, DB_PATH)
 
-        # 1. Per‐ticker pipelines
+        # Step 1: Per-ticker processing
         for ticker in tickers:
             annual_and_ttm_update(ticker, DB_PATH)
             fetch_and_update_balance_sheet_data(ticker, cur)
@@ -127,21 +128,25 @@ def main():
             generate_html_table(prep_data, ticker)
             valuation_update(ticker, cur, treasury_yield, marketcap, dashboard_data)
 
-        # 2. Dashboard table + averages
+        # Step 2: Create dashboard table
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
 
-        # 3. SPY/QQQ growth
+        # Step 3: SPY/QQQ growth HTML
         from index_growth_table import index_growth
         spy_qqq_html = index_growth(treasury_yield)
 
-        # ←— NEW: generate earnings HTML fragments
-        generate_earnings_tables()
+        # Step 4: Generate earnings tables BEFORE page render
+        generate_earnings_tables(
+            tickers_file=TICKERS_FILE_PATH,
+            db_path=DB_PATH,
+            output_dir=charts_output_dir
+        )
 
-        # 4. Final page assembly
+        # Step 5: Final HTML output
         html_generator2(
             tickers,
-            {},  # financial_data not used by html2
+            {},  # financial_data unused
             full_dashboard_html,
             avg_values,
             spy_qqq_html
