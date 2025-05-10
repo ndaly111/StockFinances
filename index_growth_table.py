@@ -11,7 +11,7 @@ from ticker_manager import read_tickers, modify_tickers
 # Setup
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 OUTPUT_DIR = 'charts'
-DB_PATH = 'Stock Data.db'
+DB_PATH = 'stock data.db'
 PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
 UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
