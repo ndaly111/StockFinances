@@ -5,7 +5,7 @@ import sqlite3
 import yfinance as yf
 
 # Path to the database file
-db_path = 'Stock Data.db'
+db_path = 'stock data.db'
 
 env = Environment(loader=FileSystemLoader('templates'))
 
