@@ -8,50 +8,54 @@ from datetime import datetime
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
-# Setup
+# ——— Setup ———
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-OUTPUT_DIR = 'charts'
-DB_PATH = 'stock data.db'
-PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+OUTPUT_DIR         = 'charts'
+DB_PATH            = 'stock data.db'
+PAST_HTML_PATH     = os.path.join(OUTPUT_DIR, 'earnings_past.html')
 UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 yf.set_tz_cache_location(os.path.join(OUTPUT_DIR, 'tz_cache'))
 
-# Connect & ensure tables
+# ——— Connect & ensure tables ———
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS earnings_past (
-    ticker TEXT,
-    earnings_date TEXT,
-    eps_estimate TEXT,
-    reported_eps TEXT,
+    ticker           TEXT,
+    earnings_date    TEXT,
+    eps_estimate     TEXT,
+    reported_eps     TEXT,
     surprise_percent REAL,
-    timestamp TEXT,
-    PRIMARY KEY (ticker, earnings_date)
+    timestamp        TEXT,
+    PRIMARY KEY(ticker, earnings_date)
 )
 ''')
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS earnings_upcoming (
-    ticker TEXT,
-    earnings_date TEXT,
-    timestamp TEXT,
-    PRIMARY KEY (ticker, earnings_date)
+    ticker          TEXT,
+    earnings_date   TEXT,
+    timestamp       TEXT,
+    PRIMARY KEY(ticker, earnings_date)
 )
 ''')
+conn.commit()
+conn.close()
 
-# Time references
-today = pd.to_datetime(datetime.now().date())
-seven_days_ago = today - pd.Timedelta(days=7)
-seven_days_out = today + pd.Timedelta(days=7)
+# ——— Time boundaries ———
+today           = pd.to_datetime(datetime.now().date())
+seven_days_ago  = today - pd.Timedelta(days=7)
+seven_days_out  = today + pd.Timedelta(days=7)
 ninety_days_out = today + pd.Timedelta(days=90)
 
+# ——— Fetch & store earnings ———
 tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
 reporting_today = set()
-upcoming_rows = []
 
-# Collect data
+conn = sqlite3.connect(DB_PATH)
+cursor = conn.cursor()
+
 for ticker in tickers:
     logging.info(f"Processing {ticker}")
     try:
@@ -60,18 +64,21 @@ for ticker in tickers:
         if df is None or df.empty:
             continue
 
+        # normalize to date index
         df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
 
-        # Past earnings
+        # --- Past earnings (last 7 days) ---
         recent = df[(df.index >= seven_days_ago) & (df.index <= today)]
         for edate, row in recent.iterrows():
             surprise = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
-            eps_est = row.get('EPS Estimate')
-            rpt_eps = row.get('Reported EPS')
+            eps_est  = row.get('EPS Estimate')
+            rpt_eps  = row.get('Reported EPS')
+
             if edate == today:
                 reporting_today.add(ticker)
+
             cursor.execute('''
-                INSERT OR REPLACE INTO earnings_past 
+                INSERT OR REPLACE INTO earnings_past
                   (ticker, earnings_date, eps_estimate, reported_eps, surprise_percent, timestamp)
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (
@@ -79,16 +86,15 @@ for ticker in tickers:
                 edate.date().isoformat(),
                 f"{eps_est:.2f}" if pd.notna(eps_est) else None,
                 f"{rpt_eps:.2f}" if pd.notna(rpt_eps) else None,
-                surprise if pd.notna(surprise) else None,
+                float(surprise) if pd.notna(surprise) else None,
                 datetime.utcnow().isoformat()
             ))
 
-        # Upcoming
+        # --- Upcoming earnings (next 90 days) ---
         future = df[(df.index > today) & (df.index <= ninety_days_out)]
         for fdate in future.index:
-            upcoming_rows.append((ticker, fdate.date()))
             cursor.execute('''
-                INSERT OR REPLACE INTO earnings_upcoming 
+                INSERT OR REPLACE INTO earnings_upcoming
                   (ticker, earnings_date, timestamp)
                 VALUES (?, ?, ?)
             ''', (
@@ -103,19 +109,21 @@ for ticker in tickers:
 conn.commit()
 conn.close()
 
-# Render Past Earnings
+# ——— Render Past Earnings HTML ———
 conn = sqlite3.connect(DB_PATH)
 dfp = pd.read_sql_query(f"""
-SELECT * FROM earnings_past
-WHERE earnings_date BETWEEN '{seven_days_ago.date()}' AND '{today.date()}'
+    SELECT * FROM earnings_past
+    WHERE earnings_date BETWEEN '{seven_days_ago.date()}' AND '{today.date()}'
 """, conn, parse_dates=['earnings_date'])
 conn.close()
 
 if not dfp.empty:
     dfp['Surprise Value'] = pd.to_numeric(dfp['surprise_percent'], errors='coerce')
     dfp['Surprise HTML'] = dfp['Surprise Value'].apply(
-        lambda x: f'<span class="{"positive" if x > 0 else "negative" if x < 0 else ""}">{x:+.2f}%</span>'
-        if pd.notna(x) else "-"
+        lambda x: (
+            f'<span class="{"positive" if x>0 else "negative" if x<0 else ""}">'
+            f"{x:+.2f}%</span>"
+        ) if pd.notna(x) else "-"
     )
     dfp.sort_values('earnings_date', ascending=False, inplace=True)
 
@@ -125,7 +133,7 @@ if not dfp.empty:
         if reporting_today else ""
     )
 
-    beats = dfp.nlargest(5, 'Surprise Value')
+    beats  = dfp.nlargest(5, 'Surprise Value')
     misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
     summary_html = (
         "<h3>Top 5 Earnings Beats</h3><ul>"
@@ -135,17 +143,24 @@ if not dfp.empty:
         + "</ul>"
     )
 
-    dfp_display = dfp[['ticker','earnings_date','eps_estimate','reported_eps','Surprise HTML']].rename(columns={
-        'ticker': 'Ticker',
-        'earnings_date': 'Earnings Date',
-        'eps_estimate': 'EPS Estimate',
-        'reported_eps': 'Reported EPS',
-        'Surprise HTML': 'Surprise'
-    })
+    dfp_display = (
+        dfp[['ticker','earnings_date','eps_estimate','reported_eps','Surprise HTML']]
+        .rename(columns={
+            'ticker':        'Ticker',
+            'earnings_date': 'Earnings Date',
+            'eps_estimate':  'EPS Estimate',
+            'reported_eps':  'Reported EPS',
+            'Surprise HTML': 'Surprise'
+        })
+    )
 
-    head_html = dfp_display.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
+    head_html = dfp_display.head(10).to_html(
+        escape=False, index=False, classes='center-table', border=0
+    )
     if len(dfp_display) > 10:
-        rest_html = dfp_display.iloc[10:].to_html(escape=False, index=False, classes='center-table', border=0)
+        rest_html  = dfp_display.iloc[10:].to_html(
+            escape=False, index=False, classes='center-table', border=0
+        )
         table_html = head_html + f"<details><summary>Show More</summary>{rest_html}</details>"
     else:
         table_html = head_html
@@ -156,17 +171,22 @@ else:
     with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No earnings in the past 7 days.</p>")
 
-# Render Upcoming Earnings
-if upcoming_rows:
-    df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
-    df_up['Date'] = pd.to_datetime(df_up['Date'])
-    df_up = df_up[(df_up['Date'] > today) & (df_up['Date'] <= ninety_days_out)]
-    df_up.sort_values('Date', inplace=True)
+# ——— Render Upcoming Earnings HTML ———
+conn = sqlite3.connect(DB_PATH)
+dfu = pd.read_sql_query(f"""
+    SELECT * FROM earnings_upcoming
+    WHERE earnings_date > '{today.date()}'
+      AND earnings_date <= '{ninety_days_out.date()}'
+""", conn, parse_dates=['earnings_date'])
+conn.close()
 
-    early = []
-    later = []
-    for date, group in df_up.groupby(df_up['Date'].dt.date):
-        if pd.to_datetime(date) <= seven_days_out:
+if not dfu.empty:
+    dfu['Date'] = pd.to_datetime(dfu['earnings_date'])
+    dfu.sort_values('Date', inplace=True)
+
+    early, later = [], []
+    for date, group in dfu.groupby(dfu['Date'].dt.date):
+        if date <= seven_days_out.date():
             early.append((date, group))
         else:
             later.append((date, group))
@@ -175,7 +195,7 @@ if upcoming_rows:
     for date, group in early:
         html += f"<h3>{date}</h3><ul>"
         for _, row in group.iterrows():
-            html += f"<li>{row['Ticker']}</li>"
+            html += f"<li>{row['ticker']}</li>"
         html += "</ul>"
 
     if later:
@@ -183,7 +203,7 @@ if upcoming_rows:
         for date, group in later:
             html += f"<h3>{date}</h3><ul>"
             for _, row in group.iterrows():
-                html += f"<li>{row['Ticker']}</li>"
+                html += f"<li>{row['ticker']}</li>"
             html += "</ul>"
         html += "</details>"
 
