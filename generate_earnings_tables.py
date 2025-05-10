@@ -208,3 +208,13 @@ if not dfu.empty:
 else:
     with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write("<p>No upcoming earnings in the next 90 days.</p>")
+
+def generate_earnings_tables():
+    import __main__
+    if hasattr(__main__, "__file__") and __main__.__file__.endswith("generate_earnings_tables_to_db.py"):
+        # Already running as main, skip to avoid recursion
+        return
+
+    # Copy and paste everything from the script (excluding import and global constants)
+    # inside this function OR refactor into sub-functions (ideal long-term)
+    exec(open(__file__).read())
