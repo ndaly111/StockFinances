@@ -30,8 +30,8 @@ from generate_earnings_tables import generate_earnings_tables
 
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
-db_path = 'stock data.db'
-DB_PATH = 'stock data.db'
+db_path = 'Stock Data.db'
+DB_PATH = 'Stock Data.db'
 file_path = "update_growth.csv"
 charts_output_dir = 'charts/'
 is_remote = True
