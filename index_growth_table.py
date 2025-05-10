@@ -1,148 +1,194 @@
-#!/usr/bin/env python3
-"""
-Module: index_growth_table.py
-
-Fetches trailing P/E ratios for SPY and QQQ, caches them in stock data.db,
-retrieves the 10‑year Treasury yield, computes implied growth,
-and writes an HTML table to charts/spy_qqq_growth.html.
-"""
+# generate_earnings_tables_to_db.py
 
 import os
-import time
 import sqlite3
-import yfinance as yf
+import logging
+import pandas as pd
 from datetime import datetime
+import yfinance as yf
+from ticker_manager import read_tickers, modify_tickers
 
-# Ensure output folder exists
-os.makedirs("charts", exist_ok=True)
+# Setup
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+OUTPUT_DIR = 'charts'
+DB_PATH = 'Stock Data.db'
+PAST_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
-# Path to your database in the project root
-DB_PATH = "stock data.db"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+yf.set_tz_cache_location(os.path.join(OUTPUT_DIR, 'tz_cache'))
 
-# Create the cache table if missing
-with sqlite3.connect(DB_PATH) as conn:
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS pe_cache (
-            ticker    TEXT PRIMARY KEY,
-            pe        REAL,
-            timestamp TEXT
-        )
-    ''')
-    conn.commit()
+# Connect & ensure tables
+conn = sqlite3.connect(DB_PATH)
+cursor = conn.cursor()
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS earnings_past (
+    ticker TEXT,
+    earnings_date TEXT,
+    eps_estimate TEXT,
+    reported_eps TEXT,
+    surprise_percent REAL,
+    timestamp TEXT,
+    PRIMARY KEY (ticker, earnings_date)
+)
+''')
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS earnings_upcoming (
+    ticker TEXT,
+    earnings_date TEXT,
+    timestamp TEXT,
+    PRIMARY KEY (ticker, earnings_date)
+)
+''')
 
+# Time references
+today = pd.to_datetime(datetime.now().date())
+seven_days_ago = today - pd.Timedelta(days=7)
+seven_days_out = today + pd.Timedelta(days=7)
+ninety_days_out = today + pd.Timedelta(days=90)
 
-def fetch_trailing_pe(ticker, retries=3, delay=1):
-    now = datetime.utcnow()
-    # 1) Check cache
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT pe, timestamp FROM pe_cache WHERE ticker = ?", (ticker,))
-        row = c.fetchone()
-        if row:
-            pe_cached, ts = row
-            try:
-                if datetime.fromisoformat(ts).date() == now.date():
-                    print(f"[Cache] {ticker} P/E = {pe_cached:.2f}")
-                    return pe_cached
-            except Exception:
-                pass  # fall through to re-fetch
+tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
+reporting_today = set()
+upcoming_rows = []
 
-    # 2) Fetch from yfinance
-    pe = None
-    for attempt in range(1, retries + 1):
-        try:
-            stock = yf.Ticker(ticker)
-            info = stock.info or {}
-            pe = info.get("trailingPE")
-            if pe:
-                break
-
-            # Fallback: price / trailingEps
-            price = info.get("previousClose") or info.get("regularMarketPrice")
-            eps   = info.get("trailingEps")
-            if price is None:
-                price = getattr(stock, "fast_info", {}).get("lastPrice")
-            if eps is None:
-                try:
-                    eps = stock.quarterly_earnings["Earnings"].iloc[-1]
-                except Exception:
-                    eps = None
-
-            if price and eps:
-                pe = price / eps
-                print(f"[Fallback] {ticker} P/E = {price:.2f}/{eps:.2f} = {pe:.2f}")
-                break
-
-            print(f"[Attempt {attempt}] No P/E for {ticker}; keys: {list(info.keys())}")
-        except Exception as e:
-            print(f"[Error][Attempt {attempt}] fetching P/E for {ticker}: {e}")
-
-        time.sleep(delay)
-
-    if pe is None:
-        print(f"[Failed] Could not find P/E for {ticker} after {retries} attempts.")
-        return None
-
-    # 3) Cache the fresh value
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute('''
-            INSERT OR REPLACE INTO pe_cache (ticker, pe, timestamp)
-            VALUES (?, ?, ?)
-        ''', (ticker, float(pe), now.isoformat()))
-        conn.commit()
-        print(f"[Cached] {ticker} P/E = {pe:.2f} into {DB_PATH}")
-
-    return pe
-
-
-def fetch_treasury_yield():
+# Collect data
+for ticker in tickers:
+    logging.info(f"Processing {ticker}")
     try:
-        info = yf.Ticker("^TNX").info or {}
-        y = info.get("regularMarketPrice")
-        return float(y) / 100 if y is not None else None
+        stock = yf.Ticker(ticker)
+        df = stock.get_earnings_dates(limit=30)
+        if df is None or df.empty:
+            continue
+
+        df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
+
+        # Past earnings
+        recent = df[(df.index >= seven_days_ago) & (df.index <= today)]
+        for edate, row in recent.iterrows():
+            surprise = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
+            eps_est = row.get('EPS Estimate')
+            rpt_eps = row.get('Reported EPS')
+            if edate == today:
+                reporting_today.add(ticker)
+            cursor.execute('''
+                INSERT OR REPLACE INTO earnings_past 
+                  (ticker, earnings_date, eps_estimate, reported_eps, surprise_percent, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                ticker,
+                edate.date().isoformat(),
+                f"{eps_est:.2f}" if pd.notna(eps_est) else None,
+                f"{rpt_eps:.2f}" if pd.notna(rpt_eps) else None,
+                surprise if pd.notna(surprise) else None,
+                datetime.utcnow().isoformat()
+            ))
+
+        # Upcoming
+        future = df[(df.index > today) & (df.index <= ninety_days_out)]
+        for fdate in future.index:
+            upcoming_rows.append((ticker, fdate.date()))
+            cursor.execute('''
+                INSERT OR REPLACE INTO earnings_upcoming 
+                  (ticker, earnings_date, timestamp)
+                VALUES (?, ?, ?)
+            ''', (
+                ticker,
+                fdate.date().isoformat(),
+                datetime.utcnow().isoformat()
+            ))
+
     except Exception as e:
-        print(f"[Error] fetching treasury yield: {e}")
-        return None
+        logging.error(f"Error processing {ticker}: {e}")
 
+conn.commit()
+conn.close()
 
-def compute_implied_growth(pe_ratio, treasury_yield):
-    if pe_ratio is None or treasury_yield is None:
-        return None
-    try:
-        return ((pe_ratio / 10) ** (1 / 10)) + treasury_yield - 1
-    except Exception as e:
-        print(f"[Error] computing implied growth: {e}")
-        return None
+# Render Past Earnings
+conn = sqlite3.connect(DB_PATH)
+dfp = pd.read_sql_query(f"""
+SELECT * FROM earnings_past
+WHERE earnings_date BETWEEN '{seven_days_ago.date()}' AND '{today.date()}'
+""", conn, parse_dates=['earnings_date'])
+conn.close()
 
+if not dfp.empty:
+    dfp['Surprise Value'] = pd.to_numeric(dfp['surprise_percent'], errors='coerce')
+    dfp['Surprise HTML'] = dfp['Surprise Value'].apply(
+        lambda x: f'<span class="{"positive" if x > 0 else "negative" if x < 0 else ""}">{x:+.2f}%</span>'
+        if pd.notna(x) else "-"
+    )
+    dfp.sort_values('earnings_date', ascending=False, inplace=True)
 
-def create_table_row(ticker, pe_ratio, implied_growth):
-    pe_str     = f"{pe_ratio:.1f}" if pe_ratio is not None else "N/A"
-    growth_str = f"{implied_growth * 100:.1f}%" if implied_growth is not None else "N/A"
-    return f"<tr><td>{ticker}</td><td>{pe_str}</td><td>{growth_str}</td></tr>"
+    note = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
+    reporting_html = (
+        f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>"
+        if reporting_today else ""
+    )
 
+    beats = dfp.nlargest(5, 'Surprise Value')
+    misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
+    summary_html = (
+        "<h3>Top 5 Earnings Beats</h3><ul>"
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in beats.iterrows())
+        + "</ul><h3>Top 5 Earnings Misses</h3><ul>"
+        + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in misses.iterrows())
+        + "</ul>"
+    )
 
-def index_growth(treasury_yield=None):
-    if treasury_yield:
-        treasury_yield = float(str(treasury_yield).strip('%')) / 100
+    dfp_display = dfp[['ticker','earnings_date','eps_estimate','reported_eps','Surprise HTML']].rename(columns={
+        'ticker': 'Ticker',
+        'earnings_date': 'Earnings Date',
+        'eps_estimate': 'EPS Estimate',
+        'reported_eps': 'Reported EPS',
+        'Surprise HTML': 'Surprise'
+    })
+
+    head_html = dfp_display.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
+    if len(dfp_display) > 10:
+        rest_html = dfp_display.iloc[10:].to_html(escape=False, index=False, classes='center-table', border=0)
+        table_html = head_html + f"<details><summary>Show More</summary>{rest_html}</details>"
     else:
-        treasury_yield = fetch_treasury_yield() or 0.035
+        table_html = head_html
 
-    tickers = ["SPY", "QQQ"]
-    rows    = ["<tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr>"]
+    with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write(note + reporting_html + summary_html + table_html)
+else:
+    with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write("<p>No earnings in the past 7 days.</p>")
 
-    for tk in tickers:
-        pe     = fetch_trailing_pe(tk)
-        growth = compute_implied_growth(pe, treasury_yield)
-        rows.append(create_table_row(tk, pe, growth))
+# Render Upcoming Earnings
+if upcoming_rows:
+    df_up = pd.DataFrame(upcoming_rows, columns=['Ticker', 'Date'])
+    df_up['Date'] = pd.to_datetime(df_up['Date'])
+    df_up = df_up[(df_up['Date'] > today) & (df_up['Date'] <= ninety_days_out)]
+    df_up.sort_values('Date', inplace=True)
 
-    return "<table border='1' cellspacing='0' cellpadding='4'>" + "".join(rows) + "</table>"
+    early = []
+    later = []
+    for date, group in df_up.groupby(df_up['Date'].dt.date):
+        if pd.to_datetime(date) <= seven_days_out:
+            early.append((date, group))
+        else:
+            later.append((date, group))
 
+    html = ""
+    for date, group in early:
+        html += f"<h3>{date}</h3><ul>"
+        for _, row in group.iterrows():
+            html += f"<li>{row['Ticker']}</li>"
+        html += "</ul>"
 
-if __name__ == "__main__":
-    html = index_growth()
-    path = os.path.join("charts", "spy_qqq_growth.html")
-    with open(path, "w", encoding="utf-8") as f:
+    if later:
+        html += '<details><summary>Show More Upcoming Earnings</summary>'
+        for date, group in later:
+            html += f"<h3>{date}</h3><ul>"
+            for _, row in group.iterrows():
+                html += f"<li>{row['Ticker']}</li>"
+            html += "</ul>"
+        html += "</details>"
+
+    with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(html)
-    print(f"Wrote SPY/QQQ growth table to {path}")
+else:
+    with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
+        f.write("<p>No upcoming earnings in the next 90 days.</p>")
