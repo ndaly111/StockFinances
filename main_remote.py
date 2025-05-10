@@ -1,4 +1,4 @@
-# start of main.py
+# start of main_remote.py
 import os
 import sqlite3
 import ticker_manager
@@ -13,10 +13,7 @@ from balance_sheet_data_fetcher import (
     store_fetched_balance_sheet_data
 )
 from balancesheet_chart import (
-    fetch_balance_sheet_data as _fs,  # avoid name clash
-    plot_chart,
-    format_value,
-    create_and_save_table
+    fetch_balance_sheet_data, plot_chart, format_value, create_and_save_table
 )
 import pandas as pd
 from Forward_data import scrape_forward_data
@@ -26,77 +23,80 @@ from ticker_info import prepare_data_for_display, generate_html_table
 import requests
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
+from index_growth_table import index_growth
 
-# ←— NEW: import your earnings generator
+# ←— NEW: import the function
 from generate_earnings_tables import generate_earnings_tables
 
 # Constants
-TICKERS_FILE_PATH     = 'tickers.csv'
-DB_PATH               = 'Stock Data.db'
-file_path             = "update_growth.csv"
-charts_output_dir     = 'charts/'
-is_remote             = True
-table_name            = 'ForwardFinancialData'
+TICKERS_FILE_PATH = 'tickers.csv'
+db_path = 'Stock Data.db'
+DB_PATH = 'Stock Data.db'
+file_path = "update_growth.csv"
+charts_output_dir = 'charts/'
+is_remote = True
+table_name = 'ForwardFinancialData'
 
-def manage_tickers(path, is_remote=False):
-    current_tickers = ticker_manager.read_tickers(path)
+def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
+    current_tickers = ticker_manager.read_tickers(TICKERS_FILE_PATH)
     current_tickers = ticker_manager.modify_tickers(current_tickers, is_remote)
     sorted_tickers = sorted(current_tickers)
-    ticker_manager.write_tickers(sorted_tickers, path)
+    ticker_manager.write_tickers(sorted_tickers, TICKERS_FILE_PATH)
     return sorted_tickers
 
 def establish_database_connection(db_path):
-    full = os.path.abspath(db_path)
-    if not os.path.exists(full):
-        print(f"Database not found: {full}")
+    db_full_path = os.path.abspath(db_path)
+    if not os.path.exists(db_full_path):
+        print(f"Database file not found: {db_full_path}")
         return None
-    return sqlite3.connect(full)
+    return sqlite3.connect(db_full_path)
 
-def log_average_valuations(avg_values, path):
-    if path != 'tickers.csv':
+def log_average_valuations(avg_values, TICKERS_FILE_PATH):
+    if TICKERS_FILE_PATH != 'tickers.csv':
         return
-    today_str = datetime.now().strftime('%Y-%m-%d')
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute('''
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS AverageValuations (
-                date TEXT PRIMARY KEY,
-                avg_ttm REAL, avg_forward REAL, avg_finviz REAL
+                date DATE PRIMARY KEY,
+                avg_ttm_valuation REAL,
+                avg_forward_valuation REAL,
+                avg_finviz_valuation REAL
             );
         ''')
-        c.execute('SELECT 1 FROM AverageValuations WHERE date=?', (today_str,))
-        if not c.fetchone():
-            c.execute('''
-                INSERT INTO AverageValuations (date, avg_ttm, avg_forward, avg_finviz)
-                VALUES (?, ?, ?, ?)
+        cursor.execute('SELECT 1 FROM AverageValuations WHERE date = ?;', (current_date,))
+        if not cursor.fetchone():
+            cursor.execute('''
+                INSERT INTO AverageValuations (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
+                VALUES (?, ?, ?, ?);
             ''', (
-                today_str,
+                current_date,
                 avg_values['Nicks_TTM_Value_Average'],
                 avg_values['Nicks_Forward_Value_Average'],
                 avg_values['Finviz_TTM_Value_Average']
             ))
             conn.commit()
 
-def balancesheet_chart(ticker, out_dir):
+def balancesheet_chart(ticker, charts_output_dir):
     data = fetch_balance_sheet_data(ticker)
-    if data is None: return
-    plot_chart(data, out_dir, ticker)
-    data['Debt_to_Equity_Ratio'] = data['Total_Debt'] / data['Total_Equity']
-    create_and_save_table(data, out_dir, ticker)
+    if data is not None:
+        plot_chart(data, charts_output_dir, ticker)
+        data['Debt_to_Equity_Ratio'] = data['Total_Debt'] / data['Total_Equity']
+        create_and_save_table(data, charts_output_dir, ticker)
 
 def fetch_and_update_balance_sheet_data(ticker, cursor):
-    current = fetch_balance_sheet_data(ticker)
-    missing = check_missing_balance_sheet_data(ticker, cursor)
-    outdated = is_balance_sheet_data_outdated(current)
-    if missing or outdated:
-        fresh = fetch_balance_sheet_data_from_yahoo(ticker)
-        if fresh:
-            store_fetched_balance_sheet_data(cursor, fresh)
+    current_data = fetch_balance_sheet_data(ticker)
+    if check_missing_balance_sheet_data(ticker, cursor) or is_balance_sheet_data_outdated(current_data):
+        fresh_data = fetch_balance_sheet_data_from_yahoo(ticker)
+        if fresh_data:
+            store_fetched_balance_sheet_data(cursor, fresh_data)
 
 def fetch_10_year_treasury_yield():
     url = "https://fred.stlouisfed.org/series/GS10"
     try:
-        r = requests.get(url); r.raise_for_status()
+        r = requests.get(url)
+        r.raise_for_status()
         soup = BeautifulSoup(r.content, 'html.parser')
         span = soup.find("span", class_="series-meta-observation-value")
         return span.text.strip() if span else "N/A"
@@ -104,47 +104,43 @@ def fetch_10_year_treasury_yield():
         return "N/A"
 
 def main():
-    # 0. Prep
+    financial_data = {}
+    dashboard_data = []
     treasury_yield = fetch_10_year_treasury_yield()
-    tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
+
+    sorted_tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
     conn = establish_database_connection(DB_PATH)
     if conn is None:
         return
 
-    dashboard_data = []
     try:
-        cur = conn.cursor()
-        process_update_growth_csv(file_path, DB_PATH)
+        cursor = conn.cursor()
+        process_update_growth_csv(file_path, db_path)
 
-        # 1. Per‐ticker pipelines
-        for ticker in tickers:
-            annual_and_ttm_update(ticker, DB_PATH)
-            fetch_and_update_balance_sheet_data(ticker, cur)
+        for ticker in sorted_tickers:
+            annual_and_ttm_update(ticker, db_path)
+            fetch_and_update_balance_sheet_data(ticker, cursor)
             balancesheet_chart(ticker, charts_output_dir)
-            scrape_forward_data(ticker, DB_PATH, table_name)
-            generate_forecast_charts_and_tables(ticker, DB_PATH, charts_output_dir)
-            prep_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
-            generate_html_table(prep_data, ticker)
-            valuation_update(ticker, cur, treasury_yield, marketcap, dashboard_data)
+            scrape_forward_data(ticker, db_path, table_name)
+            generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
+            prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
+            generate_html_table(prepared_data, ticker)
+            valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
 
-        # 2. Dashboard table + averages
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
 
-        # 3. SPY/QQQ growth
-        from index_growth_table import index_growth
-        spy_qqq_html = index_growth(treasury_yield)
+        spy_qqq_growth_html = index_growth(treasury_yield)
 
-        # ←— NEW: generate earnings HTML fragments
+        # ←— NEW: generate earnings tables before rendering the final HTML
         generate_earnings_tables()
 
-        # 4. Final page assembly
         html_generator2(
-            tickers,
-            {},  # financial_data not used by html2
+            sorted_tickers,
+            financial_data,
             full_dashboard_html,
             avg_values,
-            spy_qqq_html
+            spy_qqq_growth_html
         )
 
     finally:
