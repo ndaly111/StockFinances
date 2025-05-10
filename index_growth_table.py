@@ -17,7 +17,7 @@ from datetime import datetime
 os.makedirs("charts", exist_ok=True)
 
 # Path to your database in the project root
-DB_PATH = "stock data.db"
+DB_PATH = "Stock Data.db"
 
 # Create the cache table if missing
 with sqlite3.connect(DB_PATH) as conn:
