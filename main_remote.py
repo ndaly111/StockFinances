@@ -95,13 +95,16 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
 def fetch_10_year_treasury_yield():
     url = "https://fred.stlouisfed.org/series/GS10"
     try:
-        r = requests.get(url)
-        r.raise_for_status()
-        soup = BeautifulSoup(r.content, 'html.parser')
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, 'html.parser')
         span = soup.find("span", class_="series-meta-observation-value")
-        return span.text.strip() if span else "N/A"
-    except:
-        return "N/A"
+        if span:
+            raw = span.text.strip().replace('%', '')
+            return float(raw)
+    except Exception as e:
+        print(f"Error fetching the 10-year Treasury note yield: {e}")
+    return None
 
 def main():
     financial_data = {}
