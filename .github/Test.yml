@@ -1,0 +1,38 @@
+name: Test Treasury Yield Fetch
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  run-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance
+
+      - name: Run test script
+        run: |
+          python -c "
+import yfinance as yf
+
+def fetch_10_year_treasury_yield():
+    try:
+        tnx = yf.Ticker('^TNX')
+        price = tnx.info.get('regularMarketPrice')
+        if price:
+            print(f'Treasury Yield: {float(price)/10:.2f}%')
+        else:
+            print('Yield not available')
+    except Exception as e:
+        print(f'Error fetching treasury yield: {e}')
+
+fetch_10_year_treasury_yield()
+"
