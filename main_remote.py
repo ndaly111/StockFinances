@@ -92,19 +92,14 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
         if fresh_data:
             store_fetched_balance_sheet_data(cursor, fresh_data)
 
+import yfinance as yf
 def fetch_10_year_treasury_yield():
-    url = "https://fred.stlouisfed.org/series/GS10"
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
-        span = soup.find("span", class_="series-meta-observation-value")
-        if span:
-            raw = span.text.strip().replace('%', '')
-            return float(raw)
+        bond = yf.Ticker("^TNX")
+        return bond.info.get('regularMarketPrice') / 10  # TNX is in tenths of a percent
     except Exception as e:
-        print(f"Error fetching the 10-year Treasury note yield: {e}")
-    return None
+        print("YF fallback error:", e)
+        return None
 
 def main():
     financial_data = {}
