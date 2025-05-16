@@ -1,4 +1,4 @@
-# start of main_remote.py
+hi# start of main_remote.py
 import os
 import sqlite3
 import ticker_manager
@@ -93,7 +93,7 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
             store_fetched_balance_sheet_data(cursor, fresh_data)
 
 import yfinance as yf
-def fetch_treasury_yield_yf():
+def fetch_10_year_treasury_yield():
     try:
         bond = yf.Ticker("^TNX")
         return bond.info.get('regularMarketPrice') / 10  # TNX is in tenths of a percent
