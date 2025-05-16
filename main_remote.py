@@ -1,4 +1,4 @@
-hi# start of main_remote.py
+# start of main_remote.py
 import os
 import sqlite3
 import ticker_manager
