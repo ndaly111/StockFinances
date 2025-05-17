@@ -96,7 +96,7 @@ import yfinance as yf
 def fetch_10_year_treasury_yield():
     try:
         bond = yf.Ticker("^TNX")
-        return bond.info.get('regularMarketPrice') / 10  # TNX is in tenths of a percent
+        return bond.info.get('regularMarketPrice')  # TNX is in tenths of a percent
     except Exception as e:
         print("YF fallback error:", e)
         return None
