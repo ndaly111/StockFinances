@@ -23,7 +23,7 @@ def fetch_balance_sheet_data(ticker):
         ORDER BY Date DESC
         LIMIT 1;""", (ticker,))
     data = cursor.fetchone()
-    print("---data fetched",data)
+    print("---data fetched", data)
     conn.close()
     if data:
         return {
@@ -39,6 +39,13 @@ def fetch_balance_sheet_data(ticker):
 # Plot the chart
 def plot_chart(data, output_dir, ticker):
     print("Plotting Balance Sheet Chart")
+
+    # Validate all required fields before proceeding
+    required_fields = ['Total_Assets', 'Total_Liabilities', 'Total_Equity', 'Total_Debt', 'Cash']
+    if any(data.get(field) is None or pd.isna(data.get(field)) for field in required_fields):
+        print(f"Skipping chart for {ticker}: Missing or NaN values in balance sheet data.")
+        return
+
     # Calculate non-cash assets and non-debt liabilities
     non_cash_assets = data['Total_Assets'] - data['Cash']
     non_debt_liabilities = data['Total_Liabilities'] - data['Total_Debt']
@@ -91,8 +98,6 @@ def format_value(value):
     return value
 
 # Apply coloring based on Debt_to_Equity_Ratio value
-
-# Apply coloring based on Debt_to_Equity_Ratio value
 def create_and_save_table(data, output_dir, ticker):
     print("balance sheet chart 3 creating table")
     print("Data received for table:", data)
@@ -122,7 +127,6 @@ def create_and_save_table(data, output_dir, ticker):
         except ValueError:
             return ''
 
-    # Assuming you have a dictionary named 'data' containing your financial data
     # Calculate Debt to Equity Ratio
     debt_to_equity_ratio = data['Total_Debt'] / data['Total_Equity']
 
@@ -135,7 +139,7 @@ def create_and_save_table(data, output_dir, ticker):
             f"${data['Total_Liabilities'] / 1_000_000:,.0f}M",
             f"${data['Total_Debt'] / 1_000_000:,.0f}M",
             f"${data['Total_Equity'] / 1_000_000:,.0f}M",
-            f"{debt_to_equity_ratio:,.2f}"  # Use the calculated debt_to_equity_ratio
+            f"{debt_to_equity_ratio:,.2f}"
         ]
     }
 
