@@ -1,98 +1,88 @@
-import yfinance as yf
 import sqlite3
 import pandas as pd
-import matplotlib.pyplot as plt
-import os
+from datetime import datetime
+import yfinance as yf
 
-# Constants
 DB_PATH = "Stock Data.db"
-CHARTS_DIR = "charts"
-os.makedirs(CHARTS_DIR, exist_ok=True)
 
-def fetch_and_store_income_statement(ticker):
-    print(f"Fetching income statement for {ticker}")
-    stock = yf.Ticker(ticker)
-    df = stock.income_stmt
-    if df is None or df.empty:
-        print(f"No income statement data found for {ticker}")
+def clean_value(val):
+    """
+    Convert any unsupported types into sqlite-friendly types:
+    - NaN / NaT → None
+    - pandas Timestamp → ISO string
+    - Other non-primitive → str()
+    """
+    if pd.isna(val):
         return None
+    # pandas Timestamp
+    if isinstance(val, pd.Timestamp):
+        return val.isoformat()
+    # datetime.datetime
+    if isinstance(val, datetime):
+        return val.isoformat()
+    # everything else (int, float, str) passes through
+    if isinstance(val, (int, float, str, type(None))):
+        return val
+    # fallback for any other type
+    return str(val)
 
-    df = df.T  # Transpose so dates are rows
-    df.reset_index(inplace=True)
-    df.rename(columns={"index": "Date"}, inplace=True)
-    df["Ticker"] = ticker
+def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
+    """
+    Fetches quarterly income statement data for `ticker` via yfinance,
+    stores it into the IncomeStatement table, and returns a DataFrame.
+    """
+    # 1. Fetch the raw Income Statement
+    stock = yf.Ticker(ticker)
+    df = stock.quarterly_financials.transpose()  # rows = quarters
 
+    # 2. Prepare DB & table
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS IncomeStatementData (
-            Ticker TEXT,
-            Date TEXT,
-            TotalRevenue REAL,
-            CostOfRevenue REAL,
-            SellingGeneralAdministrative REAL,
-            ResearchDevelopment REAL,
-            SellingAndMarketing REAL
-        );
+    CREATE TABLE IF NOT EXISTS IncomeStatement (
+        ticker              TEXT,
+        period_ending       TEXT,
+        total_revenue       REAL,
+        cost_of_revenue     REAL,
+        research_and_development REAL,
+        selling_general_admin    REAL,
+        operating_income         REAL,
+        PRIMARY KEY (ticker, period_ending)
+    );
     """)
 
-    for _, row in df.iterrows():
+    # 3. Insert each quarter
+    for idx, row in df.iterrows():
+        period_ending   = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
+        total_revenue   = row.get('Total Revenue')
+        cost_of_revenue = row.get('Cost Of Revenue')
+        r_and_d         = row.get('Research Development')
+        sga             = row.get('Selling General Administrative')
+        op_income       = row.get('Operating Income')
+
         cursor.execute("""
-            INSERT OR REPLACE INTO IncomeStatementData (
-                Ticker, Date, TotalRevenue, CostOfRevenue, 
-                SellingGeneralAdministrative, ResearchDevelopment, 
-                SellingAndMarketing
-            ) VALUES (?, ?, ?, ?, ?, ?, ?);
+        INSERT OR REPLACE INTO IncomeStatement
+          (ticker, period_ending, total_revenue, cost_of_revenue,
+           research_and_development, selling_general_admin, operating_income)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
-            row["Ticker"],
-            row["Date"],
-            row.get("TotalRevenue"),
-            row.get("CostOfRevenue"),
-            row.get("SellingGeneralAdministrative"),
-            row.get("ResearchDevelopment"),
-            row.get("SellingAndMarketing")
+            clean_value(ticker),
+            clean_value(period_ending),
+            clean_value(total_revenue),
+            clean_value(cost_of_revenue),
+            clean_value(r_and_d),
+            clean_value(sga),
+            clean_value(op_income),
         ))
+
     conn.commit()
     conn.close()
-    print(f"Stored income statement data for {ticker}")
+
+    # 4. Return the raw DataFrame for any downstream use
     return df
 
-def plot_income_statement_chart(df, ticker):
-    print(f"Generating chart for {ticker}")
-    df['Year'] = pd.to_datetime(df['Date']).dt.year
-
-    categories = [
-        ("CostOfRevenue", "#3498db"),
-        ("SellingGeneralAdministrative", "#ff7f50"),
-        ("ResearchDevelopment", "#77dd77"),
-        ("SellingAndMarketing", "#f4c542")
-    ]
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    bottom = pd.Series([0] * len(df), index=df.index)
-    for col, color in categories:
-        if col in df.columns:
-            values = df[col].fillna(0)
-            ax.bar(df["Year"], values, bottom=bottom, label=col, color=color)
-            bottom += values
-
-    ax.set_title(f"{ticker} - Operational Expenses Breakdown")
-    ax.set_xlabel("Year")
-    ax.set_ylabel("Amount ($)")
-    ax.legend()
-    ax.grid(True, linestyle='--', alpha=0.5)
-
-    filename = os.path.join(CHARTS_DIR, f"{ticker}_income_statement_chart.png")
-    plt.savefig(filename, bbox_inches="tight")
-    plt.close()
-    print(f"Chart saved to {filename}")
-
-def run_income_stmt_pipeline(ticker):
-    df = fetch_and_store_income_statement(ticker)
-    if df is not None:
-        plot_income_statement_chart(df, ticker)
-
-# Example standalone run
+# Example mini-main for testing
 if __name__ == "__main__":
-    run_income_stmt_pipeline("AAPL")
+    print("Fetching income statement for AAPL")
+    df_aapl = fetch_and_store_income_statement("AAPL")
+    print(df_aapl)
