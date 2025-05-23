@@ -1,41 +1,25 @@
 import sqlite3
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 from datetime import datetime
 import yfinance as yf
 
 DB_PATH = "Stock Data.db"
 
 def clean_value(val):
-    """
-    Convert any unsupported types into sqlite-friendly types:
-    - NaN / NaT → None
-    - pandas Timestamp → ISO string
-    - Other non-primitive → str()
-    """
     if pd.isna(val):
         return None
-    # pandas Timestamp
-    if isinstance(val, pd.Timestamp):
+    if isinstance(val, pd.Timestamp) or isinstance(val, datetime):
         return val.isoformat()
-    # datetime.datetime
-    if isinstance(val, datetime):
-        return val.isoformat()
-    # everything else (int, float, str) passes through
     if isinstance(val, (int, float, str, type(None))):
         return val
-    # fallback for any other type
     return str(val)
 
 def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
-    """
-    Fetches quarterly income statement data for `ticker` via yfinance,
-    stores it into the IncomeStatement table, and returns a DataFrame.
-    """
-    # 1. Fetch the raw Income Statement
     stock = yf.Ticker(ticker)
-    df = stock.quarterly_financials.transpose()  # rows = quarters
+    df = stock.quarterly_financials.transpose()
 
-    # 2. Prepare DB & table
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
@@ -51,7 +35,6 @@ def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
     );
     """)
 
-    # 3. Insert each quarter
     for idx, row in df.iterrows():
         period_ending   = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
         total_revenue   = row.get('Total Revenue')
@@ -77,14 +60,47 @@ def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
 
     conn.commit()
     conn.close()
-    # right after you fetch df:
     print(df.columns.tolist())
-
-    # 4. Return the raw DataFrame for any downstream use
     return df
 
-# Example mini-main for testing
+def plot_revenue_vs_expenses(ticker: str):
+    conn = sqlite3.connect(DB_PATH)
+    df = pd.read_sql_query(f"""
+        SELECT * FROM IncomeStatement
+        WHERE ticker = '{ticker}'
+    """, conn)
+    conn.close()
+
+    df['period_ending'] = pd.to_datetime(df['period_ending'])
+    df['year'] = df['period_ending'].dt.year
+    df_yearly = df.groupby('year', as_index=False).sum()
+
+    years = df_yearly['year'].astype(str)
+    cost = df_yearly['cost_of_revenue']
+    rnd = df_yearly['research_and_development']
+    sga = df_yearly['selling_general_admin']
+    fines = [0 if y != 2019 else 5e6 for y in df_yearly['year']]  # Example: $5M in 2019
+    revenue = df_yearly['total_revenue']
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bar1 = ax.bar(years, cost, label='Cost of Revenue', color='dimgray')
+    bar2 = ax.bar(years, rnd, label='Research and Development', bottom=cost, color='blue')
+    bar3 = ax.bar(years, sga, label='Sales and Marketing', bottom=cost + rnd, color='mediumpurple')
+    bar4 = ax.bar(years, fines, label='European Commission Fines', bottom=cost + rnd + sga, color='red')
+    ax.bar(years, revenue, label='Revenue', color='darkgreen', alpha=0.8)
+
+    ax.set_ylabel("Amount ($M)")
+    ax.set_title("Revenue vs Expenses")
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"${int(x/1e6)}M"))
+    ax.legend(loc="upper right")
+    plt.tight_layout()
+    plt.show()
+
+# Example mini-main
 if __name__ == "__main__":
     print("Fetching income statement for AAPL")
     df_aapl = fetch_and_store_income_statement("AAPL")
     print(df_aapl)
+
+    print("Plotting revenue vs. expenses...")
+    plot_revenue_vs_expenses("AAPL")
