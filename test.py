@@ -77,6 +77,8 @@ def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
 
     conn.commit()
     conn.close()
+    # right after you fetch df:
+    print(df.columns.tolist())
 
     # 4. Return the raw DataFrame for any downstream use
     return df
