@@ -81,10 +81,21 @@ def log_average_valuations(avg_values, TICKERS_FILE_PATH):
 def balancesheet_chart(ticker, charts_output_dir):
     data = fetch_balance_sheet_data(ticker)
     if data is not None:
+        # still plot if you have enough to draw bars
         plot_chart(data, charts_output_dir, ticker)
-        data['Debt_to_Equity_Ratio'] = data['Total_Debt'] / data['Total_Equity']
-        create_and_save_table(data, charts_output_dir, ticker)
 
+        # --- BEGIN safe Debt/Equity calculation ---
+        debt   = data.get('Total_Debt')
+        equity = data.get('Total_Equity')
+        if debt is None or equity is None or pd.isna(debt) or pd.isna(equity) or equity == 0:
+            print(f"Skipping Debt to Equity for {ticker}: Debt={debt}, Equity={equity}")
+            data['Debt_to_Equity_Ratio'] = None
+        else:
+            data['Debt_to_Equity_Ratio'] = debt / equity
+        # --- END patch ---
+
+        create_and_save_table(data, charts_output_dir, ticker)
+        
 def fetch_and_update_balance_sheet_data(ticker, cursor):
     current_data = fetch_balance_sheet_data(ticker)
     if check_missing_balance_sheet_data(ticker, cursor) or is_balance_sheet_data_outdated(current_data):
