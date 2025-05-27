@@ -117,7 +117,8 @@ def generate_earnings_tables():
             if reporting_today else ""
         )
 
-        beats = dfp.nlargest(5, 'Surprise Value')
+        # only count actual beats (> 0%)
+        beats = dfp[dfp['Surprise Value'] > 0].nlargest(5, 'Surprise Value')
         misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
         summary_html = (
             "<h3>Top 5 Earnings Beats</h3><ul>"
