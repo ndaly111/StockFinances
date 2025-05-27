@@ -1,4 +1,6 @@
-#start of import yfinance as yf
+#start of 
+
+import yfinance as yf
 import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
@@ -179,32 +181,33 @@ def store_fetched_balance_sheet_data(cursor, balance_sheet_data):
         print(f"An error occurred while storing balance sheet data: {e}")
 
 
-def delete_invalid_balance_sheet_data(cursor):
-    print("Cleaning up invalid balance sheet records...")
-    query = """
-    DELETE FROM BalanceSheetData
-    WHERE 
-        Cash_and_Cash_Equivalents IS NULL OR
-        Total_Assets IS NULL OR
-        Total_Liabilities IS NULL OR
-        Total_Debt IS NULL OR
-        Total_Shareholder_Equity IS NULL
-    """
+def delete_invalid_records(cursor):
+    print("Cleaning up bad balance sheet records...")
     try:
-        cursor.execute(query)
-        deleted = cursor.rowcount
+        cursor.execute("DELETE FROM BalanceSheetData WHERE Last_Updated LIKE '-%'")
+        bad = cursor.rowcount
+        cursor.execute("""
+            DELETE FROM BalanceSheetData
+            WHERE 
+                Cash_and_Cash_Equivalents IS NULL OR
+                Total_Assets IS NULL OR
+                Total_Liabilities IS NULL OR
+                Total_Debt IS NULL OR
+                Total_Shareholder_Equity IS NULL
+        """)
+        more_bad = cursor.rowcount
         cursor.connection.commit()
-        print(f"Deleted {deleted} invalid balance sheet record(s).")
+        print(f"Deleted {bad + more_bad} invalid records.")
     except sqlite3.Error as e:
-        print(f"Error deleting invalid records: {e}")
+        print(f"Error during cleanup: {e}")
 
 
 def balance_sheet_data_fetcher():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # Delete any previously stored bad data
-    delete_invalid_balance_sheet_data(cursor)
+    # Clean up previously bad data
+    delete_invalid_records(cursor)
 
     balance_sheet_data = fetch_balance_sheet_data(TICKER, cursor)
 
