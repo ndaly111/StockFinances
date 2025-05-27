@@ -210,7 +210,6 @@ TICKER = 'AAPL'  # Example ticker
 
 
 def balance_sheet_data_fetcher():
-
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -221,17 +220,22 @@ def balance_sheet_data_fetcher():
     if check_missing_balance_sheet_data(TICKER, cursor) or is_balance_sheet_data_outdated(balance_sheet_data):
         # Fetch new data from Yahoo Finance
         new_balance_sheet_data = fetch_balance_sheet_data_from_yahoo(TICKER)
-        if new_balance_sheet_data:
+
+        # Define required fields to validate
+        required_keys = ['Cash', 'Total_Assets', 'Total_Liabilities', 'Debt', 'Equity']
+
+        # Check if all required fields are present and not NaN
+        if new_balance_sheet_data and all(
+            new_balance_sheet_data.get(k) is not None and not pd.isna(new_balance_sheet_data.get(k))
+            for k in required_keys
+        ):
             # Store the new data
             store_fetched_balance_sheet_data(cursor, new_balance_sheet_data)
             print(f"New balance sheet data stored for {TICKER}.")
         else:
-            print(f"No new balance sheet data available for {TICKER}.")
+            print(f"Skipping storing invalid balance sheet data for {TICKER}: {new_balance_sheet_data}")
     else:
         print(f"Balance sheet data for {TICKER} is up to date.")
 
     # Close the database connection
     conn.close()
-
-if __name__ == "__main__":
-    main()
