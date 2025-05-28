@@ -189,14 +189,18 @@ def generate_expense_reports(ticker: str):
         generate_expense_reports("AAPL")
     """
     print(f"\n=== Generating expense reports for {ticker} ===")
-    fetch_and_store_income_statement(ticker)
-    df_yearly = load_yearly_data(ticker)
-    save_yearly_table(df_yearly, ticker)
-    plot_absolute_vs_revenue(df_yearly, ticker)
-    plot_expense_percent(df_yearly, ticker)
-    save_yoy_table(df_yearly, ticker)
-    print(f"\n=== Done for {ticker} ===\n")
-
+    try:
+        fetch_and_store_income_statement(ticker)
+        df_yearly = load_yearly_data(ticker)
+        save_yearly_table(df_yearly, ticker)
+        plot_absolute_vs_revenue(df_yearly, ticker)
+        plot_expense_percent(df_yearly, ticker)
+        save_yoy_table(df_yearly, ticker)
+        print(f"\n=== Done for {ticker} ===\n")
+    except Exception as e:
+        import traceback
+        print(f"\n❌ Error generating expense reports for {ticker}:\n")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     # CLI fallback
