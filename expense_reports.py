@@ -23,6 +23,14 @@ def clean_value(val):
     return val
 
 
+def reset_income_statement_table():
+    print("⚠️ Resetting IncomeStatement table to match updated schema")
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("DROP TABLE IF EXISTS IncomeStatement;")
+    conn.commit()
+    conn.close()
+
 # ────────────────────────────────────────────────
 # Flexible field extractor
 # ────────────────────────────────────────────────
@@ -243,6 +251,7 @@ def save_yoy_table(df_yearly, ticker):
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
     try:
+        reset_income_statement_table()  # << add this line temporarily
         raw = fetch_and_store_income_statement(ticker)
 
         # Show raw DF for debugging
