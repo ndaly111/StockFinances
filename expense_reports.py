@@ -189,12 +189,18 @@ def save_yoy_table(df_yearly: pd.DataFrame, ticker: str):
     df.to_csv(path, index=False)
     print(df.to_string(index=False))
     print(f"✅ Saved → {path}")
-
-
+    
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
     try:
-        fetch_and_store_income_statement(ticker)
+        df = fetch_and_store_income_statement(ticker)
+
+        # ✅ Print the full raw income statement DataFrame
+        print(f"\n📄 Full income statement for {ticker}:\n")
+        pd.set_option("display.max_columns", None)
+        pd.set_option("display.width", 150)
+        print(df.to_string())
+
         df_yearly = load_yearly_data(ticker)
         save_yearly_table(df_yearly, ticker)
         plot_absolute_vs_revenue(df_yearly, ticker)
