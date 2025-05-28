@@ -69,7 +69,7 @@ def extract_expenses(row: pd.Series):
 def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
     print(f"\n--- Fetching financials for {ticker} ---")
     yf_tkr = yf.Ticker(ticker)
-    df = yf_tkr.quarterly_financials.transpose()
+    df = yf_tkr.financials.transpose()
     print("Fetched columns:", list(df.columns))
 
     # open DB + ensure table
