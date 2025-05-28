@@ -21,6 +21,7 @@ from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from bs4 import BeautifulSoup
 from ticker_info import prepare_data_for_display, generate_html_table
 import requests
+from expense_reports import generate_expense_reports
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 from index_growth_table import index_growth
@@ -135,6 +136,8 @@ def main():
             prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
             generate_html_table(prepared_data, ticker)
             valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
+            # ←— NEW: generate expense reports before final HTML generation
+            generate_expense_reports(ticker)
 
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
