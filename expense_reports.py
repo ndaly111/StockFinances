@@ -23,13 +23,6 @@ def clean_value(val):
     return val
 
 
-def reset_income_statement_table():
-    print("⚠️ Resetting IncomeStatement table to match updated schema")
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS IncomeStatement;")
-    conn.commit()
-    conn.close()
 
 # ────────────────────────────────────────────────
 # Flexible field extractor
@@ -76,7 +69,7 @@ def extract_expenses(row: pd.Series):
 def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
     print(f"\n--- Fetching financials for {ticker} ---")
     yf_tkr = yf.Ticker(ticker)
-    df = yf_tkr.quarterly_financials.transpose()
+    df = yf_tkr.financials.transpose()
     print("Fetched columns:", list(df.columns))
 
     # open DB + ensure table
@@ -251,7 +244,6 @@ def save_yoy_table(df_yearly, ticker):
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
     try:
-        reset_income_statement_table()  # << add this line temporarily
         raw = fetch_and_store_income_statement(ticker)
 
         # Show raw DF for debugging
