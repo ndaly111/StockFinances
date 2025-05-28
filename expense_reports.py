@@ -91,7 +91,13 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     df['period_ending'] = pd.to_datetime(df['period_ending'])
     df['year'] = df['period_ending'].dt.year
 
-    return df.groupby('year', as_index=False).sum()
+    # Only aggregate numeric columns
+    numeric_cols = ['total_revenue', 'cost_of_revenue',
+                    'research_and_development', 'selling_general_admin']
+
+    grouped = df.groupby('year', as_index=False)[numeric_cols].sum()
+    print(grouped)
+    return grouped
 
 
 def save_yearly_table(df_yearly: pd.DataFrame, ticker: str):
