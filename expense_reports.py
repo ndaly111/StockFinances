@@ -120,13 +120,11 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year"]          = df["period_ending"].dt.year
 
-    grouped = (
-        df.groupby("year", as_index=False)[
-            "total_revenue", "cost_of_revenue",
-            "research_and_development", "selling_and_marketing",
-            "general_and_admin", "sga_combined"
-        ]
-        .sum()
+    grouped = df.groupby("year", as_index=False)[[
+        "total_revenue", "cost_of_revenue",
+        "research_and_development", "selling_and_marketing",
+        "general_and_admin", "sga_combined"
+    ]].sum()
     )
     print(grouped)
     return grouped
