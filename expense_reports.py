@@ -40,7 +40,7 @@ def extract_expenses(row: pd.Series):
     mkt = 0.0 if pd.isna(mkt) else mkt
     adm = 0.0 if pd.isna(adm) else adm
     if mkt > 0 and adm > 0:
-        sga_comb = 0.0
+        sga_comb = 0.0  # don't use combined
 
     return cost_rev, rnd, mkt, adm, sga_comb
 
@@ -144,7 +144,7 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     adm = df_yearly["general_and_admin"]
     sga = df_yearly["sga_combined"]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(8, 4.5))
     bottom = np.zeros(n)
 
     def add_stack(values, label, color):
@@ -162,7 +162,7 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
 
     bottom = add_stack(cost, "Cost of Revenue", "dimgray")
     bottom = add_stack(rnd, "R&D", "blue")
-    if np.sum(mkt) > 0 or np.sum(adm) > 0:
+    if mkt.sum() > 0 or adm.sum() > 0:
         bottom = add_stack(mkt, "Sales and Marketing", "mediumpurple")
         bottom = add_stack(adm, "General and Administrative", "pink")
     else:
@@ -174,12 +174,30 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
         ax.text(bar.get_x() + bar.get_width()/2, height, format_short(height, 0),
                 ha='center', va='bottom', fontsize=8, fontweight='bold')
 
+    # Determine max for y-axis scale
+    max_val = max(max(rev), max(bottom))
+    if max_val >= 1e12:
+        scale = 1e12
+        unit = "T"
+    elif max_val >= 1e9:
+        scale = 1e9
+        unit = "B"
+    elif max_val >= 1e6:
+        scale = 1e6
+        unit = "M"
+    elif max_val >= 1e3:
+        scale = 1e3
+        unit = "K"
+    else:
+        scale = 1
+        unit = ""
+
     ax.set_xticks(positions)
     ax.set_xticklabels(yrs)
-    ax.set_ylabel("Amount in Millions")
+    ax.set_ylabel(f"Amount in {unit}")
     ax.set_title(f"Revenue vs Expenses — {ticker}")
     ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"${x/1e6:,.0f}M"))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"${x/scale:,.0f}{unit}"))
 
     plt.tight_layout()
     path = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
