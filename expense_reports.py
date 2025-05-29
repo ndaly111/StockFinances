@@ -7,7 +7,7 @@ from matplotlib.ticker import FuncFormatter
 from datetime import datetime
 import yfinance as yf
 
-DB_PATH = "Stock Data.db"
+DB_PATH    = "Stock Data.db"
 OUTPUT_DIR = "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -21,6 +21,7 @@ def clean_value(val):
 
 
 def extract_expenses(row: pd.Series):
+    """Return (cost_rev, rnd, mkt, adm, sga_combined)."""
     def first(cols):
         for c in cols:
             if c in row and pd.notna(row[c]):
@@ -28,9 +29,9 @@ def extract_expenses(row: pd.Series):
         return 0.0
 
     cost_rev = first(["Cost Of Revenue", "Reconciled Cost Of Revenue"])
-    rnd = first(["Research And Development", "Research Development"])
-    mkt = row.get("Selling And Marketing Expense", np.nan)
-    adm = row.get("General And Administrative Expense", np.nan)
+    rnd      = first(["Research And Development", "Research Development"])
+    mkt      = row.get("Selling And Marketing Expense", np.nan)
+    adm      = row.get("General And Administrative Expense", np.nan)
     sga_comb = first([
         "Selling General & Administrative",
         "Selling General And Administration",
@@ -39,6 +40,7 @@ def extract_expenses(row: pd.Series):
 
     mkt = 0.0 if pd.isna(mkt) else mkt
     adm = 0.0 if pd.isna(adm) else adm
+    # if both granular pieces exist, ignore combined
     if mkt > 0 and adm > 0:
         sga_comb = 0.0
 
@@ -48,11 +50,11 @@ def extract_expenses(row: pd.Series):
 def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
     print(f"\n--- Fetching ANNUAL financials for {ticker} ---")
     tkr = yf.Ticker(ticker)
-    df = tkr.financials.transpose()
+    df  = tkr.financials.transpose()
     print("Fetched columns:", list(df.columns))
 
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS IncomeStatement (
             ticker TEXT,
@@ -84,6 +86,7 @@ def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
             clean_value(mkt), clean_value(adm),
             clean_value(sga)
         ))
+
     conn.commit()
     conn.close()
     print("✅ Income statement stored in DB.")
@@ -91,25 +94,20 @@ def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
 
 
 def format_short(x, decimal=0):
-    if pd.isna(x):
+    """Format x into K/M/B/T with `decimal` decimals."""
+    if pd.isna(x) or x == 0:
         return "$0"
     abs_x = abs(x)
-    if abs_x >= 1e12:
-        return f"${x / 1e12:.{decimal}f} T"
-    elif abs_x >= 1e9:
-        return f"${x / 1e9:.{decimal}f} B"
-    elif abs_x >= 1e6:
-        return f"${x / 1e6:.{decimal}f} M"
-    elif abs_x >= 1e3:
-        return f"${x / 1e3:.{decimal}f} K"
-    else:
-        return f"${x:.{decimal}f}"
+    for factor, suffix in ((1e12,"T"), (1e9,"B"), (1e6,"M"), (1e3,"K")):
+        if abs_x >= factor:
+            return f"${x/factor:.{decimal}f}{suffix}"
+    return f"${x:.{decimal}f}"
 
 
 def load_yearly_data(ticker: str) -> pd.DataFrame:
     print("--- Loading & aggregating yearly data ---")
     conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query("""
+    df   = pd.read_sql_query("""
         SELECT period_ending, total_revenue, cost_of_revenue,
                research_and_development, selling_and_marketing,
                general_and_admin, sga_combined
@@ -119,85 +117,89 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     conn.close()
 
     df["period_ending"] = pd.to_datetime(df["period_ending"])
-    df["year"] = df["period_ending"].dt.year
+    df["year"]          = df["period_ending"].dt.year
 
-    # Only keep numeric columns + 'year'
-    numeric_cols = ["year", "total_revenue", "cost_of_revenue",
-                    "research_and_development", "selling_and_marketing",
-                    "general_and_admin", "sga_combined"]
-    df = df[numeric_cols]
+    cols = ["year","total_revenue","cost_of_revenue",
+            "research_and_development","selling_and_marketing",
+            "general_and_admin","sga_combined"]
+    df = df[cols]
 
-    grouped = df.groupby("year", as_index=False).sum()
-    return grouped
+    return df.groupby("year", as_index=False).sum()
+
 
 def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     print("--- Plotting Revenue vs Expenses ---")
-    yrs = df_yearly["year"].astype(str)
-    n = len(df_yearly)
+    yrs       = df_yearly["year"].astype(str)
+    n         = len(df_yearly)
     positions = np.arange(n)
-    width = 0.4
-    exp_pos = positions - width / 2
-    rev_pos = positions + width / 2
+    width     = 0.4
+    exp_pos   = positions - width/2
+    rev_pos   = positions + width/2
 
-    # Extract values
     rev = df_yearly["total_revenue"]
     cost = df_yearly["cost_of_revenue"]
-    rnd = df_yearly["research_and_development"]
-    mkt = df_yearly["selling_and_marketing"]
-    adm = df_yearly["general_and_admin"]
-    sga = df_yearly["sga_combined"]
+    rnd  = df_yearly["research_and_development"]
+    mkt  = df_yearly["selling_and_marketing"]
+    adm  = df_yearly["general_and_admin"]
+    sga  = df_yearly["sga_combined"]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(9, 4))
     bottom = np.zeros(n)
+    handles = []
 
-    def human_format(num):
-        for unit in ['','K','M','B','T']:
-            if abs(num) < 1000:
-                return f"${num:,.0f}{unit}"
-            num /= 1000
-        return f"${num:,.0f}P"
+    def add_stack(vals, label, color):
+        nonlocal bottom
+        if vals.sum() == 0:
+            return
+        bars = ax.bar(exp_pos, vals, width, bottom=bottom, label=label, color=color)
+        for bar, val in zip(bars, vals):
+            if val > 0:
+                ax.text(
+                    bar.get_x()+bar.get_width()/2,
+                    bottom[bar.get_x()==bar.get_x()]+val/2,
+                    format_short(val,0),
+                    ha='center', va='center', color='white', fontsize=7
+                )
+        bottom += vals
+        handles.append(label)
 
-    def add_bar(values, label, color):
-        if np.sum(values) == 0:
-            return bottom
-        bars = ax.bar(exp_pos, values, width, bottom=bottom, label=label, color=color)
-        for i, bar in enumerate(bars):
-            height = bar.get_height()
-            if height > 0:
-                ax.text(bar.get_x() + bar.get_width()/2, bottom[i] + height/2, human_format(height), ha='center', va='center', fontsize=7)
-        return bottom + values
-
-    bottom = add_bar(cost, "Cost of Revenue", "dimgray")
-    bottom = add_bar(rnd, "R&D", "blue")
-    if np.sum(mkt) > 0 or np.sum(adm) > 0:
-        bottom = add_bar(mkt, "Sales and Marketing", "mediumpurple")
-        bottom = add_bar(adm, "General and Administrative", "pink")
+    # stack in order
+    add_stack(cost, "Cost of Revenue", "dimgray")
+    add_stack(rnd,  "R&D",             "blue")
+    # if granular SM+GA exist use them, else fallback to SG&A
+    if mkt.sum()>0 or adm.sum()>0:
+        add_stack(mkt, "Sales and Marketing", "mediumpurple")
+        add_stack(adm, "General and Administrative", "pink")
     else:
-        bottom = add_bar(sga, "SG&A", "mediumpurple")
+        add_stack(sga, "SG&A", "mediumslateblue")
 
-    # Revenue bars
-    bars = ax.bar(rev_pos, rev, width, label="Revenue", color="green")
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2, height, human_format(height), ha='center', va='bottom', fontsize=8, fontweight='bold')
+    # revenue bars & labels
+    rev_bars = ax.bar(rev_pos, rev, width, label="Revenue", color="green")
+    for bar, val in zip(rev_bars, rev):
+        ax.text(
+            bar.get_x()+bar.get_width()/2,
+            val + rev.max()*0.01,
+            format_short(val,0),
+            ha='center', va='bottom', fontsize=9, fontweight='bold', color='black'
+        )
 
+    # axes & legend
     ax.set_xticks(positions)
     ax.set_xticklabels(yrs)
     ax.set_ylabel("Amount")
     ax.set_title(f"Revenue vs Expenses — {ticker}")
-    ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"${x/1e6:,.0f}M"))
-
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda x,_: format_short(x,0)))
+    ax.legend(handles=handles+["Revenue"], loc="upper left", bbox_to_anchor=(1.01,1.0))
     plt.tight_layout()
-    output_path = os.path.join("charts", f"{ticker}_rev_expense_chart.png")
-    plt.savefig(output_path, dpi=300)
+    out = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
+    plt.savefig(out, dpi=300)
     plt.close(fig)
-    print(f"✅ Saved chart → {output_path}")
+    print(f"✅ Saved chart → {out}")
+
 
 def save_expense_table_html(df_yearly: pd.DataFrame, ticker: str):
     print("--- Saving expense table HTML ---")
-    df = df_yearly.copy()
-    df = df.rename(columns={
+    df = df_yearly.copy().rename(columns={
         "year": "Year", "total_revenue": "Revenue",
         "cost_of_revenue": "Cost of Revenue",
         "research_and_development": "R&D",
@@ -206,8 +208,9 @@ def save_expense_table_html(df_yearly: pd.DataFrame, ticker: str):
         "sga_combined": "SG&A"
     })
 
+    # one decimal in table
     for col in df.columns[1:]:
-        df[col] = df[col].apply(lambda x: format_short(x, 1))
+        df[col] = df[col].apply(lambda x: format_short(x,1))
 
     html = df.to_html(index=False, border=0, classes="table table-striped")
     path = os.path.join(OUTPUT_DIR, f"{ticker}_expense_table.html")
