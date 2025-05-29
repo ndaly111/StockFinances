@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-from datetime import datetime
+from datetime import datetime, timedelta
 import yfinance as yf
 
 DB_PATH = "Stock Data.db"
@@ -38,21 +38,19 @@ def extract_expenses(row: pd.Series):
     mkt = 0.0 if pd.isna(mkt) else mkt
     adm = 0.0 if pd.isna(adm) else adm
     if mkt > 0 and adm > 0:
-        sga_comb = 0.0  # Prefer separate if both are present
+        sga_comb = 0.0  # Prefer separate values
 
     return cost_rev, rnd, mkt, adm, sga_comb
 
-def fetch_and_store_quarterly(ticker: str):
+def store_quarterly_data(ticker: str) -> pd.DataFrame:
     print(f"\n--- Fetching QUARTERLY financials for {ticker} ---")
     tkr = yf.Ticker(ticker)
     df = tkr.quarterly_financials.transpose()
-    print("Fetched columns:", list(df.columns))
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS IncomeStatement_Quarterly (
+        CREATE TABLE IF NOT EXISTS QuarterlyIncomeStatement (
             ticker TEXT,
             period_ending TEXT,
             total_revenue REAL,
@@ -64,8 +62,7 @@ def fetch_and_store_quarterly(ticker: str):
             PRIMARY KEY (ticker, period_ending)
         );
     """)
-
-    cur.execute("DELETE FROM IncomeStatement_Quarterly WHERE ticker = ?", (ticker,))
+    cur.execute("DELETE FROM QuarterlyIncomeStatement WHERE ticker = ?", (ticker,))
 
     for idx, row in df.iterrows():
         pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
@@ -74,7 +71,7 @@ def fetch_and_store_quarterly(ticker: str):
             *extract_expenses(row)
         )
         cur.execute("""
-            INSERT OR REPLACE INTO IncomeStatement_Quarterly
+            INSERT OR REPLACE INTO QuarterlyIncomeStatement
               (ticker, period_ending, total_revenue, cost_of_revenue,
                research_and_development, selling_and_marketing,
                general_and_admin, sga_combined)
@@ -87,35 +84,39 @@ def fetch_and_store_quarterly(ticker: str):
         ))
     conn.commit()
     conn.close()
-    print("✅ Quarterly income statement stored in DB.")
+    print("✅ Quarterly data stored.")
+    return df
 
-def load_ttm_data(ticker: str) -> pd.DataFrame:
+def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("""
-        SELECT * FROM IncomeStatement_Quarterly
+        SELECT * FROM QuarterlyIncomeStatement
         WHERE ticker = ?
+        ORDER BY period_ending DESC
     """, conn, params=(ticker,))
     conn.close()
-
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df = df.sort_values("period_ending", ascending=False)
-    recent_cutoff = pd.Timestamp.today() - pd.DateOffset(months=5)
-    df = df[df["period_ending"] >= recent_cutoff]
 
-    if len(df) < 4:
-        print("❌ Not enough recent quarters for TTM.")
+    recent_cutoff = datetime.today() - timedelta(days=150)
+    recent_df = df[df["period_ending"] > recent_cutoff]
+
+    if len(recent_df) < 4:
+        print(f"⛔ Not enough recent data for TTM: {len(recent_df)} quarters")
         return pd.DataFrame()
 
-    # Check for consecutive quarters (3-month intervals)
-    diffs = df["period_ending"].diff(-1).dt.days.dropna()
-    if not all((85 <= d <= 100) for d in diffs[:3]):
-        print("❌ Quarters not consecutive.")
+    recent_df = recent_df.head(4).sort_values("period_ending")
+
+    # Validate consecutive quarters
+    expected_quarters = pd.date_range(end=recent_df["period_ending"].max(), periods=4, freq="Q")
+    actual_quarters = list(recent_df["period_ending"].dt.to_period("Q"))
+    if list(expected_quarters.to_period("Q")) != actual_quarters:
+        print("⛔ Quarters are not consecutive — TTM invalid")
         return pd.DataFrame()
 
-    latest_year = df["period_ending"].max().year
-    agg = df.head(4).drop(columns=["ticker", "period_ending"]).sum().to_frame().T
-    agg["year"] = f"{latest_year} TTM"
-    return agg[["year"] + [c for c in agg.columns if c != "year"]]
+    agg = recent_df.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
+    agg.insert(0, "year", "TTM")
+    return agg
 
 def format_short(x, decimal=1):
     if pd.isna(x):
@@ -135,7 +136,10 @@ def format_short(x, decimal=1):
 def load_yearly_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("""
-        SELECT * FROM IncomeStatement
+        SELECT period_ending, total_revenue, cost_of_revenue,
+               research_and_development, selling_and_marketing,
+               general_and_admin, sga_combined
+        FROM IncomeStatement
         WHERE ticker = ?
     """, conn, params=(ticker,))
     conn.close()
@@ -143,17 +147,20 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year"] = df["period_ending"].dt.year
 
-    df_annual = df.drop(columns=["ticker", "period_ending"])
-    df_annual = df_annual.groupby("year", as_index=False).sum()
-    return df_annual
+    numeric_cols = ["year", "total_revenue", "cost_of_revenue",
+                    "research_and_development", "selling_and_marketing",
+                    "general_and_admin", "sga_combined"]
+    df = df[numeric_cols]
+    return df.groupby("year", as_index=False).sum()
 
-def plot_revenue_vs_expenses(df: pd.DataFrame, ticker: str):
+def plot_chart(df: pd.DataFrame, ticker: str):
+    print("--- Plotting Revenue vs Expenses ---")
     yrs = df["year"].astype(str)
     n = len(df)
-    pos = np.arange(n)
+    positions = np.arange(n)
     width = 0.35
-    exp_pos = pos - width / 2
-    rev_pos = pos + width / 2
+    exp_pos = positions - width / 2
+    rev_pos = positions + width / 2
 
     rev = df["total_revenue"]
     cost = df["cost_of_revenue"]
@@ -165,44 +172,48 @@ def plot_revenue_vs_expenses(df: pd.DataFrame, ticker: str):
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
     bottom = np.zeros(n)
 
-    def stack(values, label, color):
+    def add_stack(values, label, color):
         if np.sum(values) == 0:
             return bottom
         bars = ax.bar(exp_pos, values, width, bottom=bottom, label=label, color=color)
         for i, bar in enumerate(bars):
-            if bar.get_height() > 0:
-                ax.text(bar.get_x() + bar.get_width()/2, bottom[i] + bar.get_height()/2,
-                        format_short(bar.get_height(), 0), ha='center', va='center', fontsize=7, color='white')
+            val = bar.get_height()
+            if val > 0:
+                ax.text(bar.get_x() + bar.get_width()/2,
+                        bottom[i] + val/2,
+                        format_short(val, 0),
+                        ha='center', va='center', fontsize=7, color='white')
         return bottom + values
 
-    bottom = stack(cost, "Cost of Revenue", "dimgray")
-    bottom = stack(rnd, "R&D", "blue")
+    bottom = add_stack(cost, "Cost of Revenue", "dimgray")
+    bottom = add_stack(rnd, "R&D", "blue")
     if np.sum(mkt) > 0 or np.sum(adm) > 0:
-        bottom = stack(mkt, "Sales and Marketing", "mediumpurple")
-        bottom = stack(adm, "General and Administrative", "pink")
+        bottom = add_stack(mkt, "Sales and Marketing", "mediumpurple")
+        bottom = add_stack(adm, "General and Administrative", "pink")
     else:
-        bottom = stack(sga, "SG&A", "mediumpurple")
+        bottom = add_stack(sga, "SG&A", "mediumpurple")
 
     bars = ax.bar(rev_pos, rev, width, label="Revenue", color="green")
     for i, bar in enumerate(bars):
-        if bar.get_height() > 0:
-            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height(), format_short(bar.get_height(), 0),
-                    ha='center', va='bottom', fontsize=8, fontweight='bold')
+        height = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2, height, format_short(height, 0),
+                ha='center', va='bottom', fontsize=8, fontweight='bold')
 
-    ax.set_xticks(pos)
+    ax.set_xticks(positions)
     ax.set_xticklabels(yrs)
     ax.set_ylabel("Amount")
     ax.set_title(f"Revenue vs Expenses — {ticker}")
     ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
     ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: format_short(x, 0)))
-    plt.tight_layout()
 
+    plt.tight_layout()
     path = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
     plt.savefig(path, dpi=100)
     plt.close()
     print(f"✅ Saved chart → {path}")
 
 def save_expense_table_html(df: pd.DataFrame, ticker: str):
+    print("--- Saving expense table HTML ---")
     df = df.rename(columns={
         "year": "Year", "total_revenue": "Revenue",
         "cost_of_revenue": "Cost of Revenue",
@@ -211,6 +222,7 @@ def save_expense_table_html(df: pd.DataFrame, ticker: str):
         "general_and_admin": "General and Administrative",
         "sga_combined": "SG&A"
     }).copy()
+
     for col in df.columns[1:]:
         df[col] = df[col].apply(lambda x: format_short(x, 1))
 
@@ -222,12 +234,13 @@ def save_expense_table_html(df: pd.DataFrame, ticker: str):
 
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
-    fetch_and_store_quarterly(ticker)
-    annual_df = load_yearly_data(ticker)
-    ttm_df = load_ttm_data(ticker)
-    final_df = pd.concat([annual_df, ttm_df], ignore_index=True)
-    save_expense_table_html(final_df, ticker)
-    plot_revenue_vs_expenses(final_df, ticker)
+    store_quarterly_data(ticker)
+    yearly = load_yearly_data(ticker)
+    ttm = fetch_ttm_data(ticker)
+    if not ttm.empty:
+        yearly = pd.concat([yearly, ttm], ignore_index=True)
+    save_expense_table_html(yearly, ticker)
+    plot_chart(yearly, ticker)
     print(f"\n=== Done for {ticker} ===\n")
 
 if __name__ == "__main__":
