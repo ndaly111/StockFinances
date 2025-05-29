@@ -184,69 +184,83 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     n         = len(df_yearly)
     positions = np.arange(n)
     width     = 0.4
-    exp_pos   = positions - width/2
-    rev_pos   = positions + width/2
+    exp_pos   = positions - width / 2
+    rev_pos   = positions + width / 2
 
-    # <--- Fig size reduced here from (8,4) to (6,4)
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(10, 4))
 
-    # helper to add labels
-    def add_labels(xs, ys):
-        for x, y in zip(xs, ys):
-            if y > 0:
-                ax.text(x, y, f"${y/1e6:,.0f}M",
-                        ha='center', va='bottom',
-                        fontsize=7, rotation=90)
+    # Custom formatter
+    def format_money(val):
+        abs_val = abs(val)
+        if abs_val >= 1e12:
+            return f"${val / 1e12:.1f} T"
+        elif abs_val >= 1e9:
+            return f"${val / 1e9:.1f} B"
+        elif abs_val >= 1e6:
+            return f"${val / 1e6:.1f} M"
+        elif abs_val >= 1e3:
+            return f"${val / 1e3:.1f} K"
+        elif abs_val > 0:
+            return f"${val:,.0f}"
+        else:
+            return "$0"
 
-    # build expense stack
-    bottom = np.zeros(n)
-    for vals, label, color in [
+    # Expense bar stack
+    expense_components = [
         (cost, "Cost of Revenue", "dimgray"),
-        (rnd,  "R&D",             "blue")
-    ]:
-        ax.bar(exp_pos, vals, width, bottom=bottom,
-               label=label, color=color)
+        (rnd,  "R&D",             "blue"),
+        (mkt,  "Sales and Marketing", "mediumpurple"),
+        (adm,  "General and Administrative", "pink"),
+        (sga,  "SG&A", "mediumpurple")
+    ]
+
+    bottom = np.zeros(n)
+    for vals, label, color in expense_components:
+        if np.nansum(vals) == 0:
+            continue  # skip label if all-zero
+        ax.bar(exp_pos, vals, width, bottom=bottom, label=label, color=color)
         bottom += vals
 
-    # granular S&M / G&A if present, else fallback
-    if mkt.sum() > 0 or adm.sum() > 0:
-        if mkt.sum() > 0:
-            ax.bar(exp_pos, mkt, width, bottom=bottom,
-                   label="Sales and Marketing", color="mediumpurple")
-            bottom += mkt
-        if adm.sum() > 0:
-            ax.bar(exp_pos, adm, width, bottom=bottom,
-                   label="General and Administrative", color="pink")
-            bottom += adm
-    else:
-        ax.bar(exp_pos, sga, width, bottom=bottom,
-               label="SG&A", color="mediumpurple")
-        bottom += sga
+    # Revenue bars
+    if np.nansum(rev) > 0:
+        ax.bar(rev_pos, rev, width, label="Revenue", color="green")
 
-    # <--- add data‐labels on top of each expense stack
-    add_labels(exp_pos, bottom)
-
-    # revenue bars
-    ax.bar(rev_pos, rev, width, label="Revenue", color="green")
-    # <--- add data‐labels on top of each revenue bar
-    add_labels(rev_pos, rev)
-
-    # formatting
+    # Axis formatting
     ax.set_xticks(positions)
     ax.set_xticklabels(yrs)
-    ax.yaxis.set_major_formatter(
-        FuncFormatter(lambda x, _: f"${x/1e6:,.0f}M")
-    )
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: format_money(x)))
     ax.set_ylabel("Amount")
     ax.set_title(f"Revenue vs Expenses — {ticker}")
     ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
     plt.tight_layout()
 
+    # Table prep
+    tbl = df_yearly.copy()
+    tbl["Revenue"] = rev
+    tbl["Cost of Revenue"] = cost
+    tbl["R&D"] = rnd
+    tbl["SG&A"] = mkt.fillna(0) + adm.fillna(0) + sga.fillna(0)
+    tbl["Year"] = yrs
+
+    table_data = tbl[["Year", "Revenue", "Cost of Revenue", "R&D", "SG&A"]].copy()
+    for col in ["Revenue", "Cost of Revenue", "R&D", "SG&A"]:
+        table_data[col] = table_data[col].apply(format_money)
+
+    # Add table below
+    cell_data = table_data.values
+    col_labels = table_data.columns.tolist()
+    plt.table(cellText=cell_data,
+              colLabels=col_labels,
+              cellLoc='center',
+              loc='bottom',
+              bbox=[0.0, -0.48, 1, 0.33])
+    plt.subplots_adjust(bottom=0.35)
+
+    # Save
     path = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
     plt.savefig(path, dpi=300)
     plt.close(fig)
     print(f"✅ Saved chart → {path}")
-
 
 # ────────────────────────────────────────────────
 # YoY % Δ for expense categories
