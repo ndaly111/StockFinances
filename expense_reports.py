@@ -133,60 +133,66 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
 def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     print("--- Plotting Revenue vs Expenses ---")
     yrs = df_yearly["year"].astype(str)
-    cost = df_yearly["cost_of_revenue"]
-    rnd = df_yearly["research_and_development"]
-    mkt = df_yearly["selling_and_marketing"]
-    adm = df_yearly["general_and_admin"]
-    sga = df_yearly["sga_combined"]
-    rev = df_yearly["total_revenue"]
-
     n = len(df_yearly)
     positions = np.arange(n)
     width = 0.4
     exp_pos = positions - width / 2
     rev_pos = positions + width / 2
 
-    fig, ax = plt.subplots(figsize=(8, 4))
+    # Extract values
+    rev = df_yearly["total_revenue"]
+    cost = df_yearly["cost_of_revenue"]
+    rnd = df_yearly["research_and_development"]
+    mkt = df_yearly["selling_and_marketing"]
+    adm = df_yearly["general_and_admin"]
+    sga = df_yearly["sga_combined"]
+
+    fig, ax = plt.subplots(figsize=(10, 5))
     bottom = np.zeros(n)
 
-    legend_labels = []
-    def stack_bar(series, label, color):
-        nonlocal bottom
-        if series.sum() > 0:
-            ax.bar(exp_pos, series, width, bottom=bottom, label=label, color=color)
-            bottom += series
-            legend_labels.append(label)
+    def human_format(num):
+        for unit in ['','K','M','B','T']:
+            if abs(num) < 1000:
+                return f"${num:,.0f}{unit}"
+            num /= 1000
+        return f"${num:,.0f}P"
 
-    stack_bar(cost, "Cost of Revenue", "dimgray")
-    stack_bar(rnd, "R&D", "blue")
-    stack_bar(mkt, "Sales and Marketing", "mediumpurple")
-    stack_bar(adm, "General and Administrative", "pink")
-    stack_bar(sga, "SG&A", "violet")
+    def add_bar(values, label, color):
+        if np.sum(values) == 0:
+            return bottom
+        bars = ax.bar(exp_pos, values, width, bottom=bottom, label=label, color=color)
+        for i, bar in enumerate(bars):
+            height = bar.get_height()
+            if height > 0:
+                ax.text(bar.get_x() + bar.get_width()/2, bottom[i] + height/2, human_format(height), ha='center', va='center', fontsize=7)
+        return bottom + values
 
-    # Add total expense labels
-    for i, total in enumerate(bottom):
-        ax.text(exp_pos[i], total, format_short(total, 0),
-                ha='center', va='bottom', fontsize=8)
+    bottom = add_bar(cost, "Cost of Revenue", "dimgray")
+    bottom = add_bar(rnd, "R&D", "blue")
+    if np.sum(mkt) > 0 or np.sum(adm) > 0:
+        bottom = add_bar(mkt, "Sales and Marketing", "mediumpurple")
+        bottom = add_bar(adm, "General and Administrative", "pink")
+    else:
+        bottom = add_bar(sga, "SG&A", "mediumpurple")
 
-    # Revenue bars and labels
-    ax.bar(rev_pos, rev, width, label="Revenue", color="green")
-    for i, r in enumerate(rev):
-        ax.text(rev_pos[i], r, format_short(r, 0),
-                ha='center', va='bottom', fontsize=8)
+    # Revenue bars
+    bars = ax.bar(rev_pos, rev, width, label="Revenue", color="green")
+    for bar in bars:
+        height = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2, height, human_format(height), ha='center', va='bottom', fontsize=8, fontweight='bold')
 
     ax.set_xticks(positions)
     ax.set_xticklabels(yrs)
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: format_short(x, 0)))
     ax.set_ylabel("Amount")
     ax.set_title(f"Revenue vs Expenses — {ticker}")
     ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"${x/1e6:,.0f}M"))
+
     plt.tight_layout()
-
-    path = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
-    plt.savefig(path, dpi=300)
+    output_path = os.path.join("charts", f"{ticker}_rev_expense_chart.png")
+    plt.savefig(output_path, dpi=300)
     plt.close(fig)
-    print(f"✅ Saved chart → {path}")
-
+    print(f"✅ Saved chart → {output_path}")
 
 def save_expense_table_html(df_yearly: pd.DataFrame, ticker: str):
     print("--- Saving expense table HTML ---")
