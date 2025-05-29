@@ -90,7 +90,7 @@ def fetch_and_store_income_statement(ticker: str) -> pd.DataFrame:
     return df
 
 
-def format_short(x, decimal=0):
+def format_short(x, decimal=1):
     if pd.isna(x):
         return "$0"
     abs_x = abs(x)
@@ -121,14 +121,12 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year"] = df["period_ending"].dt.year
 
-    # Only keep numeric columns + 'year'
     numeric_cols = ["year", "total_revenue", "cost_of_revenue",
                     "research_and_development", "selling_and_marketing",
                     "general_and_admin", "sga_combined"]
     df = df[numeric_cols]
+    return df.groupby("year", as_index=False).sum()
 
-    grouped = df.groupby("year", as_index=False).sum()
-    return grouped
 
 def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     print("--- Plotting Revenue vs Expenses ---")
@@ -139,7 +137,6 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     exp_pos = positions - width / 2
     rev_pos = positions + width / 2
 
-    # Extract values
     rev = df_yearly["total_revenue"]
     cost = df_yearly["cost_of_revenue"]
     rnd = df_yearly["research_and_development"]
@@ -150,61 +147,57 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     fig, ax = plt.subplots(figsize=(10, 5))
     bottom = np.zeros(n)
 
-    def human_format(num):
-        for unit in ['','K','M','B','T']:
-            if abs(num) < 1000:
-                return f"${num:,.0f}{unit}"
-            num /= 1000
-        return f"${num:,.0f}P"
-
-    def add_bar(values, label, color):
+    def add_stack(values, label, color):
         if np.sum(values) == 0:
             return bottom
         bars = ax.bar(exp_pos, values, width, bottom=bottom, label=label, color=color)
         for i, bar in enumerate(bars):
-            height = bar.get_height()
-            if height > 0:
-                ax.text(bar.get_x() + bar.get_width()/2, bottom[i] + height/2, human_format(height), ha='center', va='center', fontsize=7)
+            val = bar.get_height()
+            if val > 0:
+                ax.text(bar.get_x() + bar.get_width()/2,
+                        bottom[i] + val/2,
+                        format_short(val, 0),
+                        ha='center', va='center', fontsize=7, color='white')
         return bottom + values
 
-    bottom = add_bar(cost, "Cost of Revenue", "dimgray")
-    bottom = add_bar(rnd, "R&D", "blue")
+    bottom = add_stack(cost, "Cost of Revenue", "dimgray")
+    bottom = add_stack(rnd, "R&D", "blue")
     if np.sum(mkt) > 0 or np.sum(adm) > 0:
-        bottom = add_bar(mkt, "Sales and Marketing", "mediumpurple")
-        bottom = add_bar(adm, "General and Administrative", "pink")
+        bottom = add_stack(mkt, "Sales and Marketing", "mediumpurple")
+        bottom = add_stack(adm, "General and Administrative", "pink")
     else:
-        bottom = add_bar(sga, "SG&A", "mediumpurple")
+        bottom = add_stack(sga, "SG&A", "mediumpurple")
 
-    # Revenue bars
     bars = ax.bar(rev_pos, rev, width, label="Revenue", color="green")
-    for bar in bars:
+    for i, bar in enumerate(bars):
         height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2, height, human_format(height), ha='center', va='bottom', fontsize=8, fontweight='bold')
+        ax.text(bar.get_x() + bar.get_width()/2, height, format_short(height, 0),
+                ha='center', va='bottom', fontsize=8, fontweight='bold')
 
     ax.set_xticks(positions)
     ax.set_xticklabels(yrs)
-    ax.set_ylabel("Amount")
+    ax.set_ylabel("Amount in Millions")
     ax.set_title(f"Revenue vs Expenses — {ticker}")
     ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
     ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f"${x/1e6:,.0f}M"))
 
     plt.tight_layout()
-    output_path = os.path.join("charts", f"{ticker}_rev_expense_chart.png")
-    plt.savefig(output_path, dpi=300)
-    plt.close(fig)
-    print(f"✅ Saved chart → {output_path}")
+    path = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
+    plt.savefig(path, dpi=300)
+    plt.close()
+    print(f"✅ Saved chart → {path}")
+
 
 def save_expense_table_html(df_yearly: pd.DataFrame, ticker: str):
     print("--- Saving expense table HTML ---")
-    df = df_yearly.copy()
-    df = df.rename(columns={
+    df = df_yearly.rename(columns={
         "year": "Year", "total_revenue": "Revenue",
         "cost_of_revenue": "Cost of Revenue",
         "research_and_development": "R&D",
         "selling_and_marketing": "Sales and Marketing",
         "general_and_admin": "General and Administrative",
         "sga_combined": "SG&A"
-    })
+    }).copy()
 
     for col in df.columns[1:]:
         df[col] = df[col].apply(lambda x: format_short(x, 1))
