@@ -125,7 +125,6 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
         "research_and_development", "selling_and_marketing",
         "general_and_admin", "sga_combined"
     ]].sum()
-    )
     print(grouped)
     return grouped
 
