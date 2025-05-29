@@ -183,7 +183,7 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
 
     plt.tight_layout()
     path = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
-    plt.savefig(path, dpi=300)
+    plt.savefig(path, dpi=100)
     plt.close()
     print(f"✅ Saved chart → {path}")
 
