@@ -185,7 +185,7 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     exp_pos  = positions - width/2
     rev_pos  = positions + width/2
 
-    fig, ax = plt.subplots(figsize=(11, 6))
+    fig, ax = plt.subplots(figsize=(8, 4))
 
     # build expense stack
     bottom = np.zeros(n)
