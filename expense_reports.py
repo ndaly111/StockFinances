@@ -40,9 +40,11 @@ def extract_expenses(row: pd.Series):
     rnd      = first(["Research And Development", "Research Development"])
     mkt      = row.get("Selling And Marketing Expense", np.nan)
     adm      = row.get("General And Administrative Expense", np.nan)
-    sga_comb = first(["Selling General & Administrative",
-                      "Selling General And Administration",
-                      "Selling General Administrative"])
+    sga_comb = first([
+        "Selling General & Administrative",
+        "Selling General And Administration",
+        "Selling General Administrative"
+    ])
 
     # normalize nan → 0
     mkt = 0.0 if pd.isna(mkt) else mkt
@@ -179,13 +181,22 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     sga   = df_yearly["sga_combined"]
     rev   = df_yearly["total_revenue"]
 
-    n        = len(df_yearly)
-    positions= np.arange(n)
-    width    = 0.4
-    exp_pos  = positions - width/2
-    rev_pos  = positions + width/2
+    n         = len(df_yearly)
+    positions = np.arange(n)
+    width     = 0.4
+    exp_pos   = positions - width/2
+    rev_pos   = positions + width/2
 
-    fig, ax = plt.subplots(figsize=(8, 4))
+    # <--- Fig size reduced here from (8,4) to (6,4)
+    fig, ax = plt.subplots(figsize=(6, 4))
+
+    # helper to add labels
+    def add_labels(xs, ys):
+        for x, y in zip(xs, ys):
+            if y > 0:
+                ax.text(x, y, f"${y/1e6:,.0f}M",
+                        ha='center', va='bottom',
+                        fontsize=7, rotation=90)
 
     # build expense stack
     bottom = np.zeros(n)
@@ -198,12 +209,12 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
         bottom += vals
 
     # granular S&M / G&A if present, else fallback
-    if mkt.sum()>0 or adm.sum()>0:
-        if mkt.sum()>0:
+    if mkt.sum() > 0 or adm.sum() > 0:
+        if mkt.sum() > 0:
             ax.bar(exp_pos, mkt, width, bottom=bottom,
                    label="Sales and Marketing", color="mediumpurple")
             bottom += mkt
-        if adm.sum()>0:
+        if adm.sum() > 0:
             ax.bar(exp_pos, adm, width, bottom=bottom,
                    label="General and Administrative", color="pink")
             bottom += adm
@@ -212,8 +223,13 @@ def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
                label="SG&A", color="mediumpurple")
         bottom += sga
 
+    # <--- add data‐labels on top of each expense stack
+    add_labels(exp_pos, bottom)
+
     # revenue bars
     ax.bar(rev_pos, rev, width, label="Revenue", color="green")
+    # <--- add data‐labels on top of each revenue bar
+    add_labels(rev_pos, rev)
 
     # formatting
     ax.set_xticks(positions)
