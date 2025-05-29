@@ -121,8 +121,14 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year"] = df["period_ending"].dt.year
 
-    return df.groupby("year", as_index=False).sum()
+    # Only keep numeric columns + 'year'
+    numeric_cols = ["year", "total_revenue", "cost_of_revenue",
+                    "research_and_development", "selling_and_marketing",
+                    "general_and_admin", "sga_combined"]
+    df = df[numeric_cols]
 
+    grouped = df.groupby("year", as_index=False).sum()
+    return grouped
 
 def plot_revenue_vs_expenses(df_yearly: pd.DataFrame, ticker: str):
     print("--- Plotting Revenue vs Expenses ---")
