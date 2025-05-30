@@ -1,8 +1,14 @@
 import os
 import yfinance as yf
-from ticker_manager import read_tickers, modify_tickers
+import pandas as pd
 
+TICKER_FILE = "tickers.csv"
 OUTPUT_FILE = "income_statement_categories.txt"
+
+def read_tickers(file_path):
+    df = pd.read_csv(file_path)
+    tickers = df.iloc[:, 0].dropna().astype(str).tolist()
+    return tickers
 
 def collect_income_statement_fields(tickers):
     fields = set()
@@ -12,12 +18,12 @@ def collect_income_statement_fields(tickers):
         try:
             tkr = yf.Ticker(ticker)
 
-            # Annual financials
+            # Annual income statement
             annual = tkr.financials
             if not annual.empty:
                 fields.update(annual.index.tolist())
 
-            # Quarterly financials
+            # Quarterly income statement
             quarterly = tkr.quarterly_financials
             if not quarterly.empty:
                 fields.update(quarterly.index.tolist())
@@ -34,7 +40,7 @@ def save_fields_to_file(fields, output_path):
     print(f"✅ Saved income statement categories to → {output_path}")
 
 def main():
-    tickers = modify_tickers(read_tickers("tickers.csv"))
+    tickers = read_tickers(TICKER_FILE)
     fields = collect_income_statement_fields(tickers)
     save_fields_to_file(fields, OUTPUT_FILE)
 
