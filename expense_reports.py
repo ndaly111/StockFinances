@@ -62,7 +62,7 @@ def store_quarterly_data(ticker: str) -> pd.DataFrame:
             PRIMARY KEY (ticker, period_ending)
         );
     """)
-    cur.execute("DELETE FROM QuarterlyIncomeStatement WHERE ticker = ?", (ticker,))
+    # DELETE REMOVED - retain prior quarterly data
 
     for idx, row in df.iterrows():
         pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
@@ -107,7 +107,6 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
 
     recent_df = recent_df.head(4).sort_values("period_ending")
 
-    # Validate consecutive quarters
     expected_quarters = pd.date_range(end=recent_df["period_ending"].max(), periods=4, freq="Q")
     actual_quarters = list(recent_df["period_ending"].dt.to_period("Q"))
     if list(expected_quarters.to_period("Q")) != actual_quarters:
@@ -144,13 +143,23 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     """, conn, params=(ticker,))
     conn.close()
 
-    df["period_ending"] = pd.to_datetime(df["period_ending"])
+    if df.empty:
+        print(f"⛔ No data found in IncomeStatement for {ticker}")
+        return pd.DataFrame()
+
+    df["period_ending"] = pd.to_datetime(df["period_ending"], errors="coerce")
+    df = df.dropna(subset=["period_ending"])
     df["year"] = df["period_ending"].dt.year
 
     numeric_cols = ["year", "total_revenue", "cost_of_revenue",
                     "research_and_development", "selling_and_marketing",
                     "general_and_admin", "sga_combined"]
     df = df[numeric_cols]
+
+    if df[numeric_cols[1:]].replace(0, np.nan).dropna(how="all").empty:
+        print(f"⛔ All numeric data for {ticker} is zero or NaN")
+        return pd.DataFrame()
+
     return df.groupby("year", as_index=False).sum()
 
 def plot_chart(df: pd.DataFrame, ticker: str):
@@ -235,12 +244,22 @@ def save_expense_table_html(df: pd.DataFrame, ticker: str):
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
     store_quarterly_data(ticker)
+
     yearly = load_yearly_data(ticker)
+    if yearly.empty:
+        print(f"⚠️ No annual data found in IncomeStatement for {ticker}")
+
     ttm = fetch_ttm_data(ticker)
-    if not ttm.empty:
-        yearly = pd.concat([yearly, ttm], ignore_index=True)
-    save_expense_table_html(yearly, ticker)
-    plot_chart(yearly, ticker)
+    if ttm.empty:
+        print(f"⚠️ No valid TTM data from QuarterlyIncomeStatement for {ticker}")
+
+    if yearly.empty and ttm.empty:
+        print(f"⛔ No yearly or TTM data available for {ticker} — skipping report")
+        return
+
+    combined = pd.concat([df for df in [yearly, ttm] if not df.empty], ignore_index=True)
+    save_expense_table_html(combined, ticker)
+    plot_chart(combined, ticker)
     print(f"\n=== Done for {ticker} ===\n")
 
 if __name__ == "__main__":
