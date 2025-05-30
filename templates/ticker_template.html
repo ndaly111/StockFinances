@@ -55,7 +55,6 @@
         </div>
       </div>
 
-      <!-- INSERTED: Expense Overview carousel -->
       <div><br><br><h1>{{ ticker_data.ticker }} - Expense Overview</h1></div>
       <div class="carousel-container">
         <div class="carousel-item">
@@ -71,7 +70,12 @@
           {{ ticker_data.expense_yoy_table_html | safe }}
         </div>
       </div>
-      <!-- END Expense Overview -->
+
+      <!-- NEW: Unmapped Line Items -->
+      <div><br><br><h1>{{ ticker_data.ticker }} - Unmapped Expense Line Items</h1></div>
+      <div>
+        {{ ticker_data.unmapped_expense_html | safe }}
+      </div>
 
       <hr>
       {% if ticker_data.valuation_chart %}
