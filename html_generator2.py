@@ -196,6 +196,69 @@ def create_ticker_page(ticker, ticker_data, output_dir):
     with open(page_path, 'w', encoding='utf-8') as f:
         f.write(template.render(ticker_data=ticker_data))
 
+def generate_dashboard_table(dashboard_data):
+    df = pd.DataFrame(dashboard_data, columns=[
+        "Ticker", "Share Price", "Nicks TTM Valuation", "Nicks TTM Value",
+        "Nicks Forward Valuation", "Nicks Forward Value",
+        "Finviz TTM Valuation",    "Finviz TTM Value",
+        "Finviz Forward Valuation","Finviz Forward Value"
+    ])
+    df.drop(columns=[
+        "Nicks TTM Valuation", "Nicks Forward Valuation",
+        "Finviz TTM Valuation","Finviz Forward Valuation"
+    ], inplace=True)
+    df["Ticker"] = df["Ticker"].apply(
+        lambda t: f'<a href="pages/{t}_page.html">{t}</a>'
+    )
+
+    def pct(x):
+        try:    return float(x.strip('%'))
+        except: return None
+
+    avgv = {
+        'Nicks_TTM_Value_Average':
+            df["Nicks TTM Value"].apply(pct).mean(),
+        'Nicks_Forward_Value_Average':
+            df["Nicks Forward Value"].apply(pct).mean(),
+        'Finviz_TTM_Value_Average':
+            df["Finviz TTM Value"].apply(pct).mean(),
+        'Nicks_TTM_Value_Median':
+            df["Nicks TTM Value"].apply(pct).median(),
+        'Nicks_Forward_Value_Median':
+            df["Nicks Forward Value"].apply(pct).median(),
+        'Finviz_TTM_Value_Median':
+            df["Finviz TTM Value"].apply(pct).median(),
+        'Finviz_Forward_Value_Median':
+            df["Finviz Forward Value"].apply(pct).median()
+    }
+
+    rows = [
+        ["Average",
+         f"{avgv['Nicks_TTM_Value_Average']:.1f}%",
+         f"{avgv['Nicks_Forward_Value_Average']:.1f}%",
+         f"{avgv['Finviz_TTM_Value_Average']:.1f}%",
+         f"{avgv['Finviz_Forward_Value_Median']:.1f}%"],
+        ["Median",
+         f"{avgv['Nicks_TTM_Value_Median']:.1f}%",
+         f"{avgv['Nicks_Forward_Value_Median']:.1f}%",
+         f"{avgv['Finviz_TTM_Value_Median']:.1f}%",
+         f"{avgv['Finviz_Forward_Value_Median']:.1f}%"]
+    ]
+    avg_table = pd.DataFrame(rows, columns=[
+        "Metric","Nicks TTM Value","Nicks Forward Value",
+        "Finviz TTM Value","Finviz Forward Value"
+    ]).to_html(index=False, escape=False, classes='table table-striped')
+
+    dash_table = df.to_html(
+        index=False, escape=False,
+        classes='table table-striped', table_id="sortable-table"
+    )
+
+    with open('charts/dashboard.html','w',encoding='utf-8') as f:
+        f.write(avg_table + dash_table)
+
+    return avg_table + dash_table, avgv
+
 def html_generator2(tickers, financial_data, full_dashboard_html,
                     avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
