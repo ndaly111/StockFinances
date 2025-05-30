@@ -133,6 +133,7 @@ def format_short(x, decimal=1):
     else:
         return f"${x:.{decimal}f}"
 
+
 def load_yearly_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("""
@@ -144,13 +145,25 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
     """, conn, params=(ticker,))
     conn.close()
 
-    df["period_ending"] = pd.to_datetime(df["period_ending"])
+    if df.empty:
+        print(f"⛔ No data found in IncomeStatement for {ticker}")
+        return pd.DataFrame()
+
+    df["period_ending"] = pd.to_datetime(df["period_ending"], errors="coerce")
+    df = df.dropna(subset=["period_ending"])
+
     df["year"] = df["period_ending"].dt.year
 
     numeric_cols = ["year", "total_revenue", "cost_of_revenue",
                     "research_and_development", "selling_and_marketing",
                     "general_and_admin", "sga_combined"]
     df = df[numeric_cols]
+
+    # Check if all numeric values are zero or NaN
+    if df[numeric_cols[1:]].replace(0, np.nan).dropna(how="all").empty:
+        print(f"⛔ All numeric data for {ticker} is zero or NaN")
+        return pd.DataFrame()
+
     return df.groupby("year", as_index=False).sum()
 
 def plot_chart(df: pd.DataFrame, ticker: str):
