@@ -15,7 +15,6 @@ def ensure_directory_exists(directory):
 
 def create_template(template_path, content):
     ensure_directory_exists(os.path.dirname(template_path))
-    # overwrite only if the content has changed
     if os.path.exists(template_path):
         with open(template_path, 'r', encoding='utf-8') as f:
             if f.read() == content:
@@ -31,93 +30,12 @@ def get_company_short_name(ticker, cursor):
     stock = yf.Ticker(ticker)
     short_name = stock.info.get('shortName', '').strip()
     if short_name:
-        cursor.execute(
-            "UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?",
-            (short_name, ticker)
-        )
+        cursor.execute("UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?", (short_name, ticker))
         cursor.connection.commit()
         return short_name
     return ticker
 
 def ensure_templates_exist():
-    # home_template.html (unchanged)
-    home_template_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Nick's Stock Financials</title>
-        <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-        <style>
-            .positive { color: green; }
-            .negative { color: red; }
-            .center-table { margin: 0 auto; width: 80%; }
-            .highlight-soon { background-color: #fff3cd; }
-        </style>
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                $('#sortable-table').DataTable({
-                    "pageLength": 100,
-                    "createdRow": function(row, data, dataIndex) {
-                        $('td', row).each(function() {
-                            var cellValue = $(this).text();
-                            if (cellValue.includes('%')) {
-                                var value = parseFloat(cellValue.replace('%', ''));
-                                if (!isNaN(value)) {
-                                    if (value < 0) {
-                                        $(this).addClass('negative');
-                                    } else {
-                                        $(this).addClass('positive');
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-            });
-        </script>
-    </head>
-    <body>
-    <header>
-        <h1>Financial Overview</h1>
-    </header>
-
-    <nav class="navigation">
-        {% for ticker in tickers %}
-        <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
-        {% endfor %}
-    </nav>
-
-    <br><br><br>
-
-    <div id="spy-qqq-growth" class="center-table">
-        <h2>SPY vs QQQ Overview</h2>
-        {{ spy_qqq_growth | safe }}
-    </div>
-
-    <div class="center-table">
-        <h2>Past Earnings (Last 7 Days)</h2>
-        {{ earnings_past | safe }}
-
-        <h2>Upcoming Earnings</h2>
-        {{ earnings_upcoming | safe }}
-    </div>
-
-    <div>
-        {{ dashboard_table | safe }}
-    </div>
-
-    <footer>
-        <p>Nick's Financial Data Dashboard</p>
-    </footer>
-    </body>
-    </html>
-    """
-
-    # ticker_template.html with embedded Expense Overview carousel
     ticker_template_content = """
     <!DOCTYPE html>
     <html lang="en">
@@ -175,7 +93,6 @@ def ensure_templates_exist():
         </div>
       </div>
 
-      <!-- INSERTED: Expense Overview carousel -->
       <div><br><br><h1>{{ ticker_data.ticker }} - Expense Overview</h1></div>
       <div class="carousel-container">
         <div class="carousel-item">
@@ -191,7 +108,12 @@ def ensure_templates_exist():
           {{ ticker_data.expense_yoy_table_html | safe }}
         </div>
       </div>
-      <!-- END Expense Overview -->
+
+      <!-- NEW: Unmapped Line Items -->
+      <div><br><br><h1>{{ ticker_data.ticker }} - Unmapped Expense Line Items</h1></div>
+      <div>
+        {{ ticker_data.unmapped_expense_html | safe }}
+      </div>
 
       <hr>
       {% if ticker_data.valuation_chart %}
@@ -214,9 +136,14 @@ def ensure_templates_exist():
     </body>
     </html>
     """
+    create_template(os.path.join('templates', 'ticker_template.html'), ticker_template_content)
 
-    create_template(os.path.join('templates','home_template.html'), home_template_content)
-    create_template(os.path.join('templates','ticker_template.html'), ticker_template_content)
+def get_file_content_or_placeholder(file_path, placeholder="No data available"):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return placeholder
 
 def create_home_page(tickers, output_dir, dashboard_table, avg_values,
                      spy_qqq_growth="", earnings_past="", earnings_upcoming=""):
@@ -231,13 +158,6 @@ def create_home_page(tickers, output_dir, dashboard_table, avg_values,
             earnings_past=earnings_past,
             earnings_upcoming=earnings_upcoming
         ))
-
-def get_file_content_or_placeholder(file_path, placeholder="No data available"):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return f.read()
-    except FileNotFoundError:
-        return placeholder
 
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
     with sqlite3.connect(db_path) as conn:
@@ -254,13 +174,10 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
                 'forecast_rev_net_chart_path': f"{charts_output_dir}/{ticker}_Revenue_Net_Income_Forecast.png",
                 'forecast_eps_chart_path': f"{charts_output_dir}/{ticker}_EPS_Forecast.png",
                 'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_yoy_growth_tbl.html"),
-
-                # ← NEW: embed expense HTML fragments
                 'expense_chart_path': f"{charts_output_dir}/{ticker}_rev_expense_chart.png",
                 'expense_percent_chart_path': f"{charts_output_dir}/{ticker}_expense_percent_chart.png",
                 'expense_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_yearly_financials.html"),
                 'expense_yoy_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_yoy_expense_change.html"),
-
                 'balance_sheet_chart_path': f"{charts_output_dir}/{ticker}_balance_sheet_chart.png",
                 'balance_sheet_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_balance_sheet_table.html"),
                 'revenue_yoy_change_chart_path': f"{charts_output_dir}/{ticker}_revenue_yoy_change.png",
@@ -268,6 +185,7 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
                 'valuation_chart': f"{charts_output_dir}/{ticker}_valuation_chart.png",
                 'valuation_info_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_info.html"),
                 'valuation_data_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_table.html"),
+                'unmapped_expense_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_unmapped_fields.html", "No unmapped expenses.")
             }
             create_ticker_page(ticker, ticker_data, output_dir)
 
