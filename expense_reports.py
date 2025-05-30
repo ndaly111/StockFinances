@@ -42,10 +42,46 @@ def extract_expenses(row: pd.Series):
 
     return cost_rev, rnd, mkt, adm, sga_comb
 
-def store_quarterly_data(ticker: str) -> pd.DataFrame:
+def store_annual_data(ticker: str):
+    print(f"\n--- Fetching ANNUAL financials for {ticker} ---")
+    df = yf.Ticker(ticker).financials.transpose()
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS IncomeStatement (
+            ticker TEXT,
+            period_ending TEXT,
+            total_revenue REAL,
+            cost_of_revenue REAL,
+            research_and_development REAL,
+            selling_and_marketing REAL,
+            general_and_admin REAL,
+            sga_combined REAL,
+            PRIMARY KEY (ticker, period_ending)
+        );
+    """)
+
+    for idx, row in df.iterrows():
+        pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
+        tot_rev, cost, rnd, mkt, adm, sga = (row.get("Total Revenue", 0.0), *extract_expenses(row))
+        cur.execute("""
+            INSERT OR REPLACE INTO IncomeStatement
+            (ticker, period_ending, total_revenue, cost_of_revenue,
+             research_and_development, selling_and_marketing,
+             general_and_admin, sga_combined)
+            VALUES (?,?,?,?,?,?,?,?)
+        """, (ticker, clean_value(pe), clean_value(tot_rev),
+              clean_value(cost), clean_value(rnd),
+              clean_value(mkt), clean_value(adm),
+              clean_value(sga)))
+    conn.commit()
+    conn.close()
+    print("✅ Annual data stored.")
+
+def store_quarterly_data(ticker: str):
     print(f"\n--- Fetching QUARTERLY financials for {ticker} ---")
-    tkr = yf.Ticker(ticker)
-    df = tkr.quarterly_financials.transpose()
+    df = yf.Ticker(ticker).quarterly_financials.transpose()
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -62,30 +98,23 @@ def store_quarterly_data(ticker: str) -> pd.DataFrame:
             PRIMARY KEY (ticker, period_ending)
         );
     """)
-    # DELETE REMOVED - retain prior quarterly data
 
     for idx, row in df.iterrows():
         pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
-        tot_rev, cost, rnd, mkt, adm, sga = (
-            row.get("Total Revenue", 0.0),
-            *extract_expenses(row)
-        )
+        tot_rev, cost, rnd, mkt, adm, sga = (row.get("Total Revenue", 0.0), *extract_expenses(row))
         cur.execute("""
             INSERT OR REPLACE INTO QuarterlyIncomeStatement
-              (ticker, period_ending, total_revenue, cost_of_revenue,
-               research_and_development, selling_and_marketing,
-               general_and_admin, sga_combined)
+            (ticker, period_ending, total_revenue, cost_of_revenue,
+             research_and_development, selling_and_marketing,
+             general_and_admin, sga_combined)
             VALUES (?,?,?,?,?,?,?,?)
-        """, (
-            ticker, clean_value(pe), clean_value(tot_rev),
-            clean_value(cost), clean_value(rnd),
-            clean_value(mkt), clean_value(adm),
-            clean_value(sga)
-        ))
+        """, (ticker, clean_value(pe), clean_value(tot_rev),
+              clean_value(cost), clean_value(rnd),
+              clean_value(mkt), clean_value(adm),
+              clean_value(sga)))
     conn.commit()
     conn.close()
     print("✅ Quarterly data stored.")
-    return df
 
 def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
@@ -95,20 +124,19 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
         ORDER BY period_ending DESC
     """, conn, params=(ticker,))
     conn.close()
+
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df = df.sort_values("period_ending", ascending=False)
-
-    recent_cutoff = datetime.today() - timedelta(days=150)
-    recent_df = df[df["period_ending"] > recent_cutoff]
+    recent_df = df[df["period_ending"] > (datetime.today() - timedelta(days=150))]
 
     if len(recent_df) < 4:
         print(f"⛔ Not enough recent data for TTM: {len(recent_df)} quarters")
         return pd.DataFrame()
 
     recent_df = recent_df.head(4).sort_values("period_ending")
-
     expected_quarters = pd.date_range(end=recent_df["period_ending"].max(), periods=4, freq="Q")
     actual_quarters = list(recent_df["period_ending"].dt.to_period("Q"))
+
     if list(expected_quarters.to_period("Q")) != actual_quarters:
         print("⛔ Quarters are not consecutive — TTM invalid")
         return pd.DataFrame()
@@ -118,19 +146,13 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     return agg
 
 def format_short(x, decimal=1):
-    if pd.isna(x):
-        return "$0"
+    if pd.isna(x): return "$0"
     abs_x = abs(x)
-    if abs_x >= 1e12:
-        return f"${x / 1e12:.{decimal}f} T"
-    elif abs_x >= 1e9:
-        return f"${x / 1e9:.{decimal}f} B"
-    elif abs_x >= 1e6:
-        return f"${x / 1e6:.{decimal}f} M"
-    elif abs_x >= 1e3:
-        return f"${x / 1e3:.{decimal}f} K"
-    else:
-        return f"${x:.{decimal}f}"
+    if abs_x >= 1e12: return f"${x / 1e12:.{decimal}f} T"
+    elif abs_x >= 1e9: return f"${x / 1e9:.{decimal}f} B"
+    elif abs_x >= 1e6: return f"${x / 1e6:.{decimal}f} M"
+    elif abs_x >= 1e3: return f"${x / 1e3:.{decimal}f} K"
+    else: return f"${x:.{decimal}f}"
 
 def load_yearly_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
@@ -243,6 +265,8 @@ def save_expense_table_html(df: pd.DataFrame, ticker: str):
 
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
+
+    store_annual_data(ticker)
     store_quarterly_data(ticker)
 
     yearly = load_yearly_data(ticker)
@@ -260,7 +284,8 @@ def generate_expense_reports(ticker: str):
     combined = pd.concat([df for df in [yearly, ttm] if not df.empty], ignore_index=True)
     save_expense_table_html(combined, ticker)
     plot_chart(combined, ticker)
-    print(f"\n=== Done for {ticker} ===\n")
+
+    print(f"=== Done for {ticker} ===\n")
 
 if __name__ == "__main__":
     generate_expense_reports("AAPL")
