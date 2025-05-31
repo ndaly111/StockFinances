@@ -44,6 +44,13 @@ def extract_expenses(row: pd.Series):
 def store_annual_data(ticker: str):
     print(f"\n--- Fetching ANNUAL financials for {ticker} ---")
     df = yf.Ticker(ticker).financials.transpose()
+
+    # Print the actual column names for debugging
+    print(f"Columns from Yahoo for {ticker}:")
+    print(list(df.columns))
+    print("\nFirst two rows of the DataFrame:")
+    print(df.head(2))
+
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute("""
