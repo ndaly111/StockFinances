@@ -1,9 +1,7 @@
-name: Update Income Statement Categories
+name: Test
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 6 * * *'  # Runs daily at 6:00 UTC
 
 jobs:
   update-categories:
@@ -24,7 +22,7 @@ jobs:
           pip install yfinance pandas
 
       - name: Run script to update income statement categories
-        run: python your_script.py  # Replace with actual filename if different
+        run: test.py  # Replace with actual filename if different
 
       - name: Configure Git
         run: |
