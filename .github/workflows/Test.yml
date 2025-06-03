@@ -30,12 +30,15 @@ jobs:
       - name: Run test.py
         run: python test.py
 
-      - name: Commit results
+      - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
+      - name: Commit results (if changed)
+        run: |
           git add income_statement_categories.txt
-          git commit -m "Add income statement categories"
-          git push
+          git diff --cached --quiet || git commit -m "Update income statement categories"
+          git diff --cached --quiet || git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
