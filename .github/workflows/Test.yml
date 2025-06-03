@@ -3,45 +3,58 @@ name: Run test.py
 on:
   push:
     paths:
-      - '**/test.py'          # rerun when the script changes
-      - '**/tickers.csv'      # rerun when the ticker list changes (optional)
+      - '**/test.py'           # re-run when script changes
+      - '**/tickers.csv'       # re-run when ticker list changes
   pull_request:
     paths:
       - '**/test.py'
-  workflow_dispatch:          # allow manual run from the Actions tab
+  workflow_dispatch:           # manual run
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}   # keeps push credentials
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt || true   # ignore if req file missing
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt || true      # ignore if file absent
 
-      - name: Run test.py
-        run: python test.py
+    - name: Run test.py
+      run: python test.py
 
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+    # ────────────────────────────────────────────────────────────────
+    #  Commit results (handles any path + .gitignore)
+    # ────────────────────────────────────────────────────────────────
+    - name: Commit results (if changed)
+      run: |
+        # locate the file no matter where the script saved it
+        file_path=$(git ls-files --others --ignored --exclude-standard -m | grep -m1 "all_income_statement_categories.csv" || true)
+        if [ -z "$file_path" ]; then
+          file_path=$(find . -type f -name "all_income_statement_categories.csv" | head -n1)
+        fi
 
-      - name: Commit results (if changed)
-        run: |
-          git add all_income_statement_categories.csv
-          git diff --cached --quiet || git commit -m "Update raw category dump"
-          git diff --cached --quiet || git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if [ -z "$file_path" ]; then
+          echo "❌ CSV not found. Nothing to commit."
+          exit 0
+        fi
+
+        echo "📄 Will commit $file_path"
+        git add -f "$file_path"                       # -f overrides .gitignore
+        git status --short                           # one-line debug
+
+        # commit / push only if there are staged changes
+        git diff --cached --quiet || git commit -m "Update raw category dump"
+        git diff --cached --quiet || git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
