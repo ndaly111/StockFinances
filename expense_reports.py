@@ -292,7 +292,7 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
     df_percent = df.copy()
     mkt = df["selling_and_marketing"]
     adm = df["general_and_admin"]
-    use_split = (np.sum(mkt.fillna(0)) > 0 or np.sum(adm.fillna(0)) > 0)
+    use_split = (np.sum(mkt.fillna(0).astype(float)) > 0 or np.sum(adm.fillna(0).astype(float)) > 0)
 
     if use_split:
         cols = ["cost_of_revenue", "research_and_development", "selling_and_marketing", "general_and_admin"]
@@ -322,7 +322,12 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
         }
 
     for col in cols:
-        df_percent[col] = df_percent[col] / df_percent["total_revenue"] * 100
+        with np.errstate(divide='ignore', invalid='ignore'):
+            df_percent[col] = np.where(
+                df_percent["total_revenue"] != 0,
+                df_percent[col] / df_percent["total_revenue"] * 100,
+                0.0
+            )
 
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
     x = np.arange(len(df_percent))
@@ -330,7 +335,7 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
     bottom = np.zeros(len(df_percent))
 
     for col in cols:
-        vals = df_percent[col].fillna(0)
+        vals = df_percent[col].fillna(0).astype(float)
         bars = ax.bar(x, vals, width, bottom=bottom, label=label_map[col], color=color_map[col])
         for i, bar in enumerate(bars):
             h = bar.get_height()
@@ -354,7 +359,6 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
     plt.savefig(path, dpi=100)
     plt.close()
     print(f"✅ Saved percent chart → {path}")
-
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
     store_annual_data(ticker)
