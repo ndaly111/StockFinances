@@ -14,18 +14,18 @@ def collect_income_statement_fields(tickers):
     fields = set()
 
     for ticker in tickers:
-        print(f"🔍 Fetching financials for {ticker}")
+        print(f"🔍 Fetching income statement for {ticker}")
         try:
             tkr = yf.Ticker(ticker)
 
             # Annual income statement
-            annual = tkr.financials
-            if not annual.empty:
+            annual = tkr.income_stmt
+            if isinstance(annual, pd.DataFrame) and not annual.empty:
                 fields.update(annual.index.tolist())
 
             # Quarterly income statement
-            quarterly = tkr.quarterly_financials
-            if not quarterly.empty:
+            quarterly = tkr.quarterly_income_stmt
+            if isinstance(quarterly, pd.DataFrame) and not quarterly.empty:
                 fields.update(quarterly.index.tolist())
 
         except Exception as e:
