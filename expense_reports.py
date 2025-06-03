@@ -19,18 +19,6 @@ def clean_value(val):
     return val
 
 def extract_expenses(row: pd.Series):
-    """
-    Detects and returns operating expense values in one of two formats:
-      1) SG&A combined
-      2) Separate Sales & Marketing and General & Administrative
-    Returns:
-      cost_rev   → Cost of Revenue (or None)
-      rnd        → Research & Development (or None)
-      mkt        → Sales & Marketing (or None)
-      adm        → General & Administrative (or None)
-      sga_comb   → SG&A combined (or None)
-    Also prints which format was detected for debugging.
-    """
     def first(cols):
         for col in cols:
             for candidate in row.index:
@@ -49,15 +37,12 @@ def extract_expenses(row: pd.Series):
     ])
 
     if sga_comb is not None:
-        # Company reported SG&A combined → ignore split fields
         mkt, adm = None, None
         format_used = "SG&A"
     elif mkt is not None or adm is not None:
-        # Company reported separate Sales & Marketing and/or G&A → ignore SG&A
         sga_comb = None
         format_used = "Split"
     else:
-        # Neither format found
         sga_comb, mkt, adm = None, None, None
         format_used = "Unknown"
 
@@ -67,8 +52,6 @@ def extract_expenses(row: pd.Series):
 def store_annual_data(ticker: str):
     print(f"\n--- Fetching ANNUAL financials for {ticker} ---")
     df = yf.Ticker(ticker).financials.transpose()
-
-    # Print the actual column names for debugging
     print(f"Columns from Yahoo for {ticker}: {list(df.columns)}")
     print("First two rows of the DataFrame:")
     print(df.head(2))
@@ -324,9 +307,9 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
     for col in cols:
         with np.errstate(divide='ignore', invalid='ignore'):
             df_percent[col] = np.where(
-                df_percent["total_revenue"] != 0,
-                df_percent[col] / df_percent["total_revenue"] * 100,
-                0.0
+                df_percent["total_revenue"] == 0,
+                0.0,
+                df_percent[col].fillna(0) / df_percent["total_revenue"].replace(0, np.nan).fillna(1) * 100
             )
 
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
@@ -359,6 +342,7 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
     plt.savefig(path, dpi=100)
     plt.close()
     print(f"✅ Saved percent chart → {path}")
+
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
     store_annual_data(ticker)
