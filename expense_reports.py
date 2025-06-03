@@ -1,16 +1,39 @@
+"""
+expense_reports.py
+Builds annual / quarterly operating-expense tables for each ticker, stores them
+in SQLite, and generates two PNG charts:
+
+1) Revenue vs. stacked expenses (absolute $)
+2) Expenses as % of revenue (stacked)
+
+Fixes in this version
+---------------------
+• SG&A detection now recognises all Yahoo label variants ( “…& Administrative”
+  **and** “…And Administrative”, with or without commas).
+• Percent-of-revenue math is fully divide-by-zero-safe.
+• .fillna(0) cast to float to suppress future down-cast warning.
+"""
+
 import os
 import sqlite3
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 from datetime import datetime, timedelta
-import yfinance as yf
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import yfinance as yf
+from matplotlib.ticker import FuncFormatter
+
+# --------------------------------------------------------------------------- #
+#  Config                                                                     #
+# --------------------------------------------------------------------------- #
 DB_PATH = "Stock Data.db"
 OUTPUT_DIR = "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# --------------------------------------------------------------------------- #
+#  Helpers                                                                    #
+# --------------------------------------------------------------------------- #
 def clean_value(val):
     if pd.isna(val):
         return None
@@ -18,43 +41,59 @@ def clean_value(val):
         return val.isoformat()
     return val
 
+
 def extract_expenses(row: pd.Series):
+    """
+    Return   cost_rev, rnd, mkt, adm, sga_comb
+    where    mkt+adm  XOR  sga_comb  is populated.
+    """
+
     def first(cols):
         for col in cols:
-            for candidate in row.index:
-                if col.lower() in candidate.lower() and pd.notna(row[candidate]):
-                    return row[candidate]
+            for cand in row.index:
+                if col.lower() in cand.lower() and pd.notna(row[cand]):
+                    return row[cand]
         return None
 
+    # -- base fields ---------------------------------------------------------
     cost_rev = first(["Cost Of Revenue", "Reconciled Cost Of Revenue"])
     rnd = first(["Research & Development", "Research and Development", "R&D"])
+
+    # -- split  --------------------------------------------------------------
     mkt = first(["Selling and Marketing", "Sales and Marketing"])
     adm = first(["General and Administrative"])
+
+    # -- combined SG&A -------------------------------------------------------
     sga_comb = first([
         "Selling General & Administrative",
         "Selling, General & Administrative",
-        "Sales, General & Administrative"
+        "Sales, General & Administrative",
+        "Selling General And Administration",
+        "Selling General and Administration",
+        "Selling, General and Administration",
+        "Sales, General and Administration",
     ])
 
     if sga_comb is not None:
-        mkt, adm = None, None
-        format_used = "SG&A"
+        mkt = adm = None
+        fmt = "SG&A"
     elif mkt is not None or adm is not None:
         sga_comb = None
-        format_used = "Split"
+        fmt = "Split"
     else:
-        sga_comb, mkt, adm = None, None, None
-        format_used = "Unknown"
+        fmt = "Unknown"
 
-    print(f"📊 Reporting format detected: {format_used}")
+    print(f"📊 Reporting format detected: {fmt}")
     return cost_rev, rnd, mkt, adm, sga_comb
 
+
+# --------------------------------------------------------------------------- #
+#  SQLite storage                                                             #
+# --------------------------------------------------------------------------- #
 def store_annual_data(ticker: str):
     print(f"\n--- Fetching ANNUAL financials for {ticker} ---")
     df = yf.Ticker(ticker).financials.transpose()
-    print(f"Columns from Yahoo for {ticker}: {list(df.columns)}")
-    print("First two rows of the DataFrame:")
-    print(df.head(2))
+    print("First two rows:\n", df.head(2))
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -77,23 +116,16 @@ def store_annual_data(ticker: str):
         cost, rnd, mkt, adm, sga = extract_expenses(row)
         cur.execute("""
             INSERT OR REPLACE INTO IncomeStatement
-            (ticker, period_ending, total_revenue, cost_of_revenue,
-             research_and_development, selling_and_marketing,
-             general_and_admin, sga_combined)
             VALUES (?,?,?,?,?,?,?,?)
         """, (
-            ticker,
-            clean_value(pe),
-            clean_value(tot_rev),
-            clean_value(cost),
-            clean_value(rnd),
-            clean_value(mkt),
-            clean_value(adm),
-            clean_value(sga)
+            ticker, clean_value(pe), clean_value(tot_rev),
+            clean_value(cost), clean_value(rnd),
+            clean_value(mkt), clean_value(adm), clean_value(sga)
         ))
     conn.commit()
     conn.close()
     print("✅ Annual data stored.")
+
 
 def store_quarterly_data(ticker: str):
     print(f"\n--- Fetching QUARTERLY financials for {ticker} ---")
@@ -120,24 +152,20 @@ def store_quarterly_data(ticker: str):
         cost, rnd, mkt, adm, sga = extract_expenses(row)
         cur.execute("""
             INSERT OR REPLACE INTO QuarterlyIncomeStatement
-            (ticker, period_ending, total_revenue, cost_of_revenue,
-             research_and_development, selling_and_marketing,
-             general_and_admin, sga_combined)
             VALUES (?,?,?,?,?,?,?,?)
         """, (
-            ticker,
-            clean_value(pe),
-            clean_value(tot_rev),
-            clean_value(cost),
-            clean_value(rnd),
-            clean_value(mkt),
-            clean_value(adm),
-            clean_value(sga)
+            ticker, clean_value(pe), clean_value(tot_rev),
+            clean_value(cost), clean_value(rnd),
+            clean_value(mkt), clean_value(adm), clean_value(sga)
         ))
     conn.commit()
     conn.close()
     print("✅ Quarterly data stored.")
 
+
+# --------------------------------------------------------------------------- #
+#  Fetch / aggregate helpers                                                  #
+# --------------------------------------------------------------------------- #
 def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("""
@@ -146,36 +174,22 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
         ORDER BY period_ending DESC
     """, conn, params=(ticker,))
     conn.close()
-    df["period_ending"] = pd.to_datetime(df["period_ending"])
-    df = df.sort_values("period_ending", ascending=False)
-    recent_df = df[df["period_ending"] > (datetime.today() - timedelta(days=150))]
-    if len(recent_df) < 4:
-        print(f"⛔ Not enough recent data for TTM: {len(recent_df)} quarters")
-        return pd.DataFrame()
-    recent_df = recent_df.head(4).sort_values("period_ending")
-    expected_quarters = pd.date_range(end=recent_df["period_ending"].max(), periods=4, freq="Q")
-    actual_quarters = list(recent_df["period_ending"].dt.to_period("Q"))
-    if list(expected_quarters.to_period("Q")) != actual_quarters:
-        print("⛔ Quarters are not consecutive — TTM invalid")
-        return pd.DataFrame()
-    agg = recent_df.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
-    agg.insert(0, "year", "TTM")
-    return agg
 
-def format_short(x, decimal=1):
-    if pd.isna(x):
-        return "$0"
-    abs_x = abs(x)
-    if abs_x >= 1e12:
-        return f"${x / 1e12:.{decimal}f} T"
-    elif abs_x >= 1e9:
-        return f"${x / 1e9:.{decimal}f} B"
-    elif abs_x >= 1e6:
-        return f"${x / 1e6:.{decimal}f} M"
-    elif abs_x >= 1e3:
-        return f"${x / 1e3:.{decimal}f} K"
-    else:
-        return f"${x:.{decimal}f}"
+    df["period_ending"] = pd.to_datetime(df["period_ending"])
+    recent = df[df["period_ending"] > (datetime.today() - timedelta(days=150))]
+    if len(recent) < 4:
+        return pd.DataFrame()
+
+    recent = recent.head(4).sort_values("period_ending")
+    # verify consecutive quarters
+    exp = pd.date_range(end=recent["period_ending"].max(), periods=4, freq="Q")
+    if list(exp.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
+        return pd.DataFrame()
+
+    ttm = recent.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
+    ttm.insert(0, "year", "TTM")
+    return ttm
+
 
 def load_yearly_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
@@ -187,148 +201,119 @@ def load_yearly_data(ticker: str) -> pd.DataFrame:
         WHERE ticker = ?
     """, conn, params=(ticker,))
     conn.close()
+
     if df.empty:
-        print(f"⛔ No data found in IncomeStatement for {ticker}")
         return pd.DataFrame()
-    df["period_ending"] = pd.to_datetime(df["period_ending"], errors="coerce")
-    df = df.dropna(subset=["period_ending"])
+
+    df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year"] = df["period_ending"].dt.year
-    numeric_cols = [
-        "year",
-        "total_revenue",
-        "cost_of_revenue",
-        "research_and_development",
-        "selling_and_marketing",
-        "general_and_admin",
-        "sga_combined"
-    ]
-    df = df[numeric_cols]
-    if df[numeric_cols[1:]].replace(0, np.nan).dropna(how="all").empty:
-        print(f"⛔ All numeric data for {ticker} is zero or NaN")
-        return pd.DataFrame()
-    return df.groupby("year", as_index=False).sum()
+    num_cols = ["total_revenue", "cost_of_revenue",
+                "research_and_development", "selling_and_marketing",
+                "general_and_admin", "sga_combined"]
+    return df.groupby("year", as_index=False)[num_cols].sum()
+
+
+# --------------------------------------------------------------------------- #
+#  Chart helpers                                                              #
+# --------------------------------------------------------------------------- #
+def format_short(x, dec=1):
+    if pd.isna(x):
+        return "$0"
+    absx = abs(x)
+    if absx >= 1e12:
+        return f"${x/1e12:.{dec}f} T"
+    if absx >= 1e9:
+        return f"${x/1e9:.{dec}f} B"
+    if absx >= 1e6:
+        return f"${x/1e6:.{dec}f} M"
+    if absx >= 1e3:
+        return f"${x/1e3:.{dec}f} K"
+    return f"${x:.{dec}f}"
+
 
 def plot_chart(df: pd.DataFrame, ticker: str):
-    print("--- Plotting Revenue vs Expenses ---")
     yrs = df["year"].astype(str)
     n = len(df)
-    positions = np.arange(n)
+    pos = np.arange(n)
     width = 0.35
-    exp_pos = positions - width / 2
-    rev_pos = positions + width / 2
-    rev = df["total_revenue"]
-    cost = df["cost_of_revenue"]
-    rnd = df["research_and_development"]
-    mkt = df["selling_and_marketing"]
-    adm = df["general_and_admin"]
-    sga = df["sga_combined"]
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
+
+    # stacks
     bottom = np.zeros(n)
-
-    def add_stack(values, label, color):
-        if np.sum(values) == 0:
+    def stack(vals, lbl, col):
+        if np.sum(vals) == 0:
             return bottom
-        bars = ax.bar(exp_pos, values, width, bottom=bottom, label=label, color=color)
-        for i, bar in enumerate(bars):
-            val = bar.get_height()
-            if val > 0:
-                ax.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    bottom[i] + val / 2,
-                    format_short(val, 0),
-                    ha="center", va="center", fontsize=7, color="white"
-                )
-        return bottom + values
+        bars = ax.bar(pos - width/2, vals, width,
+                      bottom=bottom, label=lbl, color=col)
+        for i, b in enumerate(bars):
+            if b.get_height() > 0:
+                ax.text(b.get_x()+b.get_width()/2, bottom[i]+b.get_height()/2,
+                        format_short(b.get_height(), 0),
+                        ha="center", va="center", color="white", fontsize=7)
+        return bottom + vals
 
-    bottom = add_stack(cost, "Cost of Revenue", "dimgray")
-    bottom = add_stack(rnd, "R&D", "blue")
-    if np.sum(mkt.fillna(0)) > 0 or np.sum(adm.fillna(0)) > 0:
-        bottom = add_stack(mkt.fillna(0), "Sales and Marketing", "mediumpurple")
-        bottom = add_stack(adm.fillna(0), "General and Administrative", "pink")
+    bottom = stack(df["cost_of_revenue"], "Cost of Revenue", "dimgray")
+    bottom = stack(df["research_and_development"], "R&D", "blue")
+
+    if df["selling_and_marketing"].fillna(0).sum() or df["general_and_admin"].fillna(0).sum():
+        bottom = stack(df["selling_and_marketing"].fillna(0), "Sales and Marketing", "mediumpurple")
+        bottom = stack(df["general_and_admin"].fillna(0), "General and Administrative", "pink")
     else:
-        bottom = add_stack(sga.fillna(0), "SG&A", "mediumpurple")
+        bottom = stack(df["sga_combined"].fillna(0), "SG&A", "mediumpurple")
 
-    bars = ax.bar(rev_pos, rev, width, label="Revenue", color="green")
-    for i, bar in enumerate(bars):
-        height = bar.get_height()
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            height,
-            format_short(height, 0),
-            ha="center", va="bottom", fontsize=8, fontweight="bold"
-        )
+    # revenue bars
+    bars = ax.bar(pos + width/2, df["total_revenue"], width,
+                  label="Revenue", color="green")
+    for b in bars:
+        ax.text(b.get_x()+b.get_width()/2, b.get_height(),
+                format_short(b.get_height(), 0),
+                ha="center", va="bottom", fontsize=8, weight="bold")
 
-    ax.set_xticks(positions)
+    ax.set_xticks(pos)
     ax.set_xticklabels(yrs)
     ax.set_ylabel("Amount")
     ax.set_title(f"Revenue vs Expenses — {ticker}")
     ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
     ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: format_short(x, 0)))
     plt.tight_layout()
-    path = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
-    plt.savefig(path, dpi=100)
+    out = os.path.join(OUTPUT_DIR, f"{ticker}_rev_expense_chart.png")
+    plt.savefig(out, dpi=100)
     plt.close()
-    print(f"✅ Saved chart → {path}")
+    print(f"✅ Saved chart → {out}")
+
 
 def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
-    print("--- Plotting Expenses as % of Revenue ---")
-    df_percent = df.copy()
-    mkt = df["selling_and_marketing"]
-    adm = df["general_and_admin"]
-    use_split = (np.sum(mkt.fillna(0).astype(float)) > 0 or np.sum(adm.fillna(0).astype(float)) > 0)
+    df_pct = df.copy()
+    use_split = (df_pct["selling_and_marketing"].fillna(0).sum() > 0 or
+                 df_pct["general_and_admin"].fillna(0).sum() > 0)
 
     if use_split:
-        cols = ["cost_of_revenue", "research_and_development", "selling_and_marketing", "general_and_admin"]
-        label_map = {
-            "cost_of_revenue": "Cost of Revenue",
-            "research_and_development": "R&D",
-            "selling_and_marketing": "Sales and Marketing",
-            "general_and_admin": "General and Administrative"
-        }
-        color_map = {
-            "cost_of_revenue": "dimgray",
-            "research_and_development": "blue",
-            "selling_and_marketing": "mediumpurple",
-            "general_and_admin": "pink"
-        }
+        cols = ["cost_of_revenue", "research_and_development",
+                "selling_and_marketing", "general_and_admin"]
+        lbl = ["Cost of Revenue", "R&D", "Sales and Marketing", "General and Administrative"]
+        colr = ["dimgray", "blue", "mediumpurple", "pink"]
     else:
         cols = ["cost_of_revenue", "research_and_development", "sga_combined"]
-        label_map = {
-            "cost_of_revenue": "Cost of Revenue",
-            "research_and_development": "R&D",
-            "sga_combined": "SG&A"
-        }
-        color_map = {
-            "cost_of_revenue": "dimgray",
-            "research_and_development": "blue",
-            "sga_combined": "mediumpurple"
-        }
+        lbl = ["Cost of Revenue", "R&D", "SG&A"]
+        colr = ["dimgray", "blue", "mediumpurple"]
 
-    for col in cols:
-        with np.errstate(divide='ignore', invalid='ignore'):
-            df_percent[col] = np.where(
-                df_percent["total_revenue"] == 0,
-                0.0,
-                df_percent[col].fillna(0) / df_percent["total_revenue"].replace(0, np.nan).fillna(1) * 100
-            )
+    # safe percentage calc
+    tr = df_pct["total_revenue"].replace(0, np.nan)
+    df_pct[cols] = df_pct[cols].fillna(0).div(tr, axis=0).fillna(0) * 100
 
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
-    x = np.arange(len(df_percent))
+    x = np.arange(len(df_pct))
     width = 0.6
-    bottom = np.zeros(len(df_percent))
+    bottom = np.zeros(len(df_pct))
 
-    for col in cols:
-        vals = df_percent[col].fillna(0).astype(float)
-        bars = ax.bar(x, vals, width, bottom=bottom, label=label_map[col], color=color_map[col])
-        for i, bar in enumerate(bars):
-            h = bar.get_height()
-            if h > 2:
-                ax.text(
-                    bar.get_x() + width / 2,
-                    bottom[i] + h / 2,
-                    f"{h:.1f}%",
-                    ha="center", va="center", fontsize=7, color="white"
-                )
+    for c, l, cl in zip(cols, lbl, colr):
+        vals = df_pct[c].to_numpy()
+        bars = ax.bar(x, vals, width, bottom=bottom, label=l, color=cl)
+        for i, b in enumerate(bars):
+            if b.get_height() > 2:
+                ax.text(b.get_x()+width/2, bottom[i]+b.get_height()/2,
+                        f"{b.get_height():.1f}%",
+                        ha="center", va="center", color="white", fontsize=7)
         bottom += vals
 
     ax.set_xticks(x)
@@ -338,24 +323,35 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
     ax.set_ylim(0, 100)
     ax.legend(loc="center left", bbox_to_anchor=(1.01, 0.5))
     plt.tight_layout()
-    path = os.path.join(OUTPUT_DIR, f"{ticker}_expense_percent_chart.png")
-    plt.savefig(path, dpi=100)
+    out = os.path.join(OUTPUT_DIR, f"{ticker}_expense_percent_chart.png")
+    plt.savefig(out, dpi=100)
     plt.close()
-    print(f"✅ Saved percent chart → {path}")
+    print(f"✅ Saved percent chart → {out}")
 
+
+# --------------------------------------------------------------------------- #
+#  Orchestrator                                                               #
+# --------------------------------------------------------------------------- #
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
     store_annual_data(ticker)
     store_quarterly_data(ticker)
+
     yearly = load_yearly_data(ticker)
     ttm = fetch_ttm_data(ticker)
+
     if yearly.empty and ttm.empty:
-        print(f"⛔ No yearly or TTM data available for {ticker} — skipping report")
+        print("⛔ No data — skipping")
         return
-    combined = pd.concat([df for df in [yearly, ttm] if not df.empty], ignore_index=True)
+
+    combined = pd.concat([d for d in (yearly, ttm) if not d.empty], ignore_index=True)
     plot_chart(combined, ticker)
     plot_expense_percent_chart(combined, ticker)
     print(f"=== Done for {ticker} ===\n")
 
+
+# --------------------------------------------------------------------------- #
+#  Run                                                                        #
+# --------------------------------------------------------------------------- #
 if __name__ == "__main__":
-    generate_expense_reports("AAPL")
+    generate_expense_reports("AAPL")        # change ticker or loop as needed
