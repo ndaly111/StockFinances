@@ -1,48 +1,80 @@
+#!/usr/bin/env python
+"""
+test.py – harvest every raw Yahoo-Finance income-statement category
+------------------------------------------------------------------
+• Reads tickers from tickers.csv (first column)
+• For each ticker:
+    – pulls annual  income_stmt
+    – pulls quarterly_income_stmt
+    – writes every row-label (“category”) exactly as received
+• Appends everything into one CSV (duplicates allowed)
+
+Output: all_income_statement_categories.csv  with columns
+        ticker | statement_type | period_end | category
+"""
+
 import os
-import yfinance as yf
 import pandas as pd
+import yfinance as yf
 
-TICKER_FILE = "tickers.csv"
-OUTPUT_FILE = "income_statement_categories.txt"
+TICKER_FILE   = "tickers.csv"                         # input list
+OUTPUT_FILE   = "all_income_statement_categories.csv" # master output
 
-def read_tickers(file_path):
-    df = pd.read_csv(file_path)
-    tickers = df.iloc[:, 0].dropna().astype(str).tolist()
-    return tickers
 
-def collect_income_statement_fields(tickers):
-    fields = set()
+def read_tickers(path: str) -> list[str]:
+    """Return clean list of tickers from first column of CSV."""
+    df = pd.read_csv(path, nrows=0)  # just to validate file exists
+    df = pd.read_csv(path, header=None)  # read raw
+    return df.iloc[:, 0].dropna().astype(str).tolist()
 
-    for ticker in tickers:
-        print(f"🔍 Fetching income statement for {ticker}")
-        try:
-            tkr = yf.Ticker(ticker)
 
-            # Annual income statement
-            annual = tkr.income_stmt
-            if isinstance(annual, pd.DataFrame) and not annual.empty:
-                fields.update(annual.index.tolist())
+def collect_raw_categories(tickers: list[str]) -> pd.DataFrame:
+    """Loop through tickers and return long-form DataFrame of categories."""
+    records: list[dict] = []
 
-            # Quarterly income statement
-            quarterly = tkr.quarterly_income_stmt
-            if isinstance(quarterly, pd.DataFrame) and not quarterly.empty:
-                fields.update(quarterly.index.tolist())
+    for tkr in tickers:
+        print(f"🔍 Fetching {tkr}")
+        yf_tkr = yf.Ticker(tkr)
 
-        except Exception as e:
-            print(f"⚠️ Error with {ticker}: {e}")
+        # ---- annual -------------------------------------------------------
+        annual = yf_tkr.income_stmt
+        if isinstance(annual, pd.DataFrame) and not annual.empty:
+            for period_end in annual.columns:         # each fiscal year
+                for cat in annual.index:
+                    records.append({
+                        "ticker": tkr,
+                        "statement_type": "annual",
+                        "period_end": str(period_end),
+                        "category": cat
+                    })
 
-    return sorted(fields)
+        # ---- quarterly ----------------------------------------------------
+        qtr = yf_tkr.quarterly_income_stmt
+        if isinstance(qtr, pd.DataFrame) and not qtr.empty:
+            for period_end in qtr.columns:            # each fiscal quarter
+                for cat in qtr.index:
+                    records.append({
+                        "ticker": tkr,
+                        "statement_type": "quarterly",
+                        "period_end": str(period_end),
+                        "category": cat
+                    })
 
-def save_fields_to_file(fields, output_path):
-    with open(output_path, "w", encoding="utf-8") as f:
-        for field in fields:
-            f.write(field + "\n")
-    print(f"✅ Saved income statement categories to → {output_path}")
+    return pd.DataFrame(records)
+
 
 def main():
+    if not os.path.exists(TICKER_FILE):
+        raise FileNotFoundError(f"{TICKER_FILE} not found")
     tickers = read_tickers(TICKER_FILE)
-    fields = collect_income_statement_fields(tickers)
-    save_fields_to_file(fields, OUTPUT_FILE)
+    if not tickers:
+        raise ValueError("Ticker file is empty")
+
+    df_all = collect_raw_categories(tickers)
+    df_all.to_csv(OUTPUT_FILE, index=False, encoding="utf-8")
+    print(f"\n✅ Saved full category list → {OUTPUT_FILE}")
+    print(f"Rows written: {len(df_all):,}")
+
 
 if __name__ == "__main__":
     main()
