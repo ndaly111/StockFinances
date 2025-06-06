@@ -1,67 +1,47 @@
 #!/usr/bin/env python
 """
-test.py – harvest every raw Yahoo-Finance income-statement category
-------------------------------------------------------------------
-• Reads tickers from tickers.csv (first column)
-• For each ticker:
-    – pulls annual  income_stmt
-    – pulls quarterly_income_stmt
-    – writes every row-label (“category”) exactly as received
-• Appends everything into one CSV (duplicates allowed)
-
-Output: all_income_statement_categories.csv  with columns
-        ticker | statement_type | period_end | category
+test.py – harvest, deduplicate, and extract expense categories
+--------------------------------------------------------------
+• Reads tickers from tickers.csv
+• Pulls annual income statement data
+• Extracts all raw row categories → all_income_statement_categories.csv
+• Deduplicates → unique_income_statement_categories.csv
+• Filters for expense categories → expense_categories.csv
 """
 
 import os
 import pandas as pd
 import yfinance as yf
 
-TICKER_FILE   = "tickers.csv"                         # input list
-OUTPUT_FILE   = "all_income_statement_categories.csv" # master output
+TICKER_FILE       = "tickers.csv"
+RAW_OUTPUT_FILE   = "all_income_statement_categories.csv"
+UNIQ_OUTPUT_FILE  = "unique_income_statement_categories.csv"
+EXPENSE_OUTPUT_FILE = "expense_categories.csv"
 
+EXPENSE_KEYWORDS = [
+    "cost", "expense", "selling", "marketing", "administrative",
+    "sg&a", "r&d", "research", "development"
+]
 
 def read_tickers(path: str) -> list[str]:
-    """Return clean list of tickers from first column of CSV."""
-    df = pd.read_csv(path, nrows=0)  # just to validate file exists
-    df = pd.read_csv(path, header=None)  # read raw
+    df = pd.read_csv(path, nrows=0)
+    df = pd.read_csv(path, header=None)
     return df.iloc[:, 0].dropna().astype(str).tolist()
 
-
-def collect_raw_categories(tickers: list[str]) -> pd.DataFrame:
-    """Loop through tickers and return long-form DataFrame of categories."""
-    records: list[dict] = []
-
+def fetch_all_categories(tickers: list[str]) -> pd.DataFrame:
+    records = []
     for tkr in tickers:
         print(f"🔍 Fetching {tkr}")
         yf_tkr = yf.Ticker(tkr)
-
-        # ---- annual -------------------------------------------------------
         annual = yf_tkr.income_stmt
         if isinstance(annual, pd.DataFrame) and not annual.empty:
-            for period_end in annual.columns:         # each fiscal year
-                for cat in annual.index:
-                    records.append({
-                        "ticker": tkr,
-                        "statement_type": "annual",
-                        "period_end": str(period_end),
-                        "category": cat
-                    })
-
-        # ---- quarterly ----------------------------------------------------
-        qtr = yf_tkr.quarterly_income_stmt
-        if isinstance(qtr, pd.DataFrame) and not qtr.empty:
-            for period_end in qtr.columns:            # each fiscal quarter
-                for cat in qtr.index:
-                    records.append({
-                        "ticker": tkr,
-                        "statement_type": "quarterly",
-                        "period_end": str(period_end),
-                        "category": cat
-                    })
-
+            for cat in annual.index:
+                records.append({"category": cat})
     return pd.DataFrame(records)
 
+def is_expense(category: str) -> bool:
+    category_lower = category.lower()
+    return any(keyword in category_lower for keyword in EXPENSE_KEYWORDS)
 
 def main():
     if not os.path.exists(TICKER_FILE):
@@ -70,11 +50,20 @@ def main():
     if not tickers:
         raise ValueError("Ticker file is empty")
 
-    df_all = collect_raw_categories(tickers)
-    df_all.to_csv(OUTPUT_FILE, index=False, encoding="utf-8")
-    print(f"\n✅ Saved full category list → {OUTPUT_FILE}")
-    print(f"Rows written: {len(df_all):,}")
+    # Step 1: Raw data dump
+    df_raw = fetch_all_categories(tickers)
+    df_raw.to_csv(RAW_OUTPUT_FILE, index=False)
+    print(f"✅ Saved raw categories → {RAW_OUTPUT_FILE}")
 
+    # Step 2: Deduplicate + sort
+    unique = df_raw['category'].dropna().drop_duplicates().sort_values()
+    unique.to_frame().to_csv(UNIQ_OUTPUT_FILE, index=False)
+    print(f"✅ Saved unique categories → {UNIQ_OUTPUT_FILE}")
+
+    # Step 3: Filter expenses
+    expense_only = [cat for cat in unique if is_expense(cat)]
+    pd.DataFrame({"expense_category": expense_only}).to_csv(EXPENSE_OUTPUT_FILE, index=False)
+    print(f"✅ Saved expense categories → {EXPENSE_OUTPUT_FILE}")
 
 if __name__ == "__main__":
     main()
