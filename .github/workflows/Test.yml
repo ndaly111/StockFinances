@@ -38,25 +38,20 @@ jobs:
     # ────────────────────────────────────────────────────────────────
     - name: Commit results (if changed)
       run: |
-        # locate the csv (any path) ---------------------------------
-        file=$(git ls-files --others --ignored --exclude-standard -m | \
-                grep -m1 all_income_statement_categories.csv || true)
-        if [ -z "$file" ]; then
-          file=$(find . -type f -name all_income_statement_categories.csv | head -n1)
-        fi
-        if [ -z "$file" ]; then
-          echo "❌ CSV not found; nothing to commit."
+        FILE=all_income_statement_categories.csv
+
+        if [ ! -f "$FILE" ]; then
+          echo "❌ CSV not found at root; nothing to commit."
           exit 0
         fi
-        echo "📄 Will commit $file"
 
-        # ------------- configure identity *locally* ----------------
+        echo "📄 Will commit $FILE"
+
         git config --local user.name  "github-actions"
         git config --local user.email "github-actions@github.com"
 
-        # ------------- add / commit / push -------------------------
-        git add -f "$file"               # -f bypasses .gitignore
-        git status --short               # debug
+        git add -f "$FILE"
+        git status --short
         git diff --cached --quiet || git commit -m "Update raw category dump"
         git diff --cached --quiet || git push
       env:
