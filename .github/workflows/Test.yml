@@ -34,24 +34,35 @@ jobs:
       run: python test.py
 
     # ────────────────────────────────────────────────────────────────
-    #  Commit results (force-add and commit if file exists)
+    #  Commit all result files (force-add and commit)
     # ────────────────────────────────────────────────────────────────
     - name: Commit results (if changed)
       run: |
-        FILE=all_income_statement_categories.csv
-
-        if [ ! -f "$FILE" ]; then
-          echo "❌ CSV not found at root; nothing to commit."
-          exit 0
-        fi
-
-        echo "📄 Will commit $FILE"
+        FILES=(
+          all_income_statement_categories.csv
+          unique_income_statement_categories.csv
+          expense_categories.csv
+        )
 
         git config --local user.name  "github-actions"
         git config --local user.email "github-actions@github.com"
 
-        git add -f "$FILE"
-        git commit -m "Update raw category dump" || echo "⚠️ Nothing new to commit"
-        git push
+        CHANGED=false
+        for FILE in "${FILES[@]}"; do
+          if [ -f "$FILE" ]; then
+            echo "📄 Will commit $FILE"
+            git add -f "$FILE"
+            CHANGED=true
+          else
+            echo "⚠️ $FILE not found, skipping."
+          fi
+        done
+
+        if [ "$CHANGED" = true ]; then
+          git commit -m "Update category CSVs" || echo "⚠️ Nothing new to commit"
+          git push
+        else
+          echo "❌ No files to commit."
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
