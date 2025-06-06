@@ -334,24 +334,58 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
 # --------------------------------------------------------------------------- #
 def generate_expense_reports(ticker: str):
     print(f"\n=== Generating expense reports for {ticker} ===")
-    store_annual_data(ticker)
-    store_quarterly_data(ticker)
-
-    yearly = load_yearly_data(ticker)
-    ttm = fetch_ttm_data(ticker)
-
-    if yearly.empty and ttm.empty:
-        print("⛔ No data — skipping")
-        return
-
-    combined = pd.concat([d for d in (yearly, ttm) if not d.empty], ignore_index=True)
-    plot_chart(combined, ticker)
-    plot_expense_percent_chart(combined, ticker)
-    print(f"=== Done for {ticker} ===\n")
-
+    reset_expense_tables()
 
 # --------------------------------------------------------------------------- #
 #  Run                                                                        #
 # --------------------------------------------------------------------------- #
 if __name__ == "__main__":
     generate_expense_reports("AAPL")        # change ticker or loop as needed
+
+
+# --------------------------------------------------------------------------- #
+#  One-time table reset (run once, then delete)                               #
+# --------------------------------------------------------------------------- #
+def reset_expense_tables():
+    """Create expense tables if missing, then clear them for a clean re-import."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # Ensure both tables exist
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS IncomeStatement (
+            ticker TEXT,
+            period_ending TEXT,
+            total_revenue REAL,
+            cost_of_revenue REAL,
+            research_and_development REAL,
+            selling_and_marketing REAL,
+            general_and_admin REAL,
+            sga_combined REAL,
+            PRIMARY KEY (ticker, period_ending)
+        );
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS QuarterlyIncomeStatement (
+            ticker TEXT,
+            period_ending TEXT,
+            total_revenue REAL,
+            cost_of_revenue REAL,
+            research_and_development REAL,
+            selling_and_marketing REAL,
+            general_and_admin REAL,
+            sga_combined REAL,
+            PRIMARY KEY (ticker, period_ending)
+        );
+    """)
+
+    # Now clear existing records
+    cur.execute("DELETE FROM IncomeStatement;")
+    cur.execute("DELETE FROM QuarterlyIncomeStatement;")
+    print("✅ Cleared both IncomeStatement and QuarterlyIncomeStatement")
+
+    conn.commit()
+    conn.close()
+
+# Uncomment this to run the reset ONCE, then delete or comment it again
+# reset_expense_tables()
