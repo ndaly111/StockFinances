@@ -1,4 +1,41 @@
-# Facilities / Depreciation & Amortization
+# ---------- Cost of Revenue ----------
+COST_OF_REVENUE = [
+    "Cost Of Revenue",
+    "Reconciled Cost Of Revenue",
+]
+
+# ---------- Research & Development ----------
+RESEARCH_AND_DEVELOPMENT = [
+    "Research And Development",
+    "Research & Development",
+    "R&D",
+]
+
+# ---------- Selling & Marketing ----------
+SELLING_AND_MARKETING = [
+    "Selling And Marketing Expense",
+    "Selling and Marketing",
+    "Sales and Marketing",
+]
+
+# ---------- SG&A Combined ----------
+SGA_COMBINED = [
+    "Selling General And Administration",
+    "Selling General & Administrative",
+    "Selling, General & Administrative",
+    "Sales, General & Administrative",
+    "Selling General and Administration",
+    "Selling, General and Administration",
+    "Sales, General and Administration",
+]
+
+# ---------- General & Administrative ----------
+GENERAL_AND_ADMIN = [
+    "General And Administrative Expense",
+    "Other Gand A",
+]
+
+# ---------- Facilities / Depreciation & Amortization ----------
 FACILITIES_DA = [
     "Amortization",
     "Amortization Of Intangibles Income Statement",
@@ -10,13 +47,13 @@ FACILITIES_DA = [
     "Occupancy And Equipment",
 ]
 
-# Personnel
+# ---------- Personnel ----------
 PERSONNEL_COSTS = [
     "Salaries And Wages",
     "Professional Expense And Contract Services Expense",
 ]
 
-# Insurance / Claims
+# ---------- Insurance / Claims ----------
 INSURANCE_CLAIMS = [
     "Insurance And Claims",
     "Loss Adjustment Expense",
@@ -25,15 +62,9 @@ INSURANCE_CLAIMS = [
     "Policyholder Benefits Gross",
 ]
 
-# Provisions & Other Operating
+# ---------- Provisions & Other Operating ----------
 OTHER_OPERATING = [
     "Provision For Doubtful Accounts",
     "Excise Taxes",
     "Other Operating Expenses",
-]
-
-# Optional G&A extras
-GENERAL_AND_ADMIN += [
-    "Operating Expense",
-    "Other Gand A",
 ]
