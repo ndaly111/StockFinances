@@ -34,7 +34,7 @@ jobs:
       run: python test.py
 
     # ────────────────────────────────────────────────────────────────
-    #  Commit results
+    #  Commit results (force-add and commit if file exists)
     # ────────────────────────────────────────────────────────────────
     - name: Commit results (if changed)
       run: |
@@ -51,8 +51,7 @@ jobs:
         git config --local user.email "github-actions@github.com"
 
         git add -f "$FILE"
-        git status --short
-        git diff --cached --quiet || git commit -m "Update raw category dump"
-        git diff --cached --quiet || git push
+        git commit -m "Update raw category dump" || echo "⚠️ Nothing new to commit"
+        git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
