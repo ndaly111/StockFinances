@@ -73,6 +73,8 @@ def store_data(ticker: str, mode="annual"):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     table = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
+
+    # Create table with 12 columns
     cur.execute(f"""
         CREATE TABLE IF NOT EXISTS {table} (
             ticker TEXT,
@@ -117,7 +119,10 @@ def fetch_yearly_data(ticker: str, table: str):
         WHERE ticker = ?
     """, conn, params=(ticker,))
     conn.close()
-    if df.empty: return pd.DataFrame()
+
+    if df.empty:
+        return pd.DataFrame()
+
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year"] = df["period_ending"].dt.year
     agg_cols = df.columns.difference(["ticker", "period_ending", "year"])
@@ -131,24 +136,33 @@ def fetch_ttm_data(ticker: str):
         ORDER BY period_ending DESC
     """, conn, params=(ticker,))
     conn.close()
+
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     recent = df[df["period_ending"] > (datetime.today() - timedelta(days=150))]
-    if len(recent) < 4: return pd.DataFrame()
+    if len(recent) < 4:
+        return pd.DataFrame()
+
     recent = recent.head(4).sort_values("period_ending")
     exp = pd.date_range(end=recent["period_ending"].max(), periods=4, freq="Q")
     if list(exp.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
         return pd.DataFrame()
+
     ttm = recent.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
     ttm.insert(0, "year", "TTM")
     return ttm
 
 def format_short(x, dec=1):
-    if pd.isna(x): return "$0"
+    if pd.isna(x):
+        return "$0"
     absx = abs(x)
-    if absx >= 1e12: return f"${x/1e12:.{dec}f} T"
-    if absx >= 1e9: return f"${x/1e9:.{dec}f} B"
-    if absx >= 1e6: return f"${x/1e6:.{dec}f} M"
-    if absx >= 1e3: return f"${x/1e3:.{dec}f} K"
+    if absx >= 1e12:
+        return f"${x/1e12:.{dec}f} T"
+    if absx >= 1e9:
+        return f"${x/1e9:.{dec}f} B"
+    if absx >= 1e6:
+        return f"${x/1e6:.{dec}f} M"
+    if absx >= 1e3:
+        return f"${x/1e3:.{dec}f} K"
     return f"${x:.{dec}f}"
 
 def plot_expense_charts(df: pd.DataFrame, ticker: str):
@@ -198,7 +212,8 @@ def generate_expense_reports(ticker: str):
     store_data(ticker, mode="annual")
     store_data(ticker, mode="quarterly")
     df = fetch_yearly_data(ticker, "IncomeStatement")
-    if df.empty: return
+    if df.empty:
+        return
     ttm = fetch_ttm_data(ticker)
     full = pd.concat([df, ttm], ignore_index=True)
     plot_expense_charts(full, ticker)
