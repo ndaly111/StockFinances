@@ -1,52 +1,39 @@
-"""
-expense_labels.py
-Single source of truth for identifying income-statement expense rows
---------------------------------------------------------------------
-
-Edit the lists below whenever Yahoo adds / changes a label.
-No other code needs to change.
-"""
-
-# ----------   Cost of revenue  ----------
-COST_OF_REVENUE = [
-    "Cost Of Revenue",
-    "Reconciled Cost Of Revenue",
+# Facilities / Depreciation & Amortization
+FACILITIES_DA = [
+    "Amortization",
+    "Amortization Of Intangibles Income Statement",
+    "Depreciation Amortization Depletion Income Statement",
+    "Depreciation And Amortization In Income Statement",
+    "Depreciation Income Statement",
+    "Reconciled Depreciation",
+    "Rent Expense Supplemental",
+    "Occupancy And Equipment",
 ]
 
-# ----------   Research & development  ----------
-RESEARCH_AND_DEVELOPMENT = [
-    "Research & Development",
-    "Research and Development",
-    "R&D",
+# Personnel
+PERSONNEL_COSTS = [
+    "Salaries And Wages",
+    "Professional Expense And Contract Services Expense",
 ]
 
-# ----------   Selling & marketing  ----------
-SELLING_AND_MARKETING = [
-    "Selling and Marketing",
-    "Sales and Marketing",
+# Insurance / Claims
+INSURANCE_CLAIMS = [
+    "Insurance And Claims",
+    "Loss Adjustment Expense",
+    "Net Policyholder Benefits And Claims",
+    "Policyholder Benefits Ceded",
+    "Policyholder Benefits Gross",
 ]
 
-# ----------   General & administrative  ----------
-GENERAL_AND_ADMIN = [
-    "General and Administrative",
+# Provisions & Other Operating
+OTHER_OPERATING = [
+    "Provision For Doubtful Accounts",
+    "Excise Taxes",
+    "Other Operating Expenses",
 ]
 
-# ----------   SG&A combined variants  ----------
-SGA_COMBINED = [
-    "Selling General & Administrative",
-    "Selling, General & Administrative",
-    "Sales, General & Administrative",
-    "Selling General And Administration",
-    "Selling General and Administration",
-    "Selling, General and Administration",
-    "Sales, General and Administration",
+# Optional G&A extras
+GENERAL_AND_ADMIN += [
+    "Operating Expense",
+    "Other Gand A",
 ]
-
-# -----------  Handy container if needed  -----------
-ALL_EXPENSE_LABELS = (
-    COST_OF_REVENUE
-    + RESEARCH_AND_DEVELOPMENT
-    + SELLING_AND_MARKETING
-    + GENERAL_AND_ADMIN
-    + SGA_COMBINED
-)
