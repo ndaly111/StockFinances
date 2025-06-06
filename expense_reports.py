@@ -33,10 +33,13 @@ from expense_labels import (
     OTHER_OPERATING,
 )
 
-DB_PATH = "Stock Data.db"
+DB_PATH   = "Stock Data.db"
 OUTPUT_DIR = "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# --------------------------------------------------------------------------- #
+#  Utility helpers                                                            #
+# --------------------------------------------------------------------------- #
 def clean_value(val):
     if pd.isna(val):
         return None
@@ -44,11 +47,14 @@ def clean_value(val):
         return val.isoformat()
     return val
 
+# --------------------------------------------------------------------------- #
+#  Expense extraction                                                         #
+# --------------------------------------------------------------------------- #
 def extract_expenses(row: pd.Series):
     def match_any(label_list):
         for key in row.index:
-            for label in label_list:
-                if label.lower() in key.lower() and pd.notna(row[key]):
+            for lbl in label_list:
+                if lbl.lower() in key.lower() and pd.notna(row[key]):
                     return row[key]
         return None
 
@@ -64,19 +70,16 @@ def extract_expenses(row: pd.Series):
         match_any(OTHER_OPERATING),
     )
 
-def store_data(ticker: str, mode="annual"):
-    print(f"\n--- Fetching {mode.upper()} financials for {ticker} ---")
-    df = (yf.Ticker(ticker).financials.transpose()
-          if mode == "annual" else
-          yf.Ticker(ticker).quarterly_financials.transpose())
-
+# --------------------------------------------------------------------------- #
+#  One-time schema enforcement                                                #
+# --------------------------------------------------------------------------- #
+def ensure_tables():
+    """Drop & recreate both tables with the correct 12-column schema."""
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    table = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
+    cur  = conn.cursor()
 
-    # Create table with 12 columns
-    cur.execute(f"""
-        CREATE TABLE IF NOT EXISTS {table} (
+    schema = """
+        CREATE TABLE {name} (
             ticker TEXT,
             period_ending TEXT,
             total_revenue REAL,
@@ -91,7 +94,28 @@ def store_data(ticker: str, mode="annual"):
             other_operating REAL,
             PRIMARY KEY (ticker, period_ending)
         );
-    """)
+    """
+
+    for tbl in ("IncomeStatement", "QuarterlyIncomeStatement"):
+        cur.execute(f"DROP TABLE IF EXISTS {tbl};")
+        cur.execute(schema.format(name=tbl))
+
+    conn.commit()
+    conn.close()
+    print("✅ Tables (re)created with correct 12-column schema")
+
+# --------------------------------------------------------------------------- #
+#  Storage                                                                    #
+# --------------------------------------------------------------------------- #
+def store_data(ticker: str, mode="annual"):
+    df = (yf.Ticker(ticker).financials.transpose()
+          if mode == "annual"
+          else yf.Ticker(ticker).quarterly_financials.transpose())
+
+    table = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
+
+    conn = sqlite3.connect(DB_PATH)
+    cur  = conn.cursor()
 
     for idx, row in df.iterrows():
         pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
@@ -110,12 +134,15 @@ def store_data(ticker: str, mode="annual"):
 
     conn.commit()
     conn.close()
-    print(f"✅ {mode.capitalize()} data stored.")
+    print(f"✅ {mode.capitalize()} data stored for {ticker}")
 
-def fetch_yearly_data(ticker: str, table: str):
+# --------------------------------------------------------------------------- #
+#  Data fetchers                                                              #
+# --------------------------------------------------------------------------- #
+def fetch_yearly_data(ticker: str):
     conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query(f"""
-        SELECT * FROM {table}
+    df = pd.read_sql_query("""
+        SELECT * FROM IncomeStatement
         WHERE ticker = ?
     """, conn, params=(ticker,))
     conn.close()
@@ -139,6 +166,7 @@ def fetch_ttm_data(ticker: str):
 
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     recent = df[df["period_ending"] > (datetime.today() - timedelta(days=150))]
+
     if len(recent) < 4:
         return pd.DataFrame()
 
@@ -151,49 +179,49 @@ def fetch_ttm_data(ticker: str):
     ttm.insert(0, "year", "TTM")
     return ttm
 
+# --------------------------------------------------------------------------- #
+#  Chart helpers                                                              #
+# --------------------------------------------------------------------------- #
 def format_short(x, dec=1):
     if pd.isna(x):
         return "$0"
     absx = abs(x)
-    if absx >= 1e12:
-        return f"${x/1e12:.{dec}f} T"
-    if absx >= 1e9:
-        return f"${x/1e9:.{dec}f} B"
-    if absx >= 1e6:
-        return f"${x/1e6:.{dec}f} M"
-    if absx >= 1e3:
-        return f"${x/1e3:.{dec}f} K"
+    if absx >= 1e12:  return f"${x/1e12:.{dec}f} T"
+    if absx >= 1e9:   return f"${x/1e9:.{dec}f} B"
+    if absx >= 1e6:   return f"${x/1e6:.{dec}f} M"
+    if absx >= 1e3:   return f"${x/1e3:.{dec}f} K"
     return f"${x:.{dec}f}"
 
 def plot_expense_charts(df: pd.DataFrame, ticker: str):
     years = df["year"].astype(str)
-    pos = np.arange(len(df))
+    pos   = np.arange(len(df))
     width = 0.35
     fig, ax = plt.subplots(figsize=(8, 4.5))
     bottom = np.zeros(len(df))
 
     categories = [
-        ("cost_of_revenue", "Cost of Revenue", "dimgray"),
-        ("research_and_development", "R&D", "blue"),
-        ("selling_and_marketing", "Sales & Marketing", "purple"),
-        ("general_and_admin", "G&A", "pink"),
-        ("sga_combined", "SG&A", "mediumpurple"),
-        ("facilities_da", "Facilities / D&A", "orange"),
-        ("personnel_costs", "Personnel", "brown"),
-        ("insurance_claims", "Insurance", "teal"),
-        ("other_operating", "Other Op.", "gold"),
+        ("cost_of_revenue",        "Cost of Revenue",       "dimgray"),
+        ("research_and_development","R&D",                  "blue"),
+        ("selling_and_marketing",  "Sales & Marketing",     "purple"),
+        ("general_and_admin",      "G&A",                   "pink"),
+        ("sga_combined",           "SG&A",                  "mediumpurple"),
+        ("facilities_da",          "Facilities / D&A",      "orange"),
+        ("personnel_costs",        "Personnel",             "brown"),
+        ("insurance_claims",       "Insurance",             "teal"),
+        ("other_operating",        "Other Op.",             "gold"),
     ]
 
-    for col, label, color in categories:
+    for col, lbl, color in categories:
         if col in df.columns and df[col].fillna(0).sum() > 0:
             vals = df[col].fillna(0).to_numpy()
-            bars = ax.bar(pos - width/2, vals, width, bottom=bottom, label=label, color=color)
+            ax.bar(pos - width/2, vals, width, bottom=bottom, label=lbl, color=color)
             bottom += vals
 
     revs = df["total_revenue"].to_numpy()
     bars = ax.bar(pos + width/2, revs, width, label="Revenue", color="green")
     for b in bars:
-        ax.text(b.get_x() + b.get_width()/2, b.get_height(), format_short(b.get_height(), 0),
+        ax.text(b.get_x()+b.get_width()/2, b.get_height(),
+                format_short(b.get_height(), 0),
                 ha="center", va="bottom", fontsize=8, weight="bold")
 
     ax.set_xticks(pos)
@@ -208,12 +236,25 @@ def plot_expense_charts(df: pd.DataFrame, ticker: str):
     plt.close()
     print(f"✅ Saved chart → {out}")
 
+# --------------------------------------------------------------------------- #
+#  Main orchestrator                                                          #
+# --------------------------------------------------------------------------- #
 def generate_expense_reports(ticker: str):
+    ensure_tables()                     # enforce schema once per run
     store_data(ticker, mode="annual")
     store_data(ticker, mode="quarterly")
-    df = fetch_yearly_data(ticker, "IncomeStatement")
-    if df.empty:
+
+    yearly = fetch_yearly_data(ticker)
+    if yearly.empty:
+        print("⛔ No data found — skipping charts")
         return
+
     ttm = fetch_ttm_data(ticker)
-    full = pd.concat([df, ttm], ignore_index=True)
+    full = pd.concat([yearly, ttm], ignore_index=True)
     plot_expense_charts(full, ticker)
+
+# --------------------------------------------------------------------------- #
+#  Run                                                                        #
+# --------------------------------------------------------------------------- #
+if __name__ == "__main__":
+    generate_expense_reports("AAPL")      # change ticker or loop as needed
