@@ -74,22 +74,23 @@ def store_data(ticker: str, mode="annual"):
     cur = conn.cursor()
     table = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
     cur.execute(f"""
-        CREATE TABLE IF NOT EXISTS {table} (
-            ticker TEXT,
-            period_ending TEXT,
-            total_revenue REAL,
-            cost_of_revenue REAL,
-            research_and_development REAL,
-            selling_and_marketing REAL,
-            general_and_admin REAL,
-            sga_combined REAL,
-            facilities_da REAL,
-            personnel_costs REAL,
-            insurance_claims REAL,
-            other_operating REAL,
-            PRIMARY KEY (ticker, period_ending)
+        cur.execute(f"""
+    CREATE TABLE IF NOT EXISTS {table} (
+        ticker TEXT,
+        period_ending TEXT,
+        total_revenue REAL,
+        cost_of_revenue REAL,
+        research_and_development REAL,
+        selling_and_marketing REAL,
+        general_and_admin REAL,
+        sga_combined REAL,
+        facilities_da REAL,
+        personnel_costs REAL,
+        insurance_claims REAL,
+        other_operating REAL,
+        PRIMARY KEY (ticker, period_ending)
         );
-    """)
+        """)
 
     for idx, row in df.iterrows():
         pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
