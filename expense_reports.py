@@ -204,7 +204,7 @@ def format_short(x, dec=1):
 
 def plot_expense_charts(df: pd.DataFrame, ticker: str):
     """
-    Create a stacked bar chart of expenses vs. revenue.
+    Create a stacked bar chart of absolute expenses vs. revenue.
 
     - Drops any year where all numeric columns are zero.
     - Skips any category whose total across all years is zero.
@@ -239,23 +239,18 @@ def plot_expense_charts(df: pd.DataFrame, ticker: str):
         ("other_operating",         "Other Op.",             "gold"),
     ]
 
-    # For each category, draw a stack if its total is > 0
     for col, lbl, color in categories:
         if col in df_plot.columns and df_plot[col].sum() > 0:
-            vals = df_plot[col].fillna(0).to_numpy()
+            vals = df_plot[col].to_numpy()
             ax.bar(pos - width/2, vals, width, bottom=bottom, label=lbl, color=color)
             bottom += vals
 
-    # Draw revenue bars beside the stacks
     revs = df_plot["total_revenue"].to_numpy()
     bars = ax.bar(pos + width/2, revs, width, label="Revenue", color="green")
     for b in bars:
-        ax.text(
-            b.get_x() + b.get_width()/2,
-            b.get_height(),
-            format_short(b.get_height(), 0),
-            ha="center", va="bottom", fontsize=8, weight="bold"
-        )
+        ax.text(b.get_x()+b.get_width()/2, b.get_height(),
+                format_short(b.get_height(), 0),
+                ha="center", va="bottom", fontsize=8, weight="bold")
 
     ax.set_xticks(pos)
     ax.set_xticklabels(years)
@@ -269,6 +264,72 @@ def plot_expense_charts(df: pd.DataFrame, ticker: str):
     plt.savefig(outfile, dpi=100)
     plt.close()
     print(f"✅ Saved chart → {outfile}")
+
+def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
+    """
+    Create a stacked bar chart of expenses as a percent of revenue.
+
+    - Drops any year where total_revenue is zero (to avoid divide-by-zero).
+    - Skips any category whose percent series is all zero.
+    """
+    # Drop rows where revenue is zero or NaN
+    df_plot = df.copy()
+    df_plot["total_revenue"] = df_plot["total_revenue"].fillna(0)
+    df_plot = df_plot.loc[df_plot["total_revenue"] != 0]
+
+    if df_plot.empty:
+        print("⛔ No valid revenue years — skipping percent-of-revenue chart")
+        return
+
+    # Compute percentages; fill NaN with 0 after division
+    pct_df = df_plot.copy()
+    for col in df_plot.columns.difference(["year", "total_revenue"]):
+        pct_df[col] = (df_plot[col].fillna(0) / df_plot["total_revenue"]) * 100
+
+    # Now drop any category whose entire percent series is zero
+    percent_cols = pct_df.columns.difference(["year", "total_revenue"])
+    nonzero_cats = [col for col in percent_cols if pct_df[col].sum() > 0]
+    if not nonzero_cats:
+        print("⛔ All expense categories are zero percent — skipping chart")
+        return
+
+    years = pct_df["year"].astype(str)
+    pos   = np.arange(len(pct_df))
+    width = 0.6
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    bottom = np.zeros(len(pct_df))
+
+    # Define color mapping for the same categories order
+    category_info = [
+        ("cost_of_revenue",         "Cost of Revenue",       "dimgray"),
+        ("research_and_development","R&D",                   "blue"),
+        ("selling_and_marketing",   "Sales & Marketing",     "purple"),
+        ("general_and_admin",       "G&A",                   "pink"),
+        ("sga_combined",            "SG&A",                  "mediumpurple"),
+        ("facilities_da",           "Facilities / D&A",      "orange"),
+        ("personnel_costs",         "Personnel",             "brown"),
+        ("insurance_claims",        "Insurance",             "teal"),
+        ("other_operating",         "Other Op.",             "gold"),
+    ]
+
+    for col, lbl, color in category_info:
+        if col in nonzero_cats:
+            vals = pct_df[col].fillna(0).to_numpy()
+            ax.bar(pos, vals, width, bottom=bottom, label=lbl, color=color)
+            bottom += vals
+
+    ax.set_xticks(pos)
+    ax.set_xticklabels(years)
+    ax.set_ylabel("Percent of Revenue")
+    ax.set_title(f"Expenses as % of Revenue — {ticker}")
+    ax.set_ylim(0, 100)
+    ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1))
+    plt.tight_layout()
+
+    outfile = os.path.join(OUTPUT_DIR, f"{ticker}_expense_percent_chart.png")
+    plt.savefig(outfile, dpi=100)
+    plt.close()
+    print(f"✅ Saved percent-of-revenue chart → {outfile}")
 
 # --------------------------------------------------------------------------- #
 #  Main orchestrator                                                          #
@@ -285,7 +346,9 @@ def generate_expense_reports(ticker: str):
 
     ttm  = fetch_ttm_data(ticker)
     full = pd.concat([yearly, ttm], ignore_index=True)
+
     plot_expense_charts(full, ticker)
+    plot_expense_percent_chart(full, ticker)
 
 # --------------------------------------------------------------------------- #
 #  Run                                                                        #
