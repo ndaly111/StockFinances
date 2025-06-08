@@ -1,33 +1,39 @@
 """
-Pull latest 10-K, extract the “Segment Results of Operations” table,
-print a tidy DataFrame, and drop two PNG charts into /test.
+Test script: pull latest 10-K, extract “Segment Results of Operations” table
+(revenue & operating income), print it, and save two PNG charts into /test.
 
-Runs cleanly inside GitHub Actions (headers, retry, fallback).
-
-Author: ChatGPT – 9 Jun 2025
+This version uses:
+  • primary JSON feed (data.sec.gov)
+  • HTML fallback of browse-edgar → detail page
+  • polite retry on 403
 """
 
-import os, re, time, json, requests, pandas as pd, matplotlib.pyplot as plt
+import os
+import re
+import time
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 
 # ——— Configuration ———
-TEST_TICKER = "MSFT"          # change to test another ticker
+TEST_TICKER = "MSFT"
 TEST_DIR    = "test"
 os.makedirs(TEST_DIR, exist_ok=True)
 
-MY_EMAIL = "you@example.com"  # put your email here – SEC requires contact info
+MY_EMAIL = "you@example.com"  # SEC requires contact info in UA
 
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (compatible; StockFinancesBot/1.0; "
         f"+https://github.com/your-repo; {MY_EMAIL})"
     ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Encoding": "gzip, deflate",
-    "Accept": "application/json, text/html",
     "Host": "www.sec.gov"
 }
 
-# ——— Hard-coded CIKs (extend as needed) ———
+# ——— Hard-coded CIK Map ———
 CIK_MAP = {
     "MSFT": "0000789019",
     "AAPL": "0000320193",
@@ -36,127 +42,136 @@ CIK_MAP = {
     "TSLA":  "0001318605",
 }
 
-# ——— Helper: polite GET with single retry on 403 ———
-def safe_get(url, headers, timeout=30):
+# ——— Safe GET with single retry on 403 ———
+def safe_get(url, headers=HEADERS, timeout=30):
     resp = requests.get(url, headers=headers, timeout=timeout)
-    if resp.status_code == 403:          # wait & try once more
-        time.sleep(1.0)
+    if resp.status_code == 403:
+        time.sleep(1)
         resp = requests.get(url, headers=headers, timeout=timeout)
     resp.raise_for_status()
     return resp
 
-# ——— Step 1: map ticker → CIK ———
 def get_cik(ticker: str) -> str:
-    ticker = ticker.upper()
-    if ticker not in CIK_MAP:
-        raise ValueError(f"CIK missing for {ticker}. Add it to CIK_MAP.")
-    return CIK_MAP[ticker]
+    t = ticker.upper()
+    if t not in CIK_MAP:
+        raise ValueError(f"CIK missing for {t} – please add to CIK_MAP")
+    return CIK_MAP[t]
 
-# ——— Step 2: find latest 10-K HTML, with two fallbacks ———
 def latest_10k_url(cik: str) -> str:
-    """Return full URL of the primary 10-K HTML file."""
-    cik_trim = cik.lstrip("0")
-    # 2-a  primary – data.sec.gov JSON feed
-    feed_url = f"https://data.sec.gov/submissions/CIK{cik.zfill(10)}.json"
+    """
+    Return the primary HTML URL of the most recent 10-K.
+    1) Try data.sec.gov JSON feed.
+    2) If that fails, scrape browse-edgar HTML + detail page.
+    """
+    trim = cik.lstrip("0")
+    # — Primary: JSON feed —
+    feed = f"https://data.sec.gov/submissions/CIK{cik.zfill(10)}.json"
     try:
-        data = safe_get(feed_url, HEADERS).json()
-        recent = data["filings"]["recent"]
-        for frm, acc, doc in zip(recent["form"],
-                                 recent["accessionNumber"],
-                                 recent["primaryDocument"]):
-            if frm == "10-K":
-                return (
-                    f"https://www.sec.gov/Archives/edgar/data/"
-                    f"{cik_trim}/{acc.replace('-', '')}/{doc}"
-                )
+        d = safe_get(feed).json()
+        recent = d["filings"]["recent"]
+        for form, acc, doc in zip(recent["form"],
+                                  recent["accessionNumber"],
+                                  recent["primaryDocument"]):
+            if form == "10-K":
+                path = acc.replace("-", "")
+                return f"https://www.sec.gov/Archives/edgar/data/{trim}/{path}/{doc}"
     except Exception as e:
-        print("⚠️  primary feed failed:", e)
+        print("⚠️  JSON feed failed:", e)
 
-    # 2-b  backup – browse-edgar JSON
-    be_url = (
-        "https://www.sec.gov/cgi-bin/browse-edgar"
-        f"?CIK={cik}&type=10-K&owner=exclude&count=1&output=json"
+    # — Fallback: browse-edgar HTML —
+    list_url = (
+        f"https://www.sec.gov/cgi-bin/browse-edgar?"
+        f"CIK={cik}&type=10-K&owner=exclude&count=1"
     )
-    be_json = safe_get(be_url, HEADERS).json()
-    filings = be_json["filings"]
-    if not filings:
-        raise RuntimeError("No 10-K found via browse-edgar backup.")
-    acc = filings[0]["accessionNumber"]
-    doc = filings[0]["filingHREF"].split("/")[-1] + ".txt"
-    return (
-        f"https://www.sec.gov/Archives/edgar/data/"
-        f"{cik_trim}/{acc.replace('-', '')}/{doc}"
-    )
+    resp = safe_get(list_url)
+    soup = BeautifulSoup(resp.text, "html.parser")
 
-# ——— Step 3: scrape the segment table ———
+    tbl = soup.find("table", {"class": "tableFile2"})
+    if not tbl:
+        raise RuntimeError("browse-edgar list table not found")
+    rows = [r for r in tbl.find_all("tr") if r.find("td")]
+    if not rows:
+        raise RuntimeError("no data rows in browse-edgar list")
+    link = rows[0].find("a", href=True)
+    detail_url = "https://www.sec.gov" + link["href"]
+
+    # — Detail page —
+    resp2 = safe_get(detail_url)
+    soup2 = BeautifulSoup(resp2.text, "html.parser")
+    tbl2 = soup2.find("table", {"class": "tableFile"})
+    if not tbl2:
+        raise RuntimeError("detail page tableFile not found")
+    rows2 = [r for r in tbl2.find_all("tr") if r.find("td")]
+    if not rows2:
+        raise RuntimeError("no data rows in detail page table")
+    doc_link = rows2[0].find("a", href=True)["href"]
+    return "https://www.sec.gov" + doc_link
+
 def extract_segment_table(html: str) -> pd.DataFrame:
-    soup    = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html, "html.parser")
+    # Look for any heading with “Segment” + (“Results”|“Information”|“Operations”)
     heading = soup.find(string=re.compile(
         r"Segment\s.*(Results|Information|Operations)", re.I))
     if not heading:
-        raise RuntimeError("Segment table heading not found.")
+        raise RuntimeError("Segment table heading not found")
     table = heading.find_parent().find_next("table")
-    raw   = pd.read_html(str(table), flavor="lxml")[0]
+    raw = pd.read_html(str(table), flavor="lxml")[0]
     raw.columns = [str(c).strip() for c in raw.columns]
     raw = raw.dropna(axis=1, how="all")
 
-    # split rows into Revenue vs Operating Income blocks
-    revenue, op_inc, current = [], [], "Revenue"
+    revenue, op_inc = [], []
+    mode = "Revenue"
     for _, row in raw.iterrows():
-        txt0 = str(row.iloc[0])
-        if re.search(r"Operating\s+Income", txt0, re.I):
-            current = "Operating Income"; continue
-        if pd.isna(row.iloc[0]) or "Total" in txt0: continue
-        (revenue if current == "Revenue" else op_inc).append(row)
+        first = str(row.iloc[0])
+        if re.search(r"Operating\s+Income", first, re.I):
+            mode = "Operating Income"
+            continue
+        if pd.isna(row.iloc[0]) or "Total" in first:
+            continue
+        (revenue if mode=="Revenue" else op_inc).append(row)
 
     def tidy(block, label):
-        df = pd.DataFrame(block).iloc[:, :3]     # Segment | 2024 | 2023
+        df = pd.DataFrame(block).iloc[:, :3]
         df.columns = ["Segment", "2024", "2023"]
-        df = df.melt(id_vars="Segment",
-                     var_name="Year",
-                     value_name="Amount")
+        df = df.melt(id_vars="Segment", var_name="Year", value_name="Amount")
         df["Metric"] = label
         return df
 
     df = pd.concat([tidy(revenue, "Revenue"),
-                    tidy(op_inc, "Operating Income")],
+                    tidy(op_inc,  "Operating Income")],
                    ignore_index=True)
     df["Amount"] = (df["Amount"].astype(str)
                     .str.replace(r"[^\d\-.]", "", regex=True)
-                    .astype(float) * 1_000_000)     # values “in millions”
+                    .astype(float) * 1_000_000)
     return df
 
-# ——— Step 4: basic charts ———
 def plot_segment_chart(df: pd.DataFrame, ticker: str):
     for metric in ["Revenue", "Operating Income"]:
-        sub   = df[df["Metric"] == metric]
-        pivot = sub.pivot(index="Year", columns="Segment", values="Amount")
-        ax    = pivot.div(1e9).plot(kind="bar", stacked=True, figsize=(6, 4))
+        sub   = df[df["Metric"]==metric]
+        pivot= sub.pivot(index="Year", columns="Segment", values="Amount")
+        ax    = pivot.div(1e9).plot(kind="bar", stacked=True, figsize=(6,4))
         ax.set_title(f"{ticker} – {metric} by Segment")
         ax.set_ylabel("USD (Billions)")
         plt.xticks(rotation=0)
         plt.tight_layout()
         path = os.path.join(
             TEST_DIR, f"{ticker}_{metric.lower().replace(' ', '_')}.png")
-        plt.savefig(path, dpi=150); plt.close()
-        print("✔  chart saved →", path)
+        plt.savefig(path, dpi=150)
+        plt.close()
+        print("✔ chart saved →", path)
 
-# ——— Orchestrator ———
 def run_test(ticker: str):
-    print(f"🔍  extracting segment data for {ticker}")
-    cik  = get_cik(ticker)
-    url  = latest_10k_url(cik)
-    print("    filing URL:", url)
-    html = safe_get(url, HEADERS).text
+    print(f"🔍 extracting segment data for {ticker}")
+    cik = get_cik(ticker)
+    url = latest_10k_url(cik)
+    print("   filing URL:", url)
+    html = safe_get(url).text
     df   = extract_segment_table(html)
 
-    print("\n📊  tidy segment table:\n")
-    print(df.pivot(index=["Year", "Segment"],
-                   columns="Metric",
-                   values="Amount"))
+    print("\n📊 tidy segment table:\n")
+    print(df.pivot(index=["Year","Segment"], columns="Metric", values="Amount"))
 
     plot_segment_chart(df, ticker)
 
-# ——— Entry point ———
 if __name__ == "__main__":
     run_test(TEST_TICKER)
