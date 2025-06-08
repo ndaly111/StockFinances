@@ -12,13 +12,20 @@ os.makedirs(TEST_DIR, exist_ok=True)
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (SegmentTest/1.0)"}
 
-# ——— Helpers ———
+# ——— Hardcoded CIK lookup ———
+CIK_MAP = {
+    "MSFT": "0000789019",  # Microsoft
+    "AAPL": "0000320193",  # Apple
+    "GOOGL": "0001652044", # Alphabet
+    "V":     "0001403161", # Visa
+    "TSLA":  "0001318605", # Tesla
+}
 
 def get_cik(ticker):
-    info_url = f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{ticker}?modules=assetProfile"
-    resp = requests.get(info_url, headers=HEADERS).json()
-    cik = str(resp['quoteSummary']['result'][0]['assetProfile']['cik']).zfill(10)
-    return cik
+    ticker = ticker.upper()
+    if ticker not in CIK_MAP:
+        raise ValueError(f"CIK not defined for ticker: {ticker}")
+    return CIK_MAP[ticker]
 
 def get_latest_10k_html(cik):
     index_url = f"https://www.sec.gov/cgi-bin/browse-edgar?CIK={cik}&type=10-K&count=1"
