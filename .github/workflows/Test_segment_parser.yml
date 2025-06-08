@@ -4,7 +4,7 @@ on:
   workflow_dispatch:  # Manual trigger from GitHub
   push:
     paths:
-      - 'test/test_segment_parser.py'
+      - 'Test/test_segment_parser.py'
       - '.github/workflows/test_segment_parser.yml'
 
 jobs:
