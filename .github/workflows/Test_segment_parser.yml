@@ -26,10 +26,10 @@ jobs:
 
     - name: ▶️ Run segment parser test
       run: |
-        python test/test_segment_parser.py
+        python Test/test_segment_parser.py
 
     - name: 🗃️ Upload test/ folder artifacts
       uses: actions/upload-artifact@v4
       with:
         name: test-output
-        path: test/
+        path: Test/
