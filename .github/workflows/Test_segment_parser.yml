@@ -1,0 +1,35 @@
+name: Run Segment Parser Test
+
+on:
+  workflow_dispatch:  # Manual trigger from GitHub
+  push:
+    paths:
+      - 'test/test_segment_parser.py'
+      - '.github/workflows/test_segment_parser.yml'
+
+jobs:
+  run-segment-parser:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🧾 Checkout repo
+      uses: actions/checkout@v3
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: 📦 Install dependencies
+      run: |
+        pip install pandas matplotlib beautifulsoup4 lxml requests
+
+    - name: ▶️ Run segment parser test
+      run: |
+        python test/test_segment_parser.py
+
+    - name: 🗃️ Upload test/ folder artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-output
+        path: test/
