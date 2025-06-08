@@ -1,118 +1,134 @@
-import os
-import re
-import requests
-import pandas as pd
-import matplotlib.pyplot as plt
+"""
+Test script: pull the latest 10-K, extract the “Segment Results of Operations”
+table (revenue & operating income), print it, and save two charts in /test.
+
+Author: ChatGPT, 9 Jun 2025
+"""
+
+import os, re, json, time, requests, pandas as pd, matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 
-# ——— Configuration ———
+# ——— Config ———
 TEST_TICKER = "MSFT"
-TEST_DIR = "test"
+TEST_DIR    = "test"
 os.makedirs(TEST_DIR, exist_ok=True)
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (SegmentTest/1.0)"}
-
-# ——— Hardcoded CIK lookup ———
-CIK_MAP = {
-    "MSFT": "0000789019",  # Microsoft
-    "AAPL": "0000320193",  # Apple
-    "GOOGL": "0001652044", # Alphabet
-    "V":     "0001403161", # Visa
-    "TSLA":  "0001318605", # Tesla
+HEADERS = {
+    # SEC says: identify yourself & give contact email
+    "User-Agent": "SegmentTestBot/1.0 (github.com/your-repo; contact you@example.com)",
+    "Accept-Encoding": "gzip, deflate",
+    "Host": "www.sec.gov"
 }
 
-def get_cik(ticker):
+# ——— Hard-coded CIKs ———
+CIK_MAP = {
+    "MSFT": "0000789019",
+    "AAPL": "0000320193",
+    "GOOGL": "0001652044",
+    "V":     "0001403161",
+    "TSLA":  "0001318605",
+}
+
+# ——— Helpers ———
+def get_cik(ticker: str) -> str:
     ticker = ticker.upper()
     if ticker not in CIK_MAP:
-        raise ValueError(f"CIK not defined for ticker: {ticker}")
+        raise ValueError(f"CIK missing for {ticker}. Add it to CIK_MAP.")
     return CIK_MAP[ticker]
 
-def get_latest_10k_html(cik):
-    index_url = f"https://www.sec.gov/cgi-bin/browse-edgar?CIK={cik}&type=10-K&count=1"
-    index_resp = requests.get(index_url, headers=HEADERS)
-    if index_resp.status_code != 200:
-        raise ValueError(f"Failed to fetch filing index for CIK {cik}")
+def latest_10k_url(cik: str) -> str:
+    """
+    Use data.sec.gov/submissions/CIK####.json to get the most recent 10-K HTML.
+    Returns full URL of the primary document.
+    """
+    cik_nolead = cik.lstrip("0")
+    sub_url = f"https://data.sec.gov/submissions/CIK{cik.zfill(10)}.json"
+    resp = requests.get(sub_url, headers=HEADERS, timeout=30)
+    if resp.status_code != 200:
+        raise RuntimeError(f"SEC submissions feed failed ({resp.status_code})")
 
-    soup = BeautifulSoup(index_resp.text, "html.parser")
-    doc_link_tag = soup.find("a", string=re.compile("Documents", re.I))
-    if not doc_link_tag:
-        raise ValueError("Could not find 'Documents' link on index page")
+    filings = resp.json()["filings"]["recent"]
+    for form, acc, doc in zip(filings["form"],
+                              filings["accessionNumber"],
+                              filings["primaryDocument"]):
+        if form == "10-K":
+            acc_no_dashes = acc.replace("-", "")
+            html_url = (f"https://www.sec.gov/Archives/edgar/data/"
+                        f"{cik_nolead}/{acc_no_dashes}/{doc}")
+            return html_url
+    raise RuntimeError("No 10-K found in recent filings.")
 
-    detail_url = f"https://www.sec.gov{doc_link_tag['href']}"
-    detail_resp = requests.get(detail_url, headers=HEADERS)
-    if detail_resp.status_code != 200:
-        raise ValueError("Failed to load document detail page")
-
-    detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
-    main_doc_tag = detail_soup.find("a", id="file0")
-    if not main_doc_tag:
-        raise ValueError("Could not find main filing document (file0)")
-
-    return f"https://www.sec.gov{main_doc_tag['href']}"
-
-def extract_segment_table(html):
+def extract_segment_table(html: str) -> pd.DataFrame:
     soup = BeautifulSoup(html, "html.parser")
-    heading = soup.find(string=re.compile("Segment Results of Operations", re.I))
-    if not heading:
-        raise ValueError("Segment Results section not found")
-    table = heading.find_parent().find_next("table")
-    raw = pd.read_html(str(table))[0]
 
+    # Look for a heading containing “Segment” and “Income” or “Results”
+    heading = soup.find(string=re.compile(
+        r"Segment\s.+(Results|Information|Operations)", re.I))
+    if not heading:
+        raise RuntimeError("Segment table heading not found.")
+
+    table = heading.find_parent().find_next("table")
+    raw = pd.read_html(str(table), flavor="lxml")[0]
     raw.columns = [str(c).strip() for c in raw.columns]
     raw = raw.dropna(axis=1, how="all")
 
-    # Clean & detect revenue vs. operating income sections
-    revenue, op_inc = [], []
-    current = "Revenue"
+    # Split into revenue vs operating-income blocks
+    revenue, op_inc, current = [], [], "Revenue"
     for _, row in raw.iterrows():
-        if "Operating Income" in row.astype(str).str.contains("Operating Income", case=False).any():
+        txt_row0 = str(row.iloc[0])
+        if re.search(r"Operating\s+Income", txt_row0, re.I):
             current = "Operating Income"
             continue
-        if pd.isna(row[0]) or "Total" in str(row[0]):
+        if pd.isna(row.iloc[0]) or "Total" in txt_row0:
             continue
-        target = revenue if current == "Revenue" else op_inc
-        target.append(row)
+        (revenue if current == "Revenue" else op_inc).append(row)
 
     def tidy(block, label):
-        df = pd.DataFrame(block).iloc[:, :3]
+        df = pd.DataFrame(block).iloc[:, :3]       # Segment, 2024, 2023
         df.columns = ["Segment", "2024", "2023"]
-        df = df.melt(id_vars="Segment", var_name="Year", value_name="Amount")
+        df = df.melt(id_vars="Segment",
+                     var_name="Year",
+                     value_name="Amount")
         df["Metric"] = label
         return df
 
-    rev_df = tidy(revenue, "Revenue")
-    opi_df = tidy(op_inc, "Operating Income")
-    combined = pd.concat([rev_df, opi_df], ignore_index=True)
-    combined["Amount"] = (combined["Amount"]
-                          .astype(str)
-                          .str.replace(r"[^\d.-]", "", regex=True)
-                          .astype(float) * 1e6)
-    return combined
+    df = pd.concat([tidy(revenue, "Revenue"),
+                    tidy(op_inc, "Operating Income")],
+                   ignore_index=True)
+    df["Amount"] = (df["Amount"].astype(str)
+                    .str.replace(r"[^\d\-.]", "", regex=True)
+                    .astype(float) * 1_000_000)  # filings are “in millions”
+    return df
 
-def plot_segment_chart(df, ticker):
+def plot_segment_chart(df: pd.DataFrame, ticker: str):
     for metric in ["Revenue", "Operating Income"]:
-        subset = df[df["Metric"] == metric]
-        pivot = subset.pivot(index="Year", columns="Segment", values="Amount")
+        sub = df[df["Metric"] == metric]
+        pivot = sub.pivot(index="Year", columns="Segment", values="Amount")
         ax = pivot.div(1e9).plot(kind="bar", stacked=True, figsize=(6, 4))
         ax.set_title(f"{ticker} – {metric} by Segment")
         ax.set_ylabel("USD (Billions)")
+        plt.xticks(rotation=0)
         plt.tight_layout()
-        fname = os.path.join(TEST_DIR, f"{ticker}_{metric.lower().replace(' ', '_')}.png")
+        fname = os.path.join(
+            TEST_DIR, f"{ticker}_{metric.lower().replace(' ', '_')}.png")
         plt.savefig(fname, dpi=150)
         plt.close()
-        print(f"[✔] Chart saved: {fname}")
+        print(f"✔ Chart saved: {fname}")
 
-# ——— Main test run ———
+# ——— Main ———
+def run_test(ticker: str):
+    print(f"🔍 Extracting segment data for {ticker}")
+    cik  = get_cik(ticker)
+    url  = latest_10k_url(cik)
+    print("   Filing URL:", url)
+    html = requests.get(url, headers=HEADERS, timeout=30).text
+    df   = extract_segment_table(html)
 
-def run_test(ticker):
-    print(f"🔍 Testing segment data extraction for {ticker}")
-    cik = get_cik(ticker)
-    url = get_latest_10k_html(cik)
-    print(f"📄 Fetching filing: {url}")
-    html = requests.get(url, headers=HEADERS).text
-    df = extract_segment_table(html)
-    print("\n📊 Extracted Segment Table:\n")
-    print(df.pivot(index=["Year", "Segment"], columns="Metric", values="Amount"))
+    print("\n📊 Tidy Segment Table:\n")
+    print(df.pivot(index=["Year", "Segment"],
+                   columns="Metric",
+                   values="Amount"))
+
     plot_segment_chart(df, ticker)
 
 if __name__ == "__main__":
