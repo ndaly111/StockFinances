@@ -29,13 +29,26 @@ def get_cik(ticker):
 
 def get_latest_10k_html(cik):
     index_url = f"https://www.sec.gov/cgi-bin/browse-edgar?CIK={cik}&type=10-K&count=1"
-    soup = BeautifulSoup(requests.get(index_url, headers=HEADERS).text, "html.parser")
-    doc_link = soup.find("a", string="Documents")["href"]
-    detail_url = f"https://www.sec.gov{doc_link}"
-    detail_page = requests.get(detail_url, headers=HEADERS).text
-    detail_soup = BeautifulSoup(detail_page, "html.parser")
-    filing_href = detail_soup.find("a", id="file0")["href"]
-    return f"https://www.sec.gov{filing_href}"
+    index_resp = requests.get(index_url, headers=HEADERS)
+    if index_resp.status_code != 200:
+        raise ValueError(f"Failed to fetch filing index for CIK {cik}")
+
+    soup = BeautifulSoup(index_resp.text, "html.parser")
+    doc_link_tag = soup.find("a", string=re.compile("Documents", re.I))
+    if not doc_link_tag:
+        raise ValueError("Could not find 'Documents' link on index page")
+
+    detail_url = f"https://www.sec.gov{doc_link_tag['href']}"
+    detail_resp = requests.get(detail_url, headers=HEADERS)
+    if detail_resp.status_code != 200:
+        raise ValueError("Failed to load document detail page")
+
+    detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
+    main_doc_tag = detail_soup.find("a", id="file0")
+    if not main_doc_tag:
+        raise ValueError("Could not find main filing document (file0)")
+
+    return f"https://www.sec.gov{main_doc_tag['href']}"
 
 def extract_segment_table(html):
     soup = BeautifulSoup(html, "html.parser")
