@@ -1,179 +1,136 @@
-"""
-Polite SEC test script
----------------------
-1. Download the most-recent quarterly master.idx
-2. Locate the latest 10-K for the given CIK
-3. Fetch that filing's primary HTML
-4. Parse the “Segment Results of Operations” table
-5. Print a tidy DataFrame & save two charts in /test
-
-Complies with SEC fair-access policy (≤10 req/s, proper UA, caching).
-"""
-
-import os, re, time, calendar, requests, pandas as pd, matplotlib.pyplot as plt
+import os, re, time, requests
+import pandas as pd
+import matplotlib.pyplot as plt
 from datetime import date
 from bs4 import BeautifulSoup
 
-# ——— SETTINGS ———
-TEST_TICKER = "MSFT"               # change as needed
-TEST_DIR    = "test"
-os.makedirs(TEST_DIR, exist_ok=True)
+# —————————————————————————————————— CONFIG —————————————————————————————————— #
+TICKERS = ["MSFT", "AAPL", "GOOGL"]  # test tickers
+OUT_DIR = "test"
+os.makedirs(OUT_DIR, exist_ok=True)
 
-MY_EMAIL = "ndaly111@gmail.com"       # REQUIRED by SEC fair-access policy
-
-UA = (
-    "StockFinancesBot/1.0 "
-    f"(https://github.com/your-repo; {MY_EMAIL})"
-)
+MY_EMAIL = "you@example.com"  # SEC requires contact info
 HEADERS = {
-    "User-Agent": UA,
-    "Accept-Encoding": "gzip, deflate",
-    "Accept": "text/html, application/xhtml+xml, */*"
+    "User-Agent": f"StockFinancesBot/1.0 (+https://github.com/your-repo; {MY_EMAIL})",
+    "Accept-Encoding": "gzip, deflate"
 }
-REQUEST_DELAY = 0.12               # 1/10  sec  →  ≤10 req/s
+DELAY_S = 0.25  # polite delay (~4 requests/sec)
 
-# ——— STATIC CIK MAP ———
-CIK_MAP = {
+CIK = {
     "MSFT": "0000789019",
     "AAPL": "0000320193",
-    "GOOGL": "0001652044",
-    "TSLA": "0001318605",
-    "V":    "0001403161",
+    "GOOGL": "0001652044"
 }
 
-# ——— polite GET wrapper ———
+# ———————————————————————————— NETWORK HELPERS ———————————————————————————— #
 def get(url, **kw):
-    """GET with mandatory sleep to respect SEC 10 r/s limit."""
-    time.sleep(REQUEST_DELAY)
-    resp = requests.get(url, headers=HEADERS, timeout=30, **kw)
-    resp.raise_for_status()
-    return resp
+    time.sleep(DELAY_S)
+    r = requests.get(url, headers=HEADERS, timeout=30, **kw)
+    if r.status_code == 403:
+        time.sleep(1.0)
+        r = requests.get(url, headers=HEADERS, timeout=30, **kw)
+    r.raise_for_status()
+    return r
 
-# ——— 1. Which quarter are we in? ———
-def current_qtr_yyyy():
-    today = date.today()
-    qtr   = (today.month - 1) // 3 + 1
-    return today.year, qtr
+# ———————————————————————————— FETCH 10-K URL ———————————————————————————— #
+def latest_10k_from_json(cik_padded):
+    url = f"https://data.sec.gov/submissions/CIK{cik_padded}.json"
+    j = get(url).json()
+    for form, acc, doc in zip(j["filings"]["recent"]["form"],
+                              j["filings"]["recent"]["accessionNumber"],
+                              j["filings"]["recent"]["primaryDocument"]):
+        if form == "10-K":
+            acc_no_dash = acc.replace("-", "")
+            base = cik_padded.lstrip("0")
+            return f"https://www.sec.gov/Archives/edgar/data/{base}/{acc_no_dash}/{doc}"
+    raise RuntimeError("No 10-K found in recent filings")
 
-# ——— 2. Download master.idx (cached) ———
-def fetch_master_idx(year: int, qtr: int) -> list[str]:
-    """
-    Return list of lines (str) from master.idx.
-    Uses a local cache in /test/master-YYYY-Q#.idx to save SEC bandwidth.
-    """
-    cache_path = os.path.join(TEST_DIR, f"master-{year}-Q{qtr}.idx")
-    if os.path.exists(cache_path):
-        with open(cache_path, "r", encoding="latin1") as f:
+# ———————————————————————————— FALLBACK TO master.idx ———————————————————————————— #
+def current_qtr():
+    m = date.today().month
+    return (date.today().year, (m - 1) // 3 + 1)
+
+def master_idx_lines(year, qtr):
+    name = f"{OUT_DIR}/master-{year}-Q{qtr}.idx"
+    if os.path.exists(name):
+        with open(name, "r", encoding="latin1") as f:
             return f.readlines()
-
-    url = (
-        f"https://www.sec.gov/Archives/edgar/full-index/"
-        f"{year}/QTR{qtr}/master.idx"
-    )
-    print(f"📥  downloading master.idx {year}-Q{qtr}")
+    url = f"https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{qtr}/master.idx"
     txt = get(url).text
-    with open(cache_path, "w", encoding="latin1") as f:
+    with open(name, "w", encoding="latin1") as f:
         f.write(txt)
     return txt.splitlines()
 
-# ——— 3. Find latest 10-K path for this CIK ———
-def latest_10k_path(cik: str) -> str:
-    year, qtr = current_qtr_yyyy()
-
-    # Search current quarter then roll back until we find a 10-K
-    for _ in range(8):                        # up to 2 years back
-        lines = fetch_master_idx(year, qtr)
-        # master.idx:  header lines … then `YYYY-MM-DD|COMPANY|CIK|FORM|PATH`
-        matches = [l for l in lines if f"|{cik.lstrip('0')}|" in l and "|10-K|" in l]
-        if matches:
-            latest = matches[-1]              # last occurrence is latest
-            path   = latest.strip().split("|")[-1]
-            return path
-
-        # move to previous quarter
+def latest_10k_from_master(cik_padded):
+    year, qtr = current_qtr()
+    for _ in range(8):
+        for line in master_idx_lines(year, qtr)[11:]:
+            if f"|{int(cik_padded)}|" in line and "|10-K|" in line:
+                path = line.rsplit("|", 1)[-1].strip()
+                return "https://www.sec.gov/Archives/" + path
         qtr -= 1
         if qtr == 0:
-            qtr, year = 4, year - 1
+            year -= 1
+            qtr = 4
+    raise RuntimeError("10-K not found via master.idx")
 
-    raise RuntimeError("No 10-K found in last 2 years via master.idx")
-
-# ——— 4. Build full filing URL ———
-def filing_html_url(path: str) -> str:
-    # Some 10-Ks are .htm, some .txt; we’ll always fetch the .htm first
-    base = "https://www.sec.gov/Archives/"
-    if path.endswith(".txt"):                 # 1-file submission
-        return base + path
-    # multi-file: replace -index.htm with .htm if needed
-    return base + path
-
-# ——— 5. Extract segment table ———
-def extract_segment_table(html: str) -> pd.DataFrame:
+# ———————————————————————————— TABLE PARSING + CHARTS ———————————————————————————— #
+def parse_segment_table(html):
     soup = BeautifulSoup(html, "html.parser")
-    heading = soup.find(string=re.compile(
-        r"Segment\s.*(Results|Information|Operations)", re.I))
-    if not heading:
-        raise RuntimeError("Segment heading not found.")
-    table = heading.find_parent().find_next("table")
-    raw   = pd.read_html(str(table), flavor="lxml")[0]
-    raw.columns = [str(c).strip() for c in raw.columns]
-    raw = raw.dropna(axis=1, how="all")
-
-    revenue, op_inc, mode = [], [], "Revenue"
-    for _, row in raw.iterrows():
-        first = str(row.iloc[0])
-        if re.search(r"Operating\s+Income", first, re.I):
-            mode = "Operating Income"; continue
-        if pd.isna(row.iloc[0]) or "Total" in first: continue
-        (revenue if mode=="Revenue" else op_inc).append(row)
-
+    head = soup.find(string=re.compile(r"Segment\s.*(Results|Operations|Information)", re.I))
+    if not head:
+        raise RuntimeError("Segment heading not found")
+    table = head.find_parent().find_next("table")
+    df = pd.read_html(str(table))[0]
+    df.columns = [str(c).strip() for c in df.columns]
+    rev, opi, mode = [], [], "Revenue"
+    for _, row in df.iterrows():
+        cell = str(row.iloc[0])
+        if re.search(r"Operating\s+Income", cell, re.I):
+            mode = "Operating Income"
+            continue
+        if pd.isna(row.iloc[0]) or "Total" in cell:
+            continue
+        (rev if mode == "Revenue" else opi).append(row)
     def tidy(block, metric):
-        df = pd.DataFrame(block).iloc[:, :3]          # Segment | 2024 | 2023
-        df.columns = ["Segment", "2024", "2023"]
-        df = df.melt(id_vars="Segment", var_name="Year",
-                     value_name="Amount")
-        df["Metric"] = metric
-        return df
+        d = pd.DataFrame(block).iloc[:, :3]
+        d.columns = ["Segment", "2024", "2023"]
+        d = d.melt(id_vars="Segment", var_name="Year", value_name="Amount")
+        d["Metric"] = metric
+        return d
+    out = pd.concat([tidy(rev, "Revenue"), tidy(opi, "Operating Income")])
+    out["Amount"] = (out["Amount"].astype(str)
+                     .str.replace(r"[^\d\-.]", "", regex=True)
+                     .astype(float) * 1_000_000)
+    return out
 
-    df = pd.concat([tidy(revenue, "Revenue"),
-                    tidy(op_inc,  "Operating Income")],
-                   ignore_index=True)
-    df["Amount"] = (df["Amount"].astype(str)
-                    .str.replace(r"[^\d\-.]", "", regex=True)
-                    .astype(float) * 1_000_000)   # “in millions”
-    return df
-
-# ——— 6. Charts ———
-def plot_charts(df: pd.DataFrame, ticker: str):
+def save_charts(df, ticker):
     for metric in ["Revenue", "Operating Income"]:
-        sub   = df[df["Metric"] == metric]
-        pivot = sub.pivot(index="Year", columns="Segment", values="Amount")
-        ax    = pivot.div(1e9).plot(kind="bar", stacked=True, figsize=(6,4))
+        pvt = df[df["Metric"] == metric].pivot(index="Year", columns="Segment", values="Amount")
+        ax = pvt.div(1e9).plot(kind="bar", stacked=True, figsize=(6, 4))
         ax.set_title(f"{ticker} – {metric} by Segment")
         ax.set_ylabel("USD (Billions)")
         plt.xticks(rotation=0)
         plt.tight_layout()
-        p = os.path.join(TEST_DIR,
-                         f"{ticker}_{metric.lower().replace(' ', '_')}.png")
-        plt.savefig(p, dpi=150); plt.close()
-        print("✔ chart saved →", p)
+        path = f"{OUT_DIR}/{ticker}_{metric.lower().replace(' ', '_')}.png"
+        plt.savefig(path, dpi=150)
+        plt.close()
+        print("✔ Chart saved:", path)
 
-# ——— MAIN orchestrator ———
-def run_test(ticker: str):
-    print(f"🔍  extracting segment data for {ticker}")
-    cik   = CIK_MAP[ticker.upper()]
-    path  = latest_10k_path(cik)
-    url   = filing_html_url(path)
-    print("    filing URL:", url)
-
-    html  = get(url).text
-    df    = extract_segment_table(html)
-
-    print("\n📊  tidy segment table:\n")
-    print(df.pivot(index=["Year","Segment"],
-                   columns="Metric",
-                   values="Amount"))
-
-    plot_charts(df, ticker)
+# ———————————————————————————— MAIN TEST RUN ———————————————————————————— #
+def run_one(ticker):
+    cik = CIK[ticker]
+    try:
+        url = latest_10k_from_json(cik)
+    except Exception as e:
+        print(f"⚠ JSON path failed for {ticker}: {e}")
+        url = latest_10k_from_master(cik)
+    print(f"🔗 {ticker} 10-K URL: {url}")
+    html = get(url).text
+    df = parse_segment_table(html)
+    print(df.pivot(index=["Year", "Segment"], columns="Metric", values="Amount"))
+    save_charts(df, ticker)
 
 if __name__ == "__main__":
-    run_test(TEST_TICKER)
+    for t in TICKERS:
+        run_one(t)
