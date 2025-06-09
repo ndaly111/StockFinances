@@ -9,7 +9,7 @@ TICKERS = ["MSFT", "AAPL", "GOOGL"]  # test tickers
 OUT_DIR = "test"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-MY_EMAIL = "you@example.com"  # SEC requires contact info
+MY_EMAIL = "ndaly111@gmail.com"  # SEC requires contact info
 HEADERS = {
     "User-Agent": f"StockFinancesBot/1.0 (+https://github.com/your-repo; {MY_EMAIL})",
     "Accept-Encoding": "gzip, deflate"
