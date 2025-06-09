@@ -25,7 +25,7 @@ jobs:
         run: python Test/test_segment_parser.py
 
       - name: Upload charts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # ✅ Updated from v3 to v4
         with:
           name: segment-charts
           path: test/*.png
