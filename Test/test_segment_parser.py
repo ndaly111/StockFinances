@@ -4,17 +4,17 @@ import matplotlib.pyplot as plt
 from datetime import date
 from bs4 import BeautifulSoup
 
-# —————————————————————————————————— CONFIG —————————————————————————————————— #
-TICKERS = ["MSFT", "AAPL", "GOOGL"]  # test tickers
+# ——— CONFIG ———
+TICKERS = ["MSFT", "AAPL", "GOOGL"]
 OUT_DIR = "test"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-MY_EMAIL = "ndaly111@gmail.com"  # SEC requires contact info
+MY_EMAIL = "ndaly111@gmail.com"
 HEADERS = {
     "User-Agent": f"StockFinancesBot/1.0 (+https://github.com/your-repo; {MY_EMAIL})",
     "Accept-Encoding": "gzip, deflate"
 }
-DELAY_S = 0.25  # polite delay (~4 requests/sec)
+DELAY_S = 0.5  # polite delay
 
 CIK = {
     "MSFT": "0000789019",
@@ -22,17 +22,18 @@ CIK = {
     "GOOGL": "0001652044"
 }
 
-# ———————————————————————————— NETWORK HELPERS ———————————————————————————— #
+# ——— NETWORK HELPERS ———
 def get(url, **kw):
     time.sleep(DELAY_S)
     r = requests.get(url, headers=HEADERS, timeout=30, **kw)
     if r.status_code == 403:
+        print(f"⚠ 403 error from {url}")
         time.sleep(1.0)
         r = requests.get(url, headers=HEADERS, timeout=30, **kw)
     r.raise_for_status()
     return r
 
-# ———————————————————————————— FETCH 10-K URL ———————————————————————————— #
+# ——— FETCH 10-K URL ———
 def latest_10k_from_json(cik_padded):
     url = f"https://data.sec.gov/submissions/CIK{cik_padded}.json"
     j = get(url).json()
@@ -45,7 +46,7 @@ def latest_10k_from_json(cik_padded):
             return f"https://www.sec.gov/Archives/edgar/data/{base}/{acc_no_dash}/{doc}"
     raise RuntimeError("No 10-K found in recent filings")
 
-# ———————————————————————————— FALLBACK TO master.idx ———————————————————————————— #
+# ——— FALLBACK TO master.idx ———
 def current_qtr():
     m = date.today().month
     return (date.today().year, (m - 1) // 3 + 1)
@@ -74,7 +75,7 @@ def latest_10k_from_master(cik_padded):
             qtr = 4
     raise RuntimeError("10-K not found via master.idx")
 
-# ———————————————————————————— TABLE PARSING + CHARTS ———————————————————————————— #
+# ——— TABLE PARSING + CHARTS ———
 def parse_segment_table(html):
     soup = BeautifulSoup(html, "html.parser")
     head = soup.find(string=re.compile(r"Segment\s.*(Results|Operations|Information)", re.I))
@@ -117,7 +118,7 @@ def save_charts(df, ticker):
         plt.close()
         print("✔ Chart saved:", path)
 
-# ———————————————————————————— MAIN TEST RUN ———————————————————————————— #
+# ——— MAIN ———
 def run_one(ticker):
     cik = CIK[ticker]
     try:
