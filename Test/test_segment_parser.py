@@ -1,7 +1,8 @@
 """
-Download each ticker’s most-recent 10-K from the SEC Open-Data S3 mirror,
-extract business-segment Revenue and Operating-Income tables (or revenue
-categories if no GAAP segment op-income), and save PNG charts in /test.
+Download each ticker’s most-recent 10-K via SEC’s JSON feed,
+extract business-segment Revenue & Operating-Income tables
+(or revenue categories if no GAAP segment op-income), and
+save PNG charts in /test.
 
 Works in public GitHub Actions (no 403/404) — no API key needed.
 """
@@ -12,79 +13,48 @@ import time
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import date
-from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
 
 # ──────────────── USER CONFIG ────────────────
-TICKERS = ["V", "MSFT", "TSLA"]  # extend to your full list
-CIK = {"V": "0001403161", "MSFT": "0000789019", "TSLA": "0001318605"}
-EMAIL = "ndaly111@gmail.com"
-OUT_DIR = "test"
+TICKERS = ["V", "MSFT", "TSLA"]  
+CIK      = {"V":"0001403161","MSFT":"0000789019","TSLA":"0001318605"}
+EMAIL    = "ndaly111@gmail.com"
+OUT_DIR  = "test"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-UA = f"StockFinancesBot/1.0 (+https://github.com/your-repo; {EMAIL})"
+UA      = f"StockFinancesBot/1.0 (+https://github.com/your-repo; {EMAIL})"
 HEADERS = {"User-Agent": UA, "Accept-Encoding": "gzip, deflate"}
-SLEEP = 0.3  # ≈3 requests/sec
+SLEEP   = 0.3  # ~3 requests/sec
 
-# ──────────────── NETWORK HELPERS ─────────────
+# ──────────────── NETWORK HELPER ────────────────
 def get(url):
     time.sleep(SLEEP)
     r = requests.get(url, headers=HEADERS, timeout=30)
     r.raise_for_status()
     return r
 
-# ──────────────── find latest accession via master.idx ────────────────
-def latest_accession(cik_str):
-    year, qtr = date.today().year, (date.today().month - 1) // 3 + 1
-    pattern = f"|{int(cik_str)}|10-K|"
-    # Try this quarter & up to 7 prior quarters
-    for _ in range(8):
-        idx_url = (
-            f"https://sec-edgar-us.s3.amazonaws.com/Archives/edgar/"
-            f"full-index/{year}/QTR{qtr}/master.idx"
-        )
-        try:
-            text = get(idx_url).text
-        except HTTPError as e:
-            # If not yet published, skip back one quarter
-            if e.response.status_code == 404:
-                qtr -= 1
-                if qtr == 0:
-                    year -= 1
-                    qtr = 4
-                continue
-            raise
-        # Scan newest entries first
-        for line in reversed(text.splitlines()[11:]):
-            if pattern in line:
-                return line.split("|")[4]  # accessionNumber
-        # Not found this quarter → go back
-        qtr -= 1
-        if qtr == 0:
-            year -= 1
-            qtr = 4
-    raise RuntimeError("No 10-K found in last 8 quarters")
+# ──────────────── FETCH LATEST 10-K via JSON ────────────────
+def latest_accession_and_doc(cik_str):
+    """Return (accessionNumber, primaryDocument) for latest non-amended 10-K."""
+    url = f"https://data.sec.gov/submissions/CIK{cik_str}.json"
+    data = get(url).json()
+    forms = data["filings"]["recent"]["form"]
+    accs  = data["filings"]["recent"]["accessionNumber"]
+    docs  = data["filings"]["recent"]["primaryDocument"]
+    for form, acc, doc in zip(forms, accs, docs):
+        if form == "10-K":  # skip amendments (10-K/A)
+            return acc, doc
+    raise RuntimeError(f"No 10-K found for CIK {cik_str}")
 
-# ──────────────── download the actual 10-K HTML ────────────────
 def filing_html(cik_str):
-    acc = latest_accession(cik_str)
-    base = cik_str.lstrip("0")
-    acc_nodash = acc.replace("-", "")
-    idx_url = (
-        f"https://sec-edgar-us.s3.amazonaws.com/Archives/edgar/data/"
-        f"{base}/{acc_nodash}/{acc}-index.html"
+    acc, doc = latest_accession_and_doc(cik_str)
+    base      = str(int(cik_str))             # drop leading zeros
+    acc_dash  = acc.replace("-", "")
+    url       = (
+        f"https://www.sec.gov/Archives/edgar/data/"
+        f"{base}/{acc_dash}/{doc}"
     )
-    idx_html = get(idx_url).text
-    m = re.search(r'href="([^"]+\.htm)"', idx_html, re.I)
-    if not m:
-        raise RuntimeError("Main HTML filing not found in index page")
-    main_doc = m.group(1)
-    doc_url = (
-        f"https://sec-edgar-us.s3.amazonaws.com/Archives/edgar/data/"
-        f"{base}/{acc_nodash}/{main_doc}"
-    )
-    return get(doc_url).text
+    return get(url).text
 
 # ──────────────── PARSERS ─────────────────────
 def tidy(block, metric):
@@ -94,20 +64,18 @@ def tidy(block, metric):
     df["Metric"] = metric
     df["Amount"] = (
         df.Amount.astype(str)
-        .str.replace(r"[^\d\-.]", "", regex=True)
-        .astype(float)
-        * 1_000_000
+          .str.replace(r"[^\d\-.]", "", regex=True)
+          .astype(float)
+          * 1_000_000
     )
     return df
 
 def parse_gaap_segment(soup):
-    h = soup.find(
-        string=re.compile(r"Segment\s.*(Results|Information|Operations)", re.I)
-    )
+    h = soup.find(string=re.compile(r"Segment\s.*(Results|Information|Operations)", re.I))
     if not h:
         return None
     tbl = h.find_parent().find_next("table")
-    raw = pd.read_html(str(tbl))[0]
+    raw = pd.read_html(str(tbl), flavor="lxml")[0]
     raw.columns = [str(c).strip() for c in raw.columns]
     rev, opi, mode = [], [], "Revenue"
     for _, row in raw.iterrows():
@@ -117,42 +85,36 @@ def parse_gaap_segment(soup):
             continue
         if pd.isna(row.iloc[0]) or "Total" in first:
             continue
-        (rev if mode == "Revenue" else opi).append(row)
+        (rev if mode=="Revenue" else opi).append(row)
     if rev and opi:
         return pd.concat([tidy(rev, "Revenue"), tidy(opi, "Operating Income")])
     return None
 
 def parse_revenue_categories(soup):
-    h = soup.find(string=re.compile(r"revenue.*category", re.I)) or soup.find(
-        string=re.compile(r"revenues.*category", re.I)
-    )
+    h = soup.find(string=re.compile(r"revenue.*category", re.I)) \
+        or soup.find(string=re.compile(r"revenues.*category", re.I))
     if not h:
         return None
     tbl = h.find_parent().find_next("table")
-    raw = pd.read_html(str(tbl))[0]
+    raw = pd.read_html(str(tbl), flavor="lxml")[0]
     raw.columns = [str(c).strip() for c in raw.columns]
-    rows = [
-        row
-        for _, row in raw.iterrows()
-        if pd.notna(row.iloc[0]) and "Total" not in str(row.iloc[0])
-    ]
+    rows = [row for _, row in raw.iterrows()
+            if pd.notna(row.iloc[0]) and "Total" not in str(row.iloc[0])]
     return tidy(rows, "Revenue") if rows else None
 
 # ──────────────── CHARTING ────────────────────
 def chart(df, ticker):
     for metric in df.Metric.unique():
-        p = df[df.Metric == metric].pivot(
-            index="Year", columns="Segment", values="Amount"
-        )
-        ax = p.div(1e9).plot(kind="bar", stacked=True, figsize=(6, 4))
+        p = df[df.Metric==metric].pivot(index="Year", columns="Segment", values="Amount")
+        ax = p.div(1e9).plot(kind="bar", stacked=True, figsize=(6,4))
         ax.set_title(f"{ticker} – {metric} by segment/category")
         ax.set_ylabel("USD (billions)")
         plt.xticks(rotation=0)
         plt.tight_layout()
-        file = f"{OUT_DIR}/{ticker}_{metric.lower().replace(' ', '_')}.png"
-        plt.savefig(file, dpi=150)
+        path = f"{OUT_DIR}/{ticker}_{metric.lower().replace(' ','_')}.png"
+        plt.savefig(path, dpi=150)
         plt.close()
-        print("✔ saved", file)
+        print("✔ saved", path)
 
 # ──────────────── MAIN LOOP ───────────────────
 for ticker in TICKERS:
@@ -169,7 +131,7 @@ for ticker in TICKERS:
         if df is None:
             raise RuntimeError("No segment or category table found")
 
-        print(df.pivot(index=["Year", "Segment"], columns="Metric", values="Amount"))
+        print(df.pivot(index=["Year","Segment"], columns="Metric", values="Amount"))
         chart(df, ticker)
 
     except Exception as e:
