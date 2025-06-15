@@ -5,3 +5,5 @@ numpy
 jinja2
 pdfkit
 peewee
+sec-edgar-downloader
+lxml
