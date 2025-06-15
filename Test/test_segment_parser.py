@@ -13,6 +13,7 @@ import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date
+from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
 
 # ──────────────── USER CONFIG ────────────────
@@ -37,16 +38,28 @@ def get(url):
 def latest_accession(cik_str):
     year, qtr = date.today().year, (date.today().month - 1) // 3 + 1
     pattern = f"|{int(cik_str)}|10-K|"
-    for _ in range(8):  # look back up to 2 years
+    # Try this quarter & up to 7 prior quarters
+    for _ in range(8):
         idx_url = (
             f"https://sec-edgar-us.s3.amazonaws.com/Archives/edgar/"
             f"full-index/{year}/QTR{qtr}/master.idx"
         )
-        text = get(idx_url).text
-        # skip header lines, search newest first
+        try:
+            text = get(idx_url).text
+        except HTTPError as e:
+            # If not yet published, skip back one quarter
+            if e.response.status_code == 404:
+                qtr -= 1
+                if qtr == 0:
+                    year -= 1
+                    qtr = 4
+                continue
+            raise
+        # Scan newest entries first
         for line in reversed(text.splitlines()[11:]):
             if pattern in line:
                 return line.split("|")[4]  # accessionNumber
+        # Not found this quarter → go back
         qtr -= 1
         if qtr == 0:
             year -= 1
@@ -118,13 +131,19 @@ def parse_revenue_categories(soup):
     tbl = h.find_parent().find_next("table")
     raw = pd.read_html(str(tbl))[0]
     raw.columns = [str(c).strip() for c in raw.columns]
-    rows = [row for _, row in raw.iterrows() if pd.notna(row.iloc[0]) and "Total" not in str(row.iloc[0])]
+    rows = [
+        row
+        for _, row in raw.iterrows()
+        if pd.notna(row.iloc[0]) and "Total" not in str(row.iloc[0])
+    ]
     return tidy(rows, "Revenue") if rows else None
 
 # ──────────────── CHARTING ────────────────────
 def chart(df, ticker):
     for metric in df.Metric.unique():
-        p = df[df.Metric == metric].pivot(index="Year", columns="Segment", values="Amount")
+        p = df[df.Metric == metric].pivot(
+            index="Year", columns="Segment", values="Amount"
+        )
         ax = p.div(1e9).plot(kind="bar", stacked=True, figsize=(6, 4))
         ax.set_title(f"{ticker} – {metric} by segment/category")
         ax.set_ylabel("USD (billions)")
