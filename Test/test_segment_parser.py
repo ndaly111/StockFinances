@@ -1,137 +1,138 @@
-import os, re, time, requests
+"""
+Download each ticker’s most-recent 10-K via SEC’s JSON feed,
+extract business-segment Revenue & Operating-Income tables
+(or revenue categories if no GAAP segment op-income), and
+save PNG charts in /test.
+
+Works in public GitHub Actions (no 403/404) — no API key needed.
+"""
+
+import os
+import re
+import time
+import requests
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import date
 from bs4 import BeautifulSoup
 
-# ——— CONFIG ———
-TICKERS = ["MSFT", "AAPL", "GOOGL"]
-OUT_DIR = "test"
+# ──────────────── USER CONFIG ────────────────
+TICKERS = ["V", "MSFT", "TSLA"]  
+CIK      = {"V":"0001403161","MSFT":"0000789019","TSLA":"0001318605"}
+EMAIL    = "ndaly111@gmail.com"
+OUT_DIR  = "test"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-MY_EMAIL = "ndaly111@gmail.com"
-HEADERS = {
-    "User-Agent": f"StockFinancesBot/1.0 (+https://github.com/your-repo; {MY_EMAIL})",
-    "Accept-Encoding": "gzip, deflate"
-}
-DELAY_S = 0.5  # polite delay
+UA      = f"StockFinancesBot/1.0 (+https://github.com/your-repo; {EMAIL})"
+HEADERS = {"User-Agent": UA, "Accept-Encoding": "gzip, deflate"}
+SLEEP   = 0.3  # ~3 requests/sec
 
-CIK = {
-    "MSFT": "0000789019",
-    "AAPL": "0000320193",
-    "GOOGL": "0001652044"
-}
-
-# ——— NETWORK HELPERS ———
-def get(url, **kw):
-    time.sleep(DELAY_S)
-    r = requests.get(url, headers=HEADERS, timeout=30, **kw)
-    if r.status_code == 403:
-        print(f"⚠ 403 error from {url}")
-        time.sleep(1.0)
-        r = requests.get(url, headers=HEADERS, timeout=30, **kw)
+# ──────────────── NETWORK HELPER ────────────────
+def get(url):
+    time.sleep(SLEEP)
+    r = requests.get(url, headers=HEADERS, timeout=30)
     r.raise_for_status()
     return r
 
-# ——— FETCH 10-K URL ———
-def latest_10k_from_json(cik_padded):
-    url = f"https://data.sec.gov/submissions/CIK{cik_padded}.json"
-    j = get(url).json()
-    for form, acc, doc in zip(j["filings"]["recent"]["form"],
-                              j["filings"]["recent"]["accessionNumber"],
-                              j["filings"]["recent"]["primaryDocument"]):
-        if form == "10-K":
-            acc_no_dash = acc.replace("-", "")
-            base = cik_padded.lstrip("0")
-            return f"https://www.sec.gov/Archives/edgar/data/{base}/{acc_no_dash}/{doc}"
-    raise RuntimeError("No 10-K found in recent filings")
+# ──────────────── FETCH LATEST 10-K via JSON ────────────────
+def latest_accession_and_doc(cik_str):
+    """Return (accessionNumber, primaryDocument) for latest non-amended 10-K."""
+    url = f"https://data.sec.gov/submissions/CIK{cik_str}.json"
+    data = get(url).json()
+    forms = data["filings"]["recent"]["form"]
+    accs  = data["filings"]["recent"]["accessionNumber"]
+    docs  = data["filings"]["recent"]["primaryDocument"]
+    for form, acc, doc in zip(forms, accs, docs):
+        if form == "10-K":  # skip amendments (10-K/A)
+            return acc, doc
+    raise RuntimeError(f"No 10-K found for CIK {cik_str}")
 
-# ——— FALLBACK TO master.idx ———
-def current_qtr():
-    m = date.today().month
-    return (date.today().year, (m - 1) // 3 + 1)
+def filing_html(cik_str):
+    acc, doc = latest_accession_and_doc(cik_str)
+    base      = str(int(cik_str))             # drop leading zeros
+    acc_dash  = acc.replace("-", "")
+    url       = (
+        f"https://www.sec.gov/Archives/edgar/data/"
+        f"{base}/{acc_dash}/{doc}"
+    )
+    return get(url).text
 
-def master_idx_lines(year, qtr):
-    name = f"{OUT_DIR}/master-{year}-Q{qtr}.idx"
-    if os.path.exists(name):
-        with open(name, "r", encoding="latin1") as f:
-            return f.readlines()
-    url = f"https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{qtr}/master.idx"
-    txt = get(url).text
-    with open(name, "w", encoding="latin1") as f:
-        f.write(txt)
-    return txt.splitlines()
+# ──────────────── PARSERS ─────────────────────
+def tidy(block, metric):
+    df = pd.DataFrame(block).iloc[:, :3]
+    df.columns = ["Segment", "2024", "2023"]
+    df = df.melt(id_vars="Segment", var_name="Year", value_name="Amount")
+    df["Metric"] = metric
+    df["Amount"] = (
+        df.Amount.astype(str)
+          .str.replace(r"[^\d\-.]", "", regex=True)
+          .astype(float)
+          * 1_000_000
+    )
+    return df
 
-def latest_10k_from_master(cik_padded):
-    year, qtr = current_qtr()
-    for _ in range(8):
-        for line in master_idx_lines(year, qtr)[11:]:
-            if f"|{int(cik_padded)}|" in line and "|10-K|" in line:
-                path = line.rsplit("|", 1)[-1].strip()
-                return "https://www.sec.gov/Archives/" + path
-        qtr -= 1
-        if qtr == 0:
-            year -= 1
-            qtr = 4
-    raise RuntimeError("10-K not found via master.idx")
-
-# ——— TABLE PARSING + CHARTS ———
-def parse_segment_table(html):
-    soup = BeautifulSoup(html, "html.parser")
-    head = soup.find(string=re.compile(r"Segment\s.*(Results|Operations|Information)", re.I))
-    if not head:
-        raise RuntimeError("Segment heading not found")
-    table = head.find_parent().find_next("table")
-    df = pd.read_html(str(table))[0]
-    df.columns = [str(c).strip() for c in df.columns]
+def parse_gaap_segment(soup):
+    h = soup.find(string=re.compile(r"Segment\s.*(Results|Information|Operations)", re.I))
+    if not h:
+        return None
+    tbl = h.find_parent().find_next("table")
+    raw = pd.read_html(str(tbl), flavor="lxml")[0]
+    raw.columns = [str(c).strip() for c in raw.columns]
     rev, opi, mode = [], [], "Revenue"
-    for _, row in df.iterrows():
-        cell = str(row.iloc[0])
-        if re.search(r"Operating\s+Income", cell, re.I):
+    for _, row in raw.iterrows():
+        first = str(row.iloc[0])
+        if re.search(r"Operating\s+Income", first, re.I):
             mode = "Operating Income"
             continue
-        if pd.isna(row.iloc[0]) or "Total" in cell:
+        if pd.isna(row.iloc[0]) or "Total" in first:
             continue
-        (rev if mode == "Revenue" else opi).append(row)
-    def tidy(block, metric):
-        d = pd.DataFrame(block).iloc[:, :3]
-        d.columns = ["Segment", "2024", "2023"]
-        d = d.melt(id_vars="Segment", var_name="Year", value_name="Amount")
-        d["Metric"] = metric
-        return d
-    out = pd.concat([tidy(rev, "Revenue"), tidy(opi, "Operating Income")])
-    out["Amount"] = (out["Amount"].astype(str)
-                     .str.replace(r"[^\d\-.]", "", regex=True)
-                     .astype(float) * 1_000_000)
-    return out
+        (rev if mode=="Revenue" else opi).append(row)
+    if rev and opi:
+        return pd.concat([tidy(rev, "Revenue"), tidy(opi, "Operating Income")])
+    return None
 
-def save_charts(df, ticker):
-    for metric in ["Revenue", "Operating Income"]:
-        pvt = df[df["Metric"] == metric].pivot(index="Year", columns="Segment", values="Amount")
-        ax = pvt.div(1e9).plot(kind="bar", stacked=True, figsize=(6, 4))
-        ax.set_title(f"{ticker} – {metric} by Segment")
-        ax.set_ylabel("USD (Billions)")
+def parse_revenue_categories(soup):
+    h = soup.find(string=re.compile(r"revenue.*category", re.I)) \
+        or soup.find(string=re.compile(r"revenues.*category", re.I))
+    if not h:
+        return None
+    tbl = h.find_parent().find_next("table")
+    raw = pd.read_html(str(tbl), flavor="lxml")[0]
+    raw.columns = [str(c).strip() for c in raw.columns]
+    rows = [row for _, row in raw.iterrows()
+            if pd.notna(row.iloc[0]) and "Total" not in str(row.iloc[0])]
+    return tidy(rows, "Revenue") if rows else None
+
+# ──────────────── CHARTING ────────────────────
+def chart(df, ticker):
+    for metric in df.Metric.unique():
+        p = df[df.Metric==metric].pivot(index="Year", columns="Segment", values="Amount")
+        ax = p.div(1e9).plot(kind="bar", stacked=True, figsize=(6,4))
+        ax.set_title(f"{ticker} – {metric} by segment/category")
+        ax.set_ylabel("USD (billions)")
         plt.xticks(rotation=0)
         plt.tight_layout()
-        path = f"{OUT_DIR}/{ticker}_{metric.lower().replace(' ', '_')}.png"
+        path = f"{OUT_DIR}/{ticker}_{metric.lower().replace(' ','_')}.png"
         plt.savefig(path, dpi=150)
         plt.close()
-        print("✔ Chart saved:", path)
+        print("✔ saved", path)
 
-# ——— MAIN ———
-def run_one(ticker):
-    cik = CIK[ticker]
+# ──────────────── MAIN LOOP ───────────────────
+for ticker in TICKERS:
     try:
-        url = latest_10k_from_json(cik)
-    except Exception as e:
-        print(f"⚠ JSON path failed for {ticker}: {e}")
-        url = latest_10k_from_master(cik)
-    print(f"🔗 {ticker} 10-K URL: {url}")
-    html = get(url).text
-    df = parse_segment_table(html)
-    print(df.pivot(index=["Year", "Segment"], columns="Metric", values="Amount"))
-    save_charts(df, ticker)
+        print("⏬", ticker)
+        html = filing_html(CIK[ticker])
+        soup = BeautifulSoup(html, "html.parser")
 
-if __name__ == "__main__":
-    for t in TICKERS:
-        run_one(t)
+        df = parse_gaap_segment(soup)
+        if df is None:
+            print("ℹ no GAAP segment—trying revenue categories")
+            df = parse_revenue_categories(soup)
+
+        if df is None:
+            raise RuntimeError("No segment or category table found")
+
+        print(df.pivot(index=["Year","Segment"], columns="Metric", values="Amount"))
+        chart(df, ticker)
+
+    except Exception as e:
+        print("❌", ticker, e)
