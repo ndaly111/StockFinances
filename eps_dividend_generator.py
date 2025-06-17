@@ -204,8 +204,16 @@ def generate_eps_dividend(tickers,
 
 
 # ─────────────────────────────────────────────
+# MINI MAIN for use in main.py
+# ─────────────────────────────────────────────
+
+def eps_dividend_generator():
+    from ticker_manager import read_tickers  # adjust if this is imported differently
+    tickers = read_tickers("tickers.csv")    # replace with your real ticker path
+    return generate_eps_dividend(tickers)
+
+
+# Manual run (optional)
 if __name__ == "__main__":
-    # quick manual test
-    tickers = ["AAPL", "MSFT"]
-    out = generate_eps_dividend(tickers)
-    print(out)
+    chart_map = eps_dividend_generator()
+    print(chart_map)
