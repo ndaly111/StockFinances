@@ -4,12 +4,14 @@ EPS-Dividend module
 Call   generate_eps_dividend(ticker_list)
 for each ticker it will:
     • ensure Dividends table & TTM_Dividend column exist
-    • pull & store dividend history + TTM dividend
+    • pull & store dividend history + TTM dividend (last 365 days, tz-handled)
     • create charts/{ticker}_eps_dividend_forecast.png
 Returns dict {ticker: chart_path}
 """
 
-import os, sqlite3, datetime as dt
+import os
+import sqlite3
+import datetime as dt
 import yfinance as yf
 import matplotlib.pyplot as plt
 
@@ -30,7 +32,6 @@ def _ensure_schema(conn):
             PRIMARY KEY (ticker, year)
         );
     """)
-    # add TTM_Dividend column to TTM_Data if missing
     c.execute("PRAGMA table_info(TTM_Data);")
     cols = [row[1].lower() for row in c.fetchall()]
     if 'ttm_dividend' not in cols:
@@ -52,11 +53,11 @@ def _update_ttm_div(conn, tic, ttm_div):
         UPDATE TTM_Data SET TTM_Dividend = ?
         WHERE Symbol = ?;
     """, (ttm_div, tic))
-    if cur.rowcount == 0:            # if row absent create minimal record
-        cur.execute("""INSERT INTO TTM_Data (Symbol, TTM_Dividend, Last_Updated)
-                       VALUES (?, ?, ?)""",
-                    (tic, ttm_div,
-                     dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
+    if cur.rowcount == 0:
+        cur.execute("""
+            INSERT INTO TTM_Data (Symbol, TTM_Dividend, Last_Updated)
+            VALUES (?, ?, ?)
+        """, (tic, ttm_div, dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")))
     conn.commit()
 
 
@@ -141,7 +142,8 @@ def _build_chart(tic, conn):
     ax.bar([i + width for i in x], divs,     width=width, label="Dividend",
            color="orange")
 
-    ax.set_xticks(x); ax.set_xticklabels(labels, rotation=45)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=45)
     ax.set_ylabel("USD per Share")
     ax.set_title(f"{tic} – EPS (Actual & Forecast) vs Dividend")
     ax.legend()
@@ -160,8 +162,7 @@ def _build_chart(tic, conn):
     plt.tight_layout()
     if not os.path.isdir(CHART_DIR):
         os.makedirs(CHART_DIR)
-    path = os.path.join(CHART_DIR,
-                        f"{tic}_eps_dividend_forecast.png")
+    path = os.path.join(CHART_DIR, f"{tic}_eps_dividend_forecast.png")
     fig.savefig(path, dpi=150)
     plt.close(fig)
     return path
@@ -187,13 +188,21 @@ def generate_eps_dividend(tickers,
         # fetch dividends from yfinance
         div_series = yf.Ticker(tic).dividends
         if not div_series.empty:
+            # strip timezone if present
+            if getattr(div_series.index, 'tz', None) is not None:
+                div_series.index = div_series.index.tz_localize(None)
+
+            # annual totals
             yearly_totals = div_series.groupby(div_series.index.year).sum()
             for yr, amt in yearly_totals.items():
                 _upsert_dividend_year(cur, tic, int(yr), float(amt))
-            # TTM
-            last_year_cut = dt.datetime.utcnow() - dt.timedelta(days=365)
-            ttm_total = float(div_series[div_series.index >= last_year_cut].sum())
+
+            # TTM (last 365 days)
+            one_year_ago = dt.datetime.utcnow() - dt.timedelta(days=365)
+            mask = div_series.index >= one_year_ago
+            ttm_total = float(div_series[mask].sum())
             _update_ttm_div(conn, tic, ttm_total)
+
         conn.commit()
 
         # build & store chart
@@ -206,14 +215,12 @@ def generate_eps_dividend(tickers,
 # ─────────────────────────────────────────────
 # MINI MAIN for use in main.py
 # ─────────────────────────────────────────────
-
 def eps_dividend_generator():
-    from ticker_manager import read_tickers  # adjust if this is imported differently
-    tickers = read_tickers("tickers.csv")    # replace with your real ticker path
+    from ticker_manager import read_tickers  # adjust import as needed
+    tickers = read_tickers("tickers.csv")
     return generate_eps_dividend(tickers)
 
 
-# Manual run (optional)
 if __name__ == "__main__":
     chart_map = eps_dividend_generator()
     print(chart_map)
