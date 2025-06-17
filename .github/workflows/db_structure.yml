@@ -1,0 +1,20 @@
+name: Extract DB Structure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  extract-structure:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+
+    - name: Install SQLite support
+      run: pip install sqlite3  # Built-in usually
