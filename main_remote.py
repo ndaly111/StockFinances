@@ -13,7 +13,10 @@ from balance_sheet_data_fetcher import (
     store_fetched_balance_sheet_data
 )
 from balancesheet_chart import (
-    fetch_balance_sheet_data, plot_chart, format_value, create_and_save_table
+    fetch_balance_sheet_data as _fetch_bs2,
+    plot_chart,
+    format_value,
+    create_and_save_table
 )
 import pandas as pd
 from Forward_data import scrape_forward_data
@@ -26,7 +29,10 @@ from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 from index_growth_table import index_growth
 
-# ←— NEW: import the function
+# ←— NEW: import the EPS-Dividend mini-main
+from eps_dividend_generator import eps_dividend_generator
+
+# ←— NEW: import earnings tables generator
 from generate_earnings_tables import generate_earnings_tables
 
 # Constants
@@ -136,17 +142,21 @@ def main():
             prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
             generate_html_table(prepared_data, ticker)
             valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
-            # ←— NEW: generate expense reports before final HTML generation
             generate_expense_reports(ticker)
 
+        # build dashboard HTML and log averages
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
 
         spy_qqq_growth_html = index_growth(treasury_yield)
 
-        # ←— NEW: generate earnings tables before rendering the final HTML
+        # generate earnings tables
         generate_earnings_tables()
+        
+        # ←— NEW: fetch dividends & generate EPS vs Dividend charts
+        eps_dividend_generator()
 
+        # render all HTML pages
         html_generator2(
             sorted_tickers,
             financial_data,
