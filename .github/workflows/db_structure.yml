@@ -16,5 +16,15 @@ jobs:
       with:
         python-version: 3.x
 
-    - name: Install SQLite support
-      run: pip install sqlite3  # Built-in usually
+    - name: Install dependencies
+      run: |
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Run structure extractor
+      run: python db_structure.py
+
+    - name: Upload structure file
+      uses: actions/upload-artifact@v4
+      with:
+        name: db_structure_output
+        path: db_structure.txt
