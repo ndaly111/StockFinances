@@ -115,6 +115,14 @@ def ensure_templates_exist():
         {{ ticker_data.unmapped_expense_html | safe }}
       </div>
 
+      <!-- NEW: EPS vs Dividend Chart -->
+      <div><br><br><h1>{{ ticker_data.ticker }} – EPS vs Dividend Overview</h1></div>
+      <div class="carousel-container">
+        <div class="carousel-item">
+          <img src="../{{ ticker_data.eps_dividend_chart_path }}" alt="EPS vs Dividend Chart">
+        </div>
+      </div>
+
       <hr>
       {% if ticker_data.valuation_chart %}
       <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
@@ -185,7 +193,8 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
                 'valuation_chart': f"{charts_output_dir}/{ticker}_valuation_chart.png",
                 'valuation_info_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_info.html"),
                 'valuation_data_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_table.html"),
-                'unmapped_expense_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_unmapped_fields.html", "No unmapped expenses.")
+                'unmapped_expense_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_unmapped_fields.html", "No unmapped expenses."),
+                'eps_dividend_chart_path': f"{charts_output_dir}/{ticker}_eps_dividend_forecast.png"
             }
             create_ticker_page(ticker, ticker_data, output_dir)
 
