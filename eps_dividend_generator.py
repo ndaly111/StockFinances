@@ -12,6 +12,7 @@ Returns dict {ticker: chart_path}
 import os
 import sqlite3
 import datetime as dt
+import pandas as pd               # ← NEW
 import yfinance as yf
 import matplotlib.pyplot as plt
 
@@ -160,8 +161,7 @@ def _build_chart(tic, conn):
         pass
 
     plt.tight_layout()
-    if not os.path.isdir(CHART_DIR):
-        os.makedirs(CHART_DIR)
+    os.makedirs(CHART_DIR, exist_ok=True)
     path = os.path.join(CHART_DIR, f"{tic}_eps_dividend_forecast.png")
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -175,7 +175,7 @@ def generate_eps_dividend(tickers,
                           db_path=DB_PATH,
                           chart_dir=CHART_DIR):
     """
-    Main entry point. Use exactly one line:
+    Use exactly one line:
         charts = generate_eps_dividend(ticker_list)
     Returns dict {ticker: chart_path}
     """
@@ -185,27 +185,22 @@ def generate_eps_dividend(tickers,
 
     chart_paths = {}
     for tic in tickers:
-        # fetch dividends from yfinance
         div_series = yf.Ticker(tic).dividends
         if not div_series.empty:
-            # strip timezone if present
-            if getattr(div_series.index, 'tz', None) is not None:
-                div_series.index = div_series.index.tz_localize(None)
+            # robust tz fix
+            div_series.index = (
+                pd.to_datetime(div_series.index, utc=True).tz_localize(None)
+            )
 
-            # annual totals
             yearly_totals = div_series.groupby(div_series.index.year).sum()
             for yr, amt in yearly_totals.items():
                 _upsert_dividend_year(cur, tic, int(yr), float(amt))
 
-            # TTM (last 365 days)
             one_year_ago = dt.datetime.utcnow() - dt.timedelta(days=365)
-            mask = div_series.index >= one_year_ago
-            ttm_total = float(div_series[mask].sum())
+            ttm_total = float(div_series[div_series.index >= one_year_ago].sum())
             _update_ttm_div(conn, tic, ttm_total)
 
         conn.commit()
-
-        # build & store chart
         chart_paths[tic] = _build_chart(tic, conn)
 
     conn.close()
@@ -213,14 +208,13 @@ def generate_eps_dividend(tickers,
 
 
 # ─────────────────────────────────────────────
-# MINI MAIN for use in main.py
+# MINI MAIN for main.py
 # ─────────────────────────────────────────────
 def eps_dividend_generator():
-    from ticker_manager import read_tickers  # adjust import as needed
+    from ticker_manager import read_tickers
     tickers = read_tickers("tickers.csv")
     return generate_eps_dividend(tickers)
 
 
 if __name__ == "__main__":
-    chart_map = eps_dividend_generator()
-    print(chart_map)
+    print(eps_dividend_generator())
