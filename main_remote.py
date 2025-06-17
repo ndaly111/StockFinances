@@ -25,17 +25,14 @@ from expense_reports import generate_expense_reports
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 from index_growth_table import index_growth
-
-# ←— NEW: import the function
 from generate_earnings_tables import generate_earnings_tables
+import yfinance as yf
 
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
-db_path = 'Stock Data.db'
 DB_PATH = 'Stock Data.db'
 file_path = "update_growth.csv"
 charts_output_dir = 'charts/'
-is_remote = True
 table_name = 'ForwardFinancialData'
 
 def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
@@ -56,7 +53,7 @@ def log_average_valuations(avg_values, TICKERS_FILE_PATH):
     if TICKERS_FILE_PATH != 'tickers.csv':
         return
     current_date = datetime.now().strftime('%Y-%m-%d')
-    with sqlite3.connect(db_path) as conn:
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS AverageValuations (
@@ -82,21 +79,18 @@ def log_average_valuations(avg_values, TICKERS_FILE_PATH):
 def balancesheet_chart(ticker, charts_output_dir):
     data = fetch_balance_sheet_data(ticker)
     if data is not None:
-        # still plot if you have enough to draw bars
         plot_chart(data, charts_output_dir, ticker)
 
-        # --- BEGIN safe Debt/Equity calculation ---
-        debt   = data.get('Total_Debt')
+        debt = data.get('Total_Debt')
         equity = data.get('Total_Equity')
         if debt is None or equity is None or pd.isna(debt) or pd.isna(equity) or equity == 0:
             print(f"Skipping Debt to Equity for {ticker}: Debt={debt}, Equity={equity}")
             data['Debt_to_Equity_Ratio'] = None
         else:
             data['Debt_to_Equity_Ratio'] = debt / equity
-        # --- END patch ---
 
         create_and_save_table(data, charts_output_dir, ticker)
-        
+
 def fetch_and_update_balance_sheet_data(ticker, cursor):
     current_data = fetch_balance_sheet_data(ticker)
     if check_missing_balance_sheet_data(ticker, cursor) or is_balance_sheet_data_outdated(current_data):
@@ -104,7 +98,6 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
         if fresh_data:
             store_fetched_balance_sheet_data(cursor, fresh_data)
 
-import yfinance as yf
 def fetch_10_year_treasury_yield():
     try:
         bond = yf.Ticker("^TNX")
@@ -113,7 +106,27 @@ def fetch_10_year_treasury_yield():
         print("YF fallback error:", e)
         return None
 
-def main():
+def create_marketcap_table(cursor):
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS MarketCapHistory (
+            ticker TEXT,
+            date TEXT,
+            market_cap REAL,
+            PRIMARY KEY (ticker, date)
+        );
+    ''')
+
+def store_marketcap(cursor, ticker, marketcap):
+    if marketcap is None:
+        print(f"Skipping storing market cap for {ticker} due to None value.")
+        return
+    today = datetime.now().strftime('%Y-%m-%d')
+    cursor.execute('''
+        INSERT OR REPLACE INTO MarketCapHistory (ticker, date, market_cap)
+        VALUES (?, ?, ?);
+    ''', (ticker, today, marketcap))
+
+def mini_main():
     financial_data = {}
     dashboard_data = []
     treasury_yield = fetch_10_year_treasury_yield()
@@ -125,26 +138,26 @@ def main():
 
     try:
         cursor = conn.cursor()
-        process_update_growth_csv(file_path, db_path)
+        create_marketcap_table(cursor)
+        process_update_growth_csv(file_path, DB_PATH)
 
         for ticker in sorted_tickers:
-            annual_and_ttm_update(ticker, db_path)
+            annual_and_ttm_update(ticker, DB_PATH)
             fetch_and_update_balance_sheet_data(ticker, cursor)
             balancesheet_chart(ticker, charts_output_dir)
-            scrape_forward_data(ticker, db_path, table_name)
-            generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
+            scrape_forward_data(ticker, DB_PATH, table_name)
+            generate_forecast_charts_and_tables(ticker, DB_PATH, charts_output_dir)
+
             prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
             generate_html_table(prepared_data, ticker)
+            store_marketcap(cursor, ticker, marketcap)
+
             valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
-            # ←— NEW: generate expense reports before final HTML generation
             generate_expense_reports(ticker)
 
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
-
         spy_qqq_growth_html = index_growth(treasury_yield)
-
-        # ←— NEW: generate earnings tables before rendering the final HTML
         generate_earnings_tables()
 
         html_generator2(
@@ -156,7 +169,8 @@ def main():
         )
 
     finally:
+        conn.commit()
         conn.close()
 
 if __name__ == "__main__":
-    main()
+    mini_main()
