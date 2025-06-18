@@ -88,6 +88,17 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
 
     return path
 
+
+# helper mini-main for use in main.py
+def eps_dividend_generator():
+    from ticker_manager import read_tickers
+    tickers = read_tickers("tickers.csv")
+    return generate_eps_dividend(tickers)
+
+if __name__ == "__main__":
+    print(eps_dividend_generator())
+
+
 # Example of usage if needed:
 # conn = sqlite3.connect(DB_PATH)
 # _build_chart("AAPL", conn)
