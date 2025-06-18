@@ -1,74 +1,70 @@
 """
-eps_dividend_fast.py  –  speed-tuned EPS-vs-Dividend generator
-————————————————————————————————————————————————————————————————————
-Adds:
-• yfinance patch that works on *all* 0.2.x paths
-• print/log lines so you can see progress in CI logs
+eps_dividend_fast.py
+────────────────────────────────────────────────────────────────────────
+Fast EPS-vs-Dividend generator with verbose tracing.
+
+Speed tricks
+• shared HTTP session + 8-second quick-fail patch
+• WAL + synchronous=OFF SQLite
+• bulk UPSERT
+• chart only if DB newer than existing PNG
 """
 
-import sys, logging, time, importlib, requests
+import sys, logging, importlib, requests, time
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(message)s",
+    format="%(asctime)s | %(levelname)-7s | %(message)s",
     stream=sys.stdout
 )
 
 print("🔧  boot-start")
 
-# ─── universal 8-second timeout patch for yfinance GETs ─────────────
-def _install_yf_quickpatch():
-    """
-    Patches whichever internal path exists:
-      ≤ 0.2.35 → yfinance.utils._requests.get
-      ≥ 0.2.36 → yfinance._utils.requests.get
-    Returns True if patch installed, False otherwise.
-    """
+# ─── 8-second timeout patch that works on ALL yfinance 0.2.x ────────────────
+_SHARED = requests.Session()                      # keep-alive across tickers
+
+def _install_yf_patch():
     paths = ("yfinance.utils._requests", "yfinance._utils.requests")
     for p in paths:
         try:
             mod = importlib.import_module(p)
-            orig = mod.get
+            original_get = mod.get
             break
         except (ModuleNotFoundError, AttributeError):
             continue
     else:
-        logging.warning("⚠️  yfinance internal path not found – timeout patch skipped")
-        return False
+        logging.warning("⚠️  8-sec patch skipped – yfinance internals moved")
+        return
 
-    if getattr(orig, "_fast_patched", False):
-        logging.info("patch already installed")
-        return True
-
-    _session = requests.Session()        # keep-alive
+    if getattr(original_get, "_patched_quick", False):
+        logging.info("yfinance already patched")
+        return
 
     def _fast(url, *a, **k):
         k.setdefault("timeout", 8)
-        k.setdefault("session", _session)
+        k.setdefault("session", _SHARED)
         try:
-            return orig(url, *a, **k)
+            return original_get(url, *a, **k)
         except Exception as e:
             logging.warning("yfinance quick-fail %s → %s", url.split('/')[-1], e)
-            resp = requests.models.Response()
-            resp.status_code, resp._content = 200, b"{}"
-            return resp
-
-    _fast._fast_patched = True
+            r = requests.models.Response(); r.status_code, r._content = 200, b"{}"
+            return r
+    _fast._patched_quick = True
     mod.get = _fast
     logging.info("✅  yfinance patched at %s", p)
-    return True
 
-_install_yf_quickpatch()
-# ───────────────────────────────────────────────────────────────────
+_install_yf_patch()
+# ────────────────────────────────────────────────────────────────────────────
 
-print("🔧  imports …")
+print("🔧  importing heavy libs …")
 import os, sqlite3, datetime as dt, matplotlib
-matplotlib.use("Agg")
+matplotlib.use("Agg")            # headless
 import matplotlib.pyplot as plt
 import pandas as pd
-import yfinance as yf                       # safe: patch already in place
+import yfinance as yf            # safe to import now
 
-DB_PATH, CHART_DIR = "Stock Data.db", "charts"
+DB_PATH  = "Stock Data.db"
+CHART_DIR = "charts"
 
 # ─────────────────────────  DB bootstrap  ──────────────────────────
 def _open_db(path: str = DB_PATH) -> sqlite3.Connection:
@@ -81,20 +77,20 @@ def _open_db(path: str = DB_PATH) -> sqlite3.Connection:
     _ensure_schema(conn)
     return conn
 
-def _ensure_schema(conn: sqlite3.Connection):
+def _ensure_schema(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
     cur.executescript("""
     CREATE TABLE IF NOT EXISTS Dividends(
-        ticker TEXT,
-        year   INTEGER,
+        ticker   TEXT,
+        year     INTEGER,
         dividend REAL,
-        PRIMARY KEY(ticker,year)
+        PRIMARY KEY (ticker, year)
     );
     CREATE TABLE IF NOT EXISTS TTM_Data(
-        Symbol TEXT PRIMARY KEY,
-        TTM_Dividend REAL,
-        TTM_EPS REAL,
-        Last_Updated TEXT
+        Symbol        TEXT PRIMARY KEY,
+        TTM_Dividend  REAL,
+        TTM_EPS       REAL,
+        Last_Updated  TEXT
     );
     CREATE INDEX IF NOT EXISTS Div_idx ON Dividends(ticker,year);
     CREATE INDEX IF NOT EXISTS TTM_idx ON TTM_Data(Symbol);
@@ -103,37 +99,38 @@ def _ensure_schema(conn: sqlite3.Connection):
     print("✅  schema ensured")
 
 # ─────────────────────────  helpers  ───────────────────────────────
-def _bulk_upsert_dividends(cur, tic: str, series: pd.Series):
-    rows = [(tic, int(y), float(v)) for y, v in
-            series.groupby(series.index.year).sum().items()]
+def _bulk_upsert_dividends(cur, tic: str, series: pd.Series) -> None:
+    rows = [(tic, int(y), float(v))
+            for y, v in series.groupby(series.index.year).sum().items()]
     cur.executemany("""
         INSERT INTO Dividends(ticker,year,dividend)
-        VALUES(?,?,?)
+        VALUES (?,?,?)
         ON CONFLICT(ticker,year) DO UPDATE
         SET dividend = excluded.dividend;
     """, rows)
 
-def _update_ttm(cur, tic: str, last365_sum: float):
+def _update_ttm(cur, tic: str, last365_sum: float) -> None:
     ts = dt.datetime.utcnow().strftime("%F %T")
     cur.execute("""
         INSERT INTO TTM_Data(Symbol, TTM_Dividend, Last_Updated)
-        VALUES(?,?,?)
+        VALUES (?,?,?)
         ON CONFLICT(Symbol) DO UPDATE
-        SET TTM_Dividend=excluded.TTM_Dividend,
-            Last_Updated=excluded.Last_Updated;
+        SET TTM_Dividend = excluded.TTM_Dividend,
+            Last_Updated = excluded.Last_Updated;
     """, (tic, last365_sum, ts))
 
 # ──────────────────────  chart builder  ────────────────────────────
 def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
     cur = conn.cursor()
+    path = os.path.join(CHART_DIR, f"{tic}_eps_dividend_forecast.png")
+
+    # skip if PNG newer than DB’s last update
     cur.execute("SELECT Last_Updated FROM TTM_Data WHERE Symbol=?;", (tic,))
     lu = cur.fetchone(); lu = lu[0] if lu else None
-    path = os.path.join(CHART_DIR, f"{tic}_eps_dividend_forecast.png")
-    if os.path.exists(path) and lu:
-        png_ts = os.path.getmtime(path)
+    if lu:
         db_ts  = dt.datetime.strptime(lu, "%Y-%m-%d %H:%M:%S").timestamp()
-        if db_ts <= png_ts:
-            print(f"🔄  {tic} chart up-to-date → skip")
+        if os.path.exists(path) and os.path.getmtime(path) >= db_ts:
+            print(f"🔄  {tic}: PNG up-to-date, skip plotting")
             return path
 
     print(f"📊  building chart for {tic}")
@@ -152,12 +149,15 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
     forward = [(int(d[:4]), float(v)) for d, v in cur.fetchall()]
     # dividends
     years = [y for y, _ in trailing]
-    q = ",".join("?"*len(years)) if years else "NULL"
-    cur.execute(f"""
-        SELECT year, dividend FROM Dividends
-        WHERE ticker=? AND year IN ({q});
-    """, (tic, *years))
-    div_map = {int(y): float(d) for y, d in cur.fetchall()}
+    if years:
+        q = ",".join("?"*len(years))
+        cur.execute(f"""
+            SELECT year, dividend FROM Dividends
+            WHERE ticker=? AND year IN ({q});
+        """, (tic, *years))
+        div_map = {int(y): float(d) for y, d in cur.fetchall()}
+    else:
+        div_map = {}
     # TTM
     cur.execute("SELECT TTM_EPS, TTM_Dividend FROM TTM_Data WHERE Symbol=?;", (tic,))
     ttm_eps, ttm_div = cur.fetchone() or (0.0, 0.0)
@@ -172,12 +172,13 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
     x = range(len(labels)); w = .25
     fig, ax = plt.subplots(figsize=(10,6), dpi=100)
     ax.bar([i-w for i in x], eps_hist, w, label="Trailing EPS")
-    ax.bar(x, eps_fwd, w, label="Forecast EPS", color="#70a6ff")
-    ax.bar([i+w for i in x], divs,   w, label="Dividend",     color="orange")
+    ax.bar(x,                 eps_fwd, w, label="Forecast EPS", color="#70a6ff")
+    ax.bar([i+w for i in x],  divs,    w, label="Dividend",     color="orange")
     ax.set_xticks(x); ax.set_xticklabels(labels, rotation=45)
     ax.set_ylabel("USD per share")
     ax.set_title(f"{tic} – EPS (Actual & Forecast) vs Dividend")
-    ax.legend(); os.makedirs(CHART_DIR, exist_ok=True)
+    ax.legend()
+    os.makedirs(CHART_DIR, exist_ok=True)
     plt.tight_layout(); fig.savefig(path); plt.close(fig)
     print(f"💾  saved {path}")
     return path
@@ -185,14 +186,14 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
 # ─────────────────────  main driver  ───────────────────────────────
 def generate_eps_dividend(tickers, db_path=DB_PATH, chart_dir=CHART_DIR):
     conn = _open_db(db_path); cur = conn.cursor(); out = {}
-    share = yf.utils.get_shared_session()
+    print("🌐  using shared HTTP session")
 
     for tic in tickers:
         print(f"▶️  {tic} …")
         t0 = time.perf_counter()
-        divs = yf.Ticker(tic, session=share).dividends
+        divs = yf.Ticker(tic, session=_SHARED).dividends       # 8-sec max
         if divs.empty or divs.sum() == 0:
-            print(f"🚫  {tic} no dividends → placeholder")
+            print(f"🚫  {tic}: no dividend → placeholder")
             path = os.path.join(chart_dir, f"{tic}_eps_dividend_forecast.png")
             if not os.path.exists(path):
                 plt.figure(figsize=(4,2), dpi=100)
@@ -207,10 +208,11 @@ def generate_eps_dividend(tickers, db_path=DB_PATH, chart_dir=CHART_DIR):
         _update_ttm(cur, tic, float(last365)); conn.commit()
 
         out[tic] = _build_chart(tic, conn)
-        logging.info("✓ %s done in %.2fs", tic, time.perf_counter()-t0)
+        logging.info("✓ %s done in %.2f s", tic, time.perf_counter()-t0)
 
     conn.close(); return out
 
+# helper for external use
 def eps_dividend_generator():
     from ticker_manager import read_tickers
     return generate_eps_dividend(read_tickers("tickers.csv"))
