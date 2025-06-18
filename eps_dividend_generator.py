@@ -39,6 +39,18 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
     cur.execute("SELECT TTM_EPS, TTM_Dividend FROM TTM_Data WHERE Symbol=?;", (tic,))
     ttm_eps, ttm_div = cur.fetchone() or (0.0, 0.0)
 
+    # Check if all dividends are zero
+    if all(v == 0.0 for v in div_map.values()) and ttm_div == 0.0:
+        # Generate fallback chart
+        os.makedirs(CHART_DIR, exist_ok=True)
+        plt.figure(figsize=(4, 2), dpi=100)
+        plt.text(0.5, 0.5, "no dividend", ha="center", va="center", fontsize=12)
+        plt.axis("off")
+        plt.savefig(path, bbox_inches="tight", pad_inches=0)
+        plt.close()
+        print(f"📄 {tic}: No dividends – fallback chart saved.")
+        return path
+
     # Assemble data for chart
     labels, eps_hist, eps_fwd, divs = [], [], [], []
     for yr, eps in trailing:
