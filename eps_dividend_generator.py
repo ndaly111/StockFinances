@@ -28,7 +28,7 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
 
     # Fetch dividend data for trailing years
     years = [y for y, _ in trailing]
-    q = ",".join("?"*len(years)) if years else "NULL"
+    q = ",".join("?" * len(years)) if years else "NULL"
     cur.execute(f"""
         SELECT year, dividend FROM Dividends
         WHERE ticker=? AND year IN ({q});
@@ -66,7 +66,7 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
     bars_eps_fwd = ax.bar(x, eps_fwd, w, label="Forecast EPS", color="#70a6ff")
     bars_divs = ax.bar([i + w for i in x], divs, w, label="Dividend", color="orange")
 
-    # Add data labels on top
+    # Add data labels
     for bars in [bars_eps_hist, bars_eps_fwd, bars_divs]:
         for bar in bars:
             height = bar.get_height()
@@ -89,7 +89,24 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
     return path
 
 
-# helper mini-main for use in main.py
+# Top-level callable function
+def generate_eps_dividend(tickers, db_path=DB_PATH):
+    conn = sqlite3.connect(db_path)
+    paths = {}
+    os.makedirs(CHART_DIR, exist_ok=True)
+
+    for tic in tickers:
+        try:
+            print(f"🔧 Building chart for {tic}")
+            chart_path = _build_chart(tic, conn)
+            paths[tic] = chart_path
+        except Exception as e:
+            print(f"❌ Failed for {tic}: {e}")
+    conn.close()
+    return paths
+
+
+# Mini-main for import or direct script call
 def eps_dividend_generator():
     from ticker_manager import read_tickers
     tickers = read_tickers("tickers.csv")
@@ -97,9 +114,3 @@ def eps_dividend_generator():
 
 if __name__ == "__main__":
     print(eps_dividend_generator())
-
-
-# Example of usage if needed:
-# conn = sqlite3.connect(DB_PATH)
-# _build_chart("AAPL", conn)
-# conn.close()
