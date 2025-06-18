@@ -69,7 +69,7 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
             trailing.append((yr, float(eps)))
 
     if missing_years:
-        inc = tkr.get_income_stmt(freq="a")
+        inc = tkr.get_income_stmt(freq="yearly")  # ✅ corrected from "a"
         for idx, (yr, _) in enumerate(trailing):
             s = str(yr)
             if yr in missing_years and s in inc.columns:
@@ -115,7 +115,7 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
     labels, eps_hist, eps_fwd, divs = [], [], [], []
 
     # trailing years
-    for y, e in trailing:
+    for y, e in trailing[::-1]:
         labels.append(str(y))
         eps_hist.append(e)
         eps_fwd.append(0)
