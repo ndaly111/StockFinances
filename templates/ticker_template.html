@@ -77,6 +77,14 @@
         {{ ticker_data.unmapped_expense_html | safe }}
       </div>
 
+      <!-- NEW: EPS vs Dividend Chart -->
+      <div><br><br><h1>{{ ticker_data.ticker }} – EPS vs Dividend Overview</h1></div>
+      <div class="carousel-container">
+        <div class="carousel-item">
+          <img src="../{{ ticker_data.eps_dividend_chart_path }}" alt="EPS vs Dividend Chart">
+        </div>
+      </div>
+
       <hr>
       {% if ticker_data.valuation_chart %}
       <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
