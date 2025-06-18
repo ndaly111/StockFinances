@@ -139,9 +139,9 @@ def main():
             valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
             # ←— NEW: generate expense reports before final HTML generation
             generate_expense_reports(ticker)
-            eps_dividend_generator()
         
-
+        eps_dividend_generator()
+        
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
 
