@@ -25,7 +25,7 @@ from expense_reports import generate_expense_reports
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 from index_growth_table import index_growth
-# NEW
+# option A – rename the import
 from eps_dividend_generator import eps_dividend_generator
 
 # ←— NEW: import the function
