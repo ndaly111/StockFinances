@@ -72,14 +72,18 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
 
     # ── back-fill missing EPS in one go ─────────────────────
     if missing_years:
-        inc = tkr.get_income_stmt(freq="yearly")                # yearly, not "a"
-        # auto-detect the EPS row label
+        inc = tkr.get_income_stmt(freq="yearly")                  # correct freq
+        # normalize columns to "YYYY"
+        inc.columns = [str(c.year) for c in pd.to_datetime(inc.columns)]
+        # normalize row labels
+        inc.index = inc.index.str.strip()
+        # detect an EPS row
         eps_rows = [r for r in inc.index if "eps" in r.lower()]
         if eps_rows:
             eps_label = eps_rows[0]
             for idx, (yr, _) in enumerate(trailing):
                 s = str(yr)
-                if yr in missing_years and s in inc.columns:
+                if s in inc.columns:
                     val = inc.at[eps_label, s]
                     if pd.notna(val):
                         cur.execute("""
@@ -160,7 +164,9 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
     try:
         hist = tkr.history(period="1d")
         price = hist["Close"].iloc[-1]
-        last_div = div_map.get(int(labels[-len(forward)-1]), 0.0)
+        # the year of the last trailing bar is labels[-len(forward)-2]
+        last_year = int(labels[-len(forward)-2])
+        last_div  = div_map.get(last_year, 0.0)
         ax.text(0.01, .95,
                 f"Current Yield ≈ {last_div/price*100:0.2f}%",
                 transform=ax.transAxes, va="top", fontsize=9)
