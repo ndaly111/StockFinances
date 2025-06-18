@@ -49,6 +49,7 @@ def _update_ttm_div(cur, tic, val):
 def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
     cur = conn.cursor()
 
+    # ── fetch last 10 annual EPS ────────────────────────────
     cur.execute("""
         SELECT Date, EPS
           FROM Annual_Data
@@ -58,30 +59,37 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
     """, (tic,))
     raw = cur.fetchall()
 
+    # collect trailing EPS, track missing years
     trailing = []
     missing_years = set()
-    for d, eps in raw:
-        yr = int(d[:4])
+    for date_str, eps in raw:
+        yr = int(date_str[:4])
         if eps is None:
             missing_years.add(yr)
             trailing.append((yr, 0.0))
         else:
             trailing.append((yr, float(eps)))
 
+    # ── back-fill missing EPS in one go ─────────────────────
     if missing_years:
-        inc = tkr.get_income_stmt(freq="yearly")  # ✅ corrected from "a"
-        for idx, (yr, _) in enumerate(trailing):
-            s = str(yr)
-            if yr in missing_years and s in inc.columns:
-                val = inc.loc["Diluted EPS", s]
-                if pd.notna(val):
-                    cur.execute("""
-                        UPDATE Annual_Data
-                           SET EPS=?
-                         WHERE Symbol=? AND Date LIKE ?;
-                    """, (float(val), tic, f"{yr}-%"))
-                    trailing[idx] = (yr, float(val))
+        inc = tkr.get_income_stmt(freq="yearly")                # yearly, not "a"
+        # auto-detect the EPS row label
+        eps_rows = [r for r in inc.index if "eps" in r.lower()]
+        if eps_rows:
+            eps_label = eps_rows[0]
+            for idx, (yr, _) in enumerate(trailing):
+                s = str(yr)
+                if yr in missing_years and s in inc.columns:
+                    val = inc.at[eps_label, s]
+                    if pd.notna(val):
+                        cur.execute("""
+                            UPDATE Annual_Data
+                               SET EPS=?
+                             WHERE Symbol=? AND Date LIKE ?;
+                        """, (float(val), tic, f"{yr}-%"))
+                        trailing[idx] = (yr, float(val))
 
+    # ── fetch next 3 years of forecast EPS ──────────────────
     cur.execute("""
         SELECT Date, ForwardEPS
           FROM ForwardFinancialData
@@ -91,18 +99,20 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
     """, (tic,))
     forward = [(int(d[:4]), float(v)) for d, v in cur.fetchall()]
 
-    years_needed = [y for y, _ in trailing]
-    if years_needed:
-        q = ",".join("?"*len(years_needed))
+    # ── load historical dividends ───────────────────────────
+    years = [y for y, _ in trailing]
+    if years:
+        q = ",".join("?" * len(years))
         cur.execute(f"""
             SELECT year, dividend
               FROM Dividends
              WHERE ticker=? AND year IN ({q});
-        """, (tic, *years_needed))
+        """, (tic, *years))
         div_map = {int(y): float(d) for y, d in cur.fetchall()}
     else:
         div_map = {}
 
+    # ── latest TTM EPS & dividend ──────────────────────────
     cur.execute("""
         SELECT TTM_EPS, TTM_Dividend
           FROM TTM_Data
@@ -112,34 +122,33 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
     """, (tic,))
     ttm_eps, ttm_div = cur.fetchone() or (0, 0)
 
+    # ── prepare plot series: chronological trailing → TTM → forecast
     labels, eps_hist, eps_fwd, divs = [], [], [], []
 
-    # trailing years
-    for y, e in trailing[::-1]:
-        labels.append(str(y))
-        eps_hist.append(e)
+    for yr, val in reversed(trailing):   # oldest→newest
+        labels.append(str(yr))
+        eps_hist.append(val)
         eps_fwd.append(0)
-        divs.append(div_map.get(y, 0.0))
+        divs.append(div_map.get(yr, 0.0))
 
-    # TTM
     labels.append("TTM")
     eps_hist.append(float(ttm_eps or 0))
     eps_fwd.append(0)
     divs.append(float(ttm_div or 0))
 
-    # forecast
-    for y, f in forward:
-        labels.append(str(y))
+    for yr, val in forward:
+        labels.append(str(yr))
         eps_hist.append(0)
-        eps_fwd.append(f)
+        eps_fwd.append(val)
         divs.append(0.0)
 
+    # ── plot ────────────────────────────────────────────────
     x = range(len(labels))
-    w = .25
+    w = 0.25
     fig, ax = plt.subplots(figsize=(10,6))
-    ax.bar([i-w for i in x], eps_hist, w, label="Trailing EPS")
-    ax.bar(x,             eps_fwd,  w, label="Forecast EPS", color="#70a6ff")
-    ax.bar([i+w for i in x], divs,   w, label="Dividend",     color="orange")
+    ax.bar([i-w for i in x],     eps_hist, w, label="Trailing EPS")
+    ax.bar(x,                    eps_fwd,  w, label="Forecast EPS", color="#70a6ff")
+    ax.bar([i+w for i in x],      divs,   w, label="Dividend",     color="orange")
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=45)
@@ -147,10 +156,11 @@ def _build_chart(tic: str, conn: sqlite3.Connection, tkr: yf.Ticker) -> str:
     ax.set_title(f"{tic} – EPS (Actual & Forecast) vs Dividend")
     ax.legend()
 
+    # ── annotate current yield if possible ─────────────────
     try:
         hist = tkr.history(period="1d")
         price = hist["Close"].iloc[-1]
-        last_div = div_map.get(trailing[-1][0], 0.0)
+        last_div = div_map.get(int(labels[-len(forward)-1]), 0.0)
         ax.text(0.01, .95,
                 f"Current Yield ≈ {last_div/price*100:0.2f}%",
                 transform=ax.transAxes, va="top", fontsize=9)
@@ -172,11 +182,11 @@ def generate_eps_dividend(tickers, db_path=DB_PATH, chart_dir=CHART_DIR):
     out = {}
 
     for tic in tickers:
-        tkr = yf.Ticker(tic)
+        tkr  = yf.Ticker(tic)
         divs = tkr.dividends
 
-        # placeholder if no dividend
-        if divs.empty or divs.sum() == 0:
+        # ── no-dividend fallback ───────────────────────────
+        if divs.empty or float(divs.sum()) == 0:
             os.makedirs(chart_dir, exist_ok=True)
             path = os.path.join(chart_dir, f"{tic}_eps_dividend_forecast.png")
             fig, ax = plt.subplots(figsize=(4,2))
@@ -188,7 +198,7 @@ def generate_eps_dividend(tickers, db_path=DB_PATH, chart_dir=CHART_DIR):
             conn.commit()
             continue
 
-        # upsert dividends & TTM
+        # ── upsert yearly dividends & TTM ──────────────────
         divs.index = pd.to_datetime(divs.index, utc=True).tz_localize(None)
         for yr, amt in divs.groupby(divs.index.year).sum().items():
             _upsert_dividend_year(cur, tic, int(yr), float(amt))
@@ -197,6 +207,7 @@ def generate_eps_dividend(tickers, db_path=DB_PATH, chart_dir=CHART_DIR):
                         float(divs[divs.index >= one_year_ago].sum()))
         conn.commit()
 
+        # ── build & save chart ────────────────────────────
         out[tic] = _build_chart(tic, conn, tkr)
         conn.commit()
 
