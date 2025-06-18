@@ -25,10 +25,10 @@ from expense_reports import generate_expense_reports
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 from index_growth_table import index_growth
+from eps_dividend_generator import eps_divided_generator
 
 # ←— NEW: import the function
 from generate_earnings_tables import generate_earnings_tables
-
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
 db_path = 'Stock Data.db'
@@ -138,6 +138,8 @@ def main():
             valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
             # ←— NEW: generate expense reports before final HTML generation
             generate_expense_reports(ticker)
+            eps_dividend_generator()
+        
 
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
