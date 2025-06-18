@@ -90,7 +90,7 @@ def _build_chart(tic: str, conn: sqlite3.Connection) -> str:
 
 
 # helper mini-main for use in main.py
-def eps_dividend_generator():
+def generate_eps_dividend():
     from ticker_manager import read_tickers
     tickers = read_tickers("tickers.csv")
     return generate_eps_dividend(tickers)
