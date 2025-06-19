@@ -154,4 +154,4 @@ def eps_dividend_generator():
     return generate_eps_dividend(read_tickers("tickers.csv"))
 
 if __name__ == "__main__":
-    print(eps_dividend_generator()
+    print(eps_dividend_generator())
