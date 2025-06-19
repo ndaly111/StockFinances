@@ -205,19 +205,13 @@ def format_short(x, dec=1):
 def plot_expense_charts(df: pd.DataFrame, ticker: str):
     """
     Create a stacked bar chart of absolute expenses vs. revenue.
-
-    - Drops any year where all numeric columns are zero.
-    - Skips any category whose total across all years is zero.
-    - Displays data labels for each non-zero expense segment.
     """
-    # Fill NaN with 0, then drop rows (years) where all numeric columns are zero
     numeric_cols = df.columns.difference(["year"])
     df_plot      = df.copy()
     df_plot[numeric_cols] = df_plot[numeric_cols].fillna(0)
 
     # Remove years where every numeric column is zero
     df_plot = df_plot.loc[~(df_plot[numeric_cols] == 0).all(axis=1)]
-
     if df_plot.empty:
         print("⛔ Nothing to plot after zero-row filter — skipping chart")
         return
@@ -240,7 +234,6 @@ def plot_expense_charts(df: pd.DataFrame, ticker: str):
         ("other_operating",         "Other Op.",             "gold"),
     ]
 
-    # For each category, draw a stack if its total is > 0, add labels
     for col, lbl, color in categories:
         if col in df_plot.columns and df_plot[col].sum() > 0:
             vals = df_plot[col].to_numpy()
@@ -253,22 +246,19 @@ def plot_expense_charts(df: pd.DataFrame, ticker: str):
                 label=lbl,
                 color=color
             )
-            # Add data labels inside each non-zero segment
             for i, b in enumerate(bars):
-                height = vals[i]
-                if height > 0:
+                h = vals[i]
+                if h > 0:
                     ax.text(
                         b.get_x() + b.get_width() / 2,
-                        prev_bottom[i] + height / 2,
-                        format_short(height, 0),
-                        ha="center",
-                        va="center",
-                        color="white",
-                        fontsize=7
+                        prev_bottom[i] + h/2,
+                        format_short(h, 0),
+                        ha="center", va="center",
+                        color="white", fontsize=7
                     )
             bottom += vals
 
-    # Draw revenue bars beside the stacks, with labels on top
+    # Revenue bars
     revs = df_plot["total_revenue"].to_numpy()
     bars = ax.bar(
         pos + width/2,
@@ -279,13 +269,11 @@ def plot_expense_charts(df: pd.DataFrame, ticker: str):
     )
     for b in bars:
         ax.text(
-            b.get_x() + b.get_width() / 2,
+            b.get_x() + b.get_width()/2,
             b.get_height(),
             format_short(b.get_height(), 0),
-            ha="center",
-            va="bottom",
-            fontsize=8,
-            weight="bold"
+            ha="center", va="bottom",
+            fontsize=8, weight="bold"
         )
 
     ax.set_xticks(pos)
@@ -305,26 +293,37 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
     """
     Create a stacked bar chart of expenses as a percent of revenue.
 
-    - Drops any year where total_revenue is zero (to avoid divide-by-zero).
+    - Drops any year where total_revenue is zero/NaN.
     - Skips any category whose percent series is all zero.
     - Displays data labels for each non-zero percentage segment (>2%).
     """
-    # Drop rows where revenue is zero or NaN
     df_plot = df.copy()
-    df_plot["total_revenue"] = df_plot["total_revenue"].fillna(0)
-    df_plot = df_plot.loc[df_plot["total_revenue"] != 0]
 
+    # Coerce to numeric and fill NaN with 0
+    df_plot["total_revenue"] = pd.to_numeric(df_plot["total_revenue"], errors="coerce").fillna(0)
+    numeric_cols = df_plot.columns.difference(["year", "total_revenue"])
+    df_plot[numeric_cols] = df_plot[numeric_cols].apply(
+        lambda s: pd.to_numeric(s, errors="coerce").fillna(0)
+    )
+
+    # Drop rows where revenue is zero
+    df_plot = df_plot.loc[df_plot["total_revenue"] != 0]
     if df_plot.empty:
         print("⛔ No valid revenue years — skipping percent-of-revenue chart")
         return
 
-    # Compute percentages; fill NaN with 0 after division
-    pct_df = df_plot.copy()
-    for col in df_plot.columns.difference(["year", "total_revenue"]):
-        pct_df[col] = (df_plot[col].fillna(0) / df_plot["total_revenue"]) * 100
+    # Compute percent-of-revenue safely
+    revenue = df_plot["total_revenue"]
+    # mask zeros to avoid div-by-zero
+    revenue_nonzero = revenue.mask(revenue == 0, np.nan)
 
-    # Now drop any category whose entire percent series is zero
-    percent_cols = pct_df.columns.difference(["year", "total_revenue"])
+    pct_df = pd.DataFrame({"year": df_plot["year"]})
+    for col in numeric_cols:
+        pct = df_plot[col].divide(revenue_nonzero) * 100
+        pct_df[col] = pct.fillna(0)
+
+    # Drop categories that are all zero
+    percent_cols = pct_df.columns.difference(["year"])
     nonzero_cats = [col for col in percent_cols if pct_df[col].sum() > 0]
     if not nonzero_cats:
         print("⛔ All expense categories are zero percent — skipping chart")
@@ -348,10 +347,9 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
         ("other_operating",         "Other Op.",             "gold"),
     ]
 
-    # Draw each percent segment, add label if > 2%
     for col, lbl, color in category_info:
         if col in nonzero_cats:
-            vals = pct_df[col].fillna(0).to_numpy()
+            vals = pct_df[col].to_numpy()
             prev_bottom = bottom.copy()
             bars = ax.bar(
                 pos,
@@ -362,16 +360,14 @@ def plot_expense_percent_chart(df: pd.DataFrame, ticker: str):
                 color=color
             )
             for i, b in enumerate(bars):
-                pct = vals[i]
-                if pct > 2:  # only label segments >2%
+                p = vals[i]
+                if p > 2:  # label only segments >2%
                     ax.text(
-                        b.get_x() + width / 2,
-                        prev_bottom[i] + pct / 2,
-                        f"{pct:.1f}%",
-                        ha="center",
-                        va="center",
-                        color="white",
-                        fontsize=7
+                        b.get_x() + width/2,
+                        prev_bottom[i] + p/2,
+                        f"{p:.1f}%",
+                        ha="center", va="center",
+                        color="white", fontsize=7
                     )
             bottom += vals
 
