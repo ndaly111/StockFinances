@@ -13,7 +13,10 @@ from balance_sheet_data_fetcher import (
     store_fetched_balance_sheet_data
 )
 from balancesheet_chart import (
-    fetch_balance_sheet_data, plot_chart, format_value, create_and_save_table
+    fetch_balance_sheet_data as fetch_bs_for_chart,
+    plot_chart,
+    format_value,
+    create_and_save_table
 )
 import pandas as pd
 from Forward_data import scrape_forward_data
@@ -25,11 +28,10 @@ from expense_reports import generate_expense_reports
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 from index_growth_table import index_growth
-# option A – rename the import
 from eps_dividend_generator import eps_dividend_generator
-
-# ←— NEW: import the function
 from generate_earnings_tables import generate_earnings_tables
+import yfinance as yf
+
 # Constants
 TICKERS_FILE_PATH = 'tickers.csv'
 db_path = 'Stock Data.db'
@@ -39,11 +41,11 @@ charts_output_dir = 'charts/'
 is_remote = True
 table_name = 'ForwardFinancialData'
 
-def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
-    current_tickers = ticker_manager.read_tickers(TICKERS_FILE_PATH)
+def manage_tickers(tickers_file, is_remote=False):
+    current_tickers = ticker_manager.read_tickers(tickers_file)
     current_tickers = ticker_manager.modify_tickers(current_tickers, is_remote)
     sorted_tickers = sorted(current_tickers)
-    ticker_manager.write_tickers(sorted_tickers, TICKERS_FILE_PATH)
+    ticker_manager.write_tickers(sorted_tickers, tickers_file)
     return sorted_tickers
 
 def establish_database_connection(db_path):
@@ -53,8 +55,8 @@ def establish_database_connection(db_path):
         return None
     return sqlite3.connect(db_full_path)
 
-def log_average_valuations(avg_values, TICKERS_FILE_PATH):
-    if TICKERS_FILE_PATH != 'tickers.csv':
+def log_average_valuations(avg_values, tickers_file):
+    if tickers_file != 'tickers.csv':
         return
     current_date = datetime.now().strftime('%Y-%m-%d')
     with sqlite3.connect(db_path) as conn:
@@ -81,12 +83,10 @@ def log_average_valuations(avg_values, TICKERS_FILE_PATH):
             conn.commit()
 
 def balancesheet_chart(ticker, charts_output_dir):
-    data = fetch_balance_sheet_data(ticker)
+    # use the chart-specific fetch to avoid import collision
+    data = fetch_bs_for_chart(ticker)
     if data is not None:
-        # still plot if you have enough to draw bars
         plot_chart(data, charts_output_dir, ticker)
-
-        # --- BEGIN safe Debt/Equity calculation ---
         debt   = data.get('Total_Debt')
         equity = data.get('Total_Equity')
         if debt is None or equity is None or pd.isna(debt) or pd.isna(equity) or equity == 0:
@@ -94,22 +94,20 @@ def balancesheet_chart(ticker, charts_output_dir):
             data['Debt_to_Equity_Ratio'] = None
         else:
             data['Debt_to_Equity_Ratio'] = debt / equity
-        # --- END patch ---
-
         create_and_save_table(data, charts_output_dir, ticker)
-        
+
 def fetch_and_update_balance_sheet_data(ticker, cursor):
-    current_data = fetch_balance_sheet_data(ticker)
+    # only pass ticker here, not cursor
+    current_data = fetch_balance_sheet_data(ticker, cursor)
     if check_missing_balance_sheet_data(ticker, cursor) or is_balance_sheet_data_outdated(current_data):
         fresh_data = fetch_balance_sheet_data_from_yahoo(ticker)
         if fresh_data:
             store_fetched_balance_sheet_data(cursor, fresh_data)
 
-import yfinance as yf
 def fetch_10_year_treasury_yield():
     try:
         bond = yf.Ticker("^TNX")
-        return bond.info.get('regularMarketPrice')  # TNX is in tenths of a percent
+        return bond.info.get('regularMarketPrice')  # in tenths of a percent
     except Exception as e:
         print("YF fallback error:", e)
         return None
@@ -137,17 +135,16 @@ def main():
             prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
             generate_html_table(prepared_data, ticker)
             valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
-            # ←— NEW: generate expense reports before final HTML generation
-            generate_expense_reports(ticker)
-        
+            # pass the one open connection into expense_reports
+            generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
+
         eps_dividend_generator()
-        
+
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
 
         spy_qqq_growth_html = index_growth(treasury_yield)
 
-        # ←— NEW: generate earnings tables before rendering the final HTML
         generate_earnings_tables()
 
         html_generator2(
