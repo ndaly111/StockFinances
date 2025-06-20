@@ -98,7 +98,7 @@ def balancesheet_chart(ticker, charts_output_dir):
 
 def fetch_and_update_balance_sheet_data(ticker, cursor):
     # only pass ticker here, not cursor
-    current_data = fetch_balance_sheet_data(ticker)
+    current_data = fetch_balance_sheet_data(ticker, cursor)
     if check_missing_balance_sheet_data(ticker, cursor) or is_balance_sheet_data_outdated(current_data):
         fresh_data = fetch_balance_sheet_data_from_yahoo(ticker)
         if fresh_data:
