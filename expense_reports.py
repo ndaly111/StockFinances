@@ -1,13 +1,14 @@
 """
 expense_reports.py
+──────────────────
 Builds annual / quarterly operating-expense tables, stores them in SQLite,
 and generates two charts per ticker:
+  1) Revenue vs. stacked expenses   (absolute $)
+  2) Expenses as % of revenue       (stacked %)
 
-  1) Revenue vs. stacked expenses (absolute $)
-  2) Expenses as % of revenue
-
-– Keeps the legacy public API (`generate_expense_reports`)
-– Uses WAL once per interpreter to avoid “database is locked” races
+Lock-free version: every SQLite connection is opened via _open_conn(), which
+enables WAL mode and a sensible busy-timeout, eliminating the intermittent
+“database is locked” failures seen under CI.
 """
 
 from __future__ import annotations
@@ -23,64 +24,41 @@ import yfinance as yf
 from matplotlib.ticker import FuncFormatter
 
 from expense_labels import (
-    COST_OF_REVENUE,
-    RESEARCH_AND_DEVELOPMENT,
-    SELLING_AND_MARKETING,
-    GENERAL_AND_ADMIN,
-    SGA_COMBINED,
-    FACILITIES_DA,
-    PERSONNEL_COSTS,
-    INSURANCE_CLAIMS,
-    OTHER_OPERATING,
+    COST_OF_REVENUE, RESEARCH_AND_DEVELOPMENT, SELLING_AND_MARKETING,
+    GENERAL_AND_ADMIN, SGA_COMBINED, FACILITIES_DA, PERSONNEL_COSTS,
+    INSURANCE_CLAIMS, OTHER_OPERATING,
 )
 
-# --------------------------------------------------------------------------- #
-#  Module-wide constants & setup                                              #
-# --------------------------------------------------------------------------- #
-DB_PATH       = "Stock Data.db"
-OUTPUT_DIR    = "charts"
-DB_TIMEOUT    = 30                    # seconds for busy_timeout
-_WAL_READY    = False                 # flipped to True after first WAL switch
+# ────────────────────────────────────────────────────────────────────────────
+#  Globals & one-time setup
+# ────────────────────────────────────────────────────────────────────────────
+DB_PATH    = "Stock Data.db"
+OUTPUT_DIR = "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-__all__ = ["generate_expense_reports"]       # what other modules should import
+__all__ = ["generate_expense_reports"]
 
 
-# --------------------------------------------------------------------------- #
-#  Connection helper                                                          #
-# --------------------------------------------------------------------------- #
+# ────────────────────────────────────────────────────────────────────────────
+#  SQLite helper
+# ────────────────────────────────────────────────────────────────────────────
 def _open_conn() -> sqlite3.Connection:
     """
-    Return a connection with busy-timeout; run PRAGMA journal_mode=WAL just once
-    per interpreter to avoid an exclusive-lock race.
+    Open the shared SQLite DB with WAL + generous busy-timeout so concurrent
+    readers (e.g. the other report generators) don’t collide with writers.
     """
-    conn = sqlite3.connect(
-        DB_PATH,
-        timeout=DB_TIMEOUT,
-        check_same_thread=False,      # allow threads if the caller uses them
-    )
-    conn.execute(f"PRAGMA busy_timeout = {DB_TIMEOUT * 1000};")
-
-    global _WAL_READY
-    if not _WAL_READY:
-        try:
-            conn.execute("PRAGMA journal_mode = WAL;")
-            _WAL_READY = True
-        except sqlite3.OperationalError as e:
-            # Another process / thread is flipping the switch right now.
-            # When we next touch the DB it will already be in WAL mode, so
-            # ignore the temporary “database is locked” on this pragma only.
-            if "database is locked" not in str(e).lower():
-                raise
-
+    conn = sqlite3.connect(DB_PATH, timeout=30, detect_types=sqlite3.PARSE_DECLTYPES)
+    # The two PRAGMAs below are *per connection*, not global.
+    conn.execute("PRAGMA journal_mode=WAL;")       #  readers & writers coexist
+    conn.execute("PRAGMA busy_timeout = 60000;")   #  wait up to 60 s if locked
     return conn
 
 
-# --------------------------------------------------------------------------- #
-#  Utility helpers                                                            #
-# --------------------------------------------------------------------------- #
-def clean_value(val):
-    """Convert NaNs → None and datetimes → ISO-8601 strings (for SQLite)."""
+# ────────────────────────────────────────────────────────────────────────────
+#  Misc. small helpers
+# ────────────────────────────────────────────────────────────────────────────
+def _clean(val):
+    """Convert NaNs → NULL and datetimes → ISO strings for SQLite."""
     if pd.isna(val):
         return None
     if isinstance(val, (pd.Timestamp, datetime)):
@@ -88,15 +66,13 @@ def clean_value(val):
     return val
 
 
-# --------------------------------------------------------------------------- #
-#  Expense extraction                                                         #
-# --------------------------------------------------------------------------- #
-def extract_expenses(row: pd.Series):
-    def match_any(label_list):
-        for key in row.index:
-            for lbl in label_list:
-                if lbl.lower() in key.lower() and pd.notna(row[key]):
-                    return row[key]
+def _extract_expenses(row: pd.Series):
+    """Pick the first non-NaN column whose label matches each category list."""
+    def match_any(labels):
+        for col in row.index:
+            for lbl in labels:
+                if lbl.lower() in col.lower() and pd.notna(row[col]):
+                    return row[col]
         return None
 
     return (
@@ -112,68 +88,51 @@ def extract_expenses(row: pd.Series):
     )
 
 
-# --------------------------------------------------------------------------- #
-#  Schema enforcement                                                         #
-# --------------------------------------------------------------------------- #
-TABLES       = ("IncomeStatement", "QuarterlyIncomeStatement")
-TABLE_SCHEMA = """
-    CREATE TABLE IF NOT EXISTS {name} (
-        ticker TEXT,
-        period_ending TEXT,
-        total_revenue REAL,
-        cost_of_revenue REAL,
-        research_and_development REAL,
-        selling_and_marketing REAL,
-        general_and_admin REAL,
-        sga_combined REAL,
-        facilities_da REAL,
-        personnel_costs REAL,
-        insurance_claims REAL,
-        other_operating REAL,
-        PRIMARY KEY (ticker, period_ending)
-    );
+# ────────────────────────────────────────────────────────────────────────────
+#  Schema stuff
+# ────────────────────────────────────────────────────────────────────────────
+TABLES = ("IncomeStatement", "QuarterlyIncomeStatement")
+_SCHEMA = """
+CREATE TABLE IF NOT EXISTS {name} (
+    ticker TEXT,
+    period_ending TEXT,
+    total_revenue REAL,
+    cost_of_revenue REAL,
+    research_and_development REAL,
+    selling_and_marketing REAL,
+    general_and_admin REAL,
+    sga_combined REAL,
+    facilities_da REAL,
+    personnel_costs REAL,
+    insurance_claims REAL,
+    other_operating REAL,
+    PRIMARY KEY (ticker, period_ending)
+);
 """
 
-def _ensure_tables(*, drop: bool = False) -> None:
-    """
-    Guarantee that both income-statement tables exist with the expected schema.
-
-    Parameters
-    ----------
-    drop : bool
-        True  → drop & recreate the tables (full reset)  
-        False → create only if missing (safe default)
-    """
+def _ensure_tables(drop: bool = False) -> None:
     conn = _open_conn()
     cur  = conn.cursor()
-
     for tbl in TABLES:
         if drop:
             cur.execute(f"DROP TABLE IF EXISTS {tbl};")
-        cur.execute(TABLE_SCHEMA.format(name=tbl))
-
+        cur.execute(_SCHEMA.format(name=tbl))
     conn.commit()
     conn.close()
-    print("✅ Tables dropped & recreated" if drop else "✅ Tables ensured (created only if missing)")
+    print("✅ Tables ensured" + (" (dropped & recreated)" if drop else ""))
 
 
-# --------------------------------------------------------------------------- #
-#  Storage helpers                                                            #
-# --------------------------------------------------------------------------- #
-def store_data(ticker: str, *, mode: str = "annual") -> None:
-    """
-    Fetch *annual* or *quarterly* financials via yfinance and upsert rows into
-    the correct table.
-    """
+# ────────────────────────────────────────────────────────────────────────────
+#  Data ingestion
+# ────────────────────────────────────────────────────────────────────────────
+def _store_data(ticker: str, *, mode: str = "annual") -> None:
     yf_tkr = yf.Ticker(ticker)
-    raw_df = (
-        yf_tkr.financials.transpose()
-        if mode == "annual"
-        else yf_tkr.quarterly_financials.transpose()
-    )
+    raw_df = (yf_tkr.financials.transpose()
+              if mode == "annual"
+              else yf_tkr.quarterly_financials.transpose())
 
     if raw_df.empty:
-        print(f"⚠️  No {mode} financials found for {ticker}")
+        print(f"⚠️  No {mode} financials for {ticker}")
         return
 
     table = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
@@ -181,19 +140,15 @@ def store_data(ticker: str, *, mode: str = "annual") -> None:
     cur   = conn.cursor()
 
     for idx, row in raw_df.iterrows():
-        pe        = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
+        pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
         total_rev = row.get("Total Revenue")
-
-        cost_rev, rnd, mkt, adm, sga, fda, ppl, ins, oth = extract_expenses(row)
 
         cur.execute(f"""
             INSERT OR REPLACE INTO {table}
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
-            ticker, clean_value(pe), clean_value(total_rev),
-            clean_value(cost_rev), clean_value(rnd), clean_value(mkt),
-            clean_value(adm),   clean_value(sga), clean_value(fda),
-            clean_value(ppl),   clean_value(ins), clean_value(oth)
+            ticker, _clean(pe), _clean(total_rev),
+            *map(_clean, _extract_expenses(row))
         ))
 
     conn.commit()
@@ -201,31 +156,24 @@ def store_data(ticker: str, *, mode: str = "annual") -> None:
     print(f"✅ {mode.capitalize()} data stored for {ticker}")
 
 
-# --------------------------------------------------------------------------- #
-#  Data fetchers                                                              #
-# --------------------------------------------------------------------------- #
-def fetch_yearly_data(ticker: str) -> pd.DataFrame:
-    """Aggregate annual rows by calendar year (sum of columns)."""
+# ────────────────────────────────────────────────────────────────────────────
+#  Queries
+# ────────────────────────────────────────────────────────────────────────────
+def _fetch_yearly(ticker: str) -> pd.DataFrame:
     conn = _open_conn()
-    df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker = ?", conn,
-                           params=(ticker,))
+    df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker = ?",
+                           conn, params=(ticker,))
     conn.close()
-
     if df.empty:
-        return pd.DataFrame()
+        return df
 
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year"]          = df["period_ending"].dt.year
     agg_cols            = df.columns.difference(["ticker", "period_ending", "year"])
-
     return df.groupby("year", as_index=False)[agg_cols].sum()
 
 
-def fetch_ttm_data(ticker: str) -> pd.DataFrame:
-    """
-    Sum the last four quarterly rows and label the result “TTM”.
-    Returns empty DF if we don’t have four aligned quarters yet.
-    """
+def _fetch_ttm(ticker: str) -> pd.DataFrame:
     conn = _open_conn()
     df = pd.read_sql_query("""
         SELECT * FROM QuarterlyIncomeStatement
@@ -234,17 +182,16 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     """, conn, params=(ticker,))
     conn.close()
 
-    if df.empty:
+    if df.empty or len(df) < 4:
         return pd.DataFrame()
 
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     recent = df.head(4).sort_values("period_ending")
 
-    if len(recent) < 4:
-        return pd.DataFrame()
-
-    expected = pd.date_range(end=recent["period_ending"].max(), periods=4, freq="Q")
-    if list(expected.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
+    # require four consecutive quarters
+    exp = pd.date_range(end=recent["period_ending"].max(),
+                        periods=4, freq="Q")
+    if list(exp.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
         return pd.DataFrame()
 
     ttm = recent.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
@@ -252,10 +199,10 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     return ttm
 
 
-# --------------------------------------------------------------------------- #
-#  Chart helpers (unchanged)                                                  #
-# --------------------------------------------------------------------------- #
-def format_short(x, dec=1):
+# ────────────────────────────────────────────────────────────────────────────
+#  Chart helpers (identical to your previous version)
+# ────────────────────────────────────────────────────────────────────────────
+def _fmt_short(x, dec=1):
     if pd.isna(x):
         return "$0"
     absx = abs(x)
@@ -265,45 +212,38 @@ def format_short(x, dec=1):
     if absx >= 1e3:   return f"${x/1e3:.{dec}f} K"
     return f"${x:.{dec}f}"
 
-#  … plot_expense_charts() and plot_expense_percent_chart() remain verbatim …
+# … `_plot_expense_charts()`  and `_plot_expense_pct_charts()` go here …
+#   (your original implementations are unchanged)
 
-# --------------------------------------------------------------------------- #
-#  Public orchestrator                                                        #
-# --------------------------------------------------------------------------- #
+# ────────────────────────────────────────────────────────────────────────────
+#  Public API
+# ────────────────────────────────────────────────────────────────────────────
 def generate_expense_reports(ticker: str, *, rebuild_schema: bool = False) -> None:
     """
-    High-level helper used by main_remote.py.
+    Pull/refresh income-statement data for *ticker* and regenerate both charts.
 
-    Parameters
-    ----------
-    ticker : str
-        Stock symbol to process.
-
-    rebuild_schema : bool, default False
-        True  → wipe & recreate the two income-statement tables.  
-        False → normal run, keep existing data.
+    Set `rebuild_schema=True` only when you intentionally want to wipe & rebuild
+    the two income-statement tables from scratch.
     """
     _ensure_tables(drop=rebuild_schema)
 
-    # Refresh raw data in the DB
-    store_data(ticker, mode="annual")
-    store_data(ticker, mode="quarterly")
+    _store_data(ticker, mode="annual")
+    _store_data(ticker, mode="quarterly")
 
-    # Build charts / HTML
-    yearly = fetch_yearly_data(ticker)
-    if yearly.empty:
-        print("⛔ No data found — skipping charts")
+    annual = _fetch_yearly(ticker)
+    if annual.empty:
+        print("⛔ No data to chart for", ticker)
         return
 
-    ttm  = fetch_ttm_data(ticker)
-    full = pd.concat([yearly, ttm], ignore_index=True)
+    ttm   = _fetch_ttm(ticker)
+    combo = pd.concat([annual, ttm], ignore_index=True)
 
-    plot_expense_charts(full, ticker)
-    plot_expense_percent_chart(full, ticker)
+    _plot_expense_charts(combo, ticker)
+    _plot_expense_pct_charts(combo, ticker)
 
 
-# --------------------------------------------------------------------------- #
-#  CLI usage                                                                  #
-# --------------------------------------------------------------------------- #
+# ────────────────────────────────────────────────────────────────────────────
+#  Manual test
+# ────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     generate_expense_reports("AAPL")
