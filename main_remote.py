@@ -1,5 +1,4 @@
 # start of main_remote.py
-# start of main_remote.py
 import os
 import sqlite3
 import ticker_manager
@@ -7,14 +6,14 @@ from datetime import datetime
 from annual_and_ttm_update import annual_and_ttm_update
 from html_generator import create_html_for_tickers
 from balance_sheet_data_fetcher import (
-    fetch_balance_sheet_data,
+    fetch_balance_sheet_data,            # DB-backed fetch (needs ticker+cursor)
     check_missing_balance_sheet_data,
     is_balance_sheet_data_outdated,
     fetch_balance_sheet_data_from_yahoo,
     store_fetched_balance_sheet_data
 )
 from balancesheet_chart import (
-    fetch_balance_sheet_data as fetch_bs_for_chart,
+    fetch_balance_sheet_data as fetch_bs_for_chart,  # chart-only fetch
     plot_chart,
     format_value,
     create_and_save_table
@@ -84,7 +83,7 @@ def log_average_valuations(avg_values, tickers_file):
             conn.commit()
 
 def balancesheet_chart(ticker, charts_output_dir):
-    # use the chart-specific fetch to avoid import collision
+    # use chart‐only fetch
     data = fetch_bs_for_chart(ticker)
     if data is not None:
         plot_chart(data, charts_output_dir, ticker)
@@ -98,8 +97,8 @@ def balancesheet_chart(ticker, charts_output_dir):
         create_and_save_table(data, charts_output_dir, ticker)
 
 def fetch_and_update_balance_sheet_data(ticker, cursor):
-    # only pass ticker here, not cursor
-    current_data = fetch_balance_sheet_data(ticker)
+    # pass both ticker and cursor to the DB fetch
+    current_data = fetch_balance_sheet_data(ticker, cursor)
     if check_missing_balance_sheet_data(ticker, cursor) or is_balance_sheet_data_outdated(current_data):
         fresh_data = fetch_balance_sheet_data_from_yahoo(ticker)
         if fresh_data:
@@ -108,7 +107,7 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
 def fetch_10_year_treasury_yield():
     try:
         bond = yf.Ticker("^TNX")
-        return bond.info.get('regularMarketPrice')  # in tenths of a percent
+        return bond.info.get('regularMarketPrice')  # TNX in tenths of a percent
     except Exception as e:
         print("YF fallback error:", e)
         return None
@@ -136,7 +135,7 @@ def main():
             prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
             generate_html_table(prepared_data, ticker)
             valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
-            # pass the one open connection into expense_reports
+            # pass the single open connection into expense_reports
             generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
 
         eps_dividend_generator()
