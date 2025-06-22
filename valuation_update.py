@@ -168,7 +168,6 @@ def calculate_valuations(combined, growth, treasury_yield,
     nicks_fair_ps  = nicks_fair_pe  * margin
     finviz_fair_ps = finviz_fair_pe * margin
 
-    # RevPS only if we have a price
     if current_price is not None:
         combined["Revenue_Per_Share"] = (combined["Revenue"] / marketcap) * current_price
     else:
@@ -236,63 +235,120 @@ def fetch_stock_data(ticker):
 # ---------------------------------------------------------------------------
 #  HTML valuation tables
 # ---------------------------------------------------------------------------
-def generate_valuation_tables(ticker, combined, growth, treasury_yield,
-                              current_price, nicks_fair_pe,
-                              finviz_fair_pe, nicks_fair_ps):
+def generate_valuation_tables(
+    ticker,
+    combined,
+    growth_values,
+    treasury_yield,
+    current_price,
+    nicks_fair_pe,
+    finviz_fair_pe,
+    nicks_fair_ps
+):
+    import pandas as pd
 
-    treasury_yield = float(treasury_yield)
-    current_price, pe_ratio, ps_ratio, fwd_pe = fetch_stock_data(ticker)
-    nicks_fair_ps  = float(nicks_fair_ps)
+    # 1) Snapshot metrics formatting
+    current_price_formatted = f"${current_price:,.2f}"
+    treasury_yield_formatted = f"{float(treasury_yield):.1f}%"
 
-    # ---------- Table 1 (snapshot) ----------
-    tbl1 = pd.DataFrame({
-        "Share Price"     : [f"${current_price:,.2f}"],
-        "Treasury Yield"  : [f"{treasury_yield:.1f}%"],
-        "Estimates"       : [(
-            f"Nicks Growth:&nbsp;{growth['nicks_growth_rate'].iloc[0]:.0f}%<br>"
-            f"Nick's Margin:&nbsp;{growth['projected_profit_margin'].iloc[0]:.0f}%<br>"
-            f"FINVIZ Growth:&nbsp;{growth['FINVIZ_5yr_gwth'].iloc[0]:.0f}%"
-        )],
-        "Fair Value (P/E)": [(
-            f"Nicks:&nbsp;{nicks_fair_pe:.0f}<br>"
-            f"Finviz:&nbsp;{finviz_fair_pe:.0f}"
-            if finviz_fair_pe else "Finviz: N/A"
-        )],
+    # raw input values (may be None/NaN)
+    n_gr = growth_values['nicks_growth_rate'].iloc[0]
+    f_gr = growth_values['FINVIZ_5yr_gwth'].iloc[0]
+    m_pm = growth_values['projected_profit_margin'].iloc[0]
+
+    # if NaN or None, show "-" instead of crashing
+    nicks_growth_rate_formatted = f"{n_gr:.0f}%" if pd.notna(n_gr) else "-"
+    finviz_growth_rate_formatted = f"{f_gr:.0f}%" if pd.notna(f_gr) else "-"
+    expected_margin_formatted    = f"{m_pm:.0f}%" if pd.notna(m_pm) else "-"
+
+    estimates_string = (
+        f"Nicks&nbsp;Growth:&nbsp;{nicks_growth_rate_formatted}<br>"
+        f"Nick's&nbsp;Expected&nbsp;Margin:&nbsp;{expected_margin_formatted}<br>"
+        f"FINVIZ&nbsp;Growth:&nbsp;{finviz_growth_rate_formatted}"
+    )
+
+    # Fair‐value P/E strings
+    fair_pe_string = (
+        f"Nicks:&nbsp;{nicks_fair_pe:.0f}<br>"
+        f"Finviz:&nbsp;{finviz_fair_pe:.0f}"
+        if finviz_fair_pe is not None else
+        "Finviz: N/A"
+    )
+
+    # Fetch live multiples for current P/E and P/S
+    cp, pe_ratio, price_to_sales, forward_pe_ratio = fetch_stock_data(ticker)
+
+    # Build the snapshot table
+    table_1_data = {
+        "Share Price":      [current_price_formatted],
+        "Treasury Yield":   [treasury_yield_formatted],
+        "Estimates":        [estimates_string],
+        "Fair Value (P/E)": [fair_pe_string],
         "Fair Value (P/S)": [f"Nick's: {nicks_fair_ps:.3f}"],
-        "Current P/S"     : [f"{ps_ratio:.1f}" if ps_ratio else "N/A"]
-    })
+        "Current P/S":      [f"{price_to_sales:.1f}" if price_to_sales else "N/A"]
+    }
     if pe_ratio and pe_ratio > 0:
-        tbl1["Current P/E"] = [f"{pe_ratio:.1f}"]
-    tbl1.to_html(f"charts/{ticker}_valuation_info.html",
-                 index=False, escape=False,
-                 classes="table table-striped", justify="left")
+        table_1_data["Current P/E"] = [f"{pe_ratio:.1f}"]
 
-    # ---------- Table 2 (year-by-year) ----------
-    # helper formatters
-    fmt_val = lambda v: "N/A" if v is None else f"${v:,.2f}"
-    pct_col = lambda v: f'<span style="color: {"red" if v < 0 else "green"}">{v:.1f}%</span>'
+    table_1_df = pd.DataFrame(table_1_data)
+    table_1_df.to_html(
+        f"charts/{ticker}_valuation_info.html",
+        index=False,
+        escape=False,
+        classes="table table-striped",
+        justify="left"
+    )
+
+    # 2) Year-by-year valuations table
+    def fmt_val(v):
+        return "N/A" if v is None else f"${v:,.2f}"
 
     combined["Nicks_Valuation_str"]  = combined["Nicks_Valuation"].apply(fmt_val)
     combined["Finviz_Valuation_str"] = combined["Finviz_Valuation"].apply(fmt_val)
 
-    combined["Nicks vs Share Price"] = combined["Nicks_Valuation"].apply(
-        lambda x: pct_col((x/current_price - 1)*100) if x else "N/A")
-    if pd.notna(growth['FINVIZ_5yr_gwth'].iloc[0]):
-        combined["Finviz vs Share Price"] = combined["Finviz_Valuation"].apply(
-            lambda x: pct_col((x/current_price - 1)*100) if x else "N/A")
+    def pct_cell(x):
+        try:
+            return f"{x:.1f}%"
+        except Exception:
+            return "-"
+
+    combined["Nicks vs Share Price"] = combined.apply(
+        lambda r: pct_cell((r["Nicks_Valuation"] / current_price - 1) * 100)
+                  if r["Nicks_Valuation"] not in (None, 0) else "-",
+        axis=1
+    )
+
+    if pd.notna(f_gr):
+        combined["Finviz vs Share Price"] = combined.apply(
+            lambda r: pct_cell((r["Finviz_Valuation"] / current_price - 1) * 100)
+                      if r["Finviz_Valuation"] not in (None, 0) else "-",
+            axis=1
+        )
 
     combined["Basis"] = combined.apply(
-        lambda r: f"${format_number(r['EPS'])} EPS" if r["EPS"] > 0
-                  else f"${format_number(r['Revenue_Per_Share'])} RevPS",
-        axis=1)
+        lambda r: f"${format_number(r['EPS'])} EPS"
+                  if r["EPS"] > 0 else
+                  f"${format_number(r['Revenue_Per_Share'])} RevPS",
+        axis=1
+    )
 
     cols = ["Basis", "Year", "Nicks_Valuation_str", "Nicks vs Share Price"]
-    if pd.notna(growth['FINVIZ_5yr_gwth'].iloc[0]):
+    if pd.notna(f_gr):
         cols += ["Finviz_Valuation_str", "Finviz vs Share Price"]
 
-    combined[cols].to_html(f"charts/{ticker}_valuation_table.html",
-                           index=False, escape=False,
-                           classes="table table-striped", justify="left")
+    table_2_df = combined[cols].rename(columns={
+        "Nicks_Valuation_str":  "Nicks Valuation",
+        "Finviz_Valuation_str": "Finviz Valuation"
+    })
+
+    table_2_df.to_html(
+        f"charts/{ticker}_valuation_table.html",
+        index=False,
+        escape=False,
+        classes="table table-striped",
+        justify="left"
+    )
+
     print(f"[{ticker}] valuation tables saved.")
 
 
@@ -300,9 +356,12 @@ def generate_valuation_tables(ticker, combined, growth, treasury_yield,
 #  Misc helpers
 # ---------------------------------------------------------------------------
 def format_number(v):
-    if v >= 1_000_000_000: return f"{v/1_000_000_000:.2f}B"
-    if v >= 1_000_000:     return f"{v/1_000_000:.2f}M"
-    if v >= 1_000:         return f"{v/1_000:.2f}K"
+    if v >= 1_000_000_000:
+        return f"{v/1_000_000_000:.2f}B"
+    if v >= 1_000_000:
+        return f"{v/1_000_000:.2f}M"
+    if v >= 1_000:
+        return f"{v/1_000:.2f}K"
     return f"{v:.2f}"
 
 
@@ -332,94 +391,21 @@ def process_update_growth_csv(file_path, db_path="Stock Data.db"):
                 ticker, growth, margin = row
                 margin = None if margin == "0" else margin
             else:
-                print("Bad row ->", row); continue
+                print("Bad row ->", row)
+                continue
 
             ticker = ticker.upper()
             try:
                 growth = float(growth)
                 margin = float(margin) if margin else None
             except ValueError:
-                print(f"[{ticker}] invalid number(s) ->", row); continue
+                print(f"[{ticker}] invalid number(s) ->", row)
+                continue
 
-            # ensure ticker row exists
             cur.execute("SELECT 1 FROM Tickers_Info WHERE ticker=?;", (ticker,))
             if not cur.fetchone():
                 cur.execute("INSERT INTO Tickers_Info (ticker) VALUES (?);", (ticker,))
 
             cur.execute("""
                 UPDATE Tickers_Info
-                SET nicks_growth_rate=?,
-                    projected_profit_margin=?
-                WHERE ticker=?;
-            """, (growth, margin, ticker))
-            conn.commit()
-            print(f"[{ticker}] growth={growth}%, margin={margin}%")
-
-    conn.close()
-    open(file_path, "w").close()  # wipe
-    print(f"{file_path} processed & cleared.")
-
-
-# ---------------------------------------------------------------------------
-#  Master driver – called from main_remote.py
-# ---------------------------------------------------------------------------
-def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard):
-    db_path = "Stock Data.db"
-
-    finviz_five_yr(ticker, cursor)
-    combo, growth, price, fcst = fetch_financial_valuation_data(ticker, db_path)
-
-    if price is None:
-        print(f"[{ticker}] price unavailable – skipping.")
-        return
-    if fcst.empty:
-        print(f"[{ticker}] no forecast rows – skipping.")
-        return
-    if growth.empty or (pd.isna(growth["nicks_growth_rate"].iloc[0]) and
-                        pd.isna(growth["FINVIZ_5yr_gwth"].iloc[0])):
-        print(f"[{ticker}] growth inputs missing – skipping.")
-        return
-
-    combo, n_pe, f_pe, n_ps, _ = calculate_valuations(
-        combo, growth, treasury_yield, price, marketcap)
-
-    plot_valuation_chart(combo[["Year", "Nicks_Valuation", "Finviz_Valuation"]],
-                         price, ticker, growth)
-
-    generate_valuation_tables(ticker, combo, growth, treasury_yield,
-                              price, n_pe, f_pe, n_ps)
-
-    # --- push one-line dashboard summary -------------------------------
-    try:
-        def clean(v):
-            return float(str(v).strip('$BMK').replace(',', ''))
-        n_ttm  = clean(combo["Nicks_Valuation"].iloc[0])
-        n_fwd  = clean(combo["Nicks_Valuation"].iloc[1])
-        n_ttm_pct  = (n_ttm/price - 1)*100
-        n_fwd_pct  = (n_fwd/price - 1)*100
-
-        if pd.notna(growth["FINVIZ_5yr_gwth"].iloc[0]):
-            f_ttm = clean(combo["Finviz_Valuation"].iloc[0])
-            f_fwd = clean(combo["Finviz_Valuation"].iloc[1])
-            f_ttm_pct = (f_ttm/price - 1)*100
-            f_fwd_pct = (f_fwd/price - 1)*100
-        else:
-            f_ttm = f_fwd = f_ttm_pct = f_fwd_pct = "-"
-
-    except Exception as e:
-        print(f"[{ticker}] dashboard calc error: {e}")
-        n_ttm = n_fwd = n_ttm_pct = n_fwd_pct = "-"
-        f_ttm = f_fwd = f_ttm_pct = f_fwd_pct = "-"
-
-    dashboard.append([
-        ticker,
-        f"${price:.2f}",
-        f"${n_ttm:.2f}"  if isinstance(n_ttm, float) else n_ttm,
-        f"{n_ttm_pct:.1f}%" if isinstance(n_ttm_pct, float) else n_ttm_pct,
-        f"${n_fwd:.2f}" if isinstance(n_fwd, float) else n_fwd,
-        f"{n_fwd_pct:.1f}%" if isinstance(n_fwd_pct, float) else n_fwd_pct,
-        f"${f_ttm:.2f}" if isinstance(f_ttm, float) else f_ttm,
-        f"{f_ttm_pct:.1f}%" if isinstance(f_ttm_pct, float) else f_ttm_pct,
-        f"${f_fwd:.2f}" if isinstance(f_fwd, float) else f_fwd,
-        f"{f_fwd_pct:.1f}%" if isinstance(f_fwd_pct, float) else f_fwd_pct
-    ])
+                SET n
