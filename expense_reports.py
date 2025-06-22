@@ -1,10 +1,12 @@
 """
 expense_reports.py
+-------------------------------------------------------------------------------
 Builds annual / quarterly operating-expense tables, stores them in SQLite,
 and generates two charts per ticker:
 
   1) Revenue vs. stacked expenses (absolute $)
-  2) Expenses as % of revenue
+  2) Expenses as % of revenue           ← now auto-expands >100 % & shows a
+                                           dotted “100 % of revenue” marker.
 
 This version keeps the legacy API (`generate_expense_reports`) but avoids
 dropping tables on every import, which eliminated the “database is locked”
@@ -13,9 +15,10 @@ errors in CI.
 
 from __future__ import annotations
 
+import math
 import os
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -84,7 +87,7 @@ def extract_expenses(row: pd.Series):
 # --------------------------------------------------------------------------- #
 #  Schema enforcement                                                         #
 # --------------------------------------------------------------------------- #
-TABLES      = ("IncomeStatement", "QuarterlyIncomeStatement")
+TABLES       = ("IncomeStatement", "QuarterlyIncomeStatement")
 TABLE_SCHEMA = """
     CREATE TABLE IF NOT EXISTS {name} (
         ticker TEXT,
@@ -104,22 +107,10 @@ TABLE_SCHEMA = """
 """
 
 def ensure_tables(*, drop: bool = False, conn: sqlite3.Connection | None = None) -> None:
-    """
-    Guarantee that both income-statement tables exist *with the expected columns*.
-
-    Parameters
-    ----------
-    drop : bool, default False
-        Set to True **only** for a manual full rebuild — never during normal runs,
-        otherwise long jobs that already hold connections will fail with
-        `sqlite3.OperationalError: database is locked`.
-    conn : sqlite3.Connection, optional
-        If provided, use this connection instead of opening a new one.
-    """
     new_conn = conn is None
     if new_conn:
         conn = sqlite3.connect(DB_PATH)
-    cur  = conn.cursor()
+    cur = conn.cursor()
 
     for tbl in TABLES:
         if drop:
@@ -130,20 +121,11 @@ def ensure_tables(*, drop: bool = False, conn: sqlite3.Connection | None = None)
     if new_conn:
         conn.close()
 
-    if drop:
-        print("✅ Tables dropped & recreated with fresh 12-column schema")
-    else:
-        print("✅ Tables ensured (created only if missing)")
-
 
 # --------------------------------------------------------------------------- #
 #  Storage helpers                                                            #
 # --------------------------------------------------------------------------- #
 def store_data(ticker: str, *, mode: str = "annual", conn: sqlite3.Connection | None = None) -> None:
-    """
-    Fetch *annual* or *quarterly* financials via yfinance and upsert rows
-    into the correct table.
-    """
     yf_tkr = yf.Ticker(ticker)
     raw_df = (
         yf_tkr.financials.transpose()
@@ -179,8 +161,6 @@ def store_data(ticker: str, *, mode: str = "annual", conn: sqlite3.Connection | 
     conn.commit()
     if new_conn:
         conn.close()
-
-    print(f"✅ {mode.capitalize()} data stored for {ticker}")
 
 
 # --------------------------------------------------------------------------- #
@@ -234,7 +214,8 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 #  Chart helpers                                                              #
 # --------------------------------------------------------------------------- #
-def format_short(x, dec=1):
+def _format_short(x, _pos=None, dec=1):
+    """Callable for FuncFormatter – converts large numbers to K/M/B/T suffix."""
     if pd.isna(x):
         return "$0"
     absx = abs(x)
@@ -244,11 +225,117 @@ def format_short(x, dec=1):
     if absx >= 1e3:   return f"${x/1e3:.{dec}f} K"
     return f"${x:.{dec}f}"
 
-# … two plotting functions go here, unchanged from your original version …
-def plot_expense_charts(full: pd.DataFrame, ticker: str):
-    pass
-def plot_expense_percent_chart(full: pd.DataFrame, ticker: str):
-    pass
+
+# --------------------------------------------------------------------------- #
+#  1) Revenue vs. stacked expenses (absolute $)                               #
+# --------------------------------------------------------------------------- #
+def plot_expense_charts(full: pd.DataFrame, ticker: str) -> None:
+    # ── Prep ────────────────────────────────────────────────────────────────
+    full = full.copy()
+    full.sort_values("year", inplace=True)
+    x_labels = full["year"].astype(str).tolist()
+
+    # Decide whether SG&A is combined or split
+    use_combined = full["sga_combined"].notna().any()
+    categories = [
+        ("Cost of Revenue",      "cost_of_revenue",           "#6d6d6d"),
+        ("R&D",                  "research_and_development",  "blue"),
+        ("G&A",                  "general_and_admin",         "#ffb3c6"),
+        ("Selling & Marketing",  "selling_and_marketing",     "#ffc6e2"),
+        ("SG&A",                 "sga_combined",              "#c2a5ff"),
+        ("Facilities / D&A",     "facilities_da",             "orange"),
+    ]
+
+    if use_combined:
+        # Drop separate G&A and S&M to avoid double-counting
+        categories = [c for c in categories if c[1] not in ("general_and_admin",
+                                                            "selling_and_marketing")]
+
+    # ── Stacked bars ────────────────────────────────────────────────────────
+    fig, ax = plt.subplots(figsize=(11, 6))
+
+    bottoms = np.zeros(len(full))
+    for label, col, color in categories:
+        vals = full[col].fillna(0).values
+        ax.bar(x_labels, vals, bottom=bottoms, label=label, color=color, width=0.6)
+        bottoms += vals
+
+    # ── Revenue line ────────────────────────────────────────────────────────
+    ax.plot(x_labels, full["total_revenue"].values,
+            color="black", linewidth=2, marker="o", label="Revenue")
+
+    # Y-axis limit: 10 % headroom over whichever is larger (expenses or revenue)
+    max_val = max(bottoms.max(), full["total_revenue"].max())
+    ax.set_ylim(0, max_val * 1.10)
+
+    ax.set_title(f"Revenue vs. Operating Expenses — {ticker}")
+    ax.yaxis.set_major_formatter(FuncFormatter(_format_short))
+    ax.set_ylabel("USD")
+    ax.legend(frameon=False, ncol=2)
+    plt.tight_layout()
+
+    fig.savefig(os.path.join(OUTPUT_DIR, f"{ticker}_expenses_vs_revenue.png"))
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- #
+#  2) Expenses as % of revenue                                                #
+# --------------------------------------------------------------------------- #
+def plot_expense_percent_chart(full: pd.DataFrame, ticker: str) -> None:
+    # ── Prep ────────────────────────────────────────────────────────────────
+    full = full.copy()
+    full.sort_values("year", inplace=True)
+    x_labels = full["year"].astype(str).tolist()
+
+    use_combined = full["sga_combined"].notna().any()
+    categories = [
+        ("Cost of Revenue",      "cost_of_revenue",           "#6d6d6d"),
+        ("R&D",                  "research_and_development",  "blue"),
+        ("G&A",                  "general_and_admin",         "#ffb3c6"),
+        ("Selling & Marketing",  "selling_and_marketing",     "#ffc6e2"),
+        ("SG&A",                 "sga_combined",              "#c2a5ff"),
+        ("Facilities / D&A",     "facilities_da",             "orange"),
+    ]
+    if use_combined:
+        categories = [c for c in categories if c[1] not in ("general_and_admin",
+                                                            "selling_and_marketing")]
+
+    # Calculate percentages
+    for _lbl, col, _c in categories:
+        full[col + "_pct"] = (full[col] / full["total_revenue"]) * 100
+
+    # ── Stacked percent bars ────────────────────────────────────────────────
+    fig, ax = plt.subplots(figsize=(11, 6))
+    bottoms = np.zeros(len(full))
+
+    for label, col, color in categories:
+        pct_vals = full[col + "_pct"].fillna(0).values
+        ax.bar(x_labels, pct_vals, bottom=bottoms, label=label, color=color, width=0.6)
+        bottoms += pct_vals
+
+        # Annotate each segment (optional – comment out if noisy)
+        for x, y0, val in zip(x_labels, bottoms - pct_vals, pct_vals):
+            if val > 4:  # don’t clutter tiny slices
+                ax.text(x, y0 + val / 2, f"{val:.1f} %", ha="center", va="center",
+                        fontsize=8, color="white")
+
+    # ── Dynamic Y-limit & revenue marker ───────────────────────────────────
+    max_total = bottoms.max()
+    ylim_max  = max(110, math.ceil(max_total / 10) * 10 + 10)  # round up to next 10 %
+    ax.set_ylim(0, ylim_max)
+
+    # Dotted line at 100 % to mark revenue
+    ax.axhline(100, linestyle="--", linewidth=1, color="black",
+               label="100 % of revenue", zorder=5)
+
+    ax.set_ylabel("Percent of Revenue")
+    ax.set_title(f"Expenses as % of Revenue — {ticker}")
+    ax.set_yticks(np.arange(0, ylim_max + 1, 10))
+    ax.legend(frameon=False, ncol=2)
+    plt.tight_layout()
+
+    fig.savefig(os.path.join(OUTPUT_DIR, f"{ticker}_expenses_pct_of_rev.png"))
+    plt.close(fig)
 
 
 # --------------------------------------------------------------------------- #
@@ -260,37 +347,22 @@ def generate_expense_reports(
     rebuild_schema: bool = False,
     conn: sqlite3.Connection | None = None
 ) -> None:
-    """
-    High-level helper used by main_remote.py.
-
-    Parameters
-    ----------
-    ticker : str
-        The stock symbol to process.
-
-    rebuild_schema : bool, default False
-        Set to True only for a full wipe/reset of the two income-statement
-        tables.  The default *does not* drop existing data.
-
-    conn : sqlite3.Connection, optional
-        If provided, use this connection for all DB work (no new connections).
-    """
-    # ensure schema
+    # 1) Ensure tables exist (optionally rebuild)
     ensure_tables(drop=rebuild_schema, conn=conn)
 
-    # store raw data
-    store_data(ticker, mode="annual", conn=conn)
+    # 2) Pull fresh data
+    store_data(ticker, mode="annual",    conn=conn)
     store_data(ticker, mode="quarterly", conn=conn)
 
-    # build and plot
+    # 3) Assemble yearly + TTM datasets
     yearly = fetch_yearly_data(ticker)
     if yearly.empty:
-        print("⛔ No data found — skipping charts")
+        print(f"⛔ No data found for {ticker} — skipping charts")
         return
 
-    ttm  = fetch_ttm_data(ticker)
-    full = pd.concat([yearly, ttm], ignore_index=True)
+    full = pd.concat([yearly, fetch_ttm_data(ticker)], ignore_index=True)
 
+    # 4) Plot charts
     plot_expense_charts(full, ticker)
     plot_expense_percent_chart(full, ticker)
 
