@@ -206,7 +206,14 @@ def create_ticker_page(ticker, ticker_data, output_dir):
         f.write(template.render(ticker_data=ticker_data))
 
 def generate_dashboard_table(dashboard_data):
-    df = pd.DataFrame(dashboard_data, columns=[
+    # — Pad each row to 10 elements so DataFrame(...) never errors
+    padded = []
+    for row in dashboard_data:
+        if len(row) < 10:
+            row = list(row) + ["-"] * (10 - len(row))
+        padded.append(row)
+
+    df = pd.DataFrame(padded, columns=[
         "Ticker", "Share Price", "Nicks TTM Valuation", "Nicks TTM Value",
         "Nicks Forward Valuation", "Nicks Forward Value",
         "Finviz TTM Valuation",    "Finviz TTM Value",
@@ -221,8 +228,7 @@ def generate_dashboard_table(dashboard_data):
     )
 
     # ————————————————————————————————————————————————
-    # Create hidden numeric twins of the “% Value” columns
-    # so that sorting never sees mixed strings & ints.
+    # Create hidden numeric twins for the “% Value” columns
     import numpy as np
     PCT_COLS = [
         "Nicks TTM Value",
@@ -233,19 +239,21 @@ def generate_dashboard_table(dashboard_data):
     for col in PCT_COLS:
         df[col + "_num"] = (
             df[col]
-              .astype(str)            # ensure string
-              .str.rstrip("%")        # remove '%'
-              .replace("-", np.nan)   # turn '-' → NaN
-              .astype(float)          # parse to float
+              .astype(str)
+              .str.rstrip("%")
+              .replace("-", np.nan)
+              .astype(float)
         )
 
-    # Sort rows by Nicks TTM Value (highest first), using the numeric column
+    # Sort rows by Nicks TTM Value_num desc
     df.sort_values("Nicks TTM Value_num", ascending=False, inplace=True)
     # ————————————————————————————————————————————————
 
     def pct(x):
-        try:    return float(x.strip('%'))
-        except: return None
+        try:
+            return float(x.strip('%'))
+        except:
+            return None
 
     avgv = {
         'Nicks_TTM_Value_Average':
