@@ -220,6 +220,29 @@ def generate_dashboard_table(dashboard_data):
         lambda t: f'<a href="pages/{t}_page.html">{t}</a>'
     )
 
+    # ————————————————————————————————————————————————
+    # Create hidden numeric twins of the “% Value” columns
+    # so that sorting never sees mixed strings & ints.
+    import numpy as np
+    PCT_COLS = [
+        "Nicks TTM Value",
+        "Nicks Forward Value",
+        "Finviz TTM Value",
+        "Finviz Forward Value",
+    ]
+    for col in PCT_COLS:
+        df[col + "_num"] = (
+            df[col]
+              .astype(str)            # ensure string
+              .str.rstrip("%")        # remove '%'
+              .replace("-", np.nan)   # turn '-' → NaN
+              .astype(float)          # parse to float
+        )
+
+    # Sort rows by Nicks TTM Value (highest first), using the numeric column
+    df.sort_values("Nicks TTM Value_num", ascending=False, inplace=True)
+    # ————————————————————————————————————————————————
+
     def pct(x):
         try:    return float(x.strip('%'))
         except: return None
