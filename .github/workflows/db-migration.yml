@@ -1,0 +1,27 @@
+name: Database Migration
+
+# You can trigger manually or on merge to main
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run DB migration
+        env:
+          # Adjust if your DB lives elsewhere
+          DB_PATH: ${{ github.workspace }}/Stock\ Data.db
+        run: |
+          python scripts/migrate_expense_year_column.py
