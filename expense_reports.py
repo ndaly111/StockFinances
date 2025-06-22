@@ -5,12 +5,7 @@ Builds annual / quarterly operating-expense tables, stores them in SQLite,
 and generates two charts per ticker:
 
   1) Revenue vs. stacked expenses (absolute $)
-  2) Expenses as % of revenue           ← now auto-expands >100 % & shows a
-                                           dotted “100 % of revenue” marker.
-
-This version keeps the legacy API (`generate_expense_reports`) but avoids
-dropping tables on every import, which eliminated the “database is locked”
-errors in CI.
+  2) Expenses as % of revenue
 """
 
 from __future__ import annotations
@@ -45,7 +40,7 @@ DB_PATH    = "Stock Data.db"
 OUTPUT_DIR = "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-__all__ = ["generate_expense_reports"]        # what other modules should import
+__all__ = ["generate_expense_reports"]
 
 
 # --------------------------------------------------------------------------- #
@@ -177,16 +172,22 @@ def fetch_yearly_data(ticker: str) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame()
 
+    # Convert to datetime & extract integer year
     df["period_ending"] = pd.to_datetime(df["period_ending"])
-    df["year"]          = df["period_ending"].dt.year
-    agg_cols            = df.columns.difference(["ticker", "period_ending", "year"])
+    df["year_int"]      = df["period_ending"].dt.year
 
-    return df.groupby("year", as_index=False)[agg_cols].sum()
+    # Sum up all expense columns per year_int
+    agg_cols = df.columns.difference(["ticker", "period_ending", "year_int"])
+    grouped  = df.groupby("year_int", as_index=False)[agg_cols].sum()
+
+    # Create a display label (string) for each year
+    grouped["year_label"] = grouped["year_int"].astype(int).astype(str)
+    return grouped
 
 
 def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query("""
+    df   = pd.read_sql_query("""
         SELECT * FROM QuarterlyIncomeStatement
         WHERE ticker = ?
         ORDER BY period_ending DESC
@@ -198,7 +199,6 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
 
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     recent = df.head(4).sort_values("period_ending")
-
     if len(recent) < 4:
         return pd.DataFrame()
 
@@ -206,8 +206,12 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     if list(expected.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
         return pd.DataFrame()
 
+    # Sum trailing-12-months
     ttm = recent.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
-    ttm.insert(0, "year", "TTM")
+
+    # Insert string label + blank numeric key
+    ttm.insert(0, "year_label", "TTM")
+    ttm["year_int"] = np.nan
     return ttm
 
 
@@ -215,7 +219,6 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
 #  Chart helpers                                                              #
 # --------------------------------------------------------------------------- #
 def _format_short(x, _pos=None, dec=1):
-    """Callable for FuncFormatter – converts large numbers to K/M/B/T suffix."""
     if pd.isna(x):
         return "$0"
     absx = abs(x)
@@ -230,41 +233,34 @@ def _format_short(x, _pos=None, dec=1):
 #  1) Revenue vs. stacked expenses (absolute $)                               #
 # --------------------------------------------------------------------------- #
 def plot_expense_charts(full: pd.DataFrame, ticker: str) -> None:
-    # ── Prep ────────────────────────────────────────────────────────────────
     full = full.copy()
-    full.sort_values("year", inplace=True)
-    x_labels = full["year"].astype(str).tolist()
+    # Sort by the pure-int key (NaNs for TTM end up at bottom)
+    full.sort_values("year_int", inplace=True)
+    x_labels = full["year_label"].tolist()
 
-    # Decide whether SG&A is combined or split
     use_combined = full["sga_combined"].notna().any()
-    categories = [
-        ("Cost of Revenue",      "cost_of_revenue",           "#6d6d6d"),
-        ("R&D",                  "research_and_development",  "blue"),
-        ("G&A",                  "general_and_admin",         "#ffb3c6"),
-        ("Selling & Marketing",  "selling_and_marketing",     "#ffc6e2"),
-        ("SG&A",                 "sga_combined",              "#c2a5ff"),
-        ("Facilities / D&A",     "facilities_da",             "orange"),
+    categories   = [
+        ("Cost of Revenue",     "cost_of_revenue",          "#6d6d6d"),
+        ("R&D",                 "research_and_development", "blue"),
+        ("G&A",                 "general_and_admin",        "#ffb3c6"),
+        ("Selling & Marketing", "selling_and_marketing",    "#ffc6e2"),
+        ("SG&A",                "sga_combined",             "#c2a5ff"),
+        ("Facilities / D&A",    "facilities_da",            "orange"),
     ]
-
     if use_combined:
-        # Drop separate G&A and S&M to avoid double-counting
-        categories = [c for c in categories if c[1] not in ("general_and_admin",
-                                                            "selling_and_marketing")]
+        categories = [c for c in categories
+                      if c[1] not in ("general_and_admin","selling_and_marketing")]
 
-    # ── Stacked bars ────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(11, 6))
-
     bottoms = np.zeros(len(full))
     for label, col, color in categories:
         vals = full[col].fillna(0).values
         ax.bar(x_labels, vals, bottom=bottoms, label=label, color=color, width=0.6)
         bottoms += vals
 
-    # ── Revenue line ────────────────────────────────────────────────────────
     ax.plot(x_labels, full["total_revenue"].values,
             color="black", linewidth=2, marker="o", label="Revenue")
 
-    # Y-axis limit: 10 % headroom over whichever is larger (expenses or revenue)
     max_val = max(bottoms.max(), full["total_revenue"].max())
     ax.set_ylim(0, max_val * 1.10)
 
@@ -282,49 +278,41 @@ def plot_expense_charts(full: pd.DataFrame, ticker: str) -> None:
 #  2) Expenses as % of revenue                                                #
 # --------------------------------------------------------------------------- #
 def plot_expense_percent_chart(full: pd.DataFrame, ticker: str) -> None:
-    # ── Prep ────────────────────────────────────────────────────────────────
     full = full.copy()
-    full.sort_values("year", inplace=True)
-    x_labels = full["year"].astype(str).tolist()
+    full.sort_values("year_int", inplace=True)
+    x_labels = full["year_label"].tolist()
 
     use_combined = full["sga_combined"].notna().any()
-    categories = [
-        ("Cost of Revenue",      "cost_of_revenue",           "#6d6d6d"),
-        ("R&D",                  "research_and_development",  "blue"),
-        ("G&A",                  "general_and_admin",         "#ffb3c6"),
-        ("Selling & Marketing",  "selling_and_marketing",     "#ffc6e2"),
-        ("SG&A",                 "sga_combined",              "#c2a5ff"),
-        ("Facilities / D&A",     "facilities_da",             "orange"),
+    categories   = [
+        ("Cost of Revenue",     "cost_of_revenue",          "#6d6d6d"),
+        ("R&D",                 "research_and_development", "blue"),
+        ("G&A",                 "general_and_admin",        "#ffb3c6"),
+        ("Selling & Marketing", "selling_and_marketing",    "#ffc6e2"),
+        ("SG&A",                "sga_combined",             "#c2a5ff"),
+        ("Facilities / D&A",    "facilities_da",            "orange"),
     ]
     if use_combined:
-        categories = [c for c in categories if c[1] not in ("general_and_admin",
-                                                            "selling_and_marketing")]
+        categories = [c for c in categories
+                      if c[1] not in ("general_and_admin","selling_and_marketing")]
 
     # Calculate percentages
     for _lbl, col, _c in categories:
         full[col + "_pct"] = (full[col] / full["total_revenue"]) * 100
 
-    # ── Stacked percent bars ────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(11, 6))
     bottoms = np.zeros(len(full))
-
     for label, col, color in categories:
         pct_vals = full[col + "_pct"].fillna(0).values
         ax.bar(x_labels, pct_vals, bottom=bottoms, label=label, color=color, width=0.6)
         bottoms += pct_vals
-
-        # Annotate each segment (optional – comment out if noisy)
         for x, y0, val in zip(x_labels, bottoms - pct_vals, pct_vals):
-            if val > 4:  # don’t clutter tiny slices
-                ax.text(x, y0 + val / 2, f"{val:.1f} %", ha="center", va="center",
-                        fontsize=8, color="white")
+            if val > 4:
+                ax.text(x, y0 + val / 2, f"{val:.1f} %",
+                        ha="center", va="center", fontsize=8, color="white")
 
-    # ── Dynamic Y-limit & revenue marker ───────────────────────────────────
     max_total = bottoms.max()
-    ylim_max  = max(110, math.ceil(max_total / 10) * 10 + 10)  # round up to next 10 %
+    ylim_max  = max(110, math.ceil(max_total / 10) * 10 + 10)
     ax.set_ylim(0, ylim_max)
-
-    # Dotted line at 100 % to mark revenue
     ax.axhline(100, linestyle="--", linewidth=1, color="black",
                label="100 % of revenue", zorder=5)
 
@@ -347,14 +335,11 @@ def generate_expense_reports(
     rebuild_schema: bool = False,
     conn: sqlite3.Connection | None = None
 ) -> None:
-    # 1) Ensure tables exist (optionally rebuild)
     ensure_tables(drop=rebuild_schema, conn=conn)
 
-    # 2) Pull fresh data
     store_data(ticker, mode="annual",    conn=conn)
     store_data(ticker, mode="quarterly", conn=conn)
 
-    # 3) Assemble yearly + TTM datasets
     yearly = fetch_yearly_data(ticker)
     if yearly.empty:
         print(f"⛔ No data found for {ticker} — skipping charts")
@@ -362,13 +347,9 @@ def generate_expense_reports(
 
     full = pd.concat([yearly, fetch_ttm_data(ticker)], ignore_index=True)
 
-    # 4) Plot charts
     plot_expense_charts(full, ticker)
     plot_expense_percent_chart(full, ticker)
 
 
-# --------------------------------------------------------------------------- #
-#  CLI usage                                                                  #
-# --------------------------------------------------------------------------- #
 if __name__ == "__main__":
-    generate_expense_reports("AAPL")   # simple manual test
+    generate_expense_reports("AAPL")
