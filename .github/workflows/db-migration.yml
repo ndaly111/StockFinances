@@ -1,11 +1,11 @@
 name: Database Migration
 
-# You can trigger manually or on merge to main
+# Trigger on any push to main, or manual dispatch
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   migrate:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Run DB migration
         env:
-          # Adjust if your DB lives elsewhere
-          DB_PATH: ${{ github.workspace }}/Stock\ Data.db
+          # Path to your SQLite file in the workspace
+          DB_PATH: "${{ github.workspace }}/Stock Data.db"
         run: |
-          python scripts/migrate_expense_year_column.py
+          python migrate_expense_year_column.py
