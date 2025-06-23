@@ -1,3 +1,4 @@
+
 from jinja2 import Environment, FileSystemLoader
 import os
 import pandas as pd
@@ -7,7 +8,6 @@ import numpy as np
 
 # Path to the database file
 db_path = 'Stock Data.db'
-
 env = Environment(loader=FileSystemLoader('templates'))
 
 def ensure_directory_exists(directory):
@@ -37,7 +37,7 @@ def get_company_short_name(ticker, cursor):
     return ticker
 
 def ensure_templates_exist():
-    ticker_template_content = """..."""  # (leave unchanged)
+    ticker_template_content = "..."  # Omitted for brevity; assumed already exists
     create_template(os.path.join('templates', 'ticker_template.html'), ticker_template_content)
 
 def get_file_content_or_placeholder(file_path, placeholder="No data available"):
@@ -100,7 +100,6 @@ def create_ticker_page(ticker, ticker_data, output_dir):
         f.write(template.render(ticker_data=ticker_data))
 
 def generate_dashboard_table(dashboard_data):
-    # Pad rows to avoid length mismatch errors
     padded = []
     for row in dashboard_data:
         if len(row) < 10:
@@ -123,7 +122,6 @@ def generate_dashboard_table(dashboard_data):
         lambda t: f'<a href="pages/{t}_page.html">{t}</a>'
     )
 
-    # Create numeric versions of percent columns
     pct_cols = [
         "Nicks TTM Value", "Nicks Forward Value",
         "Finviz TTM Value", "Finviz Forward Value"
@@ -139,7 +137,6 @@ def generate_dashboard_table(dashboard_data):
 
     df.sort_values("Nicks TTM Value_num", ascending=False, inplace=True)
 
-    # Compute averages and medians
     ttm_vals   = df["Nicks TTM Value_num"].dropna()
     fwd_vals   = df["Nicks Forward Value_num"].dropna()
     fttm_vals  = df["Finviz TTM Value_num"].dropna()
@@ -164,10 +161,10 @@ def generate_dashboard_table(dashboard_data):
 
     avg_table = pd.DataFrame(rows, columns=[
         "Metric",
-        "Nick's TTM Valuation",
-        "Nick's Forward Valuation",
-        "Finviz TTM Valuation",
-        "Finviz Forward Valuation"
+        "Nicks TTM Value",
+        "Nicks Forward Value",
+        "Finviz TTM Value",
+        "Finviz Forward Value"
     ]).to_html(index=False, escape=False, classes='table table-striped')
 
     dash_table = df.to_html(
