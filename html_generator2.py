@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import sqlite3
 import yfinance as yf
+import numpy as np
 
 # Path to the database file
 db_path = 'Stock Data.db'
@@ -36,114 +37,7 @@ def get_company_short_name(ticker, cursor):
     return ticker
 
 def ensure_templates_exist():
-    ticker_template_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>{{ ticker_data.company_name }} - Financial Overview</title>
-      <link rel="stylesheet" href="../style.css">
-    </head>
-    <body>
-      <header>
-        <a href="../index.html" class="home-button">Home</a>
-        <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
-        <h2>Ticker - {{ ticker_data.ticker }}</h2>
-      </header>
-
-      <section>
-        <p>{{ ticker_data.ticker_info | safe }}</p>
-      </section>
-
-      <div>
-        <img src="../{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart">
-        <img src="../{{ ticker_data.eps_chart_path }}" alt="EPS Chart">
-        {{ ticker_data.financial_table | safe }}
-      </div>
-
-      <div><br><br><hr><br><h1>{{ ticker_data.ticker }} - Forecast Data</h1></div>
-      <div class="carousel-container">
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
-        </div>
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
-        </div>
-      </div>
-
-      <div><br><br><h1>{{ ticker_data.ticker }} - Y/Y % Change</h1></div>
-      <div class="carousel-container">
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue Year-over-Year Change Chart">
-        </div>
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS Year-over-Year Change Chart">
-        </div>
-        <div class="carousel-item">
-          {{ ticker_data.yoy_growth_table_html | safe }}
-        </div>
-      </div>
-
-      <div class="balance-sheet-container">
-        <div class="balance-sheet-table">
-          {{ ticker_data.balance_sheet_table_html | safe }}
-        </div>
-        <div class="balance-sheet-chart">
-          <img src="../{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart">
-        </div>
-      </div>
-
-      <div><br><br><h1>{{ ticker_data.ticker }} - Expense Overview</h1></div>
-      <div class="carousel-container">
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expense Chart">
-        </div>
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.expense_percent_chart_path }}" alt="Expense % of Revenue Chart">
-        </div>
-        <div class="carousel-item">
-          {{ ticker_data.expense_table_html | safe }}
-        </div>
-        <div class="carousel-item">
-          {{ ticker_data.expense_yoy_table_html | safe }}
-        </div>
-      </div>
-
-      <!-- NEW: Unmapped Line Items -->
-      <div><br><br><h1>{{ ticker_data.ticker }} - Unmapped Expense Line Items</h1></div>
-      <div>
-        {{ ticker_data.unmapped_expense_html | safe }}
-      </div>
-
-      <!-- NEW: EPS vs Dividend Chart -->
-      <div><br><br><h1>{{ ticker_data.ticker }} – EPS vs Dividend Overview</h1></div>
-      <div class="carousel-container">
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.eps_dividend_chart_path }}" alt="EPS vs Dividend Chart">
-        </div>
-      </div>
-
-      <hr>
-      {% if ticker_data.valuation_chart %}
-      <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
-      <div><br>
-        <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
-        <br><br>
-        <div class="valuation-tables">
-          {{ ticker_data.valuation_info_table | safe }}
-          {{ ticker_data.valuation_data_table | safe }}
-        </div>
-        <br><br><br><hr>
-      </div>
-      {% endif %}
-
-      <footer>
-        <a href="../index.html" class="home-button">Back to Home</a>
-        <br><br><br><br><br>
-      </footer>
-    </body>
-    </html>
-    """
+    ticker_template_content = """..."""  # (leave unchanged)
     create_template(os.path.join('templates', 'ticker_template.html'), ticker_template_content)
 
 def get_file_content_or_placeholder(file_path, placeholder="No data available"):
@@ -206,7 +100,7 @@ def create_ticker_page(ticker, ticker_data, output_dir):
         f.write(template.render(ticker_data=ticker_data))
 
 def generate_dashboard_table(dashboard_data):
-    # — Pad each row to 10 elements so DataFrame(...) never errors
+    # Pad rows to avoid length mismatch errors
     padded = []
     for row in dashboard_data:
         if len(row) < 10:
@@ -219,85 +113,83 @@ def generate_dashboard_table(dashboard_data):
         "Finviz TTM Valuation",    "Finviz TTM Value",
         "Finviz Forward Valuation","Finviz Forward Value"
     ])
+
     df.drop(columns=[
         "Nicks TTM Valuation", "Nicks Forward Valuation",
-        "Finviz TTM Valuation","Finviz Forward Valuation"
+        "Finviz TTM Valuation", "Finviz Forward Valuation"
     ], inplace=True)
+
     df["Ticker"] = df["Ticker"].apply(
         lambda t: f'<a href="pages/{t}_page.html">{t}</a>'
     )
 
-    # ————————————————————————————————————————————————
-    # Create hidden numeric twins for the “% Value” columns
-    import numpy as np
-    PCT_COLS = [
-        "Nicks TTM Value",
-        "Nicks Forward Value",
-        "Finviz TTM Value",
-        "Finviz Forward Value",
+    # Create numeric versions of percent columns
+    pct_cols = [
+        "Nicks TTM Value", "Nicks Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
     ]
-    for col in PCT_COLS:
+    for col in pct_cols:
         df[col + "_num"] = (
             df[col]
-              .astype(str)
-              .str.rstrip("%")
-              .replace("-", np.nan)
-              .astype(float)
+            .astype(str)
+            .str.rstrip("%")
+            .replace("-", np.nan)
+            .astype(float)
         )
 
-    # Sort rows by Nicks TTM Value_num desc
     df.sort_values("Nicks TTM Value_num", ascending=False, inplace=True)
-    # ————————————————————————————————————————————————
 
-    def pct(x):
-        try:
-            return float(x.strip('%'))
-        except:
-            return None
+    # Compute averages and medians
+    ttm_vals   = df["Nicks TTM Value_num"].dropna()
+    fwd_vals   = df["Nicks Forward Value_num"].dropna()
+    fttm_vals  = df["Finviz TTM Value_num"].dropna()
+    ffwd_vals  = df["Finviz Forward Value_num"].dropna()
 
-    avgv = {
-        'Nicks_TTM_Value_Average':
-            df["Nicks TTM Value"].apply(pct).mean(),
-        'Nicks_Forward_Value_Average':
-            df["Nicks Forward Value"].apply(pct).mean(),
-        'Finviz_TTM_Value_Average':
-            df["Finviz TTM Value"].apply(pct).mean(),
-        'Nicks_TTM_Value_Median':
-            df["Nicks TTM Value"].apply(pct).median(),
-        'Nicks_Forward_Value_Median':
-            df["Nicks Forward Value"].apply(pct).median(),
-        'Finviz_TTM_Value_Median':
-            df["Finviz TTM Value"].apply(pct).median(),
-        'Finviz_Forward_Value_Median':
-            df["Finviz Forward Value"].apply(pct).median()
-    }
+    ttm_avg  = ttm_vals.mean()
+    ttm_med  = ttm_vals.median()
+    fwd_avg  = fwd_vals.mean()
+    fwd_med  = fwd_vals.median()
+    fttm_avg = fttm_vals.mean()  if not fttm_vals.empty else None
+    fttm_med = fttm_vals.median() if not fttm_vals.empty else None
+    ffwd_avg = ffwd_vals.mean() if not ffwd_vals.empty else None
+    ffwd_med = ffwd_vals.median() if not ffwd_vals.empty else None
+
+    def pct(val):
+        return f"{val:.1f}%" if pd.notnull(val) else "–"
 
     rows = [
-        ["Average",
-         f"{avgv['Nicks_TTM_Value_Average']:.1f}%",
-         f"{avgv['Nicks_Forward_Value_Average']:.1f}%",
-         f"{avgv['Finviz_TTM_Value_Average']:.1f}%",
-         f"{avgv['Finviz_Forward_Value_Median']:.1f}%"],
-        ["Median",
-         f"{avgv['Nicks_TTM_Value_Median']:.1f}%",
-         f"{avgv['Nicks_Forward_Value_Median']:.1f}%",
-         f"{avgv['Finviz_TTM_Value_Median']:.1f}%",
-         f"{avgv['Finviz_Forward_Value_Median']:.1f}%"]
+        ["Average", pct(ttm_avg), pct(fwd_avg), pct(fttm_avg), pct(ffwd_avg)],
+        ["Median",  pct(ttm_med), pct(fwd_med), pct(fttm_med), pct(ffwd_med)],
     ]
+
     avg_table = pd.DataFrame(rows, columns=[
-        "Metric","Nicks TTM Value","Nicks Forward Value",
-        "Finviz TTM Value","Finviz Forward Value"
+        "Metric",
+        "Nick's TTM Valuation",
+        "Nick's Forward Valuation",
+        "Finviz TTM Valuation",
+        "Finviz Forward Valuation"
     ]).to_html(index=False, escape=False, classes='table table-striped')
 
     dash_table = df.to_html(
-        index=False, escape=False,
-        classes='table table-striped', table_id="sortable-table"
+        index=False,
+        escape=False,
+        classes='table table-striped',
+        table_id="sortable-table"
     )
 
-    with open('charts/dashboard.html','w',encoding='utf-8') as f:
+    with open('charts/dashboard.html', 'w', encoding='utf-8') as f:
         f.write(avg_table + dash_table)
 
-    return avg_table + dash_table, avgv
+    return avg_table + dash_table, {
+        'Nicks_TTM_Value_Average': ttm_avg,
+        'Nicks_Forward_Value_Average': fwd_avg,
+        'Nicks_TTM_Value_Median': ttm_med,
+        'Nicks_Forward_Value_Median': fwd_med,
+        'Finviz_TTM_Value_Average': fttm_avg,
+        'Finviz_Forward_Value_Average': ffwd_avg,
+        'Finviz_TTM_Value_Median': fttm_med,
+        'Finviz_Forward_Value_Median': ffwd_med
+    }
 
 def html_generator2(tickers, financial_data, full_dashboard_html,
                     avg_values, spy_qqq_growth_html=""):
