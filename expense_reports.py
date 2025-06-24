@@ -33,9 +33,6 @@ from expense_labels import (
     OTHER_OPERATING,
 )
 
-# --------------------------------------------------------------------------- #
-#  Module-wide constants & setup                                              #
-# --------------------------------------------------------------------------- #
 DB_PATH    = "Stock Data.db"
 OUTPUT_DIR = "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -43,11 +40,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 __all__ = ["generate_expense_reports"]
 
 
-# --------------------------------------------------------------------------- #
-#  Utility helper                                                             #
-# --------------------------------------------------------------------------- #
 def clean_value(val):
-    """Convert NaNs → None and datetimes → ISO-8601 strings (for SQLite)."""
     if pd.isna(val):
         return None
     if isinstance(val, (pd.Timestamp, datetime)):
@@ -55,9 +48,6 @@ def clean_value(val):
     return val
 
 
-# --------------------------------------------------------------------------- #
-#  Expense extraction                                                         #
-# --------------------------------------------------------------------------- #
 def extract_expenses(row: pd.Series):
     def match_any(label_list):
         for key in row.index:
@@ -79,9 +69,6 @@ def extract_expenses(row: pd.Series):
     )
 
 
-# --------------------------------------------------------------------------- #
-#  Schema enforcement                                                         #
-# --------------------------------------------------------------------------- #
 TABLES       = ("IncomeStatement", "QuarterlyIncomeStatement")
 TABLE_SCHEMA = """
     CREATE TABLE IF NOT EXISTS {name} (
@@ -117,9 +104,6 @@ def ensure_tables(*, drop: bool = False, conn: sqlite3.Connection | None = None)
         conn.close()
 
 
-# --------------------------------------------------------------------------- #
-#  Storage helpers                                                            #
-# --------------------------------------------------------------------------- #
 def store_data(ticker: str, *, mode: str = "annual", conn: sqlite3.Connection | None = None) -> None:
     yf_tkr = yf.Ticker(ticker)
     raw_df = (
@@ -158,9 +142,6 @@ def store_data(ticker: str, *, mode: str = "annual", conn: sqlite3.Connection | 
         conn.close()
 
 
-# --------------------------------------------------------------------------- #
-#  Data fetchers                                                              #
-# --------------------------------------------------------------------------- #
 def fetch_yearly_data(ticker: str) -> pd.DataFrame:
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("""
@@ -172,15 +153,12 @@ def fetch_yearly_data(ticker: str) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame()
 
-    # Parse dates and extract integer year
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year_int"]      = df["period_ending"].dt.year
 
-    # Group by integer year, summing all expense columns
     agg_cols = df.columns.difference(["ticker", "period_ending", "year_int"])
     grouped  = df.groupby("year_int", as_index=False)[agg_cols].sum()
 
-    # Create a string label for display
     grouped["year_label"] = grouped["year_int"].astype(int).astype(str)
     return grouped
 
@@ -206,25 +184,18 @@ def fetch_ttm_data(ticker: str) -> pd.DataFrame:
     expected = pd.date_range(
         end=recent["period_ending"].max(),
         periods=4,
-        freq="Q"  # FutureWarning: Q is deprecated but still works
+        freq="Q"
     )
     if list(expected.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
         return pd.DataFrame()
 
-    # Sum the last 4 quarters
     ttm = recent.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
-
-    # Insert label + blank numeric key
     ttm.insert(0, "year_label", "TTM")
     ttm["year_int"] = np.nan
     return ttm
 
 
-# --------------------------------------------------------------------------- #
-#  Chart helpers                                                              #
-# --------------------------------------------------------------------------- #
 def _format_short(x, _pos=None, dec=1):
-    """Formats a number with K/M/B/T suffix for axis labels."""
     if pd.isna(x):
         return "$0"
     absx = abs(x)
@@ -240,15 +211,12 @@ def _format_short(x, _pos=None, dec=1):
 
 
 def plot_expense_charts(full: pd.DataFrame, ticker: str) -> None:
-    """
-    Revenue vs. stacked operating expenses (absolute dollars).
-    """
     full = full.copy()
     full.sort_values("year_int", inplace=True)
     x_labels = full["year_label"].tolist()
 
     use_combined = full["sga_combined"].notna().any()
-    categories   = [
+    categories = [
         ("Cost of Revenue",     "cost_of_revenue",          "#6d6d6d"),
         ("R&D",                 "research_and_development", "blue"),
         ("G&A",                 "general_and_admin",        "#ffb3c6"),
@@ -288,16 +256,14 @@ def plot_expense_charts(full: pd.DataFrame, ticker: str) -> None:
 
 
 def plot_expense_percent_chart(full: pd.DataFrame, ticker: str) -> None:
-    """
-    Expenses as a percentage of revenue, stacked by category.
-    Skips any rows where total_revenue == 0 to avoid division-by-zero.
-    """
     full = full.copy()
     full.sort_values("year_int", inplace=True)
+
+    full = full.loc[full["total_revenue"] != 0].reset_index(drop=True)
     x_labels = full["year_label"].tolist()
 
     use_combined = full["sga_combined"].notna().any()
-    categories   = [
+    categories = [
         ("Cost of Revenue",     "cost_of_revenue",          "#6d6d6d"),
         ("R&D",                 "research_and_development", "blue"),
         ("G&A",                 "general_and_admin",        "#ffb3c6"),
@@ -311,7 +277,6 @@ def plot_expense_percent_chart(full: pd.DataFrame, ticker: str) -> None:
             if col not in ("general_and_admin", "selling_and_marketing")
         ]
 
-    # Compute percentages, skipping zero-revenue years
     for _lbl, col, _c in categories:
         pct_col = col + "_pct"
         full[pct_col] = np.nan
@@ -323,28 +288,21 @@ def plot_expense_percent_chart(full: pd.DataFrame, ticker: str) -> None:
     for label, col, color in categories:
         vals = full[col + "_pct"].fillna(0).values
         ax.bar(x_labels, vals, bottom=bottoms, label=label, color=color, width=0.6)
-        bottoms += vals
-        for x, y0, val in zip(x_labels, bottoms - vals, vals):
+        for i, (x, y0, val) in enumerate(zip(x_labels, bottoms, vals)):
             if val > 4:
-                ax.text(
-                    x,
-                    y0 + val / 2,
-                    f"{val:.1f} %",
-                    ha="center",
-                    va="center",
-                    fontsize=8,
-                    color="white"
-                )
+                ax.text(x, y0 + val / 2, f"{val:.1f}%", ha="center", va="center",
+                        fontsize=8, color="white")
+        bottoms += vals
+
+    ax.axhline(100, linestyle="--", linewidth=1, color="black", label="100% of Revenue", zorder=5)
 
     max_total = bottoms.max()
-    ylim_max  = max(110, math.ceil(max_total / 10) * 10 + 10)
+    ylim_max = max(110, (int(max_total / 10) + 2) * 10)
     ax.set_ylim(0, ylim_max)
-    ax.axhline(100, linestyle="--", linewidth=1, color="black",
-               label="100 % of revenue", zorder=5)
+    ax.set_yticks(np.arange(0, ylim_max + 1, 10))
 
     ax.set_ylabel("Percent of Revenue")
     ax.set_title(f"Expenses as % of Revenue — {ticker}")
-    ax.set_yticks(np.arange(0, ylim_max + 1, 10))
     ax.legend(frameon=False, ncol=2)
     plt.tight_layout()
 
@@ -354,22 +312,7 @@ def plot_expense_percent_chart(full: pd.DataFrame, ticker: str) -> None:
     print(f"[{ticker}] expense % chart saved to {out_path}")
 
 
-# --------------------------------------------------------------------------- #
-#  Public orchestration function                                              #
-# --------------------------------------------------------------------------- #
-def generate_expense_reports(
-    ticker: str,
-    *,
-    rebuild_schema: bool = False,
-    conn: sqlite3.Connection | None = None
-) -> None:
-    """
-    Orchestrates:
-      1) Schema creation
-      2) Data pulling (annual + quarterly)
-      3) Combining yearly + TTM
-      4) Plotting both expense charts
-    """
+def generate_expense_reports(ticker: str, *, rebuild_schema: bool = False, conn: sqlite3.Connection | None = None) -> None:
     ensure_tables(drop=rebuild_schema, conn=conn)
 
     store_data(ticker, mode="annual",    conn=conn)
@@ -386,8 +329,5 @@ def generate_expense_reports(
     plot_expense_percent_chart(full, ticker)
 
 
-# --------------------------------------------------------------------------- #
-#  CLI usage                                                                  #
-# --------------------------------------------------------------------------- #
 if __name__ == "__main__":
     generate_expense_reports("AAPL")
