@@ -7,7 +7,6 @@ import numpy as np
 
 # Path to the database file
 db_path = 'Stock Data.db'
-
 env = Environment(loader=FileSystemLoader('templates'))
 
 def ensure_directory_exists(directory):
@@ -41,179 +40,179 @@ def get_company_short_name(ticker, cursor):
     return ticker
 
 def ensure_templates_exist():
-    # home_template.html (unchanged)
+    # home_template.html
     home_template_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Nick's Stock Financials</title>
-        <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-        <style>
-            .positive { color: green; }
-            .negative { color: red; }
-            .center-table { margin: 0 auto; width: 80%; }
-            .highlight-soon { background-color: #fff3cd; }
-        </style>
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                $('#sortable-table').DataTable({
-                    "pageLength": 100,
-                    "createdRow": function(row, data, dataIndex) {
-                        $('td', row).each(function() {
-                            var cellValue = $(this).text();
-                            if (cellValue.includes('%')) {
-                                var value = parseFloat(cellValue.replace('%', ''));
-                                if (!isNaN(value)) {
-                                    if (value < 0) {
-                                        $(this).addClass('negative');
-                                    } else {
-                                        $(this).addClass('positive');
-                                    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nick's Stock Financials</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <style>
+        .positive { color: green; }
+        .negative { color: red; }
+        .center-table { margin: 0 auto; width: 80%; }
+        .highlight-soon { background-color: #fff3cd; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#sortable-table').DataTable({
+                "pageLength": 100,
+                "createdRow": function(row, data, dataIndex) {
+                    $('td', row).each(function() {
+                        var cellValue = $(this).text();
+                        if (cellValue.includes('%')) {
+                            var value = parseFloat(cellValue.replace('%', ''));
+                            if (!isNaN(value)) {
+                                if (value < 0) {
+                                    $(this).addClass('negative');
+                                } else {
+                                    $(this).addClass('positive');
                                 }
                             }
-                        });
-                    }
-                });
+                        }
+                    });
+                }
             });
-        </script>
-    </head>
-    <body>
-    <header>
-        <h1>Financial Overview</h1>
-    </header>
+        });
+    </script>
+</head>
+<body>
+<header>
+    <h1>Financial Overview</h1>
+</header>
 
-    <nav class="navigation">
-        {% for ticker in tickers %}
-        <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
-        {% endfor %}
-    </nav>
+<nav class="navigation">
+    {% for ticker in tickers %}
+    <a href="pages/{{ ticker }}_page.html" class="home-button">{{ ticker }}</a> |
+    {% endfor %}
+</nav>
 
-    <br><br><br>
+<br><br><br>
 
-    <div id="spy-qqq-growth" class="center-table">
-        <h2>SPY vs QQQ Overview</h2>
-        {{ spy_qqq_growth | safe }}
-    </div>
+<div id="spy-qqq-growth" class="center-table">
+    <h2>SPY vs QQQ Overview</h2>
+    {{ spy_qqq_growth | safe }}
+</div>
 
-    <div class="center-table">
-        <h2>Past Earnings (Last 7 Days)</h2>
-        {{ earnings_past | safe }}
+<div class="center-table">
+    <h2>Past Earnings (Last 7 Days)</h2>
+    {{ earnings_past | safe }}
 
-        <h2>Upcoming Earnings</h2>
-        {{ earnings_upcoming | safe }}
-    </div>
+    <h2>Upcoming Earnings</h2>
+    {{ earnings_upcoming | safe }}
+</div>
 
-    <div>
-        {{ dashboard_table | safe }}
-    </div>
+<div>
+    {{ dashboard_table | safe }}
+</div>
 
-    <footer>
-        <p>Nick's Financial Data Dashboard</p>
-    </footer>
-    </body>
-    </html>
-    """
+<footer>
+    <p>Nick's Financial Data Dashboard</p>
+</footer>
+</body>
+</html>
+"""
 
-    # ticker_template.html with Expense Overview carousel
+    # ticker_template.html
     ticker_template_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>{{ ticker_data.company_name }} - Financial Overview</title>
-      <link rel="stylesheet" href="../style.css">
-    </head>
-    <body>
-      <header>
-        <a href="../index.html" class="home-button">Home</a>
-        <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
-        <h2>Ticker - {{ ticker_data.ticker }}</h2>
-      </header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ ticker_data.company_name }} - Financial Overview</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header>
+    <a href="../index.html" class="home-button">Home</a>
+    <h1>{{ ticker_data.company_name }} - Financial Overview</h1>
+    <h2>Ticker - {{ ticker_data.ticker }}</h2>
+  </header>
 
-      <section>
-        <p>{{ ticker_data.ticker_info | safe }}</p>
-      </section>
+  <section>
+    <p>{{ ticker_data.ticker_info | safe }}</p>
+  </section>
 
-      <div>
-        <img src="../{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart">
-        <img src="../{{ ticker_data.eps_chart_path }}" alt="EPS Chart">
-        {{ ticker_data.financial_table | safe }}
-      </div>
+  <div>
+    <img src="../{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue and Net Income Chart">
+    <img src="../{{ ticker_data.eps_chart_path }}" alt="EPS Chart">
+    {{ ticker_data.financial_table | safe }}
+  </div>
 
-      <div><br><br><hr><br><h1>{{ ticker_data.ticker }} - Forecast Data</h1></div>
-      <div class="carousel-container">
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
-        </div>
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
-        </div>
-      </div>
+  <div><br><br><hr><br><h1>{{ ticker_data.ticker }} - Forecast Data</h1></div>
+  <div class="carousel-container">
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue and Net Income Forecast Chart">
+    </div>
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast Chart">
+    </div>
+  </div>
 
-      <div><br><br><h1>{{ ticker_data.ticker }} - Y/Y % Change</h1></div>
-      <div class="carousel-container">
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue Year-over-Year Change Chart">
-        </div>
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS Year-over-Year Change Chart">
-        </div>
-        <div class="carousel-item">
-          {{ ticker_data.yoy_growth_table_html | safe }}
-        </div>
-      </div>
+  <div><br><br><h1>{{ ticker_data.ticker }} - Y/Y % Change</h1></div>
+  <div class="carousel-container">
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue Year-over-Year Change Chart">
+    </div>
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS Year-over-Year Change Chart">
+    </div>
+    <div class="carousel-item">
+      {{ ticker_data.yoy_growth_table_html | safe }}
+    </div>
+  </div>
 
-      <div class="balance-sheet-container">
-        <div class="balance-sheet-table">
-          {{ ticker_data.balance_sheet_table_html | safe }}
-        </div>
-        <div class="balance-sheet-chart">
-          <img src="../{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart">
-        </div>
-      </div>
+  <div class="balance-sheet-container">
+    <div class="balance-sheet-table">
+      {{ ticker_data.balance_sheet_table_html | safe }}
+    </div>
+    <div class="balance-sheet-chart">
+      <img src="../{{ ticker_data.balance_sheet_chart_path }}" alt="{{ ticker_data.ticker }} Balance Sheet Chart">
+    </div>
+  </div>
 
-      <!-- Expense Overview carousel -->
-      <div><br><br><h1>{{ ticker_data.ticker }} - Expense Overview</h1></div>
-      <div class="carousel-container">
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expense Chart">
-        </div>
-        <div class="carousel-item">
-          <img src="../{{ ticker_data.expense_percent_chart_path }}" alt="Expense % of Revenue Chart">
-        </div>
-        <div class="carousel-item">
-          {{ ticker_data.expense_table_html | safe }}
-        </div>
-        <div class="carousel-item">
-          {{ ticker_data.expense_yoy_table_html | safe }}
-        </div>
-      </div>
+  <!-- Expense Overview carousel -->
+  <div><br><br><h1>{{ ticker_data.ticker }} - Expense Overview</h1></div>
+  <div class="carousel-container">
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expense Chart">
+    </div>
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.expense_percent_chart_path }}" alt="Expense % of Revenue Chart">
+    </div>
+    <div class="carousel-item">
+      {{ ticker_data.expense_table_html | safe }}
+    </div>
+    <div class="carousel-item">
+      {{ ticker_data.expense_yoy_table_html | safe }}
+    </div>
+  </div>
 
-      <hr>
-      {% if ticker_data.valuation_chart %}
-      <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
-      <div><br>
-        <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
-        <br><br>
-        <div class="valuation-tables">
-          {{ ticker_data.valuation_info_table | safe }}
-          {{ ticker_data.valuation_data_table | safe }}
-        </div>
-        <br><br><br><hr>
-      </div>
-      {% endif %}
+  <hr>
+  {% if ticker_data.valuation_chart %}
+  <div><br><br><h1>{{ ticker_data.ticker }} - Valuation Chart</h1></div>
+  <div><br>
+    <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation Chart">
+    <br><br>
+    <div class="valuation-tables">
+      {{ ticker_data.valuation_info_table | safe }}
+      {{ ticker_data.valuation_data_table | safe }}
+    </div>
+    <br><br><br><hr>
+  </div>
+  {% endif %}
 
-      <footer>
-        <a href="../index.html" class="home-button">Back to Home</a>
-        <br><br><br><br><br>
-      </footer>
-    </body>
-    </html>
-    """
+  <footer>
+    <a href="../index.html" class="home-button">Back to Home</a>
+    <br><br><br><br><br>
+  </footer>
+</body>
+</html>
+"""
 
     create_template(os.path.join('templates','home_template.html'), home_template_content)
     create_template(os.path.join('templates','ticker_template.html'), ticker_template_content)
@@ -254,7 +253,6 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
                 'forecast_rev_net_chart_path': f"{charts_output_dir}/{ticker}_Revenue_Net_Income_Forecast.png",
                 'forecast_eps_chart_path': f"{charts_output_dir}/{ticker}_EPS_Forecast.png",
                 'yoy_growth_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_yoy_growth_tbl.html"),
-                # Expense HTML fragments
                 'expense_chart_path': f"{charts_output_dir}/{ticker}_rev_expense_chart.png",
                 'expense_percent_chart_path': f"{charts_output_dir}/{ticker}_expense_percent_chart.png",
                 'expense_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_yearly_financials.html"),
@@ -262,7 +260,7 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
                 'balance_sheet_chart_path': f"{charts_output_dir}/{ticker}_balance_sheet_chart.png",
                 'balance_sheet_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_balance_sheet_table.html"),
                 'revenue_yoy_change_chart_path': f"{charts_output_dir}/{ticker}_revenue_yoy_change.png",
-                'eps_yoy_change_chart_path': f"{charts_output_dir}/{ticker}_eps_yoy_change.png",
+                'eps_yoy_change_chart_path': f"{charts_output_dir}/{ticker}_eps_yoy_change.png"',
                 'valuation_chart': f"{charts_output_dir}/{ticker}_valuation_chart.png",
                 'valuation_info_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_info.html"),
                 'valuation_data_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_table.html"),
@@ -277,10 +275,10 @@ def create_ticker_page(ticker, ticker_data, output_dir):
         f.write(template.render(ticker_data=ticker_data))
 
 # ─────────────────────────────────────────────────────────────────────────────
-# == Fixed generate_dashboard_table() ==
+# Updated generate_dashboard_table() to strip out the “_num” columns before rendering
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_dashboard_table(dashboard_data):
-    # — Pad each row to 10 elements
+    # Pad each row so that DataFrame(...) won't error
     padded = []
     for row in dashboard_data:
         if len(row) < 10:
@@ -288,24 +286,25 @@ def generate_dashboard_table(dashboard_data):
         padded.append(row)
 
     df = pd.DataFrame(padded, columns=[
-        "Ticker", "Share Price", "Nicks TTM Valuation", "Nicks TTM Value",
+        "Ticker", "Share Price",
+        "Nicks TTM Valuation", "Nicks TTM Value",
         "Nicks Forward Valuation", "Nicks Forward Value",
-        "Finviz TTM Valuation",    "Finviz TTM Value",
-        "Finviz Forward Valuation","Finviz Forward Value"
+        "Finviz TTM Valuation", "Finviz TTM Value",
+        "Finviz Forward Valuation", "Finviz Forward Value"
     ])
 
-    # Drop label-copy columns
+    # Drop the redundant label columns
     df.drop(columns=[
         "Nicks TTM Valuation", "Nicks Forward Valuation",
-        "Finviz TTM Valuation","Finviz Forward Valuation"
+        "Finviz TTM Valuation", "Finviz Forward Valuation"
     ], inplace=True)
 
-    # Make ticker hyperlinks
+    # Make tickers hyperlinks
     df["Ticker"] = df["Ticker"].apply(
         lambda t: f'<a href="pages/{t}_page.html">{t}</a>'
     )
 
-    # Convert percent strings into numeric for stats & sorting
+    # Create numeric twins for sorting and stats
     for col in ["Nicks TTM Value", "Nicks Forward Value",
                 "Finviz TTM Value", "Finviz Forward Value"]:
         df[col + "_num"] = (
@@ -315,21 +314,18 @@ def generate_dashboard_table(dashboard_data):
                    .astype(float)
         )
 
-    # Sort by Nick's TTM
+    # Sort by Nick's TTM descending
     df.sort_values("Nicks TTM Value_num", ascending=False, inplace=True)
 
-    # Extract clean series
+    # Prepare metrics
     ttm_vals   = df["Nicks TTM Value_num"].dropna()
     fwd_vals   = df["Nicks Forward Value_num"].dropna()
     fttm_vals  = df["Finviz TTM Value_num"].dropna()
     ffwd_vals  = df["Finviz Forward Value_num"].dropna()
 
-    # Compute metrics
-    ttm_avg  = ttm_vals.mean()
-    ttm_med  = ttm_vals.median()
-    fwd_avg  = fwd_vals.mean()
-    fwd_med  = fwd_vals.median()
-    fttm_avg = fttm_vals.mean()  if not fttm_vals.empty else None
+    ttm_avg  = ttm_vals.mean();  ttm_med  = ttm_vals.median()
+    fwd_avg  = fwd_vals.mean();  fwd_med  = fwd_vals.median()
+    fttm_avg = fttm_vals.mean() if not fttm_vals.empty else None
     fttm_med = fttm_vals.median() if not fttm_vals.empty else None
     ffwd_avg = ffwd_vals.mean() if not ffwd_vals.empty else None
     ffwd_med = ffwd_vals.median() if not ffwd_vals.empty else None
@@ -344,18 +340,25 @@ def generate_dashboard_table(dashboard_data):
 
     avg_table = pd.DataFrame(rows, columns=[
         "Metric",
-        "Nicks TTM Value",
-        "Nicks Forward Value",
-        "Finviz TTM Value",
-        "Finviz Forward Value"
+        "Nicks TTM Value", "Nicks Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
     ]).to_html(index=False, escape=False, classes='table table-striped')
 
-    dash_table = df.to_html(
+    # ───── strip out the helper columns for display ─────────────────────────
+    display_cols = [
+        "Ticker", "Share Price",
+        "Nicks TTM Value", "Nicks Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
+    ]
+    display_df = df[display_cols]
+
+    dash_table = display_df.to_html(
         index=False, escape=False,
         classes='table table-striped', table_id="sortable-table"
     )
+    # ────────────────────────────────────────────────────────────────────────
 
-    # Save combined HTML
+    # Write combined HTML
     with open('charts/dashboard.html','w',encoding='utf-8') as f:
         f.write(avg_table + dash_table)
 
@@ -373,15 +376,23 @@ def generate_dashboard_table(dashboard_data):
 def html_generator2(tickers, financial_data, full_dashboard_html,
                     avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
-    past = get_file_content_or_placeholder("charts/earnings_past.html")
+
+    past     = get_file_content_or_placeholder("charts/earnings_past.html")
     upcoming = get_file_content_or_placeholder("charts/earnings_upcoming.html")
+
     create_home_page(
-        tickers=tickers,
-        output_dir='.',
-        dashboard_table=full_dashboard_html,
-        avg_values=avg_values,
-        spy_qqq_growth=spy_qqq_growth_html,
-        earnings_past=past,
-        earnings_upcoming=upcoming
+        tickers            = tickers,
+        output_dir         = '.',
+        dashboard_table    = full_dashboard_html,
+        avg_values         = avg_values,
+        spy_qqq_growth     = spy_qqq_growth_html,
+        earnings_past      = past,
+        earnings_upcoming  = upcoming
     )
+
     prepare_and_generate_ticker_pages(tickers, '.', 'charts/')
+"""
+with open('html_generator2.py','w',encoding='utf-8') as f:
+    f.write(script)
+
+print("html_generator2.py has been updated with the full, corrected code.")
