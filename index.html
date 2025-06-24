@@ -1,259 +1,259 @@
 
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Nick's Stock Financials</title>
-        <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-        <style>
-            .positive { color: green; }
-            .negative { color: red; }
-            .center-table { margin: 0 auto; width: 80%; }
-            .highlight-soon { background-color: #fff3cd; }
-        </style>
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                $('#sortable-table').DataTable({
-                    "pageLength": 100,
-                    "createdRow": function(row, data, dataIndex) {
-                        $('td', row).each(function() {
-                            var cellValue = $(this).text();
-                            if (cellValue.includes('%')) {
-                                var value = parseFloat(cellValue.replace('%', ''));
-                                if (!isNaN(value)) {
-                                    if (value < 0) {
-                                        $(this).addClass('negative');
-                                    } else {
-                                        $(this).addClass('positive');
-                                    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nick's Stock Financials</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+    <style>
+        .positive { color: green; }
+        .negative { color: red; }
+        .center-table { margin: 0 auto; width: 80%; }
+        .highlight-soon { background-color: #fff3cd; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#sortable-table').DataTable({
+                "pageLength": 100,
+                "createdRow": function(row, data, dataIndex) {
+                    $('td', row).each(function() {
+                        var cellValue = $(this).text();
+                        if (cellValue.includes('%')) {
+                            var value = parseFloat(cellValue.replace('%', ''));
+                            if (!isNaN(value)) {
+                                if (value < 0) {
+                                    $(this).addClass('negative');
+                                } else {
+                                    $(this).addClass('positive');
                                 }
                             }
-                        });
-                    }
-                });
+                        }
+                    });
+                }
             });
-        </script>
-    </head>
-    <body>
-    <header>
-        <h1>Financial Overview</h1>
-    </header>
+        });
+    </script>
+</head>
+<body>
+<header>
+    <h1>Financial Overview</h1>
+</header>
 
-    <nav class="navigation">
-        
-        <a href="pages/AAL_page.html" class="home-button">AAL</a> |
-        
-        <a href="pages/AAPL_page.html" class="home-button">AAPL</a> |
-        
-        <a href="pages/ABBV_page.html" class="home-button">ABBV</a> |
-        
-        <a href="pages/ADBE_page.html" class="home-button">ADBE</a> |
-        
-        <a href="pages/AMAT_page.html" class="home-button">AMAT</a> |
-        
-        <a href="pages/AMD_page.html" class="home-button">AMD</a> |
-        
-        <a href="pages/AMZN_page.html" class="home-button">AMZN</a> |
-        
-        <a href="pages/AVGO_page.html" class="home-button">AVGO</a> |
-        
-        <a href="pages/AXP_page.html" class="home-button">AXP</a> |
-        
-        <a href="pages/BA_page.html" class="home-button">BA</a> |
-        
-        <a href="pages/BABA_page.html" class="home-button">BABA</a> |
-        
-        <a href="pages/BAC_page.html" class="home-button">BAC</a> |
-        
-        <a href="pages/BAH_page.html" class="home-button">BAH</a> |
-        
-        <a href="pages/BIRD_page.html" class="home-button">BIRD</a> |
-        
-        <a href="pages/BRK-B_page.html" class="home-button">BRK-B</a> |
-        
-        <a href="pages/BUD_page.html" class="home-button">BUD</a> |
-        
-        <a href="pages/BYND_page.html" class="home-button">BYND</a> |
-        
-        <a href="pages/C_page.html" class="home-button">C</a> |
-        
-        <a href="pages/CCL_page.html" class="home-button">CCL</a> |
-        
-        <a href="pages/CELH_page.html" class="home-button">CELH</a> |
-        
-        <a href="pages/CMG_page.html" class="home-button">CMG</a> |
-        
-        <a href="pages/COIN_page.html" class="home-button">COIN</a> |
-        
-        <a href="pages/COST_page.html" class="home-button">COST</a> |
-        
-        <a href="pages/CRM_page.html" class="home-button">CRM</a> |
-        
-        <a href="pages/CVS_page.html" class="home-button">CVS</a> |
-        
-        <a href="pages/CVX_page.html" class="home-button">CVX</a> |
-        
-        <a href="pages/DAL_page.html" class="home-button">DAL</a> |
-        
-        <a href="pages/DIS_page.html" class="home-button">DIS</a> |
-        
-        <a href="pages/DJT_page.html" class="home-button">DJT</a> |
-        
-        <a href="pages/DKNG_page.html" class="home-button">DKNG</a> |
-        
-        <a href="pages/DPZ_page.html" class="home-button">DPZ</a> |
-        
-        <a href="pages/EVGO_page.html" class="home-button">EVGO</a> |
-        
-        <a href="pages/F_page.html" class="home-button">F</a> |
-        
-        <a href="pages/FSLR_page.html" class="home-button">FSLR</a> |
-        
-        <a href="pages/GE_page.html" class="home-button">GE</a> |
-        
-        <a href="pages/GILD_page.html" class="home-button">GILD</a> |
-        
-        <a href="pages/GM_page.html" class="home-button">GM</a> |
-        
-        <a href="pages/GME_page.html" class="home-button">GME</a> |
-        
-        <a href="pages/GOOGL_page.html" class="home-button">GOOGL</a> |
-        
-        <a href="pages/GPI_page.html" class="home-button">GPI</a> |
-        
-        <a href="pages/GS_page.html" class="home-button">GS</a> |
-        
-        <a href="pages/GTIM_page.html" class="home-button">GTIM</a> |
-        
-        <a href="pages/HD_page.html" class="home-button">HD</a> |
-        
-        <a href="pages/HOOD_page.html" class="home-button">HOOD</a> |
-        
-        <a href="pages/INTC_page.html" class="home-button">INTC</a> |
-        
-        <a href="pages/JNJ_page.html" class="home-button">JNJ</a> |
-        
-        <a href="pages/JPM_page.html" class="home-button">JPM</a> |
-        
-        <a href="pages/KHC_page.html" class="home-button">KHC</a> |
-        
-        <a href="pages/KO_page.html" class="home-button">KO</a> |
-        
-        <a href="pages/KODK_page.html" class="home-button">KODK</a> |
-        
-        <a href="pages/LLY_page.html" class="home-button">LLY</a> |
-        
-        <a href="pages/LMT_page.html" class="home-button">LMT</a> |
-        
-        <a href="pages/LRCX_page.html" class="home-button">LRCX</a> |
-        
-        <a href="pages/LUV_page.html" class="home-button">LUV</a> |
-        
-        <a href="pages/MA_page.html" class="home-button">MA</a> |
-        
-        <a href="pages/MAMA_page.html" class="home-button">MAMA</a> |
-        
-        <a href="pages/ME_page.html" class="home-button">ME</a> |
-        
-        <a href="pages/MET_page.html" class="home-button">MET</a> |
-        
-        <a href="pages/META_page.html" class="home-button">META</a> |
-        
-        <a href="pages/MPC_page.html" class="home-button">MPC</a> |
-        
-        <a href="pages/MRNA_page.html" class="home-button">MRNA</a> |
-        
-        <a href="pages/MSFT_page.html" class="home-button">MSFT</a> |
-        
-        <a href="pages/MU_page.html" class="home-button">MU</a> |
-        
-        <a href="pages/NCLH_page.html" class="home-button">NCLH</a> |
-        
-        <a href="pages/NET_page.html" class="home-button">NET</a> |
-        
-        <a href="pages/NFLX_page.html" class="home-button">NFLX</a> |
-        
-        <a href="pages/NOC_page.html" class="home-button">NOC</a> |
-        
-        <a href="pages/NVDA_page.html" class="home-button">NVDA</a> |
-        
-        <a href="pages/ORCL_page.html" class="home-button">ORCL</a> |
-        
-        <a href="pages/PENN_page.html" class="home-button">PENN</a> |
-        
-        <a href="pages/PERI_page.html" class="home-button">PERI</a> |
-        
-        <a href="pages/PFE_page.html" class="home-button">PFE</a> |
-        
-        <a href="pages/PG_page.html" class="home-button">PG</a> |
-        
-        <a href="pages/PINS_page.html" class="home-button">PINS</a> |
-        
-        <a href="pages/PLTR_page.html" class="home-button">PLTR</a> |
-        
-        <a href="pages/PYPL_page.html" class="home-button">PYPL</a> |
-        
-        <a href="pages/RCL_page.html" class="home-button">RCL</a> |
-        
-        <a href="pages/RDDT_page.html" class="home-button">RDDT</a> |
-        
-        <a href="pages/RIVN_page.html" class="home-button">RIVN</a> |
-        
-        <a href="pages/RTX_page.html" class="home-button">RTX</a> |
-        
-        <a href="pages/SBUX_page.html" class="home-button">SBUX</a> |
-        
-        <a href="pages/SCHW_page.html" class="home-button">SCHW</a> |
-        
-        <a href="pages/SHOP_page.html" class="home-button">SHOP</a> |
-        
-        <a href="pages/SNAP_page.html" class="home-button">SNAP</a> |
-        
-        <a href="pages/SPOT_page.html" class="home-button">SPOT</a> |
-        
-        <a href="pages/TEVA_page.html" class="home-button">TEVA</a> |
-        
-        <a href="pages/TGT_page.html" class="home-button">TGT</a> |
-        
-        <a href="pages/TSLA_page.html" class="home-button">TSLA</a> |
-        
-        <a href="pages/TSN_page.html" class="home-button">TSN</a> |
-        
-        <a href="pages/UAL_page.html" class="home-button">UAL</a> |
-        
-        <a href="pages/UBER_page.html" class="home-button">UBER</a> |
-        
-        <a href="pages/UNH_page.html" class="home-button">UNH</a> |
-        
-        <a href="pages/UPS_page.html" class="home-button">UPS</a> |
-        
-        <a href="pages/V_page.html" class="home-button">V</a> |
-        
-        <a href="pages/VLO_page.html" class="home-button">VLO</a> |
-        
-        <a href="pages/VRSN_page.html" class="home-button">VRSN</a> |
-        
-        <a href="pages/VZ_page.html" class="home-button">VZ</a> |
-        
-        <a href="pages/WMT_page.html" class="home-button">WMT</a> |
-        
-        <a href="pages/XOM_page.html" class="home-button">XOM</a> |
-        
-    </nav>
+<nav class="navigation">
+    
+    <a href="pages/AAL_page.html" class="home-button">AAL</a> |
+    
+    <a href="pages/AAPL_page.html" class="home-button">AAPL</a> |
+    
+    <a href="pages/ABBV_page.html" class="home-button">ABBV</a> |
+    
+    <a href="pages/ADBE_page.html" class="home-button">ADBE</a> |
+    
+    <a href="pages/AMAT_page.html" class="home-button">AMAT</a> |
+    
+    <a href="pages/AMD_page.html" class="home-button">AMD</a> |
+    
+    <a href="pages/AMZN_page.html" class="home-button">AMZN</a> |
+    
+    <a href="pages/AVGO_page.html" class="home-button">AVGO</a> |
+    
+    <a href="pages/AXP_page.html" class="home-button">AXP</a> |
+    
+    <a href="pages/BA_page.html" class="home-button">BA</a> |
+    
+    <a href="pages/BABA_page.html" class="home-button">BABA</a> |
+    
+    <a href="pages/BAC_page.html" class="home-button">BAC</a> |
+    
+    <a href="pages/BAH_page.html" class="home-button">BAH</a> |
+    
+    <a href="pages/BIRD_page.html" class="home-button">BIRD</a> |
+    
+    <a href="pages/BRK-B_page.html" class="home-button">BRK-B</a> |
+    
+    <a href="pages/BUD_page.html" class="home-button">BUD</a> |
+    
+    <a href="pages/BYND_page.html" class="home-button">BYND</a> |
+    
+    <a href="pages/C_page.html" class="home-button">C</a> |
+    
+    <a href="pages/CCL_page.html" class="home-button">CCL</a> |
+    
+    <a href="pages/CELH_page.html" class="home-button">CELH</a> |
+    
+    <a href="pages/CMG_page.html" class="home-button">CMG</a> |
+    
+    <a href="pages/COIN_page.html" class="home-button">COIN</a> |
+    
+    <a href="pages/COST_page.html" class="home-button">COST</a> |
+    
+    <a href="pages/CRM_page.html" class="home-button">CRM</a> |
+    
+    <a href="pages/CVS_page.html" class="home-button">CVS</a> |
+    
+    <a href="pages/CVX_page.html" class="home-button">CVX</a> |
+    
+    <a href="pages/DAL_page.html" class="home-button">DAL</a> |
+    
+    <a href="pages/DIS_page.html" class="home-button">DIS</a> |
+    
+    <a href="pages/DJT_page.html" class="home-button">DJT</a> |
+    
+    <a href="pages/DKNG_page.html" class="home-button">DKNG</a> |
+    
+    <a href="pages/DPZ_page.html" class="home-button">DPZ</a> |
+    
+    <a href="pages/EVGO_page.html" class="home-button">EVGO</a> |
+    
+    <a href="pages/F_page.html" class="home-button">F</a> |
+    
+    <a href="pages/FSLR_page.html" class="home-button">FSLR</a> |
+    
+    <a href="pages/GE_page.html" class="home-button">GE</a> |
+    
+    <a href="pages/GILD_page.html" class="home-button">GILD</a> |
+    
+    <a href="pages/GM_page.html" class="home-button">GM</a> |
+    
+    <a href="pages/GME_page.html" class="home-button">GME</a> |
+    
+    <a href="pages/GOOGL_page.html" class="home-button">GOOGL</a> |
+    
+    <a href="pages/GPI_page.html" class="home-button">GPI</a> |
+    
+    <a href="pages/GS_page.html" class="home-button">GS</a> |
+    
+    <a href="pages/GTIM_page.html" class="home-button">GTIM</a> |
+    
+    <a href="pages/HD_page.html" class="home-button">HD</a> |
+    
+    <a href="pages/HOOD_page.html" class="home-button">HOOD</a> |
+    
+    <a href="pages/INTC_page.html" class="home-button">INTC</a> |
+    
+    <a href="pages/JNJ_page.html" class="home-button">JNJ</a> |
+    
+    <a href="pages/JPM_page.html" class="home-button">JPM</a> |
+    
+    <a href="pages/KHC_page.html" class="home-button">KHC</a> |
+    
+    <a href="pages/KO_page.html" class="home-button">KO</a> |
+    
+    <a href="pages/KODK_page.html" class="home-button">KODK</a> |
+    
+    <a href="pages/LLY_page.html" class="home-button">LLY</a> |
+    
+    <a href="pages/LMT_page.html" class="home-button">LMT</a> |
+    
+    <a href="pages/LRCX_page.html" class="home-button">LRCX</a> |
+    
+    <a href="pages/LUV_page.html" class="home-button">LUV</a> |
+    
+    <a href="pages/MA_page.html" class="home-button">MA</a> |
+    
+    <a href="pages/MAMA_page.html" class="home-button">MAMA</a> |
+    
+    <a href="pages/ME_page.html" class="home-button">ME</a> |
+    
+    <a href="pages/MET_page.html" class="home-button">MET</a> |
+    
+    <a href="pages/META_page.html" class="home-button">META</a> |
+    
+    <a href="pages/MPC_page.html" class="home-button">MPC</a> |
+    
+    <a href="pages/MRNA_page.html" class="home-button">MRNA</a> |
+    
+    <a href="pages/MSFT_page.html" class="home-button">MSFT</a> |
+    
+    <a href="pages/MU_page.html" class="home-button">MU</a> |
+    
+    <a href="pages/NCLH_page.html" class="home-button">NCLH</a> |
+    
+    <a href="pages/NET_page.html" class="home-button">NET</a> |
+    
+    <a href="pages/NFLX_page.html" class="home-button">NFLX</a> |
+    
+    <a href="pages/NOC_page.html" class="home-button">NOC</a> |
+    
+    <a href="pages/NVDA_page.html" class="home-button">NVDA</a> |
+    
+    <a href="pages/ORCL_page.html" class="home-button">ORCL</a> |
+    
+    <a href="pages/PENN_page.html" class="home-button">PENN</a> |
+    
+    <a href="pages/PERI_page.html" class="home-button">PERI</a> |
+    
+    <a href="pages/PFE_page.html" class="home-button">PFE</a> |
+    
+    <a href="pages/PG_page.html" class="home-button">PG</a> |
+    
+    <a href="pages/PINS_page.html" class="home-button">PINS</a> |
+    
+    <a href="pages/PLTR_page.html" class="home-button">PLTR</a> |
+    
+    <a href="pages/PYPL_page.html" class="home-button">PYPL</a> |
+    
+    <a href="pages/RCL_page.html" class="home-button">RCL</a> |
+    
+    <a href="pages/RDDT_page.html" class="home-button">RDDT</a> |
+    
+    <a href="pages/RIVN_page.html" class="home-button">RIVN</a> |
+    
+    <a href="pages/RTX_page.html" class="home-button">RTX</a> |
+    
+    <a href="pages/SBUX_page.html" class="home-button">SBUX</a> |
+    
+    <a href="pages/SCHW_page.html" class="home-button">SCHW</a> |
+    
+    <a href="pages/SHOP_page.html" class="home-button">SHOP</a> |
+    
+    <a href="pages/SNAP_page.html" class="home-button">SNAP</a> |
+    
+    <a href="pages/SPOT_page.html" class="home-button">SPOT</a> |
+    
+    <a href="pages/TEVA_page.html" class="home-button">TEVA</a> |
+    
+    <a href="pages/TGT_page.html" class="home-button">TGT</a> |
+    
+    <a href="pages/TSLA_page.html" class="home-button">TSLA</a> |
+    
+    <a href="pages/TSN_page.html" class="home-button">TSN</a> |
+    
+    <a href="pages/UAL_page.html" class="home-button">UAL</a> |
+    
+    <a href="pages/UBER_page.html" class="home-button">UBER</a> |
+    
+    <a href="pages/UNH_page.html" class="home-button">UNH</a> |
+    
+    <a href="pages/UPS_page.html" class="home-button">UPS</a> |
+    
+    <a href="pages/V_page.html" class="home-button">V</a> |
+    
+    <a href="pages/VLO_page.html" class="home-button">VLO</a> |
+    
+    <a href="pages/VRSN_page.html" class="home-button">VRSN</a> |
+    
+    <a href="pages/VZ_page.html" class="home-button">VZ</a> |
+    
+    <a href="pages/WMT_page.html" class="home-button">WMT</a> |
+    
+    <a href="pages/XOM_page.html" class="home-button">XOM</a> |
+    
+</nav>
 
-    <br><br><br>
+<br><br><br>
 
-    <div id="spy-qqq-growth" class="center-table">
-        <h2>SPY vs QQQ Overview</h2>
-        <table border='1' cellspacing='0' cellpadding='4'><tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr><tr><td>SPY</td><td>25.9</td><td>14.3%</td></tr><tr><td>QQQ</td><td>31.1</td><td>16.3%</td></tr></table>
-    </div>
+<div id="spy-qqq-growth" class="center-table">
+    <h2>SPY vs QQQ Overview</h2>
+    <table border='1' cellspacing='0' cellpadding='4'><tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr><tr><td>SPY</td><td>25.9</td><td>14.3%</td></tr><tr><td>QQQ</td><td>31.1</td><td>16.3%</td></tr></table>
+</div>
 
-    <div class="center-table">
-        <h2>Past Earnings (Last 7 Days)</h2>
-        <p>Showing earnings from 2025-06-17 to 2025-06-24.</p><h3>Top 5 Beats</h3><ul></ul><h3>Top 5 Misses</h3><ul></ul><table class="dataframe center-table">
+<div class="center-table">
+    <h2>Past Earnings (Last 7 Days)</h2>
+    <p>Showing earnings from 2025-06-17 to 2025-06-24.</p><h3>Top 5 Beats</h3><ul></ul><h3>Top 5 Misses</h3><ul></ul><table class="dataframe center-table">
   <thead>
     <tr style="text-align: right;">
       <th>Ticker</th>
@@ -274,12 +274,12 @@
   </tbody>
 </table>
 
-        <h2>Upcoming Earnings</h2>
-        <h3>Next 7 Days</h3><ul><li>MU — 2025-06-25</li></ul><details><summary>Beyond 7 Days</summary><ul><li>DAL — 2025-07-09</li><li>UNH — 2025-07-14</li><li>SCHW — 2025-07-14</li><li>C — 2025-07-15</li><li>JPM — 2025-07-15</li><li>UAL — 2025-07-15</li><li>BAC — 2025-07-16</li><li>DPZ — 2025-07-16</li><li>GS — 2025-07-16</li><li>JNJ — 2025-07-16</li><li>NFLX — 2025-07-16</li><li>AXP — 2025-07-17</li><li>UPS — 2025-07-21</li><li>GE — 2025-07-21</li><li>GOOGL — 2025-07-21</li><li>KO — 2025-07-21</li><li>LMT — 2025-07-21</li><li>RTX — 2025-07-21</li><li>TSLA — 2025-07-21</li><li>V — 2025-07-21</li><li>VZ — 2025-07-21</li><li>CMG — 2025-07-22</li><li>F — 2025-07-22</li><li>GE — 2025-07-22</li><li>GM — 2025-07-22</li><li>GPI — 2025-07-22</li><li>AAL — 2025-07-23</li><li>ABBV — 2025-07-23</li><li>CMG — 2025-07-23</li><li>LUV — 2025-07-23</li><li>NOC — 2025-07-23</li><li>RCL — 2025-07-23</li><li>SPOT — 2025-07-23</li><li>VLO — 2025-07-23</li><li>VRSN — 2025-07-23</li><li>BAH — 2025-07-24</li><li>AMD — 2025-07-28</li><li>FSLR — 2025-07-28</li><li>MSFT — 2025-07-28</li><li>PFE — 2025-07-28</li><li>PG — 2025-07-28</li><li>PINS — 2025-07-28</li><li>PYPL — 2025-07-28</li><li>SBUX — 2025-07-28</li><li>BA — 2025-07-29</li><li>KHC — 2025-07-29</li><li>LRCX — 2025-07-29</li><li>MA — 2025-07-29</li><li>MET — 2025-07-29</li><li>META — 2025-07-29</li><li>NCLH — 2025-07-29</li><li>PERI — 2025-07-29</li><li>TEVA — 2025-07-29</li><li>UNH — 2025-07-29</li><li>UPS — 2025-07-29</li><li>AAPL — 2025-07-30</li><li>AMZN — 2025-07-30</li><li>COIN — 2025-07-30</li><li>DKNG — 2025-07-30</li><li>EVGO — 2025-07-30</li><li>GTIM — 2025-07-30</li><li>INTC — 2025-07-30</li><li>MRNA — 2025-07-30</li><li>NET — 2025-07-30</li><li>SNAP — 2025-07-30</li><li>BUD — 2025-07-31</li><li>CVX — 2025-07-31</li><li>XOM — 2025-07-31</li><li>BRK-B — 2025-08-01</li><li>CELH — 2025-08-04</li><li>MPC — 2025-08-04</li><li>PLTR — 2025-08-04</li><li>RDDT — 2025-08-04</li><li>RIVN — 2025-08-04</li><li>TSN — 2025-08-04</li><li>UBER — 2025-08-04</li><li>BYND — 2025-08-05</li><li>CVS — 2025-08-05</li><li>DIS — 2025-08-05</li><li>HOOD — 2025-08-05</li><li>SHOP — 2025-08-05</li><li>GILD — 2025-08-06</li><li>KODK — 2025-08-06</li><li>PENN — 2025-08-06</li><li>LLY — 2025-08-07</li><li>CSCO — 2025-08-12</li><li>AMAT — 2025-08-13</li><li>BABA — 2025-08-13</li><li>HD — 2025-08-19</li><li>TGT — 2025-08-19</li><li>WMT — 2025-08-21</li><li>NVDA — 2025-08-26</li><li>CRM — 2025-08-26</li><li>NVDA — 2025-08-27</li><li>AVGO — 2025-09-03</li><li>GME — 2025-09-08</li><li>MAMA — 2025-09-08</li><li>ORCL — 2025-09-08</li><li>ADBE — 2025-09-10</li></ul></details>
-    </div>
+    <h2>Upcoming Earnings</h2>
+    <h3>Next 7 Days</h3><ul><li>MU — 2025-06-25</li></ul><details><summary>Beyond 7 Days</summary><ul><li>DAL — 2025-07-09</li><li>UNH — 2025-07-14</li><li>SCHW — 2025-07-14</li><li>C — 2025-07-15</li><li>JPM — 2025-07-15</li><li>UAL — 2025-07-15</li><li>BAC — 2025-07-16</li><li>DPZ — 2025-07-16</li><li>GS — 2025-07-16</li><li>JNJ — 2025-07-16</li><li>NFLX — 2025-07-16</li><li>AXP — 2025-07-17</li><li>UPS — 2025-07-21</li><li>GE — 2025-07-21</li><li>GOOGL — 2025-07-21</li><li>KO — 2025-07-21</li><li>LMT — 2025-07-21</li><li>RTX — 2025-07-21</li><li>TSLA — 2025-07-21</li><li>V — 2025-07-21</li><li>VZ — 2025-07-21</li><li>CMG — 2025-07-22</li><li>F — 2025-07-22</li><li>GE — 2025-07-22</li><li>GM — 2025-07-22</li><li>GPI — 2025-07-22</li><li>AAL — 2025-07-23</li><li>ABBV — 2025-07-23</li><li>CMG — 2025-07-23</li><li>LUV — 2025-07-23</li><li>NOC — 2025-07-23</li><li>RCL — 2025-07-23</li><li>SPOT — 2025-07-23</li><li>VLO — 2025-07-23</li><li>VRSN — 2025-07-23</li><li>BAH — 2025-07-24</li><li>AMD — 2025-07-28</li><li>FSLR — 2025-07-28</li><li>MSFT — 2025-07-28</li><li>PFE — 2025-07-28</li><li>PG — 2025-07-28</li><li>PINS — 2025-07-28</li><li>PYPL — 2025-07-28</li><li>SBUX — 2025-07-28</li><li>BA — 2025-07-29</li><li>KHC — 2025-07-29</li><li>LRCX — 2025-07-29</li><li>MA — 2025-07-29</li><li>MET — 2025-07-29</li><li>META — 2025-07-29</li><li>NCLH — 2025-07-29</li><li>PERI — 2025-07-29</li><li>TEVA — 2025-07-29</li><li>UNH — 2025-07-29</li><li>UPS — 2025-07-29</li><li>AAPL — 2025-07-30</li><li>AMZN — 2025-07-30</li><li>COIN — 2025-07-30</li><li>DKNG — 2025-07-30</li><li>EVGO — 2025-07-30</li><li>GTIM — 2025-07-30</li><li>INTC — 2025-07-30</li><li>MRNA — 2025-07-30</li><li>NET — 2025-07-30</li><li>SNAP — 2025-07-30</li><li>BUD — 2025-07-31</li><li>CVX — 2025-07-31</li><li>XOM — 2025-07-31</li><li>BRK-B — 2025-08-01</li><li>CELH — 2025-08-04</li><li>MPC — 2025-08-04</li><li>PLTR — 2025-08-04</li><li>RDDT — 2025-08-04</li><li>RIVN — 2025-08-04</li><li>TSN — 2025-08-04</li><li>UBER — 2025-08-04</li><li>BYND — 2025-08-05</li><li>CVS — 2025-08-05</li><li>DIS — 2025-08-05</li><li>HOOD — 2025-08-05</li><li>SHOP — 2025-08-05</li><li>GILD — 2025-08-06</li><li>KODK — 2025-08-06</li><li>PENN — 2025-08-06</li><li>LLY — 2025-08-07</li><li>CSCO — 2025-08-12</li><li>AMAT — 2025-08-13</li><li>BABA — 2025-08-13</li><li>HD — 2025-08-19</li><li>TGT — 2025-08-19</li><li>WMT — 2025-08-21</li><li>NVDA — 2025-08-26</li><li>CRM — 2025-08-26</li><li>NVDA — 2025-08-27</li><li>AVGO — 2025-09-03</li><li>GME — 2025-09-08</li><li>MAMA — 2025-09-08</li><li>ORCL — 2025-09-08</li><li>ADBE — 2025-09-10</li></ul></details>
+</div>
 
-    <div>
-        <table border="1" class="dataframe table table-striped">
+<div>
+    <table border="1" class="dataframe table table-striped">
   <thead>
     <tr style="text-align: right;">
       <th>Metric</th>
@@ -314,10 +314,6 @@
       <th>Nicks Forward Value</th>
       <th>Finviz TTM Value</th>
       <th>Finviz Forward Value</th>
-      <th>Nicks TTM Value_num</th>
-      <th>Nicks Forward Value_num</th>
-      <th>Finviz TTM Value_num</th>
-      <th>Finviz Forward Value_num</th>
     </tr>
   </thead>
   <tbody>
@@ -328,10 +324,6 @@
       <td>935.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>110.1</td>
-      <td>935.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/NCLH_page.html">NCLH</a></td>
@@ -340,10 +332,6 @@
       <td>252.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>108.4</td>
-      <td>252.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/GM_page.html">GM</a></td>
@@ -352,10 +340,6 @@
       <td>31.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>105.3</td>
-      <td>31.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/PYPL_page.html">PYPL</a></td>
@@ -364,10 +348,6 @@
       <td>38.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>77.7</td>
-      <td>38.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BABA_page.html">BABA</a></td>
@@ -376,10 +356,6 @@
       <td>71.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>63.2</td>
-      <td>71.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BIRD_page.html">BIRD</a></td>
@@ -388,10 +364,6 @@
       <td>966.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>49.3</td>
-      <td>966.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/DKNG_page.html">DKNG</a></td>
@@ -400,10 +372,6 @@
       <td>-</td>
       <td>-</td>
       <td>-</td>
-      <td>44.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BAC_page.html">BAC</a></td>
@@ -412,10 +380,6 @@
       <td>111.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>38.1</td>
-      <td>111.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/CCL_page.html">CCL</a></td>
@@ -424,10 +388,6 @@
       <td>257.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>35.9</td>
-      <td>257.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/EVGO_page.html">EVGO</a></td>
@@ -436,10 +396,6 @@
       <td>9.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>32.0</td>
-      <td>9.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/AMZN_page.html">AMZN</a></td>
@@ -448,10 +404,6 @@
       <td>0.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>28.0</td>
-      <td>0.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/NVDA_page.html">NVDA</a></td>
@@ -460,10 +412,6 @@
       <td>188.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>26.5</td>
-      <td>188.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/GOOGL_page.html">GOOGL</a></td>
@@ -472,10 +420,6 @@
       <td>31.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>20.7</td>
-      <td>31.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/MU_page.html">MU</a></td>
@@ -484,10 +428,6 @@
       <td>67927.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>19.0</td>
-      <td>67927.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/JPM_page.html">JPM</a></td>
@@ -496,10 +436,6 @@
       <td>-27.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>15.5</td>
-      <td>-27.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/RIVN_page.html">RIVN</a></td>
@@ -508,10 +444,6 @@
       <td>58.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>15.2</td>
-      <td>58.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/ADBE_page.html">ADBE</a></td>
@@ -520,10 +452,6 @@
       <td>17.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>13.6</td>
-      <td>17.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/F_page.html">F</a></td>
@@ -532,10 +460,6 @@
       <td>-67.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>10.5</td>
-      <td>-67.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/UNH_page.html">UNH</a></td>
@@ -544,10 +468,6 @@
       <td>-40.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>6.4</td>
-      <td>-40.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/PINS_page.html">PINS</a></td>
@@ -556,10 +476,6 @@
       <td>235.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>3.3</td>
-      <td>235.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/UAL_page.html">UAL</a></td>
@@ -568,10 +484,6 @@
       <td>129.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>2.2</td>
-      <td>129.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/PERI_page.html">PERI</a></td>
@@ -580,10 +492,6 @@
       <td>434.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>1.7</td>
-      <td>434.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/PFE_page.html">PFE</a></td>
@@ -592,10 +500,6 @@
       <td>-20.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>0.7</td>
-      <td>-20.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/CVS_page.html">CVS</a></td>
@@ -604,10 +508,6 @@
       <td>126.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>-2.1</td>
-      <td>126.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/RCL_page.html">RCL</a></td>
@@ -616,10 +516,6 @@
       <td>143.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-2.1</td>
-      <td>143.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/CMG_page.html">CMG</a></td>
@@ -628,10 +524,6 @@
       <td>-39.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>-3.5</td>
-      <td>-39.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/AMAT_page.html">AMAT</a></td>
@@ -640,10 +532,6 @@
       <td>-16.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-4.3</td>
-      <td>-16.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/TEVA_page.html">TEVA</a></td>
@@ -652,10 +540,6 @@
       <td>99.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-4.9</td>
-      <td>99.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/DAL_page.html">DAL</a></td>
@@ -664,10 +548,6 @@
       <td>47.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-7.8</td>
-      <td>47.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/LRCX_page.html">LRCX</a></td>
@@ -676,10 +556,6 @@
       <td>28.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-8.5</td>
-      <td>28.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BUD_page.html">BUD</a></td>
@@ -688,10 +564,6 @@
       <td>-7.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-12.2</td>
-      <td>-7.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/KHC_page.html">KHC</a></td>
@@ -700,10 +572,6 @@
       <td>-53.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-13.2</td>
-      <td>-53.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/UBER_page.html">UBER</a></td>
@@ -712,10 +580,6 @@
       <td>-78.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>-14.3</td>
-      <td>-78.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/AMD_page.html">AMD</a></td>
@@ -724,10 +588,6 @@
       <td>171.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-16.5</td>
-      <td>171.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/MSFT_page.html">MSFT</a></td>
@@ -736,10 +596,6 @@
       <td>-27.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-17.0</td>
-      <td>-27.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/AXP_page.html">AXP</a></td>
@@ -748,10 +604,6 @@
       <td>10.9%</td>
       <td>-</td>
       <td>-</td>
-      <td>-19.8</td>
-      <td>10.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/GPI_page.html">GPI</a></td>
@@ -760,10 +612,6 @@
       <td>4.6%</td>
       <td>-</td>
       <td>-</td>
-      <td>-20.1</td>
-      <td>4.6</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/VZ_page.html">VZ</a></td>
@@ -772,10 +620,6 @@
       <td>-2.9%</td>
       <td>-</td>
       <td>-</td>
-      <td>-21.0</td>
-      <td>-2.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/UPS_page.html">UPS</a></td>
@@ -784,10 +628,6 @@
       <td>-34.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-24.5</td>
-      <td>-34.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/TGT_page.html">TGT</a></td>
@@ -796,10 +636,6 @@
       <td>-58.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>-24.7</td>
-      <td>-58.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/ORCL_page.html">ORCL</a></td>
@@ -808,10 +644,6 @@
       <td>15.6%</td>
       <td>-</td>
       <td>-</td>
-      <td>-25.5</td>
-      <td>15.6</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/MET_page.html">MET</a></td>
@@ -820,10 +652,6 @@
       <td>138.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-26.4</td>
-      <td>138.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/RTX_page.html">RTX</a></td>
@@ -832,10 +660,6 @@
       <td>-30.9%</td>
       <td>-</td>
       <td>-</td>
-      <td>-28.9</td>
-      <td>-30.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/V_page.html">V</a></td>
@@ -844,10 +668,6 @@
       <td>-26.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>-30.8</td>
-      <td>-26.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/HOOD_page.html">HOOD</a></td>
@@ -856,10 +676,6 @@
       <td>-79.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-30.9</td>
-      <td>-79.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/TSN_page.html">TSN</a></td>
@@ -868,10 +684,6 @@
       <td>156.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>-38.0</td>
-      <td>156.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/MA_page.html">MA</a></td>
@@ -880,10 +692,6 @@
       <td>-24.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>-38.2</td>
-      <td>-24.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/CRM_page.html">CRM</a></td>
@@ -892,10 +700,6 @@
       <td>-5.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>-38.4</td>
-      <td>-5.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/AAPL_page.html">AAPL</a></td>
@@ -904,10 +708,6 @@
       <td>-50.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-38.7</td>
-      <td>-50.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BRK-B_page.html">BRK-B</a></td>
@@ -916,10 +716,6 @@
       <td>-71.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-39.6</td>
-      <td>-71.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/C_page.html">C</a></td>
@@ -928,10 +724,6 @@
       <td>500.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-40.1</td>
-      <td>500.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/GILD_page.html">GILD</a></td>
@@ -940,10 +732,6 @@
       <td>432.9%</td>
       <td>-</td>
       <td>-</td>
-      <td>-41.0</td>
-      <td>432.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/AAL_page.html">AAL</a></td>
@@ -952,10 +740,6 @@
       <td>25.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-41.2</td>
-      <td>25.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/DIS_page.html">DIS</a></td>
@@ -964,10 +748,6 @@
       <td>8.9%</td>
       <td>-</td>
       <td>-</td>
-      <td>-42.2</td>
-      <td>8.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/SBUX_page.html">SBUX</a></td>
@@ -976,10 +756,6 @@
       <td>-78.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-43.3</td>
-      <td>-78.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/DPZ_page.html">DPZ</a></td>
@@ -988,10 +764,6 @@
       <td>-43.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-44.3</td>
-      <td>-43.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/GS_page.html">GS</a></td>
@@ -1000,10 +772,6 @@
       <td>31.6%</td>
       <td>-</td>
       <td>-</td>
-      <td>-46.0</td>
-      <td>31.6</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/CELH_page.html">CELH</a></td>
@@ -1012,10 +780,6 @@
       <td>578.6%</td>
       <td>-</td>
       <td>-</td>
-      <td>-47.8</td>
-      <td>578.6</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/SCHW_page.html">SCHW</a></td>
@@ -1024,10 +788,6 @@
       <td>161.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-48.2</td>
-      <td>161.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/KO_page.html">KO</a></td>
@@ -1036,10 +796,6 @@
       <td>-49.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-54.4</td>
-      <td>-49.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/JNJ_page.html">JNJ</a></td>
@@ -1048,10 +804,6 @@
       <td>-18.1%</td>
       <td>-</td>
       <td>-</td>
-      <td>-55.0</td>
-      <td>-18.1</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/XOM_page.html">XOM</a></td>
@@ -1060,10 +812,6 @@
       <td>-25.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-56.8</td>
-      <td>-25.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/ABBV_page.html">ABBV</a></td>
@@ -1072,10 +820,6 @@
       <td>88.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-57.0</td>
-      <td>88.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/META_page.html">META</a></td>
@@ -1084,10 +828,6 @@
       <td>-36.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-57.3</td>
-      <td>-36.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/LMT_page.html">LMT</a></td>
@@ -1096,10 +836,6 @@
       <td>32.6%</td>
       <td>-</td>
       <td>-</td>
-      <td>-58.8</td>
-      <td>32.6</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BAH_page.html">BAH</a></td>
@@ -1108,10 +844,6 @@
       <td>-19.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-58.9</td>
-      <td>-19.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/NOC_page.html">NOC</a></td>
@@ -1120,10 +852,6 @@
       <td>-40.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>-59.6</td>
-      <td>-40.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/NFLX_page.html">NFLX</a></td>
@@ -1132,10 +860,6 @@
       <td>20.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>-61.4</td>
-      <td>20.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/COST_page.html">COST</a></td>
@@ -1144,10 +868,6 @@
       <td>-68.2%</td>
       <td>-</td>
       <td>-</td>
-      <td>-62.4</td>
-      <td>-68.2</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/CVX_page.html">CVX</a></td>
@@ -1156,10 +876,6 @@
       <td>-36.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-63.0</td>
-      <td>-36.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/VLO_page.html">VLO</a></td>
@@ -1168,10 +884,6 @@
       <td>10.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>-64.3</td>
-      <td>10.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/SNAP_page.html">SNAP</a></td>
@@ -1180,10 +892,6 @@
       <td>266.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>-66.2</td>
-      <td>266.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/MAMA_page.html">MAMA</a></td>
@@ -1192,10 +900,6 @@
       <td>-37.9%</td>
       <td>-</td>
       <td>-</td>
-      <td>-66.3</td>
-      <td>-37.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/LUV_page.html">LUV</a></td>
@@ -1204,10 +908,6 @@
       <td>1824.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-67.9</td>
-      <td>1824.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/SHOP_page.html">SHOP</a></td>
@@ -1216,10 +916,6 @@
       <td>-19.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-67.9</td>
-      <td>-19.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/MRNA_page.html">MRNA</a></td>
@@ -1228,10 +924,6 @@
       <td>-4.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-69.9</td>
-      <td>-4.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/HD_page.html">HD</a></td>
@@ -1240,10 +932,6 @@
       <td>-54.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-72.9</td>
-      <td>-54.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/PG_page.html">PG</a></td>
@@ -1252,10 +940,6 @@
       <td>-58.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-72.9</td>
-      <td>-58.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/MPC_page.html">MPC</a></td>
@@ -1264,10 +948,6 @@
       <td>4.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-73.2</td>
-      <td>4.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/WMT_page.html">WMT</a></td>
@@ -1276,10 +956,6 @@
       <td>-58.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-74.4</td>
-      <td>-58.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/SPOT_page.html">SPOT</a></td>
@@ -1288,10 +964,6 @@
       <td>198.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-80.0</td>
-      <td>198.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/NET_page.html">NET</a></td>
@@ -1300,10 +972,6 @@
       <td>-75.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-81.6</td>
-      <td>-75.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/LLY_page.html">LLY</a></td>
@@ -1312,10 +980,6 @@
       <td>568.3%</td>
       <td>-</td>
       <td>-</td>
-      <td>-81.7</td>
-      <td>568.3</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BYND_page.html">BYND</a></td>
@@ -1324,10 +988,6 @@
       <td>438.7%</td>
       <td>-</td>
       <td>-</td>
-      <td>-82.0</td>
-      <td>438.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/GE_page.html">GE</a></td>
@@ -1336,10 +996,6 @@
       <td>-19.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-82.4</td>
-      <td>-19.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/AVGO_page.html">AVGO</a></td>
@@ -1348,10 +1004,6 @@
       <td>74.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-83.2</td>
-      <td>74.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/RDDT_page.html">RDDT</a></td>
@@ -1360,10 +1012,6 @@
       <td>-9.9%</td>
       <td>-</td>
       <td>-</td>
-      <td>-84.3</td>
-      <td>-9.9</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/GME_page.html">GME</a></td>
@@ -1372,10 +1020,6 @@
       <td>-86.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-84.6</td>
-      <td>-86.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/TSLA_page.html">TSLA</a></td>
@@ -1384,10 +1028,6 @@
       <td>-79.5%</td>
       <td>-</td>
       <td>-</td>
-      <td>-85.0</td>
-      <td>-79.5</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/INTC_page.html">INTC</a></td>
@@ -1396,10 +1036,6 @@
       <td>-60.8%</td>
       <td>-</td>
       <td>-</td>
-      <td>-85.4</td>
-      <td>-60.8</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/COIN_page.html">COIN</a></td>
@@ -1408,10 +1044,6 @@
       <td>-95.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-86.2</td>
-      <td>-95.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/PLTR_page.html">PLTR</a></td>
@@ -1420,10 +1052,6 @@
       <td>-48.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-88.6</td>
-      <td>-48.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/BA_page.html">BA</a></td>
@@ -1432,10 +1060,6 @@
       <td>55.0%</td>
       <td>-</td>
       <td>-</td>
-      <td>-90.4</td>
-      <td>55.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td><a href="pages/PENN_page.html">PENN</a></td>
@@ -1444,18 +1068,13 @@
       <td>-97.4%</td>
       <td>-</td>
       <td>-</td>
-      <td>-92.8</td>
-      <td>-97.4</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
   </tbody>
 </table>
-    </div>
+</div>
 
-    <footer>
-        <p>Nick's Financial Data Dashboard</p>
-    </footer>
-    </body>
-    </html>
-    
+<footer>
+    <p>Nick's Financial Data Dashboard</p>
+</footer>
+</body>
+</html>
