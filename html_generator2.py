@@ -213,7 +213,6 @@ def ensure_templates_exist():
 </body>
 </html>
 """
-
     create_template(os.path.join('templates','home_template.html'), home_template_content)
     create_template(os.path.join('templates','ticker_template.html'), ticker_template_content)
 
@@ -260,7 +259,7 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_output_dir):
                 'balance_sheet_chart_path': f"{charts_output_dir}/{ticker}_balance_sheet_chart.png",
                 'balance_sheet_table_html': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_balance_sheet_table.html"),
                 'revenue_yoy_change_chart_path': f"{charts_output_dir}/{ticker}_revenue_yoy_change.png",
-                'eps_yoy_change_chart_path': f"{charts_output_dir}/{ticker}_eps_yoy_change.png"',
+                'eps_yoy_change_chart_path': f"{charts_output_dir}/{ticker}_eps_yoy_change.png",
                 'valuation_chart': f"{charts_output_dir}/{ticker}_valuation_chart.png",
                 'valuation_info_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_info.html"),
                 'valuation_data_table': get_file_content_or_placeholder(f"{charts_output_dir}/{ticker}_valuation_table.html"),
@@ -278,7 +277,7 @@ def create_ticker_page(ticker, ticker_data, output_dir):
 # Updated generate_dashboard_table() to strip out the “_num” columns before rendering
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_dashboard_table(dashboard_data):
-    # Pad each row so that DataFrame(...) won't error
+    # Pad each row so DataFrame(...) won’t error
     padded = []
     for row in dashboard_data:
         if len(row) < 10:
@@ -293,18 +292,18 @@ def generate_dashboard_table(dashboard_data):
         "Finviz Forward Valuation", "Finviz Forward Value"
     ])
 
-    # Drop the redundant label columns
+    # Drop redundant label columns
     df.drop(columns=[
         "Nicks TTM Valuation", "Nicks Forward Valuation",
         "Finviz TTM Valuation", "Finviz Forward Valuation"
     ], inplace=True)
 
-    # Make tickers hyperlinks
+    # Linkify ticker column
     df["Ticker"] = df["Ticker"].apply(
         lambda t: f'<a href="pages/{t}_page.html">{t}</a>'
     )
 
-    # Create numeric twins for sorting and stats
+    # Create numeric twins for sorting & metrics
     for col in ["Nicks TTM Value", "Nicks Forward Value",
                 "Finviz TTM Value", "Finviz Forward Value"]:
         df[col + "_num"] = (
@@ -314,17 +313,17 @@ def generate_dashboard_table(dashboard_data):
                    .astype(float)
         )
 
-    # Sort by Nick's TTM descending
+    # Sort descending by Nick's TTM
     df.sort_values("Nicks TTM Value_num", ascending=False, inplace=True)
 
-    # Prepare metrics
+    # Compute metrics series
     ttm_vals   = df["Nicks TTM Value_num"].dropna()
     fwd_vals   = df["Nicks Forward Value_num"].dropna()
     fttm_vals  = df["Finviz TTM Value_num"].dropna()
     ffwd_vals  = df["Finviz Forward Value_num"].dropna()
 
-    ttm_avg  = ttm_vals.mean();  ttm_med  = ttm_vals.median()
-    fwd_avg  = fwd_vals.mean();  fwd_med  = fwd_vals.median()
+    ttm_avg, ttm_med = ttm_vals.mean(), ttm_vals.median()
+    fwd_avg, fwd_med = fwd_vals.mean(), fwd_vals.median()
     fttm_avg = fttm_vals.mean() if not fttm_vals.empty else None
     fttm_med = fttm_vals.median() if not fttm_vals.empty else None
     ffwd_avg = ffwd_vals.mean() if not ffwd_vals.empty else None
@@ -344,7 +343,7 @@ def generate_dashboard_table(dashboard_data):
         "Finviz TTM Value", "Finviz Forward Value"
     ]).to_html(index=False, escape=False, classes='table table-striped')
 
-    # ───── strip out the helper columns for display ─────────────────────────
+    # Strip out helper "_num" columns for display
     display_cols = [
         "Ticker", "Share Price",
         "Nicks TTM Value", "Nicks Forward Value",
@@ -356,7 +355,6 @@ def generate_dashboard_table(dashboard_data):
         index=False, escape=False,
         classes='table table-striped', table_id="sortable-table"
     )
-    # ────────────────────────────────────────────────────────────────────────
 
     # Write combined HTML
     with open('charts/dashboard.html','w',encoding='utf-8') as f:
@@ -376,7 +374,6 @@ def generate_dashboard_table(dashboard_data):
 def html_generator2(tickers, financial_data, full_dashboard_html,
                     avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
-
     past     = get_file_content_or_placeholder("charts/earnings_past.html")
     upcoming = get_file_content_or_placeholder("charts/earnings_upcoming.html")
 
@@ -391,8 +388,3 @@ def html_generator2(tickers, financial_data, full_dashboard_html,
     )
 
     prepare_and_generate_ticker_pages(tickers, '.', 'charts/')
-"""
-with open('html_generator2.py','w',encoding='utf-8') as f:
-    f.write(script)
-
-print("html_generator2.py has been updated with the full, corrected code.")
