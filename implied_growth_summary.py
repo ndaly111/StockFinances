@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import numpy as np                       # NEW
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -37,7 +38,9 @@ def load_growth_data():
             return pd.DataFrame()
 
 def clean_series(series: pd.Series) -> pd.Series:
-    return series.apply(lambda x: x if isinstance(x, (int, float)) and not isinstance(x, complex) else None).dropna()
+    return series.apply(
+        lambda x: x if isinstance(x, (int, float)) and not isinstance(x, complex) else None
+    ).dropna()
 
 def calculate_summary_stats(series: pd.Series):
     if series.empty:
@@ -47,7 +50,9 @@ def calculate_summary_stats(series: pd.Series):
     std = series.std()
     cur = series.iloc[-1]
     pct = series.rank(pct=True).iloc[-1] * 100
-    return (f"{avg:.2%}", f"{med:.2%}", f"{std:.2%}", f"{cur:.2%}", f"{pct:.1f}%")
+    # guard against NaN std
+    std_fmt = f"{std:.2%}" if pd.notnull(std) else '–'
+    return (f"{avg:.2%}", f"{med:.2%}", std_fmt, f"{cur:.2%}", f"{pct:.1f}%")
 
 def write_placeholder_html(ticker: str):
     content = """
@@ -96,18 +101,41 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
         print(f"[generate_summary_table] No usable data for {ticker}, writing placeholder.")
         return write_placeholder_html(ticker)
 
+    # ---------- PIVOT & CLEAN ----------
+    df_rows = pd.DataFrame(rows)
+
+    # pivot so each timeframe is one row, metrics grouped, TTM/Fwd side-by-side
+    pivot = (df_rows
+             .pivot(index='Timeframe', columns='Type')
+             .swaplevel(axis=1)           # put TTM/Fwd after metric for sane ordering
+             .sort_index(axis=1, level=0))
+
+    ordered_metrics = ['Average', 'Median', 'Std Dev', 'Current', 'Percentile']
+    pivot = pivot[ordered_metrics]        # keep desired metric order
+
+    # replace NaNs / 'nan%' with an en-dash
+    pivot = (pivot
+             .replace({'nan%': '–'})
+             .replace({np.nan: '–'}))
+
     out_path = HTML_TEMPLATE.format(ticker=ticker)
-    pd.DataFrame(rows).to_html(out_path, index=False, na_rep='-', justify='center')
+    pivot.to_html(
+        out_path,
+        index=True,
+        na_rep='–',
+        justify='center',
+        classes='table table-striped implied-growth-table'  # extra CSS hook
+    )
     return out_path
 
 def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     df = df.copy()
     df['date'] = pd.to_datetime(df['date_recorded'])
-    fig, ax = plt.subplots(figsize=(10,6))
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     found_data = False
-    for typ, color in [('TTM','blue'),('Forward','green')]:
-        series = df[df['growth_type']==typ].sort_values('date')
+    for typ, color in [('TTM', 'blue'), ('Forward', 'green')]:
+        series = df[df['growth_type'] == typ].sort_values('date')
         series['growth_value'] = clean_series(series['growth_value'])
         if series.empty:
             continue
@@ -119,8 +147,8 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
                      series['growth_value'].std())
         ax.axhline(m,   ls='--', label=f"{typ} Avg",    color=color, alpha=0.7)
         ax.axhline(med, ls=':',  label=f"{typ} Median", color=color, alpha=0.7)
-        ax.axhline(m+s, ls='-.', label=f"{typ} +1σ",   color=color, alpha=0.5)
-        ax.axhline(m-s, ls='-.', label=f"{typ} -1σ",   color=color, alpha=0.5)
+        ax.axhline(m+s, ls='-.', label=f"{typ} +1σ",    color=color, alpha=0.5)
+        ax.axhline(m-s, ls='-.', label=f"{typ} -1σ",    color=color, alpha=0.5)
 
     if not found_data:
         print(f"[plot_growth_chart] No valid data to plot for {ticker}")
@@ -129,7 +157,8 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     ax.set_title("Implied Growth Rates Over Time")
     ax.set_xlabel("Date")
     ax.set_ylabel("Growth Rate")
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y,_: f"{y:.0%}"))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _:
+                                                   f"{y:.0%}"))
     ax.legend(loc='upper left', fontsize='small')
     ax.grid(True, linestyle='--', alpha=0.4)
     plt.tight_layout()
@@ -143,10 +172,7 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
 # Public Entrypoint - Mini-main
 # ───────────────────────────────────────────────────────────
 def generate_all_summaries():
-    """
-    Loop through each ticker in Implied_Growth_History,
-    generating both HTML and PNG summary outputs.
-    """
+    """Generate HTML + PNG implied-growth summaries for every ticker."""
     ensure_output_directory()
     df_all = load_growth_data()
     if 'ticker' not in df_all.columns:
