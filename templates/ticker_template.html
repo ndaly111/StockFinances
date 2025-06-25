@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,12 +23,8 @@
 
   <h1>{{ ticker_data.ticker }} – Forecast Data</h1>
   <div class="carousel-container">
-    <div class="carousel-item">
-      <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Rev/NI Forecast">
-    </div>
-    <div class="carousel-item">
-      <img src="../{{ ticker_data.forecast_eps_chart_path }}"     alt="EPS Forecast">
-    </div>
+    <div class="carousel-item"><img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Rev/NI Forecast"></div>
+    <div class="carousel-item"><img src="../{{ ticker_data.forecast_eps_chart_path }}"     alt="EPS Forecast"></div>
   </div>
 
   <h1>{{ ticker_data.ticker }} – Y/Y % Change</h1>
@@ -66,13 +63,13 @@
   </div>
   {% endif %}
 
+  {# ── NEW: implied-growth output right after valuation ── #}
   {% if ticker_data.implied_growth_chart_path %}
   <h1>{{ ticker_data.ticker }} – Implied Growth Summary</h1>
-  <img src="../{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth Summary">
+  <img src="../{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth Chart">
+  <div class="implied-growth-table">{{ ticker_data.implied_growth_table_html | safe }}</div>
   {% endif %}
 
-  <footer>
-    <a href="../index.html" class="home-button">Back to Home</a>
-  </footer>
+  <footer><a href="../index.html" class="home-button">Back to Home</a></footer>
 </body>
 </html>
