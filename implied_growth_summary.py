@@ -87,7 +87,7 @@ def load_growth_data():
     with sqlite3.connect(DB_PATH) as conn:
         return pd.read_sql_query(f"SELECT * FROM {TABLE_NAME};", conn)
 
-def generate_implied_growth_summary():
+def generate_all_summaries():
     ensure_output_directory()
     df = load_growth_data()
 
@@ -106,4 +106,4 @@ def generate_implied_growth_summary():
 
 # Run directly
 if __name__ == "__main__":
-    generate_implied_growth_summary()
+    generate_all_summaries()
