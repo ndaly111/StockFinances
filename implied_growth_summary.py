@@ -1,150 +1,126 @@
-import yfinance as yf
 import os
 import sqlite3
-import math
-import numbers
+import pandas as pd
+import matplotlib.pyplot as plt
 from datetime import datetime
 
-DB_PATH = "Stock Data.db"
+# ---------------------------------------------------------------------------
+# CONFIG
+# ---------------------------------------------------------------------------
+DB_PATH        = "Stock Data.db"
+TABLE_NAME     = "Implied_Growth_History"
+CHART_DIR      = "charts"
+HTML_TEMPLATE  = os.path.join(CHART_DIR, "{ticker}_implied_growth_summary.html")
+CHART_TEMPLATE = os.path.join(CHART_DIR, "{ticker}_implied_growth_plot.png")
 
-# ────────────────────────────────────────────────────────────
-# Fetching & growth calculations
-# ────────────────────────────────────────────────────────────
-def fetch_stock_data(ticker, treasury_yield):
-    """Safely fetch stock info and compute implied growth values."""
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info or {}
-    except Exception as e:
-        print(f"[fetch_stock_data] ERROR retrieving {ticker}: {e}")
-        info = {}
+TIME_FRAMES = {
+    "1 Year":   365,
+    "3 Years":  365 * 3,
+    "5 Years":  365 * 5,
+    "10 Years": 365 * 10,
+}
 
-    current_price = (
-        info.get("currentPrice")
-        or info.get("regularMarketPrice")
-        or info.get("previousClose")
-        or average_bid_ask(info)
-    )
-    forward_eps   = info.get("forwardEps")
-    pe_ratio      = info.get("trailingPE")
-    price_to_book = info.get("priceToBook")
-    marketcap     = info.get("marketCap")
+# ---------------------------------------------------------------------------
+# HELPERS
+# ---------------------------------------------------------------------------
+def ensure_output_directory():
+    os.makedirs(CHART_DIR, exist_ok=True)
 
-    forward_pe_ratio = None
-    if isinstance(current_price, (int, float)) and isinstance(forward_eps, (int, float)) and forward_eps:
-        forward_pe_ratio = current_price / forward_eps
+def load_growth_data():
+    """Return a DataFrame of the history table (empty if file/table missing)."""
+    if not os.path.exists(DB_PATH):
+        return pd.DataFrame()
+    with sqlite3.connect(DB_PATH) as conn:
+        try:
+            return pd.read_sql_query(f"SELECT * FROM {TABLE_NAME}", conn)
+        except sqlite3.OperationalError:
+            return pd.DataFrame()
 
-    try:
-        treasury_yield = float(treasury_yield) / 100
-    except Exception:
-        treasury_yield = None
+def calculate_stats(series: pd.Series):
+    """Return avg, med, std, cur, pct (or '-')."""
+    if series.empty:
+        return "-", "-", "-", "-", "-"
+    avg = series.mean()
+    med = series.median()
+    std = series.std()
+    cur = series.iloc[-1]
+    pct = series.rank(pct=True).iloc[-1] * 100
+    fmt = lambda x: f"{x:.2%}"
+    return fmt(avg), fmt(med), fmt(std), fmt(cur), f"{pct:.1f}%"
 
-    implied_growth         = calculate_implied_growth(pe_ratio, treasury_yield)
-    implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield)
+# ---------------------------------------------------------------------------
+# RENDERING
+# ---------------------------------------------------------------------------
+def generate_summary_table(df: pd.DataFrame, ticker: str):
+    """Create per-ticker HTML summary table."""
+    df = df.copy()
+    df["date"] = pd.to_datetime(df["date_recorded"])
+    now = datetime.now()
 
-    print(f"[fetch_stock_data] {ticker} → pe={pe_ratio}, fwd_pe={forward_pe_ratio}, "
-          f"impl={implied_growth}, impl_fwd={implied_forward_growth}")
+    rows = []
+    for label, days in TIME_FRAMES.items():
+        cutoff = now - pd.Timedelta(days=days)
+        window = df[df["date"] >= cutoff]
+        for typ in ["TTM", "Forward"]:
+            subset = window[window["growth_type"] == typ]["growth_value"].dropna()
+            avg, med, std, cur, pct = calculate_stats(subset)
+            rows.append(
+                dict(Timeframe=label, Type=typ,
+                     **{"Average": avg, "Median": med,
+                        "Std Dev": std, "Current": cur, "Percentile": pct})
+            )
 
-    def pct(val):
-        return f"{val*100:.1f}%" if isinstance(val, (int, float)) else "N/A"
+    out_path = HTML_TEMPLATE.format(ticker=ticker)
+    pd.DataFrame(rows).to_html(out_path, index=False, na_rep="-", justify="center")
+    return out_path
 
-    display = {
-        "Close Price":            f"${current_price:.2f}" if isinstance(current_price, (int, float)) else "-",
-        "Market Cap":             marketcap,
-        "P/E Ratio":              f"{pe_ratio:.1f}" if isinstance(pe_ratio, (int, float)) else "-",
-        "Forward P/E Ratio":      f"{forward_pe_ratio:.1f}" if isinstance(forward_pe_ratio, (int, float)) else "-",
-        "Implied Growth*":        pct(implied_growth),
-        "Implied Forward Growth*":pct(implied_forward_growth),
-        "P/B Ratio":              f"{price_to_book:.1f}" if isinstance(price_to_book, (int, float)) else "-",
-    }
+def plot_growth_chart(df: pd.DataFrame, ticker: str):
+    """Save a PNG chart of TTM & Forward implied growth."""
+    df = df.copy()
+    df["date"] = pd.to_datetime(df["date_recorded"])
 
-    return display, marketcap, implied_growth, implied_forward_growth
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for typ, color in [("TTM", "blue"), ("Forward", "green")]:
+        s = df[df["growth_type"] == typ].sort_values("date")
+        if s.empty:
+            continue
+        ax.plot(s["date"], s["growth_value"], label=f"{typ} Growth",
+                color=color, linewidth=1.5)
+        m, med, std = s["growth_value"].mean(), s["growth_value"].median(), s["growth_value"].std()
+        ax.axhline(m,    ls="--", label=f"{typ} Avg",    color=color, alpha=0.7)
+        ax.axhline(med,  ls=":",  label=f"{typ} Median", color=color, alpha=0.7)
+        ax.axhline(m+std, ls="-.", label=f"{typ} +1σ",   color=color, alpha=0.5)
+        ax.axhline(m-std, ls="-.", label=f"{typ} -1σ",   color=color, alpha=0.5)
 
-def calculate_implied_growth(pe_ratio, treasury_yield):
-    """Reverse-compound model, returns None if inputs invalid."""
-    if pe_ratio is None or treasury_yield is None:
-        return None
-    base = pe_ratio / 10
-    if not isinstance(base, (int, float)) or base <= 0:
-        return None
-    try:
-        return (base ** (1/10)) + treasury_yield - 1
-    except Exception as e:
-        print(f"[calc_implied_growth] ERROR: {e}")
-        return None
+    ax.set_title("Implied Growth Rates Over Time")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Growth Rate")
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0%}"))
+    ax.legend(loc="upper left", fontsize="small")
+    ax.grid(True, linestyle="--", alpha=0.4)
+    plt.tight_layout()
 
-def average_bid_ask(info):
-    bid = info.get("bid"); ask = info.get("ask")
-    if isinstance(bid, (int, float)) and isinstance(ask, (int, float)):
-        return (bid + ask) / 2
-    return None
+    out_path = CHART_TEMPLATE.format(ticker=ticker)
+    plt.savefig(out_path, dpi=150)
+    plt.close()
+    return out_path
 
-# ────────────────────────────────────────────────────────────
-# Recording history
-# ────────────────────────────────────────────────────────────
-def record_implied_growth_history(ticker, date_str, ttm_growth, fwd_growth):
-    """Insert growth values if they are finite real numbers; skip otherwise."""
-    conn = sqlite3.connect(DB_PATH)
-    cur  = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS Implied_Growth_History (
-            ticker TEXT,
-            growth_type TEXT CHECK (growth_type IN ('TTM','Forward')),
-            growth_value REAL,
-            date_recorded TEXT,
-            UNIQUE(ticker, growth_type, date_recorded)
-        )
-    """)
+# ---------------------------------------------------------------------------
+# MINI-MAIN (do NOT rename)
+# ---------------------------------------------------------------------------
+def generate_all_summaries():
+    """Loop over tickers, write HTML + PNG for each."""
+    ensure_output_directory()
+    df_all = load_growth_data()
+    if "ticker" not in df_all.columns:
+        print("[generate_all_summaries] No history data found.")
+        return
+    for ticker in df_all["ticker"].unique():
+        df_t = df_all[df_all["ticker"] == ticker]
+        print(f"[generate_all_summaries] Processing {ticker}")
+        generate_summary_table(df_t, ticker)
+        plot_growth_chart(df_t, ticker)
 
-    def try_insert(growth_type, value):
-        print(f"[record] {ticker} {growth_type} raw={value!r} ({type(value).__name__})")
-        # must be a finite real float/int (bool is subclass of int—exclude)
-        if not isinstance(value, (int, float)) or isinstance(value, bool):
-            print("  → SKIP: not a real float")
-            return
-        if not math.isfinite(value):
-            print("  → SKIP: non-finite")
-            return
-        rounded = round(value, 6)
-        cur.execute(
-            "INSERT OR IGNORE INTO Implied_Growth_History "
-            "(ticker, growth_type, growth_value, date_recorded) "
-            "VALUES (?, ?, ?, ?)",
-            (ticker, growth_type, rounded, date_str)
-        )
-        print(f"  → INSERTED {rounded}")
-
-    try_insert("TTM",     ttm_growth)
-    try_insert("Forward", fwd_growth)
-
-    conn.commit(); conn.close()
-
-# ────────────────────────────────────────────────────────────
-# Public helpers used by main_remote.py
-# ────────────────────────────────────────────────────────────
-def prepare_data_for_display(ticker, treasury_yield):
-    data, marketcap, ttm, fwd = fetch_stock_data(ticker, treasury_yield)
-    today_str = datetime.today().strftime("%Y-%m-%d")
-    record_implied_growth_history(ticker, today_str, ttm, fwd)
-    return data, marketcap
-
-def generate_html_table(data, ticker):
-    style = """
-    <style>
-      table {width:80%;margin:auto;border-collapse:collapse;text-align:center;font-family:Arial,sans-serif;}
-      th, td {padding:8px 12px;}
-    </style>"""
-    html  = style + "<table><tr>" + "".join(f"<th>{h}</th>" for h in data) + "</tr><tr>"
-    html += "".join(f"<td>{v}</td>" for v in data.values()) + "</tr></table>"
-    path  = f"charts/{ticker}_ticker_info.html"
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
-        f.write(html)
-    return path
-
-# ────────────────────────────────────────────────────────────
-# Local manual test
-# ────────────────────────────────────────────────────────────
+# Keep this EXACT name; main_remote.py relies on it
 if __name__ == "__main__":
-    _d, _m, _t, _f = fetch_stock_data("AAPL", "3.5")
-    prepare_data_for_display("AAPL", "3.5")
+    generate_all_summaries()
