@@ -32,7 +32,8 @@ def load_growth_data():
     with sqlite3.connect(DB_PATH) as conn:
         try:
             return pd.read_sql_query(f"SELECT * FROM {TABLE_NAME}", conn)
-        except sqlite3.OperationalError:
+        except (sqlite3.OperationalError, pd.errors.DatabaseError) as e:
+            print(f"[load_growth_data] skipping load ({e})")
             return pd.DataFrame()
 
 def calculate_summary_stats(series: pd.Series):
@@ -58,7 +59,7 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     for label, days in TIME_FRAMES.items():
         cutoff = now - pd.Timedelta(days=days)
         window = df[df['date'] >= cutoff]
-        for typ in ['TTM', 'Forward']:
+        for typ in ['TTM','Forward']:
             vals = window[window['growth_type'] == typ]['growth_value'].dropna()
             avg, med, std, cur, pct = calculate_summary_stats(vals)
             rows.append({
@@ -83,33 +84,26 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
 def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     df = df.copy()
     df['date'] = pd.to_datetime(df['date_recorded'])
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10,6))
 
-    for typ, color in [('TTM', 'blue'), ('Forward', 'green')]:
-        series = df[df['growth_type'] == typ].sort_values('date')
+    for typ, color in [('TTM','blue'),('Forward','green')]:
+        series = df[df['growth_type']==typ].sort_values('date')
         if series.empty:
             continue
-        ax.plot(
-            series['date'],
-            series['growth_value'],
-            label=f"{typ} Growth",
-            color=color,
-            linewidth=1.5
-        )
-        m, med, s = (
-            series['growth_value'].mean(),
-            series['growth_value'].median(),
-            series['growth_value'].std()
-        )
+        ax.plot(series['date'], series['growth_value'],
+                label=f"{typ} Growth", color=color, linewidth=1.5)
+        m, med, s = (series['growth_value'].mean(),
+                     series['growth_value'].median(),
+                     series['growth_value'].std())
         ax.axhline(m,   ls='--', label=f"{typ} Avg",    color=color, alpha=0.7)
         ax.axhline(med, ls=':',  label=f"{typ} Median", color=color, alpha=0.7)
-        ax.axhline(m + s, ls='-.', label=f"{typ} +1σ", color=color, alpha=0.5)
-        ax.axhline(m - s, ls='-.', label=f"{typ} -1σ", color=color, alpha=0.5)
+        ax.axhline(m+s, ls='-.', label=f"{typ} +1σ",   color=color, alpha=0.5)
+        ax.axhline(m-s, ls='-.', label=f"{typ} -1σ",   color=color, alpha=0.5)
 
     ax.set_title("Implied Growth Rates Over Time")
     ax.set_xlabel("Date")
     ax.set_ylabel("Growth Rate")
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0%}"))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y,_: f"{y:.0%}"))
     ax.legend(loc='upper left', fontsize='small')
     ax.grid(True, linestyle='--', alpha=0.4)
     plt.tight_layout()
@@ -125,7 +119,7 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
 def generate_all_summaries():
     """
     Loop through each ticker in Implied_Growth_History,
-    generating both HTML and PNG for each.
+    generating both HTML and PNG summary outputs.
     """
     ensure_output_directory()
     df_all = load_growth_data()
@@ -133,7 +127,7 @@ def generate_all_summaries():
         print("[generate_all_summaries] No data found.")
         return
     for ticker in df_all['ticker'].unique():
-        df_t = df_all[df_all['ticker'] == ticker]
+        df_t = df_all[df_all['ticker']==ticker]
         print(f"[generate_all_summaries] Processing {ticker}")
         generate_summary_table(df_t, ticker)
         plot_growth_chart(df_t, ticker)
