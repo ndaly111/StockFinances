@@ -5,9 +5,14 @@ import sqlite3
 import yfinance as yf
 import numpy as np
 
-# Path to the database file
 db_path = 'Stock Data.db'
 env = Environment(loader=FileSystemLoader('templates'))
+
+# ───────────────────────────────────────────────────────────── #
+# HTML TEMPLATE CONTENT (declared at module level)
+# ───────────────────────────────────────────────────────────── #
+home_template_content = """..."""  # <== Replace with full string from your latest working version
+ticker_template_content = """..."""  # <== Replace with full string from your latest working version
 
 def ensure_directory_exists(directory):
     if not os.path.exists(directory):
@@ -39,7 +44,6 @@ def get_company_short_name(ticker, cursor):
     return ticker
 
 def ensure_templates_exist():
-    # [Template contents omitted for brevity — assume identical to your previous message]
     create_template('templates/home_template.html', home_template_content)
     create_template('templates/ticker_template.html', ticker_template_content)
 
@@ -99,40 +103,6 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
             with open(out, 'w', encoding='utf-8') as f:
                 f.write(tpl.render(ticker_data=d))
 
-def generate_dashboard_table(dashboard_data):
-    df = pd.DataFrame(dashboard_data, columns=[
-        "Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"
-    ])
-    df["Ticker"] = df["Ticker"].apply(lambda t: f'<a href="pages/{t}_page.html">{t}</a>')
-    for col in df.columns[2:]:
-        df[col + "_num"] = df[col].astype(str).str.rstrip("%").replace("-", np.nan).astype(float)
-    df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
-    def fmt(x): return f"{x:.1f}%" if pd.notnull(x) else "–"
-    summary = [
-        ["Average", fmt(df["Nick's TTM Value_num"].mean()), fmt(df["Nick's Forward Value_num"].mean()),
-         fmt(df["Finviz TTM Value_num"].mean()), fmt(df["Finviz Forward Value_num"].mean())],
-        ["Median", fmt(df["Nick's TTM Value_num"].median()), fmt(df["Nick's Forward Value_num"].median()),
-         fmt(df["Finviz TTM Value_num"].median()), fmt(df["Finviz Forward Value_num"].median())]
-    ]
-    avg_table = pd.DataFrame(summary, columns=["Metric", "Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"]).to_html(index=False, escape=False, classes='table table-striped')
-    display = df[["Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"]]
-    dash_table = display.to_html(index=False, escape=False, classes='table table-striped', table_id="sortable-table")
-    with open('charts/dashboard.html', 'w', encoding='utf-8') as f:
-        f.write(avg_table + dash_table)
-    return avg_table + dash_table, {
-        'Nicks_TTM_Avg': df["Nick's TTM Value_num"].mean(),
-        'Nicks_TTM_Med': df["Nick's TTM Value_num"].median(),
-        'Nicks_FWD_Avg': df["Nick's Forward Value_num"].mean(),
-        'Nicks_FWD_Med': df["Nick's Forward Value_num"].median(),
-        'Finviz_TTM_Avg': df["Finviz TTM Value_num"].mean(),
-        'Finviz_TTM_Med': df["Finviz TTM Value_num"].median(),
-        'Finviz_FWD_Avg': df["Finviz Forward Value_num"].mean(),
-        'Finviz_FWD_Med': df["Finviz Forward Value_num"].median()
-    }
-
-# ─────────────────────────────
-# MINI MAIN FUNCTION
-# ─────────────────────────────
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
     past     = get_file_content_or_placeholder("charts/earnings_past.html")
@@ -149,12 +119,3 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, sp
     )
 
     prepare_and_generate_ticker_pages(tickers, '.', 'charts/')
-
-if __name__ == "__main__":
-    # MINI-MAIN for test runs
-    tickers = []  # You can add sample tickers here like ['AAPL', 'MSFT']
-    financial_data = {}
-    sample_dashboard = []  # Or prefill with data
-    full_dashboard_html, avg_values = generate_dashboard_table(sample_dashboard)
-    spy_qqq_growth_html = get_file_content_or_placeholder("charts/spy_qqq_growth.html", "")
-    html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html)
