@@ -1,109 +1,181 @@
 import os
 import sqlite3
+import math
+import numbers
 from datetime import datetime
-
 import yfinance as yf
-import pandas as pd
 
-DB_PATH = "Stock Data.db"
+# ───────────────────────────────────────────────────────────
+# Configuration
+# ───────────────────────────────────────────────────────────
+DB_PATH    = 'Stock Data.db'
+CHARTS_DIR = 'charts'
+os.makedirs(CHARTS_DIR, exist_ok=True)
 
-def fetch_market_cap(ticker: str) -> float | None:
+# ───────────────────────────────────────────────────────────
+# Fetching & Growth Calculation
+# ───────────────────────────────────────────────────────────
+def fetch_stock_data(ticker, treasury_yield):
+    """
+    Fetches price & P/E info via yfinance, safely computes implied growth.
+    """
     try:
         stock = yf.Ticker(ticker)
-        return stock.info.get("marketCap", None)
+        info  = stock.info or {}
     except Exception as e:
-        print(f"Error fetching market cap for {ticker}: {e}")
-        return None
+        print(f"[fetch_stock_data] ERROR retrieving {ticker}: {e}")
+        info = {}
+
+    # Current price fallback chain
+    current_price = (
+        info.get('currentPrice')
+        or info.get('regularMarketPrice')
+        or info.get('previousClose')
+        or average_bid_ask(info)
+    )
+
+    forward_eps      = info.get('forwardEps')
+    pe_ratio         = info.get('trailingPE')
+    price_to_book    = info.get('priceToBook')
+    marketcap        = info.get('marketCap')
+
+    # Forward P/E fallback
+    forward_pe_ratio = None
+    if isinstance(current_price, (int, float)) and isinstance(forward_eps, (int, float)) and forward_eps:
+        forward_pe_ratio = current_price / forward_eps
+
+    # Treasury yield to decimal
+    try:
+        treasury_yield = float(treasury_yield) / 100
+    except Exception:
+        treasury_yield = None
+
+    # Compute implied growths
+    implied_growth         = calculate_implied_growth(pe_ratio, treasury_yield)
+    implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield)
+
+    print(f"[fetch_stock_data] {ticker} → PE={pe_ratio}, FwdPE={forward_pe_ratio}, "
+          f"ImplG={implied_growth}, ImplFwdG={implied_forward_growth}")
+
+    # Format for display
+    def pct(x):
+        return f"{x*100:.1f}%" if isinstance(x, (int, float)) else "N/A"
+
+    data = {
+        'Close Price':            f"${current_price:.2f}" if isinstance(current_price, (int, float)) else '-',
+        'Market Cap':             marketcap,
+        'P/E Ratio':              f"{pe_ratio:.1f}" if isinstance(pe_ratio, (int, float)) else '-',
+        'Forward P/E Ratio':      f"{forward_pe_ratio:.1f}" if isinstance(forward_pe_ratio, (int, float)) else '-',
+        'Implied Growth*':        pct(implied_growth),
+        'Implied Forward Growth*':pct(implied_forward_growth),
+        'P/B Ratio':              f"{price_to_book:.1f}" if isinstance(price_to_book, (int, float)) else '-',
+    }
+
+    return data, marketcap, implied_growth, implied_forward_growth
 
 def calculate_implied_growth(pe_ratio, treasury_yield):
+    """
+    Reverse‐compound formula: ((PE/10)**(1/10)) + r - 1.
+    Returns None if inputs invalid or would produce a complex result.
+    """
+    if pe_ratio is None or treasury_yield is None:
+        return None
+    base = pe_ratio / 10
+    # Avoid complex roots: require positive real base
+    if not isinstance(base, (int, float)) or base <= 0:
+        return None
     try:
-        growth_rate = pe_ratio * treasury_yield
-        if isinstance(growth_rate, complex) or growth_rate is None or abs(growth_rate) > 1e6:
-            print(f"Skipping invalid growth rate: {growth_rate}")
-            return None
-        return round(growth_rate, 4)
+        return (base ** (1/10)) + treasury_yield - 1
     except Exception as e:
-        print(f"Error calculating implied growth: {e}")
+        print(f"[calculate_implied_growth] SKIP complex outcome for PE={pe_ratio}: {e}")
         return None
 
-def try_insert(tkr, typ, val, date):
-    if val is None:
-        print(f"⚠️ Skipping {tkr} {typ}: value is None")
-        return
-    if isinstance(val, complex):
-        print(f"⚠️ Skipping {tkr} {typ}: value is complex: {val}")
-        return
-    if abs(val) > 1e6:
-        print(f"⚠️ Skipping {tkr} {typ}: value is unreasonably large: {val}")
-        return
+def average_bid_ask(info):
+    bid = info.get('bid')
+    ask = info.get('ask')
+    if isinstance(bid, (int, float)) and isinstance(ask, (int, float)):
+        return (bid + ask) / 2
+    return None
 
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT OR REPLACE INTO implied_growth (ticker, type, growth_rate, date)
+# ───────────────────────────────────────────────────────────
+# Recording History
+# ───────────────────────────────────────────────────────────
+def record_implied_growth_history(ticker, date_str, ttm_growth, fwd_growth):
+    """
+    Creates history table and inserts one TTM + one Forward per ticker/day,
+    skipping invalid values before rounding.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cur  = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS Implied_Growth_History (
+            ticker TEXT,
+            growth_type TEXT CHECK(growth_type IN ('TTM','Forward')),
+            growth_value REAL,
+            date_recorded TEXT,
+            UNIQUE(ticker, growth_type, date_recorded)
+        )
+    """)
+
+    def try_insert(growth_type, value):
+        print(f"[record] {ticker} {growth_type}: raw={value!r} ({type(value).__name__})")
+        # Skip None or non-real
+        if not isinstance(value, (int, float)):
+            print("  → SKIP: not a real float")
+            return
+        # Skip NaN/inf
+        if not math.isfinite(value):
+            print("  → SKIP: non-finite (NaN/inf)")
+            return
+        # Safe to round & insert
+        rounded = round(value, 6)
+        cur.execute("""
+            INSERT OR IGNORE INTO Implied_Growth_History
+            (ticker, growth_type, growth_value, date_recorded)
             VALUES (?, ?, ?, ?)
-        ''', (tkr, typ, round(val, 6), date))
-        conn.commit()
-        conn.close()
-        print(f"✅ Inserted implied growth for {tkr} ({typ}): {val}")
-    except Exception as e:
-        print(f"❌ Failed to insert {tkr} ({typ}) due to error: {e}")
+        """, (ticker, growth_type, rounded, date_str))
+        print(f"  → INSERTED: {rounded}")
 
-def record_implied_growth_history(ticker, date_str, ttm_growth, forward_growth):
-    try_insert(ticker, 'TTM', ttm_growth, date_str)
-    try_insert(ticker, 'Forward', forward_growth, date_str)
+    try_insert('TTM',     ttm_growth)
+    try_insert('Forward', fwd_growth)
 
-def prepare_data_for_display(ticker: str, treasury_yield: float):
-    print(f"Preparing implied growth data for {ticker}...")
+    conn.commit()
+    conn.close()
 
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT trailing_pe, forward_pe FROM Valuation WHERE ticker = ?", (ticker,))
-        row = cursor.fetchone()
-        conn.close()
+# ───────────────────────────────────────────────────────────
+# Public Helpers
+# ───────────────────────────────────────────────────────────
+def prepare_data_for_display(ticker, treasury_yield):
+    """
+    Fetches display-ready data and records history.
+    """
+    data, marketcap, ttm, fwd = fetch_stock_data(ticker, treasury_yield)
+    today_str = datetime.today().strftime('%Y-%m-%d')
+    record_implied_growth_history(ticker, today_str, ttm, fwd)
+    return data, marketcap
 
-        if not row:
-            print(f"No valuation data found for {ticker}")
-            return None, None
+def generate_html_table(data, ticker):
+    """
+    Writes the ticker_info HTML table for the UI.
+    """
+    style = """
+    <style>
+        table {width:80%;margin:auto;border-collapse:collapse;text-align:center;font-family:Arial,sans-serif;}
+        th, td {padding:8px 12px;}
+    </style>
+    """
+    html = style + "<table><tr>" + "".join(f"<th>{k}</th>" for k in data) + "</tr><tr>"
+    html += "".join(f"<td>{v}</td>" for v in data.values()) + "</tr></table>"
 
-        trailing_pe, forward_pe = row
-        ttm_growth = calculate_implied_growth(trailing_pe, treasury_yield)
-        forward_growth = calculate_implied_growth(forward_pe, treasury_yield)
+    path = os.path.join(CHARTS_DIR, f"{ticker}_ticker_info.html")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(html)
+    return path
 
-        today_str = datetime.today().strftime("%Y-%m-%d")
-        record_implied_growth_history(ticker, today_str, ttm_growth, forward_growth)
-
-        data = {
-            "Ticker": ticker,
-            "Trailing P/E": trailing_pe,
-            "Forward P/E": forward_pe,
-            "TTM Implied Growth": ttm_growth,
-            "Forward Implied Growth": forward_growth,
-        }
-        return data, fetch_market_cap(ticker)
-
-    except Exception as e:
-        print(f"Error preparing data for {ticker}: {e}")
-        return None, None
-
-# 🚨 DO NOT CHANGE THIS FUNCTION NAME
-def generate_all_summaries():
-    print("⏳ Starting implied growth data preparation...")
-
-    from ticker_manager import read_tickers
-    tickers = read_tickers("tickers.csv")
-    print(f"Found {len(tickers)} tickers")
-
-    results = []
-    for ticker in tickers:
-        data, marketcap = prepare_data_for_display(ticker, treasury_yield=0.045)
-        if data:
-            data["Market Cap"] = marketcap
-            results.append(data)
-
-    df = pd.DataFrame(results)
-    os.makedirs("charts", exist_ok=True)
-    df.to_html("charts/implied_growth_summary.html", index=False)
-    print("✅ All summaries generated and saved to charts/implied_growth_summary.html")
+# ───────────────────────────────────────────────────────────
+# Quick Local Test
+# ───────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    d, m, t, f = fetch_stock_data("AAPL", 0.035)
+    print("[TEST] display data:", d)
+    prepare_data_for_display("AAPL", 0.035)
