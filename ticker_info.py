@@ -26,10 +26,10 @@ def fetch_stock_data(ticker, treasury_yield):
     treasury_yield = float(treasury_yield) / 100 if treasury_yield and treasury_yield != '-' else None
 
     implied_growth = calculate_implied_growth(pe_ratio, treasury_yield) if pe_ratio else '-'
-    implied_growth_formatted = f"{implied_growth * 100:.1f}%" if implied_growth != '-' else 'N/A'
+    implied_growth_formatted = f"{implied_growth * 100:.1f}%" if isinstance(implied_growth, (int, float)) else 'N/A'
 
     implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield) if forward_pe_ratio else '-'
-    implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if implied_forward_growth != '-' else '-'
+    implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if isinstance(implied_forward_growth, (int, float)) else '-'
 
     formatted_close_price = f"${current_price:.2f}" if current_price else '-'
 
@@ -49,7 +49,12 @@ def fetch_stock_data(ticker, treasury_yield):
 def calculate_implied_growth(pe_ratio, treasury_yield):
     if pe_ratio is None or treasury_yield is None or pe_ratio == 0:
         return '-'
-    return ((pe_ratio / 10) ** (1 / 10)) + treasury_yield - 1
+    try:
+        result = ((pe_ratio / 10) ** (1 / 10)) + treasury_yield - 1
+        return result if isinstance(result, (int, float)) else '-'
+    except Exception as e:
+        print(f"[calculate_implied_growth] Error computing implied growth: {e}")
+        return '-'
 
 
 def average_bid_ask(info):
@@ -134,7 +139,8 @@ def record_implied_growth_history(ticker, date_str, ttm_growth, forward_growth):
     ''')
 
     def try_insert(tkr, typ, val, date):
-        if val == '-' or val is None:
+        if val in ('-', None) or not isinstance(val, (int, float)) or isinstance(val, complex):
+            print(f"[try_insert] Skipped insert for {tkr} ({typ}) — value: {val}")
             return
         cursor.execute('''
             INSERT OR IGNORE INTO Implied_Growth_History (ticker, growth_type, growth_value, date_recorded)
