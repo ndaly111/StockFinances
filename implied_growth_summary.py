@@ -47,6 +47,25 @@ def calculate_summary_stats(series: pd.Series):
     pct = series.rank(pct=True).iloc[-1] * 100
     return (f"{avg:.2%}", f"{med:.2%}", f"{std:.2%}", f"{cur:.2%}", f"{pct:.1f}%")
 
+def write_placeholder_html(ticker: str):
+    """Write placeholder HTML file when no data is available."""
+    content = f"""
+    <style>
+        .placeholder {{
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            padding: 40px;
+            color: #888;
+        }}
+    </style>
+    <div class="placeholder">No data available for Implied Growth Summary</div>
+    """
+    out_path = HTML_TEMPLATE.format(ticker=ticker)
+    with open(out_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    return out_path
+
 # ───────────────────────────────────────────────────────────
 # Per-Ticker Rendering
 # ───────────────────────────────────────────────────────────
@@ -72,6 +91,9 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
                 'Percentile': pct
             })
 
+    if not rows:
+        return write_placeholder_html(ticker)
+
     out_path = HTML_TEMPLATE.format(ticker=ticker)
     pd.DataFrame(rows).to_html(
         out_path,
@@ -86,10 +108,12 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     df['date'] = pd.to_datetime(df['date_recorded'])
     fig, ax = plt.subplots(figsize=(10,6))
 
+    found_data = False
     for typ, color in [('TTM','blue'),('Forward','green')]:
         series = df[df['growth_type']==typ].sort_values('date')
         if series.empty:
             continue
+        found_data = True
         ax.plot(series['date'], series['growth_value'],
                 label=f"{typ} Growth", color=color, linewidth=1.5)
         m, med, s = (series['growth_value'].mean(),
@@ -99,6 +123,10 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
         ax.axhline(med, ls=':',  label=f"{typ} Median", color=color, alpha=0.7)
         ax.axhline(m+s, ls='-.', label=f"{typ} +1σ",   color=color, alpha=0.5)
         ax.axhline(m-s, ls='-.', label=f"{typ} -1σ",   color=color, alpha=0.5)
+
+    if not found_data:
+        print(f"[plot_growth_chart] No data to plot for {ticker}")
+        return ""
 
     ax.set_title("Implied Growth Rates Over Time")
     ax.set_xlabel("Date")
@@ -114,7 +142,7 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     return out_path
 
 # ───────────────────────────────────────────────────────────
-# Public Entrypoint- this is criticsl for me to run this code out of main. 
+# Public Entrypoint - Used in main
 # ───────────────────────────────────────────────────────────
 def generate_all_summaries():
     """
@@ -131,5 +159,3 @@ def generate_all_summaries():
         print(f"[generate_all_summaries] Processing {ticker}")
         generate_summary_table(df_t, ticker)
         plot_growth_chart(df_t, ticker)
-
-
