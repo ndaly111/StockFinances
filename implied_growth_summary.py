@@ -1,156 +1,181 @@
+import yfinance as yf
 import os
 import sqlite3
-import pandas as pd
-import matplotlib.pyplot as plt
+import math
+import numbers
 from datetime import datetime
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Configuration
-# ─────────────────────────────────────────────────────────────────────────────
-DB_PATH        = 'Stock Data.db'
-TABLE_NAME     = 'Implied_Growth_History'
-CHART_DIR      = 'charts'
-HTML_TEMPLATE  = os.path.join(CHART_DIR, '{ticker}_implied_growth_summary.html')
-CHART_TEMPLATE = os.path.join(CHART_DIR, '{ticker}_implied_growth_plot.png')
+DB_PATH = "Stock Data.db"
 
-TIME_FRAMES = {
-    '1 Year':   365,
-    '3 Years':  365 * 3,
-    '5 Years':  365 * 5,
-    '10 Years': 365 * 10,
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────────────────────────────────────
-def ensure_output_directory():
-    os.makedirs(CHART_DIR, exist_ok=True)
-
-def load_growth_data():
+def fetch_stock_data(ticker, treasury_yield):
     """
-    Load the Implied_Growth_History table into a DataFrame,
-    or return empty if missing.
+    Safely fetches stock info using yfinance and computes implied growth values.
+    Returns (display_data, marketcap, implied_growth, implied_forward_growth).
     """
-    if not os.path.exists(DB_PATH):
-        return pd.DataFrame()
-    with sqlite3.connect(DB_PATH) as conn:
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info or {}
+    except Exception as e:
+        print(f"[fetch_stock_data] Error retrieving market data for {ticker}: {e}")
+        info = {}
+
+    # --- Extract price and ratios with fallbacks ---
+    current_price = (
+        info.get("currentPrice")
+        or info.get("regularMarketPrice")
+        or info.get("previousClose")
+        or average_bid_ask(info)
+    )
+    forward_eps   = info.get("forwardEps")
+    pe_ratio      = info.get("trailingPE")
+    price_to_book = info.get("priceToBook")
+    marketcap     = info.get("marketCap")
+
+    # --- Compute forward P/E safely ---
+    forward_pe_ratio = None
+    if isinstance(current_price, (int, float)) and isinstance(forward_eps, (int, float)) and forward_eps != 0:
         try:
-            return pd.read_sql_query(f"SELECT * FROM {TABLE_NAME}", conn)
-        except sqlite3.OperationalError:
-            return pd.DataFrame()
+            forward_pe_ratio = current_price / forward_eps
+        except Exception as e:
+            print(f"[fetch_stock_data] Error computing forward P/E for {ticker}: {e}")
 
-def calculate_summary_stats(df: pd.DataFrame, col: str) -> dict:
-    """
-    Compute avg, median, std, current, percentile (%) for a column.
-    Returns '-' placeholders if no data.
-    """
-    if df.empty or col not in df:
-        return dict.fromkeys(['Average','Median','Std Dev','Current','Percentile'], '-')
-    vals = df[col].dropna()
-    if vals.empty:
-        return dict.fromkeys(['Average','Median','Std Dev','Current','Percentile'], '-')
-    avg  = vals.mean()
-    med  = vals.median()
-    std  = vals.std()
-    cur  = vals.iloc[-1]
-    pct  = vals.rank(pct=True).iloc[-1] * 100
-    return {
-        'Average':    f"{avg:.2%}",
-        'Median':     f"{med:.2%}",
-        'Std Dev':    f"{std:.2%}",
-        'Current':    f"{cur:.2%}",
-        'Percentile': f"{pct:.1f}%"
+    # --- Normalize treasury_yield ---
+    try:
+        treasury_yield = float(treasury_yield) / 100
+    except Exception:
+        treasury_yield = None
+
+    # --- Calculate implied growths ---
+    implied_growth         = calculate_implied_growth(pe_ratio, treasury_yield)
+    implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield)
+
+    print(f"[fetch_stock_data] {ticker} → pe_ratio={pe_ratio}, forward_pe_ratio={forward_pe_ratio}, "
+          f"implied_growth={implied_growth}, implied_forward_growth={implied_forward_growth}")
+
+    # --- Format for display ---
+    def fmt(val):
+        return f"{val * 100:.1f}%" if isinstance(val, (int, float)) else "N/A"
+
+    display_data = {
+        "Close Price":            f"${current_price:.2f}" if isinstance(current_price, (int, float)) else "-",
+        "Market Cap":             marketcap,
+        "P/E Ratio":              f"{pe_ratio:.1f}" if isinstance(pe_ratio, (int, float)) else "-",
+        "Forward P/E Ratio":      f"{forward_pe_ratio:.1f}" if isinstance(forward_pe_ratio, (int, float)) else "-",
+        "Implied Growth*":        fmt(implied_growth),
+        "Implied Forward Growth*":fmt(implied_forward_growth),
+        "P/B Ratio":              f"{price_to_book:.1f}" if isinstance(price_to_book, (int, float)) else "-",
     }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Rendering per‐ticker
-# ─────────────────────────────────────────────────────────────────────────────
-def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
+    return display_data, marketcap, implied_growth, implied_forward_growth
+
+def calculate_implied_growth(pe_ratio, treasury_yield):
     """
-    Writes an HTML summary table for one ticker.
-    If *all* stats are '-', writes a brief placeholder instead.
+    Reverse‐compound: ((PE/10)^(1/10)) + r - 1.
+    Returns float or None if invalid (including to avoid complex results).
     """
-    df = df.copy()
-    df['date'] = pd.to_datetime(df['date_recorded'])
-    now = datetime.now()
+    if pe_ratio is None or treasury_yield is None:
+        return None
+    try:
+        base = pe_ratio / 10
+        if not isinstance(base, (int, float)) or base <= 0:
+            return None
+        return (base ** (1/10)) + treasury_yield - 1
+    except Exception as e:
+        print(f"[calculate_implied_growth] Error: {e} (pe_ratio={pe_ratio}, treasury_yield={treasury_yield})")
+        return None
 
-    rows = []
-    for label, days in TIME_FRAMES.items():
-        cutoff = now - pd.Timedelta(days=days)
-        window = df[df['date'] >= cutoff]
-        for typ in ['TTM','Forward']:
-            subset = window[window['growth_type'] == typ]
-            stats  = calculate_summary_stats(subset, 'growth_value')
-            rows.append({'Timeframe': label, 'Type': typ, **stats})
+def average_bid_ask(info):
+    bid = info.get("bid")
+    ask = info.get("ask")
+    if isinstance(bid, (int, float)) and isinstance(ask, (int, float)):
+        return (bid + ask) / 2
+    return None
 
-    summary_df = pd.DataFrame(rows)
-    path = HTML_TEMPLATE.format(ticker=ticker)
+def format_number(value):
+    if value is None:
+        return "N/A"
+    if abs(value) >= 1e12:
+        return f"${value/1e12:.2f}T"
+    if abs(value) >= 1e9:
+        return f"${value/1e9:.2f}B"
+    if abs(value) >= 1e6:
+        return f"${value/1e6:.2f}M"
+    return f"${value:.2f}"
 
-    # If they’re all placeholders, write a brief message
-    stats_cols = ['Average','Median','Std Dev','Current','Percentile']
-    if (summary_df[stats_cols] == '-').all(axis=None):
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write("<p>Implied growth information not available for this ticker.</p>")
-        return path
+def record_implied_growth_history(ticker, date_str, ttm_growth, fwd_growth):
+    """
+    Inserts one TTM and one Forward record per ticker/day,
+    skipping invalid (None/complex/NaN/inf) values with a log.
+    """
+    os.makedirs("charts", exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    cur  = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS Implied_Growth_History (
+            ticker TEXT,
+            growth_type TEXT CHECK(growth_type IN ('TTM','Forward')),
+            growth_value REAL,
+            date_recorded TEXT,
+            UNIQUE(ticker, growth_type, date_recorded)
+        )
+    """)
 
-    # Otherwise, write the full table
-    summary_df.to_html(path, index=False, na_rep='-', justify='center')
+    def try_insert(growth_type, value):
+        print(f"[record_implied_growth_history] Trying {ticker} {growth_type} = {value} ({type(value)})")
+        # Skip None, non-real, or complex
+        if not isinstance(value, numbers.Real):
+            print(f"  → Skipped: not a real number")
+            return
+        # Skip NaN or infinite
+        if not math.isfinite(value):
+            print(f"  → Skipped: non-finite value")
+            return
+        # Safe to round & insert
+        rv = round(value, 6)
+        cur.execute("""
+            INSERT OR IGNORE INTO Implied_Growth_History
+            (ticker, growth_type, growth_value, date_recorded)
+            VALUES (?, ?, ?, ?)
+        """, (ticker, growth_type, rv, date_str))
+        print(f"  → Inserted: {rv}")
+
+    try_insert("TTM",     ttm_growth)
+    try_insert("Forward", fwd_growth)
+
+    conn.commit()
+    conn.close()
+
+def prepare_data_for_display(ticker, treasury_yield):
+    """
+    Fetch display data + record implied-growth history.
+    """
+    data, marketcap, ttm, fwd = fetch_stock_data(ticker, treasury_yield)
+    today_str = datetime.today().strftime("%Y-%m-%d")
+    print(f"[prepare_data_for_display] Recording history for {ticker} on {today_str}")
+    record_implied_growth_history(ticker, today_str, ttm, fwd)
+    return data, marketcap
+
+def generate_html_table(data, ticker):
+    html = """
+    <style>
+      table {width:80%;margin:auto;border-collapse:collapse;text-align:center;font-family:Arial,sans-serif;}
+      th, td {padding:8px 12px;}
+    </style>
+    <table><tr>"""
+    for key in data:
+        html += f"<th>{key}</th>"
+    html += "</tr><tr>"
+    for val in data.values():
+        html += f"<td>{val}</td>"
+    html += "</tr></table>"
+    path = f"charts/{ticker}_ticker_info.html"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write(html)
     return path
 
-def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
-    """
-    Saves a PNG of TTM & Forward growth + stat lines.
-    """
-    df = df.copy()
-    df['date'] = pd.to_datetime(df['date_recorded'])
-
-    fig, ax = plt.subplots(figsize=(10,6))
-    for typ, color in [('TTM','blue'),('Forward','green')]:
-        series = df[df['growth_type'] == typ].sort_values('date')
-        if series.empty:
-            continue
-        ax.plot(series['date'], series['growth_value'],
-                label=f'{typ} Growth', color=color, linewidth=1.5)
-        m   = series['growth_value'].mean()
-        med = series['growth_value'].median()
-        s   = series['growth_value'].std()
-        ax.axhline(m,    linestyle='--', label=f'{typ} Avg',    color=color, alpha=0.7)
-        ax.axhline(med,  linestyle=':',  label=f'{typ} Median', color=color, alpha=0.7)
-        ax.axhline(m+s,  linestyle='-.', label=f'{typ} +1σ',    color=color, alpha=0.5)
-        ax.axhline(m-s,  linestyle='-.', label=f'{typ} -1σ',    color=color, alpha=0.5)
-
-    ax.set_title("Implied Growth Rates Over Time")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Growth Rate")
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0%}"))
-    ax.legend(loc='upper left', fontsize='small')
-    ax.grid(True, linestyle='--', alpha=0.4)
-    plt.tight_layout()
-
-    path = CHART_TEMPLATE.format(ticker=ticker)
-    plt.savefig(path, dpi=150)
-    plt.close()
-    return path
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Public Entrypoint (unchanged name)
-# ─────────────────────────────────────────────────────────────────────────────
-def generate_all_summaries():
-    """
-    Loop through each ticker in the history table,
-    generating both HTML and PNG for each.
-    """
-    ensure_output_directory()
-    df_all = load_growth_data()
-    if 'ticker' not in df_all.columns:
-        return
-    for ticker in df_all['ticker'].unique():
-        df_t = df_all[df_all['ticker'] == ticker]
-        generate_summary_table(df_t, ticker)
-        plot_growth_chart(df_t, ticker)
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Standalone Execution
-# ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    generate_all_summaries()
+    # Quick check
+    d, m, t, f = fetch_stock_data("AAPL", "3.5")
+    print("[main test] display_data:", d)
+    prepare_data_for_display("AAPL", "3.5")
