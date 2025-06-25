@@ -19,6 +19,7 @@ from balancesheet_chart import (
     create_and_save_table
 )
 import pandas as pd
+from implied_growth_summary import generate_all_summaries
 from Forward_data import scrape_forward_data
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from bs4 import BeautifulSoup
@@ -139,6 +140,7 @@ def main():
             generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
 
         eps_dividend_generator()
+        generate_all_summaries()
 
         full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_values, TICKERS_FILE_PATH)
