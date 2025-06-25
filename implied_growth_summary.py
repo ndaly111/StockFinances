@@ -50,11 +50,11 @@ def calculate_summary_stats(df: pd.DataFrame, col: str) -> dict:
     vals = df[col].dropna()
     if vals.empty:
         return dict.fromkeys(keys, '-')
-    avg  = vals.mean()
-    med  = vals.median()
-    std  = vals.std()
-    cur  = vals.iloc[-1]
-    pct  = vals.rank(pct=True).iloc[-1] * 100
+    avg = vals.mean()
+    med = vals.median()
+    std = vals.std()
+    cur = vals.iloc[-1]
+    pct = vals.rank(pct=True).iloc[-1] * 100
     return {
         'Average':    f"{avg:.2%}",
         'Median':     f"{med:.2%}",
@@ -80,7 +80,7 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
         window = df[df['date'] >= cutoff]
         for typ in ['TTM','Forward']:
             subset = window[window['growth_type'] == typ]
-            stats  = calculate_summary_stats(subset, 'growth_value')
+            stats = calculate_summary_stats(subset, 'growth_value')
             row = {'Timeframe': label, 'Type': typ}
             row.update(stats)
             rows.append(row)
@@ -105,13 +105,15 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
         ax.plot(series['date'], series['growth_value'],
                 label=f"{typ} Growth",
                 color=color, linewidth=1.5)
-        m, med, s = (series['growth_value'].mean(),
-                     series['growth_value'].median(),
-                     series['growth_value'].std())
-        ax.axhline(m,   linestyle='--', label=f'{typ} Avg',    color=color, alpha=0.7)
-        ax.axhline(med, linestyle=':',  label=f'{typ} Median', color=color, alpha=0.7)
-        ax.axhline(m+s, linestyle='-.', label=f'{typ} +1σ',    color=color, alpha=0.5)
-        ax.axhline(m-s, linestyle='-.', label=f'{typ} -1σ',    color=color, alpha=0.5)
+        m, med, s = (
+            series['growth_value'].mean(),
+            series['growth_value'].median(),
+            series['growth_value'].std()
+        )
+        ax.axhline(m,    linestyle='--', label=f'{typ} Avg',    color=color, alpha=0.7)
+        ax.axhline(med,  linestyle=':',  label=f'{typ} Median', color=color, alpha=0.7)
+        ax.axhline(m+s,  linestyle='-.', label=f'{typ} +1σ',    color=color, alpha=0.5)
+        ax.axhline(m-s,  linestyle='-.', label=f'{typ} -1σ',    color=color, alpha=0.5)
 
     ax.set_title("Implied Growth Rates Over Time")
     ax.set_xlabel("Date")
@@ -144,7 +146,7 @@ def generate_all_summaries():
         plot_growth_chart(df_t, ticker)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Standalone Execution
+# Mini‐Main
 # ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     generate_all_summaries()
