@@ -5,10 +5,18 @@ import sqlite3
 import yfinance as yf
 import numpy as np
 
-# Path to the database file
-db_path = 'Stock Data.db'
-env = Environment(loader=FileSystemLoader('templates'))
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+DB_PATH = 'Stock Data.db'
+CHARTS_DIR = 'charts'
+PAGES_DIR = 'pages'
+TEMPLATES_DIR = 'templates'
+env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
+# ---------------------------------------------------------------------------
+# Utilities
+# ---------------------------------------------------------------------------
 def ensure_directory_exists(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -38,8 +46,14 @@ def get_company_short_name(ticker, cursor):
         return short_name
     return ticker
 
+def get_file_content_or_placeholder(path, placeholder="No data available"):
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return placeholder
+
 def ensure_templates_exist():
-    home_template_content = """<html>... (unchanged, omitted here to save space) ...</html>"""
     ticker_template_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,23 +131,16 @@ def ensure_templates_exist():
     <a href="../index.html" class="home-button">Back to Home</a>
   </footer>
 </body>
-</html>
-"""
-    create_template('templates/home_template.html', home_template_content)
-    create_template('templates/ticker_template.html', ticker_template_content)
+</html>"""
+    create_template(f"{TEMPLATES_DIR}/ticker_template.html", ticker_template_content)
 
-def get_file_content_or_placeholder(path, placeholder="No data available"):
-    try:
-        return open(path, 'r', encoding='utf-8').read()
-    except FileNotFoundError:
-        return placeholder
-
-def create_home_page(tickers, output_dir,
-                     dashboard_table, avg_values,
-                     spy_qqq_growth="", earnings_past="", earnings_upcoming=""):
+# ---------------------------------------------------------------------------
+# Page Builders
+# ---------------------------------------------------------------------------
+def create_home_page(tickers, output_dir, dashboard_table, avg_values, spy_qqq_growth="", earnings_past="", earnings_upcoming=""):
     tpl = env.get_template('home_template.html')
-    out = os.path.join(output_dir, 'index.html')
-    with open(out, 'w', encoding='utf-8') as f:
+    out_path = os.path.join(output_dir, 'index.html')
+    with open(out_path, 'w', encoding='utf-8') as f:
         f.write(tpl.render(
             tickers=tickers,
             dashboard_table=dashboard_table,
@@ -144,7 +151,8 @@ def create_home_page(tickers, output_dir,
         ))
 
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
-    with sqlite3.connect(db_path) as conn:
+    ensure_directory_exists(os.path.join(output_dir, PAGES_DIR))
+    with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         for t in tickers:
             name = get_company_short_name(t, cur)
@@ -174,69 +182,18 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 'implied_growth_chart_path': f"{charts_dir}/{t}_implied_growth_chart.png"
             }
             tpl = env.get_template('ticker_template.html')
-            out = os.path.join(output_dir, 'pages', f"{t}_page.html")
-            ensure_directory_exists(os.path.dirname(out))
+            out = os.path.join(output_dir, PAGES_DIR, f"{t}_page.html")
             with open(out, 'w', encoding='utf-8') as f:
                 f.write(tpl.render(ticker_data=d))
 
-def generate_dashboard_table(dashboard_data):
-    df = pd.DataFrame(dashboard_data, columns=[
-        "Ticker",
-        "Share Price",
-        "Nick's TTM Value",
-        "Nick's Forward Value",
-        "Finviz TTM Value",
-        "Finviz Forward Value"
-    ])
-    df["Ticker"] = df["Ticker"].apply(lambda t: f'<a href="pages/{t}_page.html">{t}</a>')
-
-    for col in ["Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"]:
-        df[col + "_num"] = (
-            df[col].astype(str)
-                .str.rstrip("%")
-                .replace("-", np.nan)
-                .astype(float)
-        )
-
-    df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
-
-    ttm = df["Nick's TTM Value_num"].dropna()
-    fwd = df["Nick's Forward Value_num"].dropna()
-    fttm = df["Finviz TTM Value_num"].dropna()
-    ffwd = df["Finviz Forward Value_num"].dropna()
-
-    def fmt(x): return f"{x:.1f}%" if pd.notnull(x) else "–"
-    summary = [
-        ["Average", fmt(ttm.mean()), fmt(fwd.mean()), fmt(fttm.mean()), fmt(ffwd.mean())],
-        ["Median", fmt(ttm.median()), fmt(fwd.median()), fmt(fttm.median()), fmt(ffwd.median())]
-    ]
-    avg_table = pd.DataFrame(summary, columns=[
-        "Metric", "Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"
-    ]).to_html(index=False, escape=False, classes='table table-striped')
-
-    display = df[[
-        "Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"
-    ]]
-    dash_table = display.to_html(index=False, escape=False, classes='table table-striped', table_id="sortable-table")
-
-    with open('charts/dashboard.html', 'w', encoding='utf-8') as f:
-        f.write(avg_table + dash_table)
-
-    return avg_table + dash_table, {
-        'Nicks_TTM_Avg': ttm.mean(),
-        'Nicks_TTM_Med': ttm.median(),
-        'Nicks_FWD_Avg': fwd.mean(),
-        'Nicks_FWD_Med': fwd.median(),
-        'Finviz_TTM_Avg': fttm.mean() if not fttm.empty else None,
-        'Finviz_TTM_Med': fttm.median() if not fttm.empty else None,
-        'Finviz_FWD_Avg': ffwd.mean() if not ffwd.empty else None,
-        'Finviz_FWD_Med': ffwd.median() if not ffwd.empty else None
-    }
-
+# ---------------------------------------------------------------------------
+# Public Entrypoint
+# ---------------------------------------------------------------------------
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
-    past = get_file_content_or_placeholder("charts/earnings_past.html")
-    upcoming = get_file_content_or_placeholder("charts/earnings_upcoming.html")
+
+    earnings_past = get_file_content_or_placeholder(f"{CHARTS_DIR}/earnings_past.html")
+    earnings_upcoming = get_file_content_or_placeholder(f"{CHARTS_DIR}/earnings_upcoming.html")
 
     create_home_page(
         tickers=tickers,
@@ -244,8 +201,27 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, sp
         dashboard_table=full_dashboard_html,
         avg_values=avg_values,
         spy_qqq_growth=spy_qqq_growth_html,
-        earnings_past=past,
-        earnings_upcoming=upcoming
+        earnings_past=earnings_past,
+        earnings_upcoming=earnings_upcoming
     )
+    prepare_and_generate_ticker_pages(tickers, '.', CHARTS_DIR)
 
-    prepare_and_generate_ticker_pages(tickers, '.', 'charts/')
+# ---------------------------------------------------------------------------
+# Mini-Main
+# ---------------------------------------------------------------------------
+def generate_all():
+    tickers = ["AAPL", "MSFT"]  # placeholder example
+    financial_data = {}         # optional for now
+    full_dashboard_html = "<p>Sample Dashboard</p>"  # or load from charts/dashboard.html
+    avg_values = {
+        "Nicks_TTM_Value_Average": 18.2,
+        "Nicks_Forward_Value_Average": 15.7,
+        "Finviz_TTM_Value_Average": 21.1,
+        "Finviz_Forward_Value_Average": 17.3
+    }
+    spy_qqq_growth_html = "<div>SPY/QQQ</div>"
+
+    html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html)
+
+if __name__ == "__main__":
+    generate_all()
