@@ -5,14 +5,9 @@ import sqlite3
 import yfinance as yf
 import numpy as np
 
+# Path to the database file
 db_path = 'Stock Data.db'
 env = Environment(loader=FileSystemLoader('templates'))
-
-# ───────────────────────────────────────────────────────────── #
-# HTML TEMPLATE CONTENT (declared at module level)
-# ───────────────────────────────────────────────────────────── #
-home_template_content = """..."""  # <== Replace with full string from your latest working version
-ticker_template_content = """..."""  # <== Replace with full string from your latest working version
 
 def ensure_directory_exists(directory):
     if not os.path.exists(directory):
@@ -42,10 +37,6 @@ def get_company_short_name(ticker, cursor):
         cursor.connection.commit()
         return short_name
     return ticker
-
-def ensure_templates_exist():
-    create_template('templates/home_template.html', home_template_content)
-    create_template('templates/ticker_template.html', ticker_template_content)
 
 def get_file_content_or_placeholder(path, placeholder="No data available"):
     try:
@@ -95,8 +86,13 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 'valuation_info_table':         get_file_content_or_placeholder(f"{charts_dir}/{t}_valuation_info.html"),
                 'valuation_data_table':         get_file_content_or_placeholder(f"{charts_dir}/{t}_valuation_table.html"),
                 'unmapped_expense_html':        get_file_content_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html", "No unmapped expenses."),
-                'eps_dividend_chart_path':      f"{charts_dir}/{t}_eps_dividend_forecast.png"
+                'eps_dividend_chart_path':      f"{charts_dir}/{t}_eps_dividend_forecast.png",
+
+                # ─── Implied Growth Additions ───
+                'implied_growth_chart_path':    f"{charts_dir}/{t}_implied_growth_plot.png",
+                'implied_growth_table_html':    get_file_content_or_placeholder(f"{charts_dir}/{t}_implied_growth_summary.html", "No implied growth data available.")
             }
+
             tpl = env.get_template('ticker_template.html')
             out = os.path.join(output_dir, 'pages', f"{t}_page.html")
             ensure_directory_exists(os.path.dirname(out))
@@ -104,7 +100,6 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 f.write(tpl.render(ticker_data=d))
 
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
-    ensure_templates_exist()
     past     = get_file_content_or_placeholder("charts/earnings_past.html")
     upcoming = get_file_content_or_placeholder("charts/earnings_upcoming.html")
 
@@ -119,3 +114,7 @@ def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, sp
     )
 
     prepare_and_generate_ticker_pages(tickers, '.', 'charts/')
+
+# Mini main entrypoint
+def run_html_generator2():
+    print("This is a legacy entrypoint placeholder. Please call html_generator2() from your main script.")
