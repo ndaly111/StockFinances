@@ -1,95 +1,71 @@
 import yfinance as yf
 import os
+import sqlite3
 from bs4 import BeautifulSoup
+from datetime import datetime
+
+DB_PATH = "Stock Data.db"
 
 def fetch_stock_data(ticker, treasury_yield):
-    """
-    Safely fetches stock info using yfinance, avoiding 'NoneType' errors and
-    also handling fallback logic for currentPrice.
-    """
     try:
         stock = yf.Ticker(ticker)
-        raw_info = stock.info  # This can return None or raise an error
-        if raw_info is not None:
-            info = raw_info
-        else:
-            info = {}
-            print(f"Warning: yfinance returned None info for ticker '{ticker}'")
+        raw_info = stock.info or {}
     except Exception as e:
         print(f"Error retrieving market data for {ticker}: {e}")
-        # Fallback to an empty dict to avoid crashing
-        info = {}
+        raw_info = {}
 
-    # Safely pull values from the 'info' dictionary
-    current_price = info.get('currentPrice', None)
-    # Fallback attempts
-    if current_price is None:
-        current_price = info.get('regularMarketPrice', None)
-    if current_price is None:
-        current_price = info.get('previousClose', None)
-    if current_price is None:
-        bid = info.get('bid', None)
-        ask = info.get('ask', None)
-        if bid and ask:
-            current_price = (bid + ask) / 2
+    current_price = raw_info.get('currentPrice') or raw_info.get('regularMarketPrice') \
+        or raw_info.get('previousClose') or average_bid_ask(raw_info)
 
-    forward_eps = info.get('forwardEps', None)
-    pe_ratio = info.get('trailingPE', None)
-    price_to_book = info.get('priceToBook', None)
-    marketcap = info.get('marketCap', None)
+    forward_eps = raw_info.get('forwardEps')
+    pe_ratio = raw_info.get('trailingPE')
+    price_to_book = raw_info.get('priceToBook')
+    marketcap = raw_info.get('marketCap')
 
-    if current_price is not None and forward_eps:
-        forward_pe_ratio = current_price / forward_eps
-    else:
-        forward_pe_ratio = None
+    forward_pe_ratio = current_price / forward_eps if current_price and forward_eps else None
+    treasury_yield = float(treasury_yield) / 100 if treasury_yield and treasury_yield != '-' else None
 
-    # Ensure treasury_yield is a float and convert from percentage to decimal if possible
-    if treasury_yield and treasury_yield != '-':
-        treasury_yield = float(treasury_yield) / 100
-    else:
-        treasury_yield = None
+    implied_growth = calculate_implied_growth(pe_ratio, treasury_yield) if pe_ratio else '-'
+    implied_growth_formatted = f"{implied_growth * 100:.1f}%" if isinstance(implied_growth, (int, float)) else 'N/A'
 
-    # Calculate implied growth for trailing P/E
-    implied_growth = calculate_implied_growth(pe_ratio, treasury_yield) if pe_ratio is not None else '-'
-    implied_growth_formatted = f"{implied_growth * 100:.1f}%" if implied_growth != '-' else 'N/A'
+    implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield) if forward_pe_ratio else '-'
+    implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if isinstance(implied_forward_growth, (int, float)) else '-'
 
-    # Calculate implied growth for forward P/E
-    implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield) \
-        if forward_pe_ratio is not None else '-'
-    implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if implied_forward_growth != '-' else '-'
+    formatted_close_price = f"${current_price:.2f}" if current_price else '-'
 
-    # Format close price or placeholder if None
-    formatted_close_price = f"${current_price:.2f}" if current_price is not None else '-'
-
-    # Create the data dictionary
     data = {
         'Close Price': formatted_close_price,
         'Market Cap': marketcap,
-        'P/E Ratio': "{:.1f}".format(pe_ratio) if pe_ratio is not None else '-',
-        'Forward P/E Ratio': "{:.1f}".format(forward_pe_ratio) if forward_pe_ratio is not None else '-',
+        'P/E Ratio': f"{pe_ratio:.1f}" if pe_ratio else '-',
+        'Forward P/E Ratio': f"{forward_pe_ratio:.1f}" if forward_pe_ratio else '-',
         'Implied Growth*': implied_growth_formatted,
         'Implied Forward Growth*': implied_forward_growth_formatted,
-        'P/B Ratio': "{:.1f}".format(price_to_book) if price_to_book is not None else '-',
+        'P/B Ratio': f"{price_to_book:.1f}" if price_to_book else '-',
     }
 
-    return data, marketcap
+    return data, marketcap, implied_growth, implied_forward_growth
 
 
 def calculate_implied_growth(pe_ratio, treasury_yield):
-    """
-    Calculates an 'implied growth' figure based on P/E ratio and risk-free rate.
-    """
-    if pe_ratio is None or treasury_yield is None:
+    if pe_ratio is None or treasury_yield is None or pe_ratio == 0:
         return '-'
-    else:
-        # Simple example of a custom implied-growth formula
-        return ((pe_ratio / 10) ** (1/10)) + treasury_yield - 1
+    try:
+        result = ((pe_ratio / 10) ** (1 / 10)) + treasury_yield - 1
+        return result if isinstance(result, (int, float)) else '-'
+    except Exception as e:
+        print(f"[calculate_implied_growth] Error computing implied growth: {e}")
+        return '-'
+
+
+def average_bid_ask(info):
+    bid = info.get('bid')
+    ask = info.get('ask')
+    if bid and ask:
+        return (bid + ask) / 2
+    return None
 
 
 def format_number(value):
-    """
-    Formats large numbers into a more readable form (e.g., in millions, billions, or trillions).
-    """
     if value is None:
         return "N/A"
     if abs(value) >= 1e12:
@@ -103,18 +79,16 @@ def format_number(value):
 
 
 def prepare_data_for_display(ticker, treasury_yield):
-    """
-    Fetches the stock data (price, ratios, etc.) safely for further processing.
-    """
-    fetched_data, marketcap = fetch_stock_data(ticker, treasury_yield)
+    fetched_data, marketcap, ttm_growth, forward_growth = fetch_stock_data(ticker, treasury_yield)
+
+    # Record implied growths
+    today_str = datetime.today().strftime("%Y-%m-%d")
+    record_implied_growth_history(ticker, today_str, ttm_growth, forward_growth)
+
     return fetched_data, marketcap
 
 
 def generate_html_table(data, ticker):
-    """
-    Generates a minimalist horizontal HTML table from a dictionary of data
-    and saves it to an HTML file, applying minor styling.
-    """
     html_content = """
     <style>
         table {
@@ -131,13 +105,9 @@ def generate_html_table(data, ticker):
     </style>
     <table>
     <tr>"""
-
-    # Headers
     for key in data:
         html_content += f"<th>{key}</th>"
     html_content += "</tr><tr>"
-
-    # Values
     for key, value in data.items():
         if key == 'Market Cap' and isinstance(value, (int, float)):
             formatted_value = format_number(value)
@@ -153,11 +123,40 @@ def generate_html_table(data, ticker):
     return file_path
 
 
-if __name__ == "__main__":
-    # Example usage
-    ticker = 'AAPL'
-    treasury_yield = '3.5'  # e.g. 3.5 means 3.5% yield
+def record_implied_growth_history(ticker, date_str, ttm_growth, forward_growth):
+    os.makedirs("charts", exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Implied_Growth_History (
+            ticker TEXT,
+            growth_type TEXT CHECK(growth_type IN ('TTM', 'Forward')),
+            growth_value REAL,
+            date_recorded TEXT,
+            UNIQUE(ticker, growth_type, date_recorded)
+        )
+    ''')
+
+    def try_insert(tkr, typ, val, date):
+        if val in ('-', None) or not isinstance(val, (int, float)) or isinstance(val, complex):
+            print(f"[try_insert] Skipped insert for {tkr} ({typ}) — value: {val}")
+            return
+        cursor.execute('''
+            INSERT OR IGNORE INTO Implied_Growth_History (ticker, growth_type, growth_value, date_recorded)
+            VALUES (?, ?, ?, ?)
+        ''', (tkr, typ, round(val, 6), date))
+
+    try_insert(ticker, 'TTM', ttm_growth, date_str)
+    try_insert(ticker, 'Forward', forward_growth, date_str)
+
+    conn.commit()
+    conn.close()
+
+
+if __name__ == "__main__":
+    ticker = 'AAPL'
+    treasury_yield = '3.5'
     prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
     html_file_path = generate_html_table(prepared_data, ticker)
     print(f"HTML content has been written to {html_file_path}")
