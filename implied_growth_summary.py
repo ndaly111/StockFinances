@@ -3,6 +3,8 @@ import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
+import math
+import numbers
 
 # ───────────────────────────────────────────────────────────
 # Configuration
@@ -36,8 +38,14 @@ def load_growth_data():
             print(f"[load_growth_data] skipping load ({e})")
             return pd.DataFrame()
 
+def filter_valid_growth_values(series: pd.Series) -> pd.Series:
+    return series[
+        series.apply(lambda x: isinstance(x, numbers.Real) and not isinstance(x, complex) and math.isfinite(x))
+    ]
+
 def calculate_summary_stats(series: pd.Series):
     """Return avg, med, std, cur, pct or dashes if empty."""
+    series = filter_valid_growth_values(series)
     if series.empty:
         return '-', '-', '-', '-', '-'
     avg = series.mean()
@@ -46,25 +54,6 @@ def calculate_summary_stats(series: pd.Series):
     cur = series.iloc[-1]
     pct = series.rank(pct=True).iloc[-1] * 100
     return (f"{avg:.2%}", f"{med:.2%}", f"{std:.2%}", f"{cur:.2%}", f"{pct:.1f}%")
-
-def write_placeholder_html(ticker: str):
-    """Write placeholder HTML file when no data is available."""
-    content = f"""
-    <style>
-        .placeholder {{
-            text-align: center;
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            padding: 40px;
-            color: #888;
-        }}
-    </style>
-    <div class="placeholder">No data available for Implied Growth Summary</div>
-    """
-    out_path = HTML_TEMPLATE.format(ticker=ticker)
-    with open(out_path, 'w', encoding='utf-8') as f:
-        f.write(content)
-    return out_path
 
 # ───────────────────────────────────────────────────────────
 # Per-Ticker Rendering
@@ -91,9 +80,6 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
                 'Percentile': pct
             })
 
-    if not rows:
-        return write_placeholder_html(ticker)
-
     out_path = HTML_TEMPLATE.format(ticker=ticker)
     pd.DataFrame(rows).to_html(
         out_path,
@@ -108,12 +94,13 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     df['date'] = pd.to_datetime(df['date_recorded'])
     fig, ax = plt.subplots(figsize=(10,6))
 
-    found_data = False
     for typ, color in [('TTM','blue'),('Forward','green')]:
         series = df[df['growth_type']==typ].sort_values('date')
+        series = series[series['growth_value'].apply(
+            lambda x: isinstance(x, numbers.Real) and not isinstance(x, complex) and math.isfinite(x)
+        )]
         if series.empty:
             continue
-        found_data = True
         ax.plot(series['date'], series['growth_value'],
                 label=f"{typ} Growth", color=color, linewidth=1.5)
         m, med, s = (series['growth_value'].mean(),
@@ -123,10 +110,6 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
         ax.axhline(med, ls=':',  label=f"{typ} Median", color=color, alpha=0.7)
         ax.axhline(m+s, ls='-.', label=f"{typ} +1σ",   color=color, alpha=0.5)
         ax.axhline(m-s, ls='-.', label=f"{typ} -1σ",   color=color, alpha=0.5)
-
-    if not found_data:
-        print(f"[plot_growth_chart] No data to plot for {ticker}")
-        return ""
 
     ax.set_title("Implied Growth Rates Over Time")
     ax.set_xlabel("Date")
@@ -142,7 +125,7 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     return out_path
 
 # ───────────────────────────────────────────────────────────
-# Public Entrypoint - Used in main
+# Public Entrypoint – this is critical for me to run this code out of main.
 # ───────────────────────────────────────────────────────────
 def generate_all_summaries():
     """
