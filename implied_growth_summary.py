@@ -114,7 +114,7 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     return out_path
 
 # ───────────────────────────────────────────────────────────
-# Public Entrypoint
+# Public Entrypoint- this is criticsl for me to run this code out of main. 
 # ───────────────────────────────────────────────────────────
 def generate_all_summaries():
     """
@@ -132,5 +132,4 @@ def generate_all_summaries():
         generate_summary_table(df_t, ticker)
         plot_growth_chart(df_t, ticker)
 
-# 🚨 DO NOT CHANGE — this actually kicks off the summary
-generate_all_summaries()
+
