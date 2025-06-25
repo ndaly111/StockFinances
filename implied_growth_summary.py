@@ -3,21 +3,15 @@ import sqlite3
 import yfinance as yf
 from datetime import datetime
 
-DB_PATH = "Stock Data.db"
-TABLE_NAME = "Implied_Growth_History"
+# ───────────────────────────────────────────────
+# Configuration
+# ───────────────────────────────────────────────
+DB_PATH     = "Stock Data.db"
+TABLE_NAME  = "Implied_Growth_History"
 
-def fetch_treasury_yield():
-    return 0.045  # Example fallback if you aren't fetching this dynamically
-
-def calculate_implied_growth(pe_ratio, treasury_yield):
-    if pe_ratio == 0 or pe_ratio is None:
-        return None
-    try:
-        return treasury_yield * pe_ratio
-    except Exception as e:
-        print(f"[calculate_implied_growth] Error: {e}")
-        return None
-
+# ───────────────────────────────────────────────
+# Helpers
+# ───────────────────────────────────────────────
 def fetch_pe_ratios(ticker):
     try:
         stock = yf.Ticker(ticker)
@@ -29,7 +23,17 @@ def fetch_pe_ratios(ticker):
         print(f"[fetch_pe_ratios] Failed for {ticker}: {e}")
         return None, None
 
+def calculate_implied_growth(pe_ratio, treasury_yield):
+    if pe_ratio is None or pe_ratio == 0:
+        return None
+    try:
+        return treasury_yield * pe_ratio
+    except Exception as e:
+        print(f"[calculate_implied_growth] Error: {e}")
+        return None
+
 def try_insert(tkr, typ, val, date):
+    # Reject invalid values (complex, None, NaN, inf)
     if not isinstance(val, (int, float)) or isinstance(val, complex) or not math.isfinite(val):
         print(f"[try_insert] Skipping invalid growth value for {tkr} ({typ}): {val}")
         return
@@ -46,15 +50,22 @@ def record_implied_growth_history(ticker, date_str, ttm_growth, forward_growth):
     try_insert(ticker, 'TTM', ttm_growth, date_str)
     try_insert(ticker, 'Forward', forward_growth, date_str)
 
+# ───────────────────────────────────────────────
+# Public Entrypoint (Mini-Main)
+# ───────────────────────────────────────────────
 def prepare_data_for_display(ticker, treasury_yield):
-    today = datetime.today()
-    today_str = today.strftime("%Y-%m-%d")
+    """
+    Main callable function. Fetches PE ratios, calculates implied growth,
+    and stores them into the Implied_Growth_History table.
+    Returns summary data and placeholder for market cap (if needed later).
+    """
+    today = datetime.today().strftime("%Y-%m-%d")
 
     trailing_pe, forward_pe = fetch_pe_ratios(ticker)
     ttm_growth = calculate_implied_growth(trailing_pe, treasury_yield)
     forward_growth = calculate_implied_growth(forward_pe, treasury_yield)
 
-    record_implied_growth_history(ticker, today_str, ttm_growth, forward_growth)
+    record_implied_growth_history(ticker, today, ttm_growth, forward_growth)
 
     prepared_data = {
         "Ticker": ticker,
