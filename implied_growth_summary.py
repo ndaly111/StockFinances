@@ -28,8 +28,8 @@ def ensure_output_directory():
 
 def load_growth_data():
     """
-    Load the Implied_Growth_History table into a DataFrame.
-    If the DB or table doesn’t exist, return an empty DataFrame.
+    Load the Implied_Growth_History table into a DataFrame,
+    or return empty if missing.
     """
     if not os.path.exists(DB_PATH):
         return pd.DataFrame()
@@ -41,24 +41,24 @@ def load_growth_data():
 
 def calculate_summary_stats(df: pd.DataFrame, col: str) -> dict:
     """
-    Compute average, median, std, current, percentile (%) for a column.
-    Returns '-' for any missing data.
+    Compute avg, median, std, current, percentile (%) for a column.
+    Returns '-' placeholders if no data.
     """
     if df.empty or col not in df:
-        return {'Average':'-','Median':'-','Std Dev':'-','Current':'-','Percentile':'-'}
+        return dict.fromkeys(['Average','Median','Std Dev','Current','Percentile'], '-')
     vals = df[col].dropna()
     if vals.empty:
-        return {'Average':'-','Median':'-','Std Dev':'-','Current':'-','Percentile':'-'}
-    avg = vals.mean()
-    med = vals.median()
-    std = vals.std()
-    curr = vals.iloc[-1]
+        return dict.fromkeys(['Average','Median','Std Dev','Current','Percentile'], '-')
+    avg  = vals.mean()
+    med  = vals.median()
+    std  = vals.std()
+    cur  = vals.iloc[-1]
     pct  = vals.rank(pct=True).iloc[-1] * 100
     return {
         'Average':    f"{avg:.2%}",
         'Median':     f"{med:.2%}",
         'Std Dev':    f"{std:.2%}",
-        'Current':    f"{curr:.2%}",
+        'Current':    f"{cur:.2%}",
         'Percentile': f"{pct:.1f}%"
     }
 
@@ -67,37 +67,45 @@ def calculate_summary_stats(df: pd.DataFrame, col: str) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     """
-    Writes HTML summary table for one ticker.
-    Returns the HTML file path.
+    Writes an HTML summary table for one ticker.
+    If *all* stats are '-', writes a brief placeholder instead.
     """
     df = df.copy()
     df['date'] = pd.to_datetime(df['date_recorded'])
     now = datetime.now()
-    rows = []
 
+    rows = []
     for label, days in TIME_FRAMES.items():
         cutoff = now - pd.Timedelta(days=days)
         window = df[df['date'] >= cutoff]
-        for typ in ['TTM', 'Forward']:
+        for typ in ['TTM','Forward']:
             subset = window[window['growth_type'] == typ]
             stats  = calculate_summary_stats(subset, 'growth_value')
             rows.append({'Timeframe': label, 'Type': typ, **stats})
 
     summary_df = pd.DataFrame(rows)
     path = HTML_TEMPLATE.format(ticker=ticker)
+
+    # If they’re all placeholders, write a brief message
+    stats_cols = ['Average','Median','Std Dev','Current','Percentile']
+    if (summary_df[stats_cols] == '-').all(axis=None):
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write("<p>Implied growth information not available for this ticker.</p>")
+        return path
+
+    # Otherwise, write the full table
     summary_df.to_html(path, index=False, na_rep='-', justify='center')
     return path
 
 def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     """
-    Saves a PNG plot of TTM & Forward growth plus mean/median/±1σ.
-    Returns the image file path.
+    Saves a PNG of TTM & Forward growth + stat lines.
     """
     df = df.copy()
     df['date'] = pd.to_datetime(df['date_recorded'])
 
     fig, ax = plt.subplots(figsize=(10,6))
-    for typ, color in [('TTM','blue'), ('Forward','green')]:
+    for typ, color in [('TTM','blue'),('Forward','green')]:
         series = df[df['growth_type'] == typ].sort_values('date')
         if series.empty:
             continue
@@ -125,12 +133,12 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     return path
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Public Entrypoint
+# Public Entrypoint (unchanged name)
 # ─────────────────────────────────────────────────────────────────────────────
 def generate_all_summaries():
     """
-    Loop over each unique ticker in the history table,
-    generate HTML & PNG, and save under charts/.
+    Loop through each ticker in the history table,
+    generating both HTML and PNG for each.
     """
     ensure_output_directory()
     df_all = load_growth_data()
