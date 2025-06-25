@@ -1,4 +1,3 @@
-
 from jinja2 import Environment, FileSystemLoader
 import os
 import pandas as pd
@@ -6,6 +5,7 @@ import sqlite3
 import yfinance as yf
 import numpy as np
 
+# Path to the database file
 db_path = 'Stock Data.db'
 env = Environment(loader=FileSystemLoader('templates'))
 
@@ -30,14 +30,95 @@ def get_company_short_name(ticker, cursor):
     stock = yf.Ticker(ticker)
     short_name = stock.info.get('shortName', '').strip()
     if short_name:
-        cursor.execute("UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?", (short_name, ticker))
+        cursor.execute(
+            "UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?",
+            (short_name, ticker)
+        )
         cursor.connection.commit()
         return short_name
     return ticker
 
 def ensure_templates_exist():
-    home_template_content = """... (unchanged) ..."""
-    ticker_template_content = """... (your full updated template, including implied growth) ..."""
+    home_template_content = """<html>... (unchanged, omitted here to save space) ...</html>"""
+    ticker_template_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ ticker_data.company_name }} – Financial Overview</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header>
+    <a href="../index.html" class="home-button">Home</a>
+    <h1>{{ ticker_data.company_name }} – Financial Overview</h1>
+    <h2>Ticker: {{ ticker_data.ticker }}</h2>
+  </header>
+
+  <section>{{ ticker_data.ticker_info | safe }}</section>
+
+  <div>
+    <img src="../{{ ticker_data.revenue_net_income_chart_path }}" alt="Rev vs NI">
+    <img src="../{{ ticker_data.eps_chart_path }}"             alt="EPS">
+    {{ ticker_data.financial_table | safe }}
+  </div>
+
+  <h1>{{ ticker_data.ticker }} – Forecast Data</h1>
+  <div class="carousel-container">
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.forecast_rev_net_chart_path }}" alt="Rev/NI Forecast">
+    </div>
+    <div class="carousel-item">
+      <img src="../{{ ticker_data.forecast_eps_chart_path }}"     alt="EPS Forecast">
+    </div>
+  </div>
+
+  <h1>{{ ticker_data.ticker }} – Y/Y % Change</h1>
+  <div class="carousel-container">
+    <img class="carousel-item" src="../{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Rev YoY">
+    <img class="carousel-item" src="../{{ ticker_data.eps_yoy_change_chart_path }}"     alt="EPS YoY">
+    <div class="carousel-item">{{ ticker_data.yoy_growth_table_html | safe }}</div>
+  </div>
+
+  <div class="balance-sheet-container">
+    <div class="balance-sheet-table">{{ ticker_data.balance_sheet_table_html | safe }}</div>
+    <div class="balance-sheet-chart">
+      <img src="../{{ ticker_data.balance_sheet_chart_path }}" alt="BS Chart">
+    </div>
+  </div>
+
+  <h1>{{ ticker_data.ticker }} – Expense Overview</h1>
+  <div class="carousel-container">
+    <img class="carousel-item" src="../{{ ticker_data.expense_chart_path }}"         alt="Rev vs Exp">
+    <img class="carousel-item" src="../{{ ticker_data.expense_percent_chart_path }}" alt="Exp % of Rev">
+    <div class="carousel-item">{{ ticker_data.expense_table_html | safe }}</div>
+    <div class="carousel-item">{{ ticker_data.expense_yoy_table_html | safe }}</div>
+  </div>
+
+  {% if ticker_data.unmapped_expense_html %}
+  <h1>{{ ticker_data.ticker }} – Unmapped Items</h1>
+  <div>{{ ticker_data.unmapped_expense_html | safe }}</div>
+  {% endif %}
+
+  {% if ticker_data.valuation_chart %}
+  <h1>{{ ticker_data.ticker }} – Valuation Chart</h1>
+  <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation">
+  <div class="valuation-tables">
+    {{ ticker_data.valuation_info_table | safe }}
+    {{ ticker_data.valuation_data_table | safe }}
+  </div>
+  {% endif %}
+
+  {% if ticker_data.implied_growth_chart_path %}
+  <h1>{{ ticker_data.ticker }} – Implied Growth Summary</h1>
+  <img src="../{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth Summary">
+  {% endif %}
+
+  <footer>
+    <a href="../index.html" class="home-button">Back to Home</a>
+  </footer>
+</body>
+</html>
+"""
     create_template('templates/home_template.html', home_template_content)
     create_template('templates/ticker_template.html', ticker_template_content)
 
@@ -47,7 +128,9 @@ def get_file_content_or_placeholder(path, placeholder="No data available"):
     except FileNotFoundError:
         return placeholder
 
-def create_home_page(tickers, output_dir, dashboard_table, avg_values, spy_qqq_growth="", earnings_past="", earnings_upcoming=""):
+def create_home_page(tickers, output_dir,
+                     dashboard_table, avg_values,
+                     spy_qqq_growth="", earnings_past="", earnings_upcoming=""):
     tpl = env.get_template('home_template.html')
     out = os.path.join(output_dir, 'index.html')
     with open(out, 'w', encoding='utf-8') as f:
@@ -88,8 +171,7 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 'valuation_data_table': get_file_content_or_placeholder(f"{charts_dir}/{t}_valuation_table.html"),
                 'unmapped_expense_html': get_file_content_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 'eps_dividend_chart_path': f"{charts_dir}/{t}_eps_dividend_forecast.png",
-                'implied_growth_summary_html': get_file_content_or_placeholder(f"{charts_dir}/{t}_implied_growth_summary.html"),
-                'implied_growth_chart': f"{charts_dir}/{t}_implied_growth_plot.png"
+                'implied_growth_chart_path': f"{charts_dir}/{t}_implied_growth_chart.png"
             }
             tpl = env.get_template('ticker_template.html')
             out = os.path.join(output_dir, 'pages', f"{t}_page.html")
@@ -99,21 +181,35 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
 
 def generate_dashboard_table(dashboard_data):
     df = pd.DataFrame(dashboard_data, columns=[
-        "Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"
+        "Ticker",
+        "Share Price",
+        "Nick's TTM Value",
+        "Nick's Forward Value",
+        "Finviz TTM Value",
+        "Finviz Forward Value"
     ])
     df["Ticker"] = df["Ticker"].apply(lambda t: f'<a href="pages/{t}_page.html">{t}</a>')
+
     for col in ["Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"]:
-        df[col + "_num"] = df[col].astype(str).str.rstrip("%").replace("-", np.nan).astype(float)
+        df[col + "_num"] = (
+            df[col].astype(str)
+                .str.rstrip("%")
+                .replace("-", np.nan)
+                .astype(float)
+        )
+
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
+
+    ttm = df["Nick's TTM Value_num"].dropna()
+    fwd = df["Nick's Forward Value_num"].dropna()
+    fttm = df["Finviz TTM Value_num"].dropna()
+    ffwd = df["Finviz Forward Value_num"].dropna()
 
     def fmt(x): return f"{x:.1f}%" if pd.notnull(x) else "–"
     summary = [
-        ["Average", fmt(df["Nick's TTM Value_num"].mean()), fmt(df["Nick's Forward Value_num"].mean()),
-         fmt(df["Finviz TTM Value_num"].mean()), fmt(df["Finviz Forward Value_num"].mean())],
-        ["Median", fmt(df["Nick's TTM Value_num"].median()), fmt(df["Nick's Forward Value_num"].median()),
-         fmt(df["Finviz TTM Value_num"].median()), fmt(df["Finviz Forward Value_num"].median())]
+        ["Average", fmt(ttm.mean()), fmt(fwd.mean()), fmt(fttm.mean()), fmt(ffwd.mean())],
+        ["Median", fmt(ttm.median()), fmt(fwd.median()), fmt(fttm.median()), fmt(ffwd.median())]
     ]
-
     avg_table = pd.DataFrame(summary, columns=[
         "Metric", "Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"
     ]).to_html(index=False, escape=False, classes='table table-striped')
@@ -127,19 +223,29 @@ def generate_dashboard_table(dashboard_data):
         f.write(avg_table + dash_table)
 
     return avg_table + dash_table, {
-        'Nicks_TTM_Avg': df["Nick's TTM Value_num"].mean(),
-        'Nicks_TTM_Med': df["Nick's TTM Value_num"].median(),
-        'Nicks_FWD_Avg': df["Nick's Forward Value_num"].mean(),
-        'Nicks_FWD_Med': df["Nick's Forward Value_num"].median(),
-        'Finviz_TTM_Avg': df["Finviz TTM Value_num"].mean(),
-        'Finviz_TTM_Med': df["Finviz TTM Value_num"].median(),
-        'Finviz_FWD_Avg': df["Finviz Forward Value_num"].mean(),
-        'Finviz_FWD_Med': df["Finviz Forward Value_num"].median()
+        'Nicks_TTM_Avg': ttm.mean(),
+        'Nicks_TTM_Med': ttm.median(),
+        'Nicks_FWD_Avg': fwd.mean(),
+        'Nicks_FWD_Med': fwd.median(),
+        'Finviz_TTM_Avg': fttm.mean() if not fttm.empty else None,
+        'Finviz_TTM_Med': fttm.median() if not fttm.empty else None,
+        'Finviz_FWD_Avg': ffwd.mean() if not ffwd.empty else None,
+        'Finviz_FWD_Med': ffwd.median() if not ffwd.empty else None
     }
 
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
     past = get_file_content_or_placeholder("charts/earnings_past.html")
     upcoming = get_file_content_or_placeholder("charts/earnings_upcoming.html")
-    create_home_page(tickers, '.', full_dashboard_html, avg_values, spy_qqq_growth_html, past, upcoming)
+
+    create_home_page(
+        tickers=tickers,
+        output_dir='.',
+        dashboard_table=full_dashboard_html,
+        avg_values=avg_values,
+        spy_qqq_growth=spy_qqq_growth_html,
+        earnings_past=past,
+        earnings_upcoming=upcoming
+    )
+
     prepare_and_generate_ticker_pages(tickers, '.', 'charts/')
