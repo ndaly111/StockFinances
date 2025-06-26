@@ -28,17 +28,20 @@ DB_PATH, OUTPUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 __all__ = ["generate_expense_reports"]
 
-# ───────────────────────── helper utils ─────────────────────────
+# ─────────────────── helper utils ────────────────────
 _SUFFIXES = [(1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")]
 
 def _fmt_short(x: float, d: int = 1) -> str:
-    """Format large numbers with K/M/B/T suffix, one-decimal precision."""
     if pd.isna(x):
         return ""
     for div, suf in _SUFFIXES:
         if abs(x) >= div:
             return f"${x/div:.{d}f}{suf}"
     return f"${x:.{d}f}"
+
+def _all_nan_or_zero(s: pd.Series) -> bool:
+    """True if the whole column is NaN *or* zero."""
+    return (s.replace(0, np.nan).notna().sum() == 0)
 
 def clean(v):
     if pd.isna(v):
@@ -64,7 +67,7 @@ def extract_expenses(r: pd.Series):
         pick_any(r, OTHER_OPERATING),
     )
 
-# ───────────────────────── DB schema / ingest ─────────────────────────
+# ─────────────────── DB schema / ingest ───────────────────
 TABLES = ("IncomeStatement", "QuarterlyIncomeStatement")
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS {n}(
@@ -111,7 +114,7 @@ def store(tkr, *, mode="annual", conn=None):
     if own:
         conn.close()
 
-# ───────────────────────── fetch helpers ─────────────────────────
+# ─────────────────── fetch helpers ───────────────────
 def yearly(tkr):
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker=?",
@@ -144,7 +147,7 @@ def ttm(tkr):
     out.insert(0, "year_label", "TTM"); out["year_int"] = np.nan
     return out
 
-# ───────────────────────── chart helpers ─────────────────────────
+# ─────────────────── chart helpers (unchanged) ───────────────────
 def _cats(df, combo):
     base = [
         ("Cost of Revenue", "cost_of_revenue", "#6d6d6d"),
@@ -197,7 +200,7 @@ def chart_pct(df, tkr):
     plt.savefig(os.path.join(OUTPUT_DIR,
                              f"{tkr}_expenses_pct_of_rev.png")); plt.close()
 
-# ───────────────────────── HTML helper ─────────────────────────
+# ─────────────────── HTML helper ───────────────────
 def write_html(df: pd.DataFrame, path: str):
     with open(path, "w", encoding="utf-8") as f:
         f.write('<div class="scroll-table-wrapper">' +
@@ -205,7 +208,7 @@ def write_html(df: pd.DataFrame, path: str):
                            border=0, na_rep="") +
                 '</div>')
 
-# ───────────────────────── main entry ─────────────────────────
+# ─────────────────── main entry ───────────────────
 def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
     ensure(drop=rebuild_schema, conn=conn)
     store(tkr, mode="annual", conn=conn); store(tkr, mode="quarterly", conn=conn)
@@ -223,8 +226,9 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
     # --------- absolute $ table ----------
     abs_df = full[cols].sort_values("year_label")
     abs_df = abs_df[abs_df["total_revenue"].notna() & (abs_df["total_revenue"] != 0)]
-    abs_df = abs_df.drop(columns=[c for c in abs_df.columns[1:]
-                                  if abs_df[c].notna().sum() == 0])
+    # drop columns all-NaN OR all-zero
+    abs_df = abs_df.drop(columns=[c for c in abs_df.columns[1:] if _all_nan_or_zero(abs_df[c])])
+
     abs_fmt = abs_df.copy()
     for c in abs_fmt.columns[1:]:
         abs_fmt[c] = abs_fmt[c].apply(_fmt_short)
@@ -233,20 +237,20 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
                   "research_and_development": "R&D ($)",
                   "selling_and_marketing": "Sales & Marketing ($)",
                   "general_and_admin": "G&A ($)", "sga_combined": "SG&A ($)"}
-    abs_fmt = abs_fmt.rename(columns={k: v for k, v in rename_abs.items()
-                                      if k in abs_fmt.columns})
-    write_html(abs_fmt, os.path.join(OUTPUT_DIR,
-                                     f"{tkr}_expense_absolute.html"))
+    abs_fmt = abs_fmt.rename(columns={k: v for k, v in rename_abs.items() if k in abs_fmt.columns})
+    write_html(abs_fmt, os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute.html"))
 
     # --------- YoY % table ----------
     yoy = full[cols].sort_values("year_label")
     yoy = yoy[yoy["total_revenue"].notna() & (yoy["total_revenue"] != 0)]
     for c in cols[1:]:
-        yoy[c] = (yoy[c].pct_change()
-                          .replace([np.inf, -np.inf], np.nan)
-                          .round(4) * 100)
-    yoy = yoy.drop(columns=[c for c in yoy.columns[1:]
-                            if yoy[c].notna().sum() == 0])
+        yoy[c] = (yoy[c].pct_change().replace([np.inf, -np.inf], np.nan).round(4) * 100)
+
+    # drop columns all-NaN
+    yoy = yoy.drop(columns=[c for c in yoy.columns[1:] if yoy[c].notna().sum() == 0])
+    # drop rows whose data columns are all NaN
+    yoy = yoy[yoy.iloc[:, 1:].notna().any(axis=1)]
+
     rename_pct = {"year_label": "Year",
                   "total_revenue": "Revenue Change (%)",
                   "cost_of_revenue": "Cost of Revenue Change (%)",
@@ -254,10 +258,8 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
                   "selling_and_marketing": "Sales & Marketing Change (%)",
                   "general_and_admin": "G&A Change (%)",
                   "sga_combined": "SG&A Change (%)"}
-    yoy = yoy.rename(columns={k: v for k, v in rename_pct.items()
-                              if k in yoy.columns})
-    write_html(yoy, os.path.join(OUTPUT_DIR,
-                                 f"{tkr}_yoy_expense_change.html"))
+    yoy = yoy.rename(columns={k: v for k, v in rename_pct.items() if k in yoy.columns})
+    write_html(yoy, os.path.join(OUTPUT_DIR, f"{tkr}_yoy_expense_change.html"))
 
     print(f"[{tkr}] ✔ charts & tables generated")
 
