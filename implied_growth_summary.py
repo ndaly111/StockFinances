@@ -34,8 +34,7 @@ def load_growth_data() -> pd.DataFrame:
     with sqlite3.connect(DB_PATH) as conn:
         try:
             return pd.read_sql_query(f"SELECT * FROM {TABLE_NAME}", conn)
-        except (sqlite3.OperationalError, pd.errors.DatabaseError) as e:
-            print(f"[load_growth_data] skipping load ({e})")
+        except (sqlite3.OperationalError, pd.errors.DatabaseError):
             return pd.DataFrame()
 
 def clean_series(s: pd.Series) -> pd.Series:
@@ -45,17 +44,17 @@ def calc_stats(s: pd.Series):
     if s.empty:
         return ('–',) * 5
     avg, med, std = s.mean(), s.median(), s.std()
-    cur  = s.iloc[-1]
-    pct  = s.rank(pct=True).iloc[-1] * 100
+    cur = s.iloc[-1]
+    pct = s.rank(pct=True).iloc[-1] * 100
     return (f"{avg:.2%}", f"{med:.2%}",
             f"{std:.2%}" if pd.notnull(std) else '–',
-            f"{cur:.2%}",  f"{pct:.1f}%")
+            f"{cur:.2%}", f"{pct:.1f}%")
 
 def write_placeholder(tkr: str) -> str:
     html = ('<div style="text-align:center;padding:40px;'
             'font-family:Arial;color:#888">'
             'No data available for Implied Growth Summary</div>')
-    out  = HTML_TEMPLATE.format(ticker=tkr)
+    out = HTML_TEMPLATE.format(ticker=tkr)
     with open(out, 'w', encoding='utf-8') as f:
         f.write(html)
     return out
@@ -71,32 +70,28 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     for label, days in TIME_FRAMES.items():
         win = df[df['date'] >= now - pd.Timedelta(days=days)]
         for typ in ('TTM', 'Forward'):
-            stats = calc_stats(clean_series(win.loc[win['growth_type']==typ, 'growth_value']))
+            stats = calc_stats(clean_series(win.loc[win['growth_type'] == typ, 'growth_value']))
             rows.append(dict(Timeframe=label, Type=typ,
                              Average=stats[0], Median=stats[1],
-                             **{'Std Dev':stats[2], 'Current':stats[3], 'Percentile':stats[4]}))
+                             **{'Std Dev': stats[2], 'Current': stats[3], 'Percentile': stats[4]}))
 
     if not any(r['Average'] != '–' for r in rows):
-        print(f"[generate_summary_table] {ticker}: nothing to show.")
         return write_placeholder(ticker)
 
-    # ---------- pivot safely ----------
+    # -------- pivot (metric 1st, TTM/Forward 2nd) ----------
     tbl = (pd.DataFrame(rows)
-             .set_index(['Timeframe','Type'])
-             .unstack('Type')
-             .swaplevel(axis=1)     # (metric,   TTM/Fwd)
-             .sort_index(axis=1, level=0))
+           .set_index(['Timeframe', 'Type'])   # multi-index rows
+           .unstack('Type'))                   # columns: (metric, TTM/Fwd)
 
-    wanted  = ['Average','Median','Std Dev','Current','Percentile']
-    # guarantee each (metric, subcol) exists – avoids KeyError
-    for metric in wanted:
-        for col in ('TTM','Forward'):
+    wanted = ['Average', 'Median', 'Std Dev', 'Current', 'Percentile']
+    for metric in wanted:                      # ensure every sub-column exists
+        for col in ('TTM', 'Forward'):
             if (metric, col) not in tbl.columns:
                 tbl[(metric, col)] = '–'
-    tbl = tbl[wanted]                      # ordered slice
-    tbl.sort_index(axis=1, level=[0,1], inplace=True)
 
-    tbl.replace({'nan%':'–', np.nan:'–'}, inplace=True)
+    tbl = tbl[wanted]                          # enforce order
+    tbl.sort_index(axis=1, level=[0, 1], inplace=True)
+    tbl.replace({'nan%': '–', np.nan: '–'}, inplace=True)
 
     out = HTML_TEMPLATE.format(ticker=ticker)
     tbl.to_html(out, index=True, na_rep='–',
@@ -105,39 +100,42 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     return out
 
 # ───────────────────────────────────
-# Per-ticker LINE PLOT  (unchanged)
+# Per-ticker LINE PLOT (unchanged)
 # ───────────────────────────────────
 def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     df = df.copy()
     df['date'] = pd.to_datetime(df['date_recorded'])
-    fig, ax, have = plt.subplots(figsize=(10,6)), plt.gca(), False
+    fig, ax = plt.subplots(figsize=(10, 6))
+    have_data = False
 
-    for typ, color in (('TTM','blue'), ('Forward','green')):
-        s = (df[df['growth_type']==typ]
-                .sort_values('date')
-                .assign(growth_value=lambda d: clean_series(d['growth_value'])))
+    for typ, color in (('TTM', 'blue'), ('Forward', 'green')):
+        s = (df[df['growth_type'] == typ]
+             .sort_values('date')
+             .assign(growth_value=lambda d: clean_series(d['growth_value'])))
         if s['growth_value'].empty:
             continue
-        have = True
+
+        have_data = True
         ax.plot(s['date'], s['growth_value'], label=f"{typ} Growth",
                 color=color, lw=1.5)
+
         m, med, sd = s['growth_value'].mean(), s['growth_value'].median(), s['growth_value'].std()
-        for y, ls in ((m,'--'), (med,':'), (m+sd,'-.'), (m-sd,'-.')):
+        for y, ls in ((m, '--'), (med, ':'), (m + sd, '-.'), (m - sd, '-.')):
             ax.axhline(y, ls=ls, color=color, alpha=.6)
 
-    if not have:
-        print(f"[plot_growth_chart] {ticker}: nothing to plot.")
+    if not have_data:
         return ""
 
     ax.set(title="Implied Growth Rates Over Time",
            xlabel="Date", ylabel="Growth Rate")
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y,_: f"{y:.0%}"))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0%}"))
     ax.legend(loc='upper left', fontsize='small')
     ax.grid(True, ls='--', alpha=.4)
     plt.tight_layout()
 
     out = CHART_TEMPLATE.format(ticker=ticker)
-    plt.savefig(out, dpi=150); plt.close()
+    plt.savefig(out, dpi=150)
+    plt.close()
     return out
 
 # ───────────────────────────────────
@@ -147,11 +145,11 @@ def generate_all_summaries():
     ensure_output_directory()
     df_all = load_growth_data()
     if 'ticker' not in df_all.columns:
-        print("[generate_all_summaries] table missing.")
+        print("[generate_all_summaries] Implied_Growth_History table missing.")
         return
     for tkr in df_all['ticker'].unique():
         print(f"[generate_all_summaries] {tkr}")
-        dft = df_all[df_all['ticker']==tkr]
+        dft = df_all[df_all['ticker'] == tkr]
         generate_summary_table(dft, tkr)
         plot_growth_chart(dft, tkr)
 
