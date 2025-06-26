@@ -4,10 +4,11 @@
 # -----------------------------------------------------------
 import os, sqlite3, numpy as np, pandas as pd, matplotlib.pyplot as plt
 from datetime import datetime
+from itertools import product           # column re-ordering
 
-# ───────────────────────────────────
+# ──────────────────────────
 # Configuration
-# ───────────────────────────────────
+# ──────────────────────────
 DB_PATH        = 'Stock Data.db'
 TABLE_NAME     = 'Implied_Growth_History'
 
@@ -22,9 +23,13 @@ TIME_FRAMES = {
     '10 Years': 365 * 10,
 }
 
-# ───────────────────────────────────
+ROW_ORDER   = ['1 Year', '3 Years', '5 Years', '10 Years']
+COL_METRICS = ['Average', 'Median', 'Std Dev', 'Current', 'Percentile']
+COL_TYPES   = ['TTM', 'Forward']        # TTM first
+
+# ──────────────────────────
 # Helpers
-# ───────────────────────────────────
+# ──────────────────────────
 def ensure_output_directory():
     os.makedirs(CHARTS_DIR, exist_ok=True)
 
@@ -35,7 +40,7 @@ def load_growth_data() -> pd.DataFrame:
         try:
             return pd.read_sql_query(f"SELECT * FROM {TABLE_NAME}", conn)
         except (sqlite3.OperationalError, pd.errors.DatabaseError):
-            return pd.DataFrame()
+            return pd.DataFrame()       # ← the colon after except is essential
 
 def clean_series(s: pd.Series) -> pd.Series:
     return s.apply(lambda x: x if isinstance(x, (int, float)) else None).dropna()
@@ -59,9 +64,9 @@ def write_placeholder(tkr: str) -> str:
         f.write(html)
     return out
 
-# ───────────────────────────────────
-# Per-ticker SUMMARY TABLE
-# ───────────────────────────────────
+# ──────────────────────────
+# Summary-table generator
+# ──────────────────────────
 def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     df = df.copy()
     df['date'] = pd.to_datetime(df['date_recorded'])
@@ -69,39 +74,38 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     rows, now = [], datetime.now()
     for label, days in TIME_FRAMES.items():
         win = df[df['date'] >= now - pd.Timedelta(days=days)]
-        for typ in ('TTM', 'Forward'):
-            stats = calc_stats(clean_series(win.loc[win['growth_type'] == typ, 'growth_value']))
+        for typ in COL_TYPES:
+            stats = calc_stats(clean_series(
+                win.loc[win['growth_type'] == typ, 'growth_value']
+            ))
             rows.append(dict(Timeframe=label, Type=typ,
                              Average=stats[0], Median=stats[1],
-                             **{'Std Dev': stats[2], 'Current': stats[3], 'Percentile': stats[4]}))
+                             **{'Std Dev': stats[2],
+                                'Current': stats[3],
+                                'Percentile': stats[4]}))
 
     if not any(r['Average'] != '–' for r in rows):
         return write_placeholder(ticker)
 
-    # -------- pivot (metric 1st, TTM/Forward 2nd) ----------
-    tbl = (pd.DataFrame(rows)
-           .set_index(['Timeframe', 'Type'])   # multi-index rows
-           .unstack('Type'))                   # columns: (metric, TTM/Fwd)
+    pivot = (pd.DataFrame(rows)
+             .set_index(['Timeframe', 'Type'])
+             .unstack('Type'))
 
-    wanted = ['Average', 'Median', 'Std Dev', 'Current', 'Percentile']
-    for metric in wanted:                      # ensure every sub-column exists
-        for col in ('TTM', 'Forward'):
-            if (metric, col) not in tbl.columns:
-                tbl[(metric, col)] = '–'
-
-    tbl = tbl[wanted]                          # enforce order
-    tbl.sort_index(axis=1, level=[0, 1], inplace=True)
-    tbl.replace({'nan%': '–', np.nan: '–'}, inplace=True)
+    desired_cols = pd.MultiIndex.from_tuples(
+        [(m, t) for m, t in product(COL_METRICS, COL_TYPES)]
+    )
+    pivot = pivot.reindex(columns=desired_cols, fill_value='–')
+    pivot = pivot.reindex(ROW_ORDER)
+    pivot.replace({'nan%': '–', np.nan: '–'}, inplace=True)
 
     out = HTML_TEMPLATE.format(ticker=ticker)
-    tbl.to_html(out, index=True, na_rep='–',
-                justify='center',
-                classes='table table-striped implied-growth-table')
+    pivot.to_html(out, index=True, na_rep='–', justify='center',
+                  classes='table table-striped implied-growth-table')
     return out
 
-# ───────────────────────────────────
-# Per-ticker LINE PLOT (unchanged)
-# ───────────────────────────────────
+# ──────────────────────────
+# Line-plot generator
+# ──────────────────────────
 def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     df = df.copy()
     df['date'] = pd.to_datetime(df['date_recorded'])
@@ -114,11 +118,9 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
              .assign(growth_value=lambda d: clean_series(d['growth_value'])))
         if s['growth_value'].empty:
             continue
-
         have_data = True
-        ax.plot(s['date'], s['growth_value'], label=f"{typ} Growth",
-                color=color, lw=1.5)
-
+        ax.plot(s['date'], s['growth_value'],
+                label=f"{typ} Growth", color=color, lw=1.5)
         m, med, sd = s['growth_value'].mean(), s['growth_value'].median(), s['growth_value'].std()
         for y, ls in ((m, '--'), (med, ':'), (m + sd, '-.'), (m - sd, '-.')):
             ax.axhline(y, ls=ls, color=color, alpha=.6)
@@ -138,9 +140,9 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     plt.close()
     return out
 
-# ───────────────────────────────────
-# mini-main – batch regenerate
-# ───────────────────────────────────
+# ──────────────────────────
+# Batch regenerate
+# ──────────────────────────
 def generate_all_summaries():
     ensure_output_directory()
     df_all = load_growth_data()
