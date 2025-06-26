@@ -45,8 +45,8 @@
   <div class="carousel-container">
     <img class="carousel-item" src="../{{ ticker_data.expense_chart_path }}"         alt="Rev vs Exp">
     <img class="carousel-item" src="../{{ ticker_data.expense_percent_chart_path }}" alt="Exp % of Rev">
-    <div class="carousel-item">{{ ticker_data.expense_table_html | safe }}</div>
-    <div class="carousel-item">{{ ticker_data.expense_yoy_table_html | safe }}</div>
+    <div class="carousel-item">{{ ticker_data.expense_abs_html | safe }}</div>   {# NEW absolute $ table #}
+    <div class="carousel-item">{{ ticker_data.expense_yoy_html | safe }}</div>   {# YoY % table #}
   </div>
 
   {% if ticker_data.unmapped_expense_html %}
@@ -63,7 +63,6 @@
   </div>
   {% endif %}
 
-  {# ── NEW: implied-growth output right after valuation ── #}
   {% if ticker_data.implied_growth_chart_path %}
   <h1>{{ ticker_data.ticker }} – Implied Growth Summary</h1>
   <img src="../{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth Chart">
