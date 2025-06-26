@@ -1,7 +1,7 @@
 """
 expense_reports.py
 -------------------------------------------------------------------------------
-Outputs per ticker
+Per-ticker outputs
   1) Revenue-vs-stacked-expense chart        ($)
   2) Expenses-as-%-of-revenue chart          (%)
   3) YoY expense-change HTML table           (%)
@@ -28,14 +28,14 @@ DB_PATH, OUTPUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 __all__ = ["generate_expense_reports"]
 
-# ───────────────── helper utils ─────────────────
+# ───────────────────────── helper utils ─────────────────────────
 _SUFFIXES = [(1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")]
 
 def _fmt_short(x: float, d: int = 1) -> str:
-    """Format large numbers with K/M/B/T suffix, one-decimal max."""
+    """Format large numbers with K/M/B/T suffix, one-decimal precision."""
     if pd.isna(x):
         return ""
-    for div, suf in _SUFFIXES:          # ← typo fixed here
+    for div, suf in _SUFFIXES:
         if abs(x) >= div:
             return f"${x/div:.{d}f}{suf}"
     return f"${x:.{d}f}"
@@ -64,7 +64,7 @@ def extract_expenses(r: pd.Series):
         pick_any(r, OTHER_OPERATING),
     )
 
-# ───────────────── DB schema / ingest ─────────────────
+# ───────────────────────── DB schema / ingest ─────────────────────────
 TABLES = ("IncomeStatement", "QuarterlyIncomeStatement")
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS {n}(
@@ -111,7 +111,7 @@ def store(tkr, *, mode="annual", conn=None):
     if own:
         conn.close()
 
-# ───────────────── fetch helpers ─────────────────
+# ───────────────────────── fetch helpers ─────────────────────────
 def yearly(tkr):
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker=?",
@@ -144,7 +144,7 @@ def ttm(tkr):
     out.insert(0, "year_label", "TTM"); out["year_int"] = np.nan
     return out
 
-# ───────────────── chart helpers ─────────────────
+# ───────────────────────── chart helpers ─────────────────────────
 def _cats(df, combo):
     base = [
         ("Cost of Revenue", "cost_of_revenue", "#6d6d6d"),
@@ -195,4 +195,71 @@ def chart_pct(df, tkr):
     ax.legend(frameon=False, ncol=2)
     plt.tight_layout()
     plt.savefig(os.path.join(OUTPUT_DIR,
-                             f"{tkr}_expenses
+                             f"{tkr}_expenses_pct_of_rev.png")); plt.close()
+
+# ───────────────────────── HTML helper ─────────────────────────
+def write_html(df: pd.DataFrame, path: str):
+    with open(path, "w", encoding="utf-8") as f:
+        f.write('<div class="scroll-table-wrapper">' +
+                df.to_html(index=False, classes="expense-table",
+                           border=0, na_rep="") +
+                '</div>')
+
+# ───────────────────────── main entry ─────────────────────────
+def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
+    ensure(drop=rebuild_schema, conn=conn)
+    store(tkr, mode="annual", conn=conn); store(tkr, mode="quarterly", conn=conn)
+    yr = yearly(tkr)
+    if yr.empty:
+        print(f"⛔ No data for {tkr}")
+        return
+    full = pd.concat([yr, ttm(tkr)], ignore_index=True)
+    chart_abs(full, tkr); chart_pct(full, tkr)
+
+    base = ["total_revenue", "cost_of_revenue", "research_and_development",
+            "selling_and_marketing", "general_and_admin", "sga_combined"]
+    cols = ["year_label"] + [c for c in base if c in full.columns]
+
+    # --------- absolute $ table ----------
+    abs_df = full[cols].sort_values("year_label")
+    abs_df = abs_df[abs_df["total_revenue"].notna() & (abs_df["total_revenue"] != 0)]
+    abs_df = abs_df.drop(columns=[c for c in abs_df.columns[1:]
+                                  if abs_df[c].notna().sum() == 0])
+    abs_fmt = abs_df.copy()
+    for c in abs_fmt.columns[1:]:
+        abs_fmt[c] = abs_fmt[c].apply(_fmt_short)
+    rename_abs = {"year_label": "Year", "total_revenue": "Revenue ($)",
+                  "cost_of_revenue": "Cost of Revenue ($)",
+                  "research_and_development": "R&D ($)",
+                  "selling_and_marketing": "Sales & Marketing ($)",
+                  "general_and_admin": "G&A ($)", "sga_combined": "SG&A ($)"}
+    abs_fmt = abs_fmt.rename(columns={k: v for k, v in rename_abs.items()
+                                      if k in abs_fmt.columns})
+    write_html(abs_fmt, os.path.join(OUTPUT_DIR,
+                                     f"{tkr}_expense_absolute.html"))
+
+    # --------- YoY % table ----------
+    yoy = full[cols].sort_values("year_label")
+    yoy = yoy[yoy["total_revenue"].notna() & (yoy["total_revenue"] != 0)]
+    for c in cols[1:]:
+        yoy[c] = (yoy[c].pct_change()
+                          .replace([np.inf, -np.inf], np.nan)
+                          .round(4) * 100)
+    yoy = yoy.drop(columns=[c for c in yoy.columns[1:]
+                            if yoy[c].notna().sum() == 0])
+    rename_pct = {"year_label": "Year",
+                  "total_revenue": "Revenue Change (%)",
+                  "cost_of_revenue": "Cost of Revenue Change (%)",
+                  "research_and_development": "R&D Change (%)",
+                  "selling_and_marketing": "Sales & Marketing Change (%)",
+                  "general_and_admin": "G&A Change (%)",
+                  "sga_combined": "SG&A Change (%)"}
+    yoy = yoy.rename(columns={k: v for k, v in rename_pct.items()
+                              if k in yoy.columns})
+    write_html(yoy, os.path.join(OUTPUT_DIR,
+                                 f"{tkr}_yoy_expense_change.html"))
+
+    print(f"[{tkr}] ✔ charts & tables generated")
+
+if __name__ == "__main__":
+    generate_expense_reports("AAPL")
