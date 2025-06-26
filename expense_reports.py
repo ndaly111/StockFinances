@@ -40,6 +40,7 @@ def _fmt_short(x: float, d: int = 1) -> str:
     return f"${x:.{d}f}"
 
 def _all_nan_or_zero(s: pd.Series) -> bool:
+    """True if the entire column is NaN OR zero."""
     return (s.replace(0, np.nan).notna().sum() == 0)
 
 def clean(v):
@@ -176,16 +177,10 @@ def chart_abs(df, tkr):
     plt.close()
 
 def chart_pct(df, tkr):
-    """
-    Stacked bar of expenses as % of revenue.
-    • Adds dashed 100 % line on top of bars
-    • Y-axis ceiling = next 10 above max + 10 % extra head-room
-    """
     f = df.sort_values("year_int"); f = f[f["total_revenue"] != 0]
     xl = f["year_label"].tolist()
     cats = _cats(f, f["sga_combined"].notna().any())
 
-    # compute % columns
     for _, c, _ in cats:
         f[c + "_pct"] = f[c] / f["total_revenue"] * 100
 
@@ -201,10 +196,8 @@ def chart_pct(df, tkr):
                         color="white", fontsize=8)
         bottoms += vals
 
-    # dashed 100 % reference line
     ax.axhline(100, ls="--", lw=1, color="black", zorder=5)
 
-    # head-room calculation
     max_total = bottoms.max()
     ylim_max = max(110, ((int(max_total / 10) + 1) * 10) + 10)
     ax.set_ylim(0, ylim_max)
@@ -223,9 +216,11 @@ def chart_pct(df, tkr):
 # ─────────────────── HTML helper ───────────────────
 def write_html(df: pd.DataFrame, path: str):
     with open(path, "w", encoding="utf-8") as f:
-        f.write('<div class="scroll-table-wrapper">' +
-                df.to_html(index=False, classes="expense-table", border=0, na_rep="") +
-                '</div>')
+        f.write(
+            '<div class="scroll-table-wrapper">' +
+            df.to_html(index=False, classes="expense-table", border=0, na_rep="") +
+            '</div>'
+        )
 
 # ─────────────────── main entry ───────────────────
 def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
@@ -242,17 +237,55 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
             "selling_and_marketing", "general_and_admin", "sga_combined"]
     cols = ["year_label"] + [c for c in base if c in full.columns]
 
-    # absolute-$ table
+    # -------- absolute-$ table --------
     abs_df = full[cols].sort_values("year_label")
     abs_df = abs_df[abs_df["total_revenue"].notna() & (abs_df["total_revenue"] != 0)]
     abs_df = abs_df.drop(columns=[c for c in abs_df.columns[1:] if _all_nan_or_zero(abs_df[c])])
+
     abs_fmt = abs_df.copy()
     for c in abs_fmt.columns[1:]:
         abs_fmt[c] = abs_fmt[c].apply(_fmt_short)
-    rename_abs = {"year_label": "Year", "total_revenue": "Revenue ($)",
-                  "cost_of_revenue": "Cost of Revenue ($)",
-                  "research_and_development": "R&D ($)",
-                  "selling_and_marketing": "Sales & Marketing ($)",
-                  "general_and_admin": "G&A ($)", "sga_combined": "SG&A ($)"}
+
+    rename_abs = {
+        "year_label": "Year",
+        "total_revenue": "Revenue ($)",
+        "cost_of_revenue": "Cost of Revenue ($)",
+        "research_and_development": "R&D ($)",
+        "selling_and_marketing": "Sales & Marketing ($)",
+        "general_and_admin": "G&A ($)",
+        "sga_combined": "SG&A ($)"
+    }
     abs_fmt = abs_fmt.rename(columns={k: v for k, v in rename_abs.items() if k in abs_fmt.columns})
-    write_html(abs_fmt, os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute
+    write_html(
+        abs_fmt,
+        os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute.html")  # ★ fixed
+    )
+
+    # -------- YoY-% table --------
+    yoy = full[cols].sort_values("year_label")
+    yoy = yoy[yoy["total_revenue"].notna() & (yoy["total_revenue"] != 0)]
+    for c in cols[1:]:
+        yoy[c] = (yoy[c].pct_change().replace([np.inf, -np.inf], np.nan).round(4) * 100)
+
+    yoy = yoy.drop(columns=[c for c in yoy.columns[1:] if yoy[c].notna().sum() == 0])
+    yoy = yoy[yoy.iloc[:, 1:].notna().any(axis=1)]
+
+    rename_pct = {
+        "year_label": "Year",
+        "total_revenue": "Revenue Change (%)",
+        "cost_of_revenue": "Cost of Revenue Change (%)",
+        "research_and_development": "R&D Change (%)",
+        "selling_and_marketing": "Sales & Marketing Change (%)",
+        "general_and_admin": "G&A Change (%)",
+        "sga_combined": "SG&A Change (%)"
+    }
+    yoy = yoy.rename(columns={k: v for k, v in rename_pct.items() if k in yoy.columns})
+    write_html(
+        yoy,
+        os.path.join(OUTPUT_DIR, f"{tkr}_yoy_expense_change.html")  # ★ fixed
+    )
+
+    print(f"[{tkr}] ✔ charts & tables generated")
+
+if __name__ == "__main__":
+    generate_expense_reports("AAPL")
