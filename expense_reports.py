@@ -13,10 +13,11 @@ import os, sqlite3
 from datetime import datetime
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+from matplotlib import colors as mcolors          # ← NEW
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib.ticker import FuncFormatter
 
 from expense_labels import (
     COST_OF_REVENUE, RESEARCH_AND_DEVELOPMENT, SELLING_AND_MARKETING,
@@ -28,7 +29,7 @@ DB_PATH, OUTPUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 __all__ = ["generate_expense_reports"]
 
-# ─────────────────── helper utils ────────────────────
+# ───────────────── helper utils ─────────────────
 _SUFFIXES = [(1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")]
 
 def _fmt_short(x: float, d: int = 1) -> str:
@@ -40,7 +41,6 @@ def _fmt_short(x: float, d: int = 1) -> str:
     return f"${x:.{d}f}"
 
 def _all_nan_or_zero(s: pd.Series) -> bool:
-    """True if the entire column is NaN OR zero."""
     return (s.replace(0, np.nan).notna().sum() == 0)
 
 def clean(v):
@@ -67,7 +67,7 @@ def extract_expenses(r: pd.Series):
         pick_any(r, OTHER_OPERATING),
     )
 
-# ─────────────────── DB schema / ingest ───────────────────
+# ───────────────── DB schema / ingest ─────────────────
 TABLES = ("IncomeStatement", "QuarterlyIncomeStatement")
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS {n}(
@@ -114,7 +114,7 @@ def store(tkr, *, mode="annual", conn=None):
     if own:
         conn.close()
 
-# ─────────────────── fetch helpers ───────────────────
+# ───────────────── fetch helpers ─────────────────
 def yearly(tkr):
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker=?", conn, params=(tkr,))
@@ -146,7 +146,7 @@ def ttm(tkr):
     out.insert(0, "year_label", "TTM"); out["year_int"] = np.nan
     return out
 
-# ─────────────────── chart helpers ───────────────────
+# ───────────────── chart helpers ─────────────────
 def _cats(df, combo):
     base = [
         ("Cost of Revenue", "cost_of_revenue", "#6d6d6d"),
@@ -177,29 +177,41 @@ def chart_abs(df, tkr):
     plt.close()
 
 def chart_pct(df, tkr):
+    """
+    Stacked bars of expenses as % of revenue with:
+      • dashed 100 % line
+      • adaptive head-room
+      • label colour chosen for contrast
+    """
     f = df.sort_values("year_int"); f = f[f["total_revenue"] != 0]
     xl = f["year_label"].tolist()
-    cats = _cats(f, f["sga_combined"].notna().any())
 
-    for _, c, _ in cats:
-        f[c + "_pct"] = f[c] / f["total_revenue"] * 100
+    cats = _cats(f, f["sga_combined"].notna().any())
+    for _, col, _ in cats:
+        f[col + "_pct"] = f[col] / f["total_revenue"] * 100
+
+    def _text_color(clr: str) -> str:            # ← NEW (colour-safe)
+        r, g, b = mcolors.to_rgb(clr)            # converts any valid colour
+        return "white" if (0.299*r + 0.587*g + 0.114*b) < 0.55 else "black"
 
     fig, ax = plt.subplots(figsize=(11, 6))
     bottoms = np.zeros(len(f))
 
-    for lbl, c, clr in cats:
-        vals = f[c + "_pct"].fillna(0).values
+    for lbl, col, clr in cats:
+        vals = f[col + "_pct"].fillna(0).values
         ax.bar(xl, vals, bottom=bottoms, color=clr, width=.6, label=lbl, zorder=2)
         for x, y0, v in zip(xl, bottoms, vals):
             if v > 4:
-                ax.text(x, y0 + v / 2, f"{v:.1f}%", ha="center", va="center",
-                        color="white", fontsize=8)
+                ax.text(
+                    x, y0 + v/2, f"{v:.1f}%", ha="center", va="center",
+                    fontsize=8, color=_text_color(clr)
+                )
         bottoms += vals
 
     ax.axhline(100, ls="--", lw=1, color="black", zorder=5)
 
     max_total = bottoms.max()
-    ylim_max = max(110, ((int(max_total / 10) + 1) * 10) + 10)
+    ylim_max = 100 if max_total <= 100 else ((int(max_total/10)+1)*10) + 10
     ax.set_ylim(0, ylim_max)
     ax.set_yticks(np.arange(0, ylim_max + 1, 10))
 
@@ -209,11 +221,10 @@ def chart_pct(df, tkr):
     plt.tight_layout()
 
     out = os.path.join(OUTPUT_DIR, f"{tkr}_expenses_pct_of_rev.png")
-    fig.savefig(out)
-    plt.close()
-    print(f"[{tkr}] expense-percent chart saved → {out}")
+    fig.savefig(out); plt.close()
+    print(f"[{tkr}] expense-% chart saved → {out}")
 
-# ─────────────────── HTML helper ───────────────────
+# ───────────────── HTML helper ─────────────────
 def write_html(df: pd.DataFrame, path: str):
     with open(path, "w", encoding="utf-8") as f:
         f.write(
@@ -222,10 +233,12 @@ def write_html(df: pd.DataFrame, path: str):
             '</div>'
         )
 
-# ─────────────────── main entry ───────────────────
+# ───────────────── main entry ─────────────────
 def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
     ensure(drop=rebuild_schema, conn=conn)
-    store(tkr, mode="annual", conn=conn); store(tkr, mode="quarterly", conn=conn)
+    store(tkr, mode="annual", conn=conn)
+    store(tkr, mode="quarterly", conn=conn)
+
     yr = yearly(tkr)
     if yr.empty:
         print(f"⛔ No data for {tkr}")
@@ -237,53 +250,39 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
             "selling_and_marketing", "general_and_admin", "sga_combined"]
     cols = ["year_label"] + [c for c in base if c in full.columns]
 
-    # -------- absolute-$ table --------
+    # absolute-$ table
     abs_df = full[cols].sort_values("year_label")
     abs_df = abs_df[abs_df["total_revenue"].notna() & (abs_df["total_revenue"] != 0)]
     abs_df = abs_df.drop(columns=[c for c in abs_df.columns[1:] if _all_nan_or_zero(abs_df[c])])
-
     abs_fmt = abs_df.copy()
     for c in abs_fmt.columns[1:]:
         abs_fmt[c] = abs_fmt[c].apply(_fmt_short)
-
     rename_abs = {
-        "year_label": "Year",
-        "total_revenue": "Revenue ($)",
-        "cost_of_revenue": "Cost of Revenue ($)",
-        "research_and_development": "R&D ($)",
-        "selling_and_marketing": "Sales & Marketing ($)",
-        "general_and_admin": "G&A ($)",
+        "year_label": "Year", "total_revenue": "Revenue ($)",
+        "cost_of_revenue": "Cost of Revenue ($)", "research_and_development": "R&D ($)",
+        "selling_and_marketing": "Sales & Marketing ($)", "general_and_admin": "G&A ($)",
         "sga_combined": "SG&A ($)"
     }
-    abs_fmt = abs_fmt.rename(columns={k: v for k, v in rename_abs.items() if k in abs_fmt.columns})
-    write_html(
-        abs_fmt,
-        os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute.html")  # ★ fixed
-    )
+    abs_fmt = abs_fmt.rename(columns={k:v for k,v in rename_abs.items() if k in abs_fmt.columns})
+    write_html(abs_fmt, os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute.html"))
 
-    # -------- YoY-% table --------
+    # YoY-% table
     yoy = full[cols].sort_values("year_label")
     yoy = yoy[yoy["total_revenue"].notna() & (yoy["total_revenue"] != 0)]
     for c in cols[1:]:
-        yoy[c] = (yoy[c].pct_change().replace([np.inf, -np.inf], np.nan).round(4) * 100)
-
+        yoy[c] = (yoy[c].pct_change().replace([np.inf,-np.inf], np.nan).round(4)*100)
     yoy = yoy.drop(columns=[c for c in yoy.columns[1:] if yoy[c].notna().sum() == 0])
-    yoy = yoy[yoy.iloc[:, 1:].notna().any(axis=1)]
-
+    yoy = yoy[yoy.iloc[:,1:].notna().any(axis=1)]
     rename_pct = {
-        "year_label": "Year",
-        "total_revenue": "Revenue Change (%)",
+        "year_label": "Year", "total_revenue": "Revenue Change (%)",
         "cost_of_revenue": "Cost of Revenue Change (%)",
         "research_and_development": "R&D Change (%)",
         "selling_and_marketing": "Sales & Marketing Change (%)",
         "general_and_admin": "G&A Change (%)",
         "sga_combined": "SG&A Change (%)"
     }
-    yoy = yoy.rename(columns={k: v for k, v in rename_pct.items() if k in yoy.columns})
-    write_html(
-        yoy,
-        os.path.join(OUTPUT_DIR, f"{tkr}_yoy_expense_change.html")  # ★ fixed
-    )
+    yoy = yoy.rename(columns={k:v for k,v in rename_pct.items() if k in yoy.columns})
+    write_html(yoy, os.path.join(OUTPUT_DIR, f"{tkr}_yoy_expense_change.html"))
 
     print(f"[{tkr}] ✔ charts & tables generated")
 
