@@ -13,10 +13,11 @@ import os, sqlite3
 from datetime import datetime
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+from matplotlib import colors as mcolors          # ← NEW
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from matplotlib.ticker import FuncFormatter
 
 from expense_labels import (
     COST_OF_REVENUE, RESEARCH_AND_DEVELOPMENT, SELLING_AND_MARKETING,
@@ -180,21 +181,18 @@ def chart_pct(df, tkr):
     Stacked bars of expenses as % of revenue with:
       • dashed 100 % line
       • adaptive head-room
-      • label color (white/black) chosen for contrast
+      • label colour chosen for contrast
     """
-    f = df.sort_values("year_int")
-    f = f[f["total_revenue"] != 0]
+    f = df.sort_values("year_int"); f = f[f["total_revenue"] != 0]
     xl = f["year_label"].tolist()
 
     cats = _cats(f, f["sga_combined"].notna().any())
-
-    # % columns
     for _, col, _ in cats:
         f[col + "_pct"] = f[col] / f["total_revenue"] * 100
 
-    def _text_color(hex_color: str) -> str:
-        r, g, b = (int(hex_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
-        return "white" if (0.299*r + 0.587*g + 0.114*b) < 140 else "black"
+    def _text_color(clr: str) -> str:            # ← NEW (colour-safe)
+        r, g, b = mcolors.to_rgb(clr)            # converts any valid colour
+        return "white" if (0.299*r + 0.587*g + 0.114*b) < 0.55 else "black"
 
     fig, ax = plt.subplots(figsize=(11, 6))
     bottoms = np.zeros(len(f))
@@ -204,16 +202,18 @@ def chart_pct(df, tkr):
         ax.bar(xl, vals, bottom=bottoms, color=clr, width=.6, label=lbl, zorder=2)
         for x, y0, v in zip(xl, bottoms, vals):
             if v > 4:
-                ax.text(x, y0 + v/2, f"{v:.1f}%", ha="center", va="center",
-                        fontsize=8, color=_text_color(clr))
+                ax.text(
+                    x, y0 + v/2, f"{v:.1f}%", ha="center", va="center",
+                    fontsize=8, color=_text_color(clr)
+                )
         bottoms += vals
 
     ax.axhline(100, ls="--", lw=1, color="black", zorder=5)
 
     max_total = bottoms.max()
-    ylim_max = 100 if max_total <= 100 else ((int(max_total/10) + 1) * 10) + 10
+    ylim_max = 100 if max_total <= 100 else ((int(max_total/10)+1)*10) + 10
     ax.set_ylim(0, ylim_max)
-    ax.set_yticks(np.arange(0, ylim_max+1, 10))
+    ax.set_yticks(np.arange(0, ylim_max + 1, 10))
 
     ax.set_ylabel("Percent of Revenue")
     ax.set_title(f"Expenses as % of Revenue — {tkr}")
@@ -250,15 +250,13 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
             "selling_and_marketing", "general_and_admin", "sga_combined"]
     cols = ["year_label"] + [c for c in base if c in full.columns]
 
-    # -------- absolute-$ table --------
+    # absolute-$ table
     abs_df = full[cols].sort_values("year_label")
     abs_df = abs_df[abs_df["total_revenue"].notna() & (abs_df["total_revenue"] != 0)]
     abs_df = abs_df.drop(columns=[c for c in abs_df.columns[1:] if _all_nan_or_zero(abs_df[c])])
-
     abs_fmt = abs_df.copy()
     for c in abs_fmt.columns[1:]:
         abs_fmt[c] = abs_fmt[c].apply(_fmt_short)
-
     rename_abs = {
         "year_label": "Year", "total_revenue": "Revenue ($)",
         "cost_of_revenue": "Cost of Revenue ($)", "research_and_development": "R&D ($)",
@@ -268,19 +266,19 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
     abs_fmt = abs_fmt.rename(columns={k:v for k,v in rename_abs.items() if k in abs_fmt.columns})
     write_html(abs_fmt, os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute.html"))
 
-    # -------- YoY-% table --------
+    # YoY-% table
     yoy = full[cols].sort_values("year_label")
     yoy = yoy[yoy["total_revenue"].notna() & (yoy["total_revenue"] != 0)]
     for c in cols[1:]:
         yoy[c] = (yoy[c].pct_change().replace([np.inf,-np.inf], np.nan).round(4)*100)
-
     yoy = yoy.drop(columns=[c for c in yoy.columns[1:] if yoy[c].notna().sum() == 0])
     yoy = yoy[yoy.iloc[:,1:].notna().any(axis=1)]
-
     rename_pct = {
         "year_label": "Year", "total_revenue": "Revenue Change (%)",
-        "cost_of_revenue": "Cost of Revenue Change (%)", "research_and_development": "R&D Change (%)",
-        "selling_and_marketing": "Sales & Marketing Change (%)", "general_and_admin": "G&A Change (%)",
+        "cost_of_revenue": "Cost of Revenue Change (%)",
+        "research_and_development": "R&D Change (%)",
+        "selling_and_marketing": "Sales & Marketing Change (%)",
+        "general_and_admin": "G&A Change (%)",
         "sga_combined": "SG&A Change (%)"
     }
     yoy = yoy.rename(columns={k:v for k,v in rename_pct.items() if k in yoy.columns})
