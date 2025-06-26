@@ -6,6 +6,7 @@ and generates two charts per ticker:
 
   1) Revenue vs. stacked expenses (absolute $)
   2) Expenses as % of revenue
+  3) YoY Expense Change table saved as HTML
 """
 
 from __future__ import annotations
@@ -327,6 +328,35 @@ def generate_expense_reports(ticker: str, *, rebuild_schema: bool = False, conn:
 
     plot_expense_charts(full, ticker)
     plot_expense_percent_chart(full, ticker)
+
+    # Generate YoY Expense Change Table
+    yoy_df = full.copy()
+    yoy_df = yoy_df[[
+        "year_label", "total_revenue", "cost_of_revenue",
+        "research_and_development", "selling_and_marketing",
+        "general_and_admin"
+    ]].sort_values("year_label")
+
+    for col in yoy_df.columns[1:]:
+        yoy_df[col] = yoy_df[col].pct_change().round(4) * 100
+
+    yoy_df = yoy_df.rename(columns={
+        "year_label": "Year",
+        "total_revenue": "Revenue Change",
+        "cost_of_revenue": "Cost of Revenue Change",
+        "research_and_development": "R&D Change",
+        "selling_and_marketing": "Sales and Marketing Change",
+        "general_and_admin": "General and Administrative Change"
+    })
+
+    html_path = os.path.join(OUTPUT_DIR, f"{ticker}_yoy_expense_change.html")
+    html_content = '<div class="scroll-table-wrapper">' + \
+                   yoy_df.to_html(index=False, classes="expense-table", border=0) + \
+                   '</div>'
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html_content)
+
+    print(f"[{ticker}] YoY expense change table saved to {html_path}")
 
 
 if __name__ == "__main__":
