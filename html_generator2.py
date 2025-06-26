@@ -1,3 +1,7 @@
+# ───────────────────────────────────────────────────────────
+# html_generator2.py  —  FULL FILE (copy & paste)
+# Builds index.html + per-ticker pages using Jinja templates
+# ───────────────────────────────────────────────────────────
 from jinja2 import Environment, FileSystemLoader
 import os
 import pandas as pd
@@ -6,7 +10,7 @@ import yfinance as yf
 import numpy as np
 
 # ───────────────────────────────────────────────────────────
-# Basic setup (legacy)
+# Basic setup
 # ───────────────────────────────────────────────────────────
 db_path = 'Stock Data.db'
 env = Environment(loader=FileSystemLoader('templates'))
@@ -28,7 +32,7 @@ def create_template(template_path: str, content: str) -> None:
         f.write(content)
 
 # ───────────────────────────────────────────────────────────
-# DB helpers (legacy)
+# DB helpers
 # ───────────────────────────────────────────────────────────
 def get_company_short_name(ticker: str, cursor) -> str:
     cursor.execute("SELECT short_name FROM Tickers_Info WHERE ticker = ?", (ticker,))
@@ -171,8 +175,8 @@ def ensure_templates_exist():
   <div class="carousel-container">
     <img class="carousel-item" src="../{{ ticker_data.expense_chart_path }}"         alt="Rev vs Exp">
     <img class="carousel-item" src="../{{ ticker_data.expense_percent_chart_path }}" alt="Exp % of Rev">
-    <div class="carousel-item">{{ ticker_data.expense_table_html | safe }}</div>
-    <div class="carousel-item">{{ ticker_data.expense_yoy_table_html | safe }}</div>
+    <div class="carousel-item">{{ ticker_data.expense_abs_html | safe }}</div>   {# NEW absolute $ table #}
+    <div class="carousel-item">{{ ticker_data.expense_yoy_html | safe }}</div>   {# YoY % table #}
   </div>
 
   {% if ticker_data.unmapped_expense_html %}
@@ -189,7 +193,6 @@ def ensure_templates_exist():
   </div>
   {% endif %}
 
-  {# ── NEW: implied-growth output right after valuation ── #}
   {% if ticker_data.implied_growth_chart_path %}
   <h1>{{ ticker_data.ticker }} – Implied Growth Summary</h1>
   <img src="../{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth Chart">
@@ -204,7 +207,7 @@ def ensure_templates_exist():
     create_template('templates/ticker_template.html', ticker_template_content)
 
 # ───────────────────────────────────────────────────────────
-# Home-page builder (legacy)
+# Home-page builder
 # ───────────────────────────────────────────────────────────
 def create_home_page(tickers, output_dir,
                      dashboard_table, avg_values,
@@ -222,7 +225,7 @@ def create_home_page(tickers, output_dir,
         ))
 
 # ───────────────────────────────────────────────────────────
-# Per-ticker page builder (now feeds implied-growth fields)
+# Per-ticker page builder (updated keys)
 # ───────────────────────────────────────────────────────────
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
     with sqlite3.connect(db_path) as conn:
@@ -233,7 +236,7 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 'ticker': t,
                 'company_name': name,
 
-                # legacy paths and html snippets
+                # legacy paths/snippets
                 'ticker_info':      get_file_content_or_placeholder(f"{charts_dir}/{t}_ticker_info.html"),
                 'revenue_net_income_chart_path': f"{charts_dir}/{t}_revenue_net_income_chart.png",
                 'eps_chart_path':                f"{charts_dir}/{t}_eps_chart.png",
@@ -243,8 +246,15 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 'yoy_growth_table_html':       get_file_content_or_placeholder(f"{charts_dir}/{t}_yoy_growth_tbl.html"),
                 'expense_chart_path':          f"{charts_dir}/{t}_rev_expense_chart.png",
                 'expense_percent_chart_path':  f"{charts_dir}/{t}_expense_percent_chart.png",
-                'expense_table_html':          get_file_content_or_placeholder(f"{charts_dir}/{t}_yearly_financials.html"),
-                'expense_yoy_table_html':      get_file_content_or_placeholder(f"{charts_dir}/{t}_yoy_expense_change.html"),
+
+                # ─── NEW keys ───
+                'expense_abs_html': get_file_content_or_placeholder(
+                                        f"{charts_dir}/{t}_expense_absolute.html"
+                                    ),
+                'expense_yoy_html': get_file_content_or_placeholder(
+                                        f"{charts_dir}/{t}_yoy_expense_change.html"
+                                    ),
+
                 'balance_sheet_chart_path':    f"{charts_dir}/{t}_balance_sheet_chart.png",
                 'balance_sheet_table_html':    get_file_content_or_placeholder(f"{charts_dir}/{t}_balance_sheet_table.html"),
                 'revenue_yoy_change_chart_path': f"{charts_dir}/{t}_revenue_yoy_change.png",
@@ -255,7 +265,7 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 'unmapped_expense_html':        get_file_content_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 'eps_dividend_chart_path':      f"{charts_dir}/{t}_eps_dividend_forecast.png",
 
-                # NEW implied-growth outputs
+                # Implied-growth outputs
                 'implied_growth_chart_path': f"{charts_dir}/{t}_implied_growth_plot.png",
                 'implied_growth_table_html': get_file_content_or_placeholder(
                                                 f"{charts_dir}/{t}_implied_growth_summary.html",
@@ -270,7 +280,7 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 f.write(tpl.render(ticker_data=d))
 
 # ───────────────────────────────────────────────────────────
-# Dashboard-table generator (legacy logic)
+# Dashboard-table generator (unchanged)
 # ───────────────────────────────────────────────────────────
 def generate_dashboard_table(dashboard_data):
     df = pd.DataFrame(dashboard_data, columns=[
@@ -279,10 +289,8 @@ def generate_dashboard_table(dashboard_data):
         "Finviz TTM Value", "Finviz Forward Value"
     ])
 
-    # hyperlink to ticker pages
     df["Ticker"] = df["Ticker"].apply(lambda t: f'<a href="pages/{t}_page.html">{t}</a>')
 
-    # numeric helpers
     for col in ["Nick's TTM Value", "Nick's Forward Value",
                 "Finviz TTM Value", "Finviz Forward Value"]:
         df[col + "_num"] = (
@@ -294,11 +302,10 @@ def generate_dashboard_table(dashboard_data):
 
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
 
-    # aggregates
     ttm, fwd   = df["Nick's TTM Value_num"].dropna(),   df["Nick's Forward Value_num"].dropna()
     fttm, ffwd = df["Finviz TTM Value_num"].dropna(),   df["Finviz Forward Value_num"].dropna()
 
-    def fmt(x): return f"{x:.1f}%" if pd.notnull(x) else "–"
+    fmt = lambda x: f"{x:.1f}%" if pd.notnull(x) else "–"
 
     summary = [
         ["Average", fmt(ttm.mean()), fmt(fwd.mean()), fmt(fttm.mean()), fmt(ffwd.mean())],
@@ -330,7 +337,7 @@ def generate_dashboard_table(dashboard_data):
     }
 
 # ───────────────────────────────────────────────────────────
-# Top-level wrapper (legacy mini-main)
+# Top-level wrapper
 # ───────────────────────────────────────────────────────────
 def html_generator2(tickers, financial_data,
                     full_dashboard_html, avg_values,
@@ -353,6 +360,6 @@ def html_generator2(tickers, financial_data,
 
     prepare_and_generate_ticker_pages(tickers, '.', 'charts/')
 
-# Optional stub so nothing breaks if someone calls this file directly
+# Optional stub
 if __name__ == "__main__":
     print("html_generator2 is intended to be invoked from main_remote.py")
