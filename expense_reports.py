@@ -14,11 +14,14 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-from matplotlib import colors as mcolors          # ← NEW
+from matplotlib import colors as mcolors               # colour helper
 import numpy as np
 import pandas as pd
 import yfinance as yf
 
+# ──────────────────────────────────────────────────────────────
+# labels defined in a separate file you already have
+# ──────────────────────────────────────────────────────────────
 from expense_labels import (
     COST_OF_REVENUE, RESEARCH_AND_DEVELOPMENT, SELLING_AND_MARKETING,
     GENERAL_AND_ADMIN, SGA_COMBINED, FACILITIES_DA, PERSONNEL_COSTS,
@@ -29,10 +32,11 @@ DB_PATH, OUTPUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 __all__ = ["generate_expense_reports"]
 
-# ───────────────── helper utils ─────────────────
+# ─────────────────────────── helpers ──────────────────────────
 _SUFFIXES = [(1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")]
 
 def _fmt_short(x: float, d: int = 1) -> str:
+    """Pretty-print numbers with K/M/B/T suffix."""
     if pd.isna(x):
         return ""
     for div, suf in _SUFFIXES:
@@ -40,8 +44,9 @@ def _fmt_short(x: float, d: int = 1) -> str:
             return f"${x/div:.{d}f}{suf}"
     return f"${x:.{d}f}"
 
-def _all_nan_or_zero(s: pd.Series) -> bool:
-    return (s.replace(0, np.nan).notna().sum() == 0)
+def _all_nan_or_zero(col: pd.Series) -> bool:
+    """True if entire column is NaN or zero."""
+    return (col.replace(0, np.nan).notna().sum() == 0)
 
 def clean(v):
     if pd.isna(v):
@@ -67,7 +72,7 @@ def extract_expenses(r: pd.Series):
         pick_any(r, OTHER_OPERATING),
     )
 
-# ───────────────── DB schema / ingest ─────────────────
+# ────────────────────── database schema / IO ─────────────────────
 TABLES = ("IncomeStatement", "QuarterlyIncomeStatement")
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS {n}(
@@ -101,12 +106,12 @@ def store(tkr, *, mode="annual", conn=None):
     if own:
         conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    tbl = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
+    table = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
     for idx, row in df.iterrows():
         pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
         c, r, m, a, s, f, p, i, o = extract_expenses(row)
         cur.execute(
-            f"INSERT OR REPLACE INTO {tbl} VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            f"INSERT OR REPLACE INTO {table} VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
             (tkr, clean(pe), clean(row.get("Total Revenue")), clean(c), clean(r),
              clean(m), clean(a), clean(s), clean(f), clean(p), clean(i), clean(o)),
         )
@@ -114,7 +119,7 @@ def store(tkr, *, mode="annual", conn=None):
     if own:
         conn.close()
 
-# ───────────────── fetch helpers ─────────────────
+# ─────────────────────── pull yearly / TTM ──────────────────────
 def yearly(tkr):
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker=?", conn, params=(tkr,))
@@ -136,25 +141,25 @@ def ttm(tkr):
     if q.empty:
         return q
     q["period_ending"] = pd.to_datetime(q["period_ending"])
-    rec = q.head(4).sort_values("period_ending")
-    if len(rec) < 4:
+    recent = q.head(4).sort_values("period_ending")
+    if len(recent) < 4:
         return pd.DataFrame()
-    exp = pd.date_range(end=rec["period_ending"].max(), periods=4, freq="Q")
-    if list(exp.to_period("Q")) != list(rec["period_ending"].dt.to_period("Q")):
+    expect = pd.date_range(end=recent["period_ending"].max(), periods=4, freq="Q")
+    if list(expect.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
         return pd.DataFrame()
-    out = rec.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
-    out.insert(0, "year_label", "TTM"); out["year_int"] = np.nan
-    return out
+    ttm_df = recent.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
+    ttm_df.insert(0, "year_label", "TTM"); ttm_df["year_int"] = np.nan
+    return ttm_df
 
-# ───────────────── chart helpers ─────────────────
+# ───────────────────────── chart helpers ─────────────────────────
 def _cats(df, combo):
     base = [
-        ("Cost of Revenue", "cost_of_revenue", "#6d6d6d"),
-        ("R&D", "research_and_development", "blue"),
-        ("G&A", "general_and_admin", "#ffb3c6"),
-        ("Selling & Marketing", "selling_and_marketing", "#ffc6e2"),
-        ("SG&A", "sga_combined", "#c2a5ff"),
-        ("Facilities / D&A", "facilities_da", "orange"),
+        ("Cost of Revenue",     "cost_of_revenue",          "#6d6d6d"),
+        ("R&D",                 "research_and_development", "blue"),
+        ("G&A",                 "general_and_admin",        "#ffb3c6"),
+        ("Selling & Marketing", "selling_and_marketing",    "#ffc6e2"),
+        ("SG&A",                "sga_combined",             "#c2a5ff"),
+        ("Facilities / D&A",    "facilities_da",            "orange"),
     ]
     if combo:
         base = [c for c in base if c[1] not in ("general_and_admin", "selling_and_marketing")]
@@ -166,7 +171,8 @@ def chart_abs(df, tkr):
     fig, ax = plt.subplots(figsize=(11, 6)); bot = np.zeros(len(f))
     for lbl, col, clr in cats:
         v = f[col].fillna(0).values
-        ax.bar(xl, v, bottom=bot, color=clr, width=.6, label=lbl); bot += v
+        ax.bar(xl, v, bottom=bot, color=clr, width=.6, label=lbl)
+        bot += v
     ax.plot(xl, f["total_revenue"], "k-o", lw=2, label="Revenue")
     ax.set_ylim(0, max(bot.max(), f["total_revenue"].max()) * 1.1)
     ax.set_title(f"Revenue vs Operating Expenses — {tkr}")
@@ -178,23 +184,22 @@ def chart_abs(df, tkr):
 
 def chart_pct(df, tkr):
     """
-    Stacked bars of expenses as % of revenue with:
-      • dashed 100 % line
-      • adaptive head-room
-      • label colour chosen for contrast
+    Stacked bars of expenses as % of revenue.
+    Shorter 11×4 inch figure + adaptive 5 % head-room for tidy layout.
     """
     f = df.sort_values("year_int"); f = f[f["total_revenue"] != 0]
     xl = f["year_label"].tolist()
-
     cats = _cats(f, f["sga_combined"].notna().any())
+
+    # % columns
     for _, col, _ in cats:
         f[col + "_pct"] = f[col] / f["total_revenue"] * 100
 
-    def _text_color(clr: str) -> str:            # ← NEW (colour-safe)
-        r, g, b = mcolors.to_rgb(clr)            # converts any valid colour
-        return "white" if (0.299*r + 0.587*g + 0.114*b) < 0.55 else "black"
+    def _text_color(clr: str) -> str:
+        r, g, b = mcolors.to_rgb(clr)
+        return "white" if (0.299*r + 0.587*g + 0.114*b) < 0.6 else "black"
 
-    fig, ax = plt.subplots(figsize=(11, 6))
+    fig, ax = plt.subplots(figsize=(11, 4))
     bottoms = np.zeros(len(f))
 
     for lbl, col, clr in cats:
@@ -202,50 +207,53 @@ def chart_pct(df, tkr):
         ax.bar(xl, vals, bottom=bottoms, color=clr, width=.6, label=lbl, zorder=2)
         for x, y0, v in zip(xl, bottoms, vals):
             if v > 4:
-                ax.text(
-                    x, y0 + v/2, f"{v:.1f}%", ha="center", va="center",
-                    fontsize=8, color=_text_color(clr)
-                )
+                ax.text(x, y0 + v/2, f"{v:.1f}%", ha="center", va="center",
+                        fontsize=8, color=_text_color(clr))
         bottoms += vals
 
     ax.axhline(100, ls="--", lw=1, color="black", zorder=5)
 
     max_total = bottoms.max()
-    ylim_max = 100 if max_total <= 100 else ((int(max_total/10)+1)*10) + 10
+    extra = max(5, max_total * 0.05)             # 5 pp or 5 %
+    ylim_max = np.ceil((max_total + extra) / 10) * 10
     ax.set_ylim(0, ylim_max)
     ax.set_yticks(np.arange(0, ylim_max + 1, 10))
 
     ax.set_ylabel("Percent of Revenue")
     ax.set_title(f"Expenses as % of Revenue — {tkr}")
     ax.legend(frameon=False, ncol=2)
+
+    fig.subplots_adjust(top=0.88)                # tighten top margin
     plt.tight_layout()
 
     out = os.path.join(OUTPUT_DIR, f"{tkr}_expenses_pct_of_rev.png")
-    fig.savefig(out); plt.close()
+    fig.savefig(out)
+    plt.close()
     print(f"[{tkr}] expense-% chart saved → {out}")
 
-# ───────────────── HTML helper ─────────────────
+# ───────────────────────── HTML helper ─────────────────────────
 def write_html(df: pd.DataFrame, path: str):
     with open(path, "w", encoding="utf-8") as f:
-        f.write(
-            '<div class="scroll-table-wrapper">' +
-            df.to_html(index=False, classes="expense-table", border=0, na_rep="") +
-            '</div>'
-        )
+        f.write('<div class="scroll-table-wrapper">' +
+                df.to_html(index=False, classes="expense-table", border=0, na_rep="") +
+                '</div>')
 
-# ───────────────── main entry ─────────────────
+# ──────────────────────────── main ────────────────────────────
 def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
     ensure(drop=rebuild_schema, conn=conn)
     store(tkr, mode="annual", conn=conn)
     store(tkr, mode="quarterly", conn=conn)
 
-    yr = yearly(tkr)
-    if yr.empty:
+    yearly_df = yearly(tkr)
+    if yearly_df.empty:
         print(f"⛔ No data for {tkr}")
         return
-    full = pd.concat([yr, ttm(tkr)], ignore_index=True)
-    chart_abs(full, tkr); chart_pct(full, tkr)
+    full = pd.concat([yearly_df, ttm(tkr)], ignore_index=True)
 
+    chart_abs(full, tkr)
+    chart_pct(full, tkr)
+
+    # ------------- tables -------------
     base = ["total_revenue", "cost_of_revenue", "research_and_development",
             "selling_and_marketing", "general_and_admin", "sga_combined"]
     cols = ["year_label"] + [c for c in base if c in full.columns]
@@ -258,10 +266,10 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
     for c in abs_fmt.columns[1:]:
         abs_fmt[c] = abs_fmt[c].apply(_fmt_short)
     rename_abs = {
-        "year_label": "Year", "total_revenue": "Revenue ($)",
-        "cost_of_revenue": "Cost of Revenue ($)", "research_and_development": "R&D ($)",
-        "selling_and_marketing": "Sales & Marketing ($)", "general_and_admin": "G&A ($)",
-        "sga_combined": "SG&A ($)"
+        "year_label": "Year",                       "total_revenue": "Revenue ($)",
+        "cost_of_revenue": "Cost of Revenue ($)",   "research_and_development": "R&D ($)",
+        "selling_and_marketing": "Sales & Marketing ($)",
+        "general_and_admin": "G&A ($)",             "sga_combined": "SG&A ($)"
     }
     abs_fmt = abs_fmt.rename(columns={k:v for k,v in rename_abs.items() if k in abs_fmt.columns})
     write_html(abs_fmt, os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute.html"))
@@ -274,17 +282,17 @@ def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
     yoy = yoy.drop(columns=[c for c in yoy.columns[1:] if yoy[c].notna().sum() == 0])
     yoy = yoy[yoy.iloc[:,1:].notna().any(axis=1)]
     rename_pct = {
-        "year_label": "Year", "total_revenue": "Revenue Change (%)",
+        "year_label": "Year",                       "total_revenue": "Revenue Change (%)",
         "cost_of_revenue": "Cost of Revenue Change (%)",
         "research_and_development": "R&D Change (%)",
         "selling_and_marketing": "Sales & Marketing Change (%)",
-        "general_and_admin": "G&A Change (%)",
-        "sga_combined": "SG&A Change (%)"
+        "general_and_admin": "G&A Change (%)",     "sga_combined": "SG&A Change (%)"
     }
     yoy = yoy.rename(columns={k:v for k,v in rename_pct.items() if k in yoy.columns})
     write_html(yoy, os.path.join(OUTPUT_DIR, f"{tkr}_yoy_expense_change.html"))
 
     print(f"[{tkr}] ✔ charts & tables generated")
 
+# ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     generate_expense_reports("AAPL")
