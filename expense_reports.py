@@ -182,61 +182,78 @@ def chart_abs(df, tkr):
     plt.savefig(os.path.join(OUTPUT_DIR, f"{tkr}_expenses_vs_revenue.png"))
     plt.close()
 
-def chart_pct(df, tkr):
+def chart_pct(df: pd.DataFrame, ticker: str) -> None:
     """
     Stacked bars of expenses as % of revenue.
-    Shorter 11×4 inch figure + adaptive 5 % head-room for tidy layout.
+       • legend outside plot
+       • 11×4 in figure
+       • just-enough head-room (+8 pp or +8 %, whichever larger)
+       • bbox_inches='tight' when saving  ➜ nothing is clipped
     """
-    f = df.sort_values("year_int"); f = f[f["total_revenue"] != 0]
-    xl = f["year_label"].tolist()
-    cats = _cats(f, f["sga_combined"].notna().any())
+    # ---------- data ----------
+    f = (df.sort_values("year_int")
+           .loc[lambda d: d["total_revenue"] != 0])
+    x_labels = f["year_label"].tolist()
 
-    # % columns
+    base = [
+        ("Cost of Revenue",     "cost_of_revenue",          "#6d6d6d"),
+        ("R&D",                 "research_and_development", "blue"),
+        ("G&A",                 "general_and_admin",        "#ffb3c6"),
+        ("Selling & Marketing", "selling_and_marketing",    "#ffc6e2"),
+        ("SG&A",                "sga_combined",             "#c2a5ff"),
+        ("Facilities / D&A",    "facilities_da",            "orange"),
+    ]
+    if f["sga_combined"].notna().any():
+        base = [c for c in base if c[1] not in ("general_and_admin",
+                                                "selling_and_marketing")]
+    cats = [c for c in base if c[1] in f.columns]
+
     for _, col, _ in cats:
         f[col + "_pct"] = f[col] / f["total_revenue"] * 100
 
-    def _text_color(clr: str) -> str:
-        r, g, b = mcolors.to_rgb(clr)
+    def _txt(colour: str) -> str:           # contrast check
+        r, g, b = mcolors.to_rgb(colour)
         return "white" if (0.299*r + 0.587*g + 0.114*b) < 0.6 else "black"
 
+    # ---------- plot ----------
     fig, ax = plt.subplots(figsize=(11, 4))
     bottoms = np.zeros(len(f))
 
-    for lbl, col, clr in cats:
+    for label, col, colour in cats:
         vals = f[col + "_pct"].fillna(0).values
-        ax.bar(xl, vals, bottom=bottoms, color=clr, width=.6, label=lbl, zorder=2)
-        for x, y0, v in zip(xl, bottoms, vals):
+        ax.bar(x_labels, vals, bottom=bottoms,
+               color=colour, width=.6, zorder=2)
+        for x, y0, v in zip(x_labels, bottoms, vals):
             if v > 4:
-                ax.text(x, y0 + v/2, f"{v:.1f}%", ha="center", va="center",
-                        fontsize=8, color=_text_color(clr))
+                ax.text(x, y0 + v/2, f"{v:.1f}%",
+                        ha="center", va="center",
+                        fontsize=8, color=_txt(colour))
         bottoms += vals
 
+    # dashed 100 % line
     ax.axhline(100, ls="--", lw=1, color="black", zorder=5)
 
-    max_total = bottoms.max()
-    extra = max(5, max_total * 0.05)             # 5 pp or 5 %
-    ylim_max = np.ceil((max_total + extra) / 10) * 10
-    ax.set_ylim(0, ylim_max)
-    ax.set_yticks(np.arange(0, ylim_max + 1, 10))
+    # ---------- tidy limits ----------
+    top = bottoms.max()
+    extra = max(8, top * 0.08)                 # +8 pp or +8 %
+    ylim = np.ceil((top + extra) / 10) * 10
+    ax.set_ylim(0, ylim)
+    ax.set_yticks(np.arange(0, ylim + 1, 10))
 
+    # ---------- cosmetics ----------
     ax.set_ylabel("Percent of Revenue")
-    ax.set_title(f"Expenses as % of Revenue — {tkr}")
-    ax.legend(frameon=False, ncol=2)
+    ax.set_title(f"Expenses as % of Revenue — {ticker}")
 
-    fig.subplots_adjust(top=0.88)                # tighten top margin
+    ax.legend([c[0] for c in cats],
+              bbox_to_anchor=(1.01, 0.5), loc="center left", frameon=False)
+
+    fig.subplots_adjust(right=0.78, top=0.88)  # give legend room + trim top
     plt.tight_layout()
 
-    out = os.path.join(OUTPUT_DIR, f"{tkr}_expenses_pct_of_rev.png")
-    fig.savefig(out)
+    out = os.path.join(OUTPUT_DIR, f"{ticker}_expenses_pct_of_rev.png")
+    fig.savefig(out, dpi=120, bbox_inches="tight")   # ensure nothing clipped
     plt.close()
-    print(f"[{tkr}] expense-% chart saved → {out}")
-
-# ───────────────────────── HTML helper ─────────────────────────
-def write_html(df: pd.DataFrame, path: str):
-    with open(path, "w", encoding="utf-8") as f:
-        f.write('<div class="scroll-table-wrapper">' +
-                df.to_html(index=False, classes="expense-table", border=0, na_rep="") +
-                '</div>')
+    print(f"[{ticker}] expense-% chart saved → {out}")
 
 # ──────────────────────────── main ────────────────────────────
 def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
