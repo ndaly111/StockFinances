@@ -1,20 +1,19 @@
-"""
-expense_reports.py
--------------------------------------------------------------------------------
-Per-ticker outputs
-  1) Revenue-vs-stacked-expense chart        ($)
-  2) Expenses-as-%-of-revenue chart          (%)
-  3) YoY expense-change HTML table           (%)
-  4) Absolute expense-dollar HTML table      ($)
-"""
+# expense_reports.py
+# -----------------------------------------------------------------------------
+# Builds annual / quarterly operating-expense tables, stores them in SQLite,
+# and generates two charts per ticker:
+#
+#   1) Revenue vs. stacked expenses (absolute $)
+#   2) Expenses as % of revenue
+#   3) YoY expense-change HTML table
+#   4) Absolute expense-dollar HTML table
+# -----------------------------------------------------------------------------
 
 from __future__ import annotations
 import os, sqlite3
 from datetime import datetime
-
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-from matplotlib import colors as mcolors
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -25,228 +24,141 @@ from expense_labels import (
     INSURANCE_CLAIMS, OTHER_OPERATING,
 )
 
-DB_PATH, OUTPUT_DIR = "Stock Data.db", "charts"
+DB_PATH        = "Stock Data.db"
+OUTPUT_DIR     = "charts"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 __all__ = ["generate_expense_reports"]
 
-_SUFFIXES = [(1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")]
+def _fetch_financials(ticker: str, freq: str = "annual") -> pd.DataFrame:
+    yf_ticker = yf.Ticker(ticker)
+    if freq == "annual":
+        df = yf_ticker.financials
+    else:
+        df = yf_ticker.quarterly_financials
+    return df.T.reset_index().rename(columns={"index": "Date"})
 
-def _fmt_short(x: float, d: int = 1) -> str:
-    if pd.isna(x): return ""
-    for div, suf in _SUFFIXES:
-        if abs(x) >= div:
-            return f"${x/div:.{d}f}{suf}"
-    return f"${x:.{d}f}"
-
-def _all_nan_or_zero(col: pd.Series) -> bool:
+def _is_empty(col: pd.Series) -> bool:
     return (col.replace(0, np.nan).notna().sum() == 0)
 
-def clean(v):
-    if pd.isna(v): return None
-    return v.isoformat() if isinstance(v, (pd.Timestamp, datetime)) else v
+def _format_dollar(val):
+    return f"${val/1e9:.1f}B" if val > 1e9 else f"${val/1e6:.1f}M"
 
-def pick_any(row: pd.Series, labels):
-    for k in row.index:
-        if pd.notna(row[k]) and any(lbl.lower() in k.lower() for lbl in labels):
-            return row[k]
-    return None
-
-def extract_expenses(r: pd.Series):
-    return (
-        pick_any(r, COST_OF_REVENUE),
-        pick_any(r, RESEARCH_AND_DEVELOPMENT),
-        pick_any(r, SELLING_AND_MARKETING),
-        pick_any(r, GENERAL_AND_ADMIN),
-        pick_any(r, SGA_COMBINED),
-        pick_any(r, FACILITIES_DA),
-        pick_any(r, PERSONNEL_COSTS),
-        pick_any(r, INSURANCE_CLAIMS),
-        pick_any(r, OTHER_OPERATING),
+def _cats(df: pd.DataFrame) -> dict[str, list[str]]:
+    # Use SG&A fallback logic
+    has_sga = not _is_empty(df.get("Selling General and Administrative", pd.Series()))
+    has_sep = (
+        not _is_empty(df.get("Selling And Marketing Expense", pd.Series())) or
+        not _is_empty(df.get("General And Administrative Expense", pd.Series()))
     )
 
-TABLES = ("IncomeStatement", "QuarterlyIncomeStatement")
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS {n}(
-  ticker TEXT, period_ending TEXT,
-  total_revenue REAL, cost_of_revenue REAL, research_and_development REAL,
-  selling_and_marketing REAL, general_and_admin REAL, sga_combined REAL,
-  facilities_da REAL, personnel_costs REAL, insurance_claims REAL,
-  other_operating REAL, PRIMARY KEY(ticker,period_ending));
-"""
-
-def ensure(drop=False, *, conn=None):
-    own = conn is None
-    if own: conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    for t in TABLES:
-        if drop: cur.execute(f"DROP TABLE IF EXISTS {t}")
-        cur.execute(SCHEMA.format(n=t))
-    conn.commit(); cur.close()
-    if own: conn.close()
-
-def store(tkr, *, mode="annual", conn=None):
-    df = (yf.Ticker(tkr).financials.transpose()
-          if mode == "annual"
-          else yf.Ticker(tkr).quarterly_financials.transpose())
-    if df.empty: return
-    own = conn is None
-    if own: conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    table = "IncomeStatement" if mode == "annual" else "QuarterlyIncomeStatement"
-    for idx, row in df.iterrows():
-        pe = idx.to_pydatetime() if isinstance(idx, pd.Timestamp) else idx
-        c, r, m, a, s, f, p, i, o = extract_expenses(row)
-        cur.execute(
-            f"INSERT OR REPLACE INTO {table} VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-            (tkr, clean(pe), clean(row.get("Total Revenue")), clean(c), clean(r),
-             clean(m), clean(a), clean(s), clean(f), clean(p), clean(i), clean(o)),
-        )
-    conn.commit(); cur.close()
-    if own: conn.close()
-
-def yearly(tkr):
-    conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker=?", conn, params=(tkr,))
-    conn.close()
-    if df.empty: return df
-    df["period_ending"] = pd.to_datetime(df["period_ending"])
-    df["year_int"] = df["period_ending"].dt.year
-    g = df.groupby("year_int", as_index=False).sum(numeric_only=True)
-    g["year_label"] = g["year_int"].astype(str)
-    return g
-
-def ttm(tkr):
-    conn = sqlite3.connect(DB_PATH)
-    q = pd.read_sql_query("SELECT * FROM QuarterlyIncomeStatement WHERE ticker=? ORDER BY period_ending DESC", conn, params=(tkr,))
-    conn.close()
-    if q.empty: return q
-    q["period_ending"] = pd.to_datetime(q["period_ending"])
-    recent = q.head(4).sort_values("period_ending")
-    if len(recent) < 4: return pd.DataFrame()
-    expect = pd.date_range(end=recent["period_ending"].max(), periods=4, freq="Q")
-    if list(expect.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
-        return pd.DataFrame()
-    ttm_df = recent.drop(columns=["ticker", "period_ending"]).sum().to_frame().T
-    ttm_df.insert(0, "year_label", "TTM"); ttm_df["year_int"] = np.nan
-    return ttm_df
-
-def _cats(df, combo):
-    base = [
-        ("Cost of Revenue",     "cost_of_revenue",          "#6d6d6d"),
-        ("R&D",                 "research_and_development", "blue"),
-        ("G&A",                 "general_and_admin",        "#ffb3c6"),
-        ("Selling & Marketing", "selling_and_marketing",    "#ffc6e2"),
-        ("SG&A",                "sga_combined",             "#c2a5ff"),
-        ("Facilities / D&A",    "facilities_da",            "orange"),
-        ("Personnel",           "personnel_costs",          "#f5b14c"),
-        ("Insurance/Claims",    "insurance_claims",         "#d4a5a5"),
-        ("Other Op.",           "other_operating",          "#c4c4c4"),
-    ]
-    if combo:
-        base = [c for c in base if c[1] not in ("general_and_admin", "selling_and_marketing")]
-    return [c for c in base if c[1] in df.columns]
-
-def chart_abs(df, tkr):
-    f = df.sort_values("year_int"); xl = f["year_label"].tolist()
-    cats = _cats(f, f["sga_combined"].notna().any())
-    fig, ax = plt.subplots(figsize=(11, 6)); bot = np.zeros(len(f))
-    for lbl, col, clr in cats:
-        v = f[col].fillna(0).values
-        ax.bar(xl, v, bottom=bot, color=clr, width=.6, label=lbl)
-        bot += v
-    ax.plot(xl, f["total_revenue"], "k-o", lw=2, label="Revenue")
-    ax.set_ylim(0, max(bot.max(), f["total_revenue"].max()) * 1.1)
-    ax.set_title(f"Revenue vs Operating Expenses — {tkr}")
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: _fmt_short(x)))
-    ax.legend(frameon=False, ncol=2)
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, f"{tkr}_expenses_vs_revenue.png"))
-    plt.close()
-
-def chart_pct(df: pd.DataFrame, ticker: str) -> None:
-    f = df.sort_values("year_int").loc[lambda d: d["total_revenue"] != 0]
-    x_labels = f["year_label"].tolist()
-    base = _cats(f, f["sga_combined"].notna().any())
-    for _, col, _ in base:
-        f[col + "_pct"] = f[col] / f["total_revenue"] * 100
-    def _txt(colour: str) -> str:
-        r, g, b = mcolors.to_rgb(colour)
-        return "white" if (0.299*r + 0.587*g + 0.114*b) < 0.6 else "black"
-    fig, ax = plt.subplots(figsize=(11, 4))
-    bottoms = np.zeros(len(f))
-    for label, col, colour in base:
-        vals = f[col + "_pct"].fillna(0).values
-        ax.bar(x_labels, vals, bottom=bottoms, color=colour, width=.6, zorder=2)
-        for x, y0, v in zip(x_labels, bottoms, vals):
-            if v > 4:
-                ax.text(x, y0 + v/2, f"{v:.1f}%", ha="center", va="center", fontsize=8, color=_txt(colour))
-        bottoms += vals
-    ax.axhline(100, ls="--", lw=1, color="black", zorder=5)
-    top = bottoms.max(); extra = max(8, top * 0.08)
-    ylim = np.ceil((top + extra) / 10) * 10
-    ax.set_ylim(0, ylim)
-    ax.set_yticks(np.arange(0, ylim + 1, 10))
-    ax.set_ylabel("Percent of Revenue")
-    ax.set_title(f"Expenses as % of Revenue — {ticker}")
-    ax.legend([c[0] for c in base], bbox_to_anchor=(1.01, 0.5), loc="center left", frameon=False)
-    fig.subplots_adjust(right=0.78, top=0.88)
-    plt.tight_layout()
-    out = os.path.join(OUTPUT_DIR, f"{ticker}_expenses_pct_of_rev.png")
-    fig.savefig(out, dpi=120, bbox_inches="tight")
-    plt.close()
-
-def write_html(df: pd.DataFrame, path: str):
-    df.to_html(path, index=False, border=0, justify="center")
-
-def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
-    ensure(drop=rebuild_schema, conn=conn)
-    store(tkr, mode="annual", conn=conn)
-    store(tkr, mode="quarterly", conn=conn)
-
-    yearly_df = yearly(tkr)
-    if yearly_df.empty:
-        print(f"⛔ No data for {tkr}")
-        return
-    full = pd.concat([yearly_df, ttm(tkr)], ignore_index=True)
-
-    chart_abs(full, tkr)
-    chart_pct(full, tkr)
-
-    all_expense_cols = [
-        "total_revenue", "cost_of_revenue", "research_and_development", "selling_and_marketing",
-        "general_and_admin", "sga_combined", "facilities_da", "personnel_costs",
-        "insurance_claims", "other_operating"
-    ]
-    cols = ["year_label"] + [c for c in all_expense_cols if c in full.columns]
-
-    abs_df = full[cols].sort_values("year_label")
-    abs_df = abs_df[abs_df["total_revenue"].notna() & (abs_df["total_revenue"] != 0)]
-    abs_df = abs_df.drop(columns=[c for c in abs_df.columns[1:] if _all_nan_or_zero(abs_df[c])])
-    abs_fmt = abs_df.copy()
-    for c in abs_fmt.columns[1:]:
-        abs_fmt[c] = abs_fmt[c].apply(_fmt_short)
-    rename_abs = {
-        "year_label": "Year", "total_revenue": "Revenue ($)", "cost_of_revenue": "Cost of Revenue ($)",
-        "research_and_development": "R&D ($)", "selling_and_marketing": "Sales & Marketing ($)",
-        "general_and_admin": "G&A ($)", "sga_combined": "SG&A ($)", "facilities_da": "Facilities / D&A ($)",
-        "personnel_costs": "Personnel ($)", "insurance_claims": "Insurance / Claims ($)",
-        "other_operating": "Other Op. ($)"
+    return {
+        "Cost of Revenue": COST_OF_REVENUE,
+        "R&D": RESEARCH_AND_DEVELOPMENT,
+        "Sales & Marketing": SELLING_AND_MARKETING if has_sep else [],
+        "G&A": GENERAL_AND_ADMIN if has_sep else [],
+        "SG&A": SGA_COMBINED if has_sga and not has_sep else [],
     }
-    abs_fmt = abs_fmt.rename(columns=rename_abs)
-    write_html(abs_fmt, os.path.join(OUTPUT_DIR, f"{tkr}_expense_absolute.html"))
 
-    yoy = full[cols].sort_values("year_label")
-    yoy = yoy[yoy["total_revenue"].notna() & (yoy["total_revenue"] != 0)]
-    for c in cols[1:]:
-        yoy[c] = (yoy[c].pct_change().replace([np.inf, -np.inf], np.nan).round(4) * 100)
-    yoy = yoy.drop(columns=[c for c in yoy.columns[1:] if yoy[c].notna().sum() == 0])
-    yoy = yoy[yoy.iloc[:, 1:].notna().any(axis=1)]
-    rename_pct = {k: v.replace("($)", "Change (%)") for k, v in rename_abs.items() if k in yoy.columns}
-    rename_pct["total_revenue"] = "Revenue Change (%)"
-    yoy = yoy.rename(columns=rename_pct)
-    write_html(yoy, os.path.join(OUTPUT_DIR, f"{tkr}_yoy_expense_change.html"))
+def _prepare_expense_df(df: pd.DataFrame, cats: dict[str, list[str]]) -> pd.DataFrame:
+    df = df.copy()
+    df["Revenue"] = df["Total Revenue"]
+    df = df.loc[df["Revenue"] != 0]
+    df["Date"] = pd.to_datetime(df["Date"])
+    df = df.sort_values("Date")
+    df["year_label"] = df["Date"].dt.year.astype(str)
+    if df.iloc[-1]["Date"] > pd.Timestamp.now() - pd.DateOffset(months=15):
+        df.iloc[-1, df.columns.get_loc("year_label")] = "TTM"
 
-    print(f"[{tkr}] ✔ charts & tables generated")
+    for cat_name, fields in cats.items():
+        df[cat_name] = df[fields].sum(axis=1, min_count=1)
+    return df
 
-if __name__ == "__main__":
-    generate_expense_reports("AAPL")
+def chart_abs(df: pd.DataFrame, ticker: str):
+    fig, ax = plt.subplots(figsize=(8, 4))
+    fields = ["Cost of Revenue", "R&D", "Sales & Marketing", "G&A", "SG&A"]
+    fields = [f for f in fields if f in df]
+    bottoms = np.zeros(len(df))
+
+    for field in fields:
+        ax.bar(df["year_label"].astype(str), df[field] / 1e9, label=field, bottom=bottoms)
+        bottoms += df[field].fillna(0).values
+
+    ax.plot(df["year_label"].astype(str), df["Revenue"] / 1e9, label="Revenue", color="black", marker='o')
+    ax.set_title(f"{ticker} Revenue vs. Operating Expenses")
+    ax.set_ylabel("Amount ($B)")
+    ax.legend(loc="upper left", fontsize="small")
+    fig.tight_layout()
+    fig.savefig(f"{OUTPUT_DIR}/{ticker}_expense_stack.png")
+    plt.close(fig)
+
+def chart_pct(df: pd.DataFrame, ticker: str):
+    fig, ax = plt.subplots(figsize=(8, 4))
+    fields = ["Cost of Revenue", "R&D", "Sales & Marketing", "G&A", "SG&A"]
+    fields = [f for f in fields if f in df]
+
+    bottoms = np.zeros(len(df))
+    for field in fields:
+        pct = df[field] / df["Revenue"]
+        ax.bar(df["year_label"].astype(str), pct * 100, label=field, bottom=bottoms)
+        bottoms += pct.fillna(0).values
+
+    ax.set_title(f"{ticker} Expenses as % of Revenue")
+    ax.set_ylabel("Percent of Revenue")
+    ax.legend(loc="upper left", fontsize="small")
+    fig.tight_layout()
+    fig.savefig(f"{OUTPUT_DIR}/{ticker}_expense_pct.png")
+    plt.close(fig)
+
+def write_html(df: pd.DataFrame, ticker: str):
+    fields = ["Cost of Revenue", "R&D", "Sales & Marketing", "G&A", "SG&A"]
+    fields = [f for f in fields if f in df]
+    df_out = df[["year_label"] + fields].copy()
+    df_out = df_out.rename(columns={"year_label": "Year"})
+    df_out = df_out.set_index("Year")
+
+    abs_df = df_out.applymap(_format_dollar)
+    abs_df.to_html(f"{OUTPUT_DIR}/{ticker}_expense_table.html", escape=False)
+
+    yoy = df_out.copy()
+    for c in yoy.columns:
+        yoy[c] = (
+            yoy[c].astype(float)
+                   .pct_change()
+                   .replace([np.inf, -np.inf], np.nan)
+                   .round(4) * 100
+        )
+    yoy = yoy.round(1).astype(str) + "%"
+    yoy.to_html(f"{OUTPUT_DIR}/{ticker}_yoy_expense_change.html", escape=False)
+
+def store(ticker: str, mode: str = "annual", conn=None):
+    df = _fetch_financials(ticker, freq=mode)
+    if df is None or df.empty or "Total Revenue" not in df:
+        return
+
+    cats = _cats(df)
+    df = _prepare_expense_df(df, cats)
+    chart_abs(df, ticker)
+    chart_pct(df, ticker)
+    write_html(df, ticker)
+
+    if conn:
+        df.to_sql(f"{ticker}_expense_{mode}", conn, if_exists="replace", index=False)
+
+def ensure(drop=False, conn=None):
+    if conn is None:
+        conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    if drop:
+        cur.execute("DROP TABLE IF EXISTS expense_data")
+    cur.execute('''CREATE TABLE IF NOT EXISTS expense_data (
+        Ticker TEXT,
+        Date TEXT,
+        Category TEXT,
+        Amount REAL
+    )''')
+    conn.commit()
+
+def generate_expense_reports(ticker: str, *, rebuild_schema=False, conn=None):
+    ensure(drop=rebuild_schema, conn=conn)
+    store(ticker, mode="annual", conn=conn)
+    store(ticker, mode="quarterly", conn=conn)
