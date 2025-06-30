@@ -44,6 +44,36 @@ def fetch_ttm_data(ticker, cursor):
 # ─────────────────────────────────────────────────────────────────────────────
 # Date utilities
 # ─────────────────────────────────────────────────────────────────────────────
+
+def get_latest_annual_data_date(ticker_data):
+    """
+    Returns the most recent 'Date' from the list-of-dicts or DataFrame
+    in ticker_data, or None if it can't parse any.
+    """
+    if isinstance(ticker_data, pd.DataFrame):
+        if ticker_data.empty:
+            return None
+        try:
+            dates = pd.to_datetime(ticker_data['Date'], format='%Y-%m-%d', errors='coerce')
+            return dates.max()
+        except Exception as e:
+            logging.error(f"Error parsing dates from DataFrame: {e}")
+            return None
+
+    if not ticker_data:
+        return None
+
+    # assume list of dicts
+    parsed = []
+    for row in ticker_data:
+        d = row.get('Date')
+        if isinstance(d, str):
+            try:
+                parsed.append(datetime.strptime(d, '%Y-%m-%d'))
+            except Exception:
+                continue
+    return max(parsed) if parsed else None
+
 def calculate_next_check_date(latest_date, months):
     return None if latest_date is None else latest_date + timedelta(days=30*months)
 
@@ -185,7 +215,7 @@ def handle_ttm_duplicates(ticker, cursor):
     return False
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Chart & table generation helpers
+# Chart & table helpers
 # ─────────────────────────────────────────────────────────────────────────────
 def chart_needs_update(path, last_update, *_):
     if not os.path.exists(path):
@@ -195,12 +225,9 @@ def chart_needs_update(path, last_update, *_):
 
 def create_formatted_dataframe(df):
     def fmt(v):
-        if pd.isna(v):
-            return "N/A"
-        if abs(v)>=1e9:
-            return f"${v/1e9:,.1f}B"
-        if abs(v)>=1e6:
-            return f"${v/1e6:,.1f}M"
+        if pd.isna(v): return "N/A"
+        if abs(v)>=1e9: return f"${v/1e9:,.1f}B"
+        if abs(v)>=1e6: return f"${v/1e6:,.1f}M"
         return f"${v/1e3:,.1f}K"
     df['Formatted_Revenue']    = df['Revenue'].apply(fmt)
     df['Formatted_Net_Income'] = df['Net_Income'].apply(fmt)
@@ -240,184 +267,4 @@ def add_value_labels(ax,bars,df,colname,sf):
         matches=df.loc[np.isclose(df[col],scaled,atol=1e-2),colname]
         lbl=matches.iat[0] if not matches.empty else "N/A"
         off=3 if h>=0 else -12
-        ax.annotate(lbl, xy=(bar.get_x()+bar.get_width()/2,h),
-                    xytext=(0,off), textcoords="offset points",
-                    ha='center', va='bottom')
-
-def generate_revenue_net_income_chart(df,ticker,path):
-    df2=create_formatted_dataframe(df.copy())
-    df2['Revenue']=pd.to_numeric(df2['Revenue'].replace('[\$,]','',regex=True),errors='coerce')
-    df2['Net_Income']=pd.to_numeric(df2['Net_Income'].replace('[\$,]','',regex=True),errors='coerce')
-    df2['Date']=df2['Date'].astype(str)
-    pos=np.arange(len(df2)); w=0.3
-    fig,ax=plt.subplots(figsize=(10,6))
-    max_net=df2['Net_Income'].max()
-    if abs(max_net)>=1e9:
-        sf,le,yl=1e9,'B','Amount (Billions $)'
-    else:
-        sf,le,yl=1e6,'M','Amount (Millions $)'
-    combined=pd.concat([df2['Revenue'],df2['Net_Income']])/sf
-    buf=combined.abs().max()*0.2
-    mn=combined.max(); mi=df2['Net_Income'].min()/sf
-    bars1=ax.bar(pos-w/2,df2['Revenue']/sf,w,label=f"Revenue ({le})",color='green')
-    bars2=ax.bar(pos+w/2,df2['Net_Income']/sf,w,label=f"Net Income ({le})",color='blue')
-    ax.set_ylabel(yl); ax.set_ylim(mi-buf if mi<0 else 0, mn+buf)
-    ax.set_title(f"Revenue and Net Income for {ticker}")
-    ax.set_xticks(pos); ax.set_xticklabels(df2['Date'],rotation=0)
-    ax.legend(); ax.grid(True,axis='y',linestyle='--',linewidth=0.5); ax.axhline(0,color='black',linewidth=1)
-    add_value_labels(ax,bars1,df2,'Formatted_Revenue',sf)
-    add_value_labels(ax,bars2,df2,'Formatted_Net_Income',sf)
-    plt.tight_layout()
-    os.makedirs(os.path.dirname(path) or ".",exist_ok=True)
-    plt.savefig(path); plt.close()
-
-# ─────────────────────────────────────────────────────────────────────────────
-# ←— MISSING FUNCTION RE-ADDED HERE
-def generate_financial_charts(ticker, charts_output_dir, financial_data):
-    print("Generating financial charts")
-    if financial_data.empty:
-        print("---chart data empty; skip")
-        return
-
-    rev_path = os.path.join(charts_output_dir, f"{ticker}_revenue_net_income_chart.png")
-    eps_path = os.path.join(charts_output_dir, f"{ticker}_eps_chart.png")
-
-    if 'Last_Updated' in financial_data.columns:
-        lu = pd.to_datetime(financial_data['Last_Updated'], errors='coerce').max()
-    else:
-        lu = datetime.now()
-
-    if chart_needs_update(rev_path, lu):
-        generate_revenue_net_income_chart(financial_data, ticker, rev_path)
-        print("---revenue/net chart updated")
-
-    if chart_needs_update(eps_path, lu):
-        generate_eps_chart(ticker, charts_output_dir, financial_data)
-        print("---EPS chart updated")
-
-    generate_financial_data_table_html(ticker, financial_data, charts_output_dir)
-
-# ─────────────────────────────────────────────────────────────────────────────
-def calculate_and_format_changes(df):
-    df.sort_values('Date',inplace=True)
-    for col in ['Revenue','Net_Income','EPS']:
-        if df[col].dtype=='object':
-            df[col]=df[col].replace('[\$,MK]','',regex=True).astype(float)*1e3
-    for col in ['Revenue','Net_Income','EPS']:
-        c2=f"{col}_Change"
-        df[c2]=df[col].pct_change()*100
-        df[c2]=df[c2].apply(lambda x:f"{x:.1f}%" if pd.notna(x) else "N/A")
-    return df
-
-def style_changes(val):
-    if isinstance(val,str) and '%' in val:
-        return f"color:{'red' if '-' in val else 'green'};"
-    return ''
-
-def generate_financial_data_table_html(ticker, df, charts_output_dir):
-    df2=calculate_and_format_changes(df.copy())
-    keep=['Date','Formatted_Revenue','Formatted_Net_Income','Formatted_EPS',
-          'Revenue_Change','Net_Income_Change','EPS_Change']
-    df2=df2[keep]
-    df2.columns=['Date','Revenue','Net Income','EPS',
-                 'Revenue Change','Net Income Change','EPS Change']
-    avg=df2[['Revenue Change','Net Income Change','EPS Change']].replace('N/A',np.nan)\
-           .apply(lambda x:pd.to_numeric(x.str.replace('%','')),axis=0).mean()\
-           .apply(lambda x:f"{x:.1f}%" if pd.notna(x) else "N/A")
-    avg_row=pd.Series(['Average']+['']*3+avg.tolist(),index=df2.columns)
-    df2=pd.concat([df2,avg_row.to_frame().T],ignore_index=True)
-    styled=df2.style.applymap(style_changes,subset=['Revenue Change','Net Income Change','EPS Change'])
-    html=styled.to_html()
-    path=os.path.join(charts_output_dir,f"{ticker}_rev_net_table.html")
-    os.makedirs(charts_output_dir,exist_ok=True)
-    with open(path,'w',encoding='utf-8') as f:
-        f.write(html)
-    print(f"Financial data table for {ticker} saved to {path}")
-
-def prepare_data_for_charts(ticker, cursor):
-    print("Preparing data for charts")
-    cursor.execute("SELECT Date,Revenue,Net_Income,EPS,Last_Updated FROM Annual_Data WHERE Symbol=? ORDER BY Date",(ticker,))
-    ann=cursor.fetchall()
-    print("---annual data",ann)
-
-    cursor.execute("SELECT 'TTM' AS Date,TTM_Revenue,TTM_Net_Income,TTM_EPS,Last_Updated FROM TTM_Data WHERE Symbol=?",(ticker,))
-    ttm=cursor.fetchall()
-    print("---ttm data",ttm)
-
-    cursor.execute("SELECT 'TTM' AS Date,TTM_Revenue,TTM_Net_Income,TTM_EPS,Quarter,Last_Updated FROM TTM_Data WHERE Symbol=?",(ticker,))
-    ttm2=cursor.fetchall()
-    ann_df=pd.DataFrame(ann,columns=['Date','Revenue','Net_Income','EPS','Last_Updated'])
-    ttm_df=pd.DataFrame(ttm,columns=['Date','Revenue','Net_Income','EPS','Last_Updated'])
-    ttm2_df=pd.DataFrame(ttm2,columns=['Date','Revenue','Net_Income','EPS','Quarter','Last_Updated'])
-    ann_df['Last_Updated']=pd.to_datetime(ann_df['Last_Updated'])
-    ttm_df['Last_Updated']=pd.to_datetime(ttm_df['Last_Updated'])
-
-    if not ttm_df.empty:
-        q=ttm2_df.loc[0,'Quarter']
-        if isinstance(q,str) and q.strip():
-            ttm_df.at[0,'Date']=f"TTM {q}"
-
-    if not ann and not ttm:
-        return pd.DataFrame()
-
-    ann_df.dropna(axis=1,how='all',inplace=True)
-    ttm_df.dropna(axis=1,how='all',inplace=True)
-    df=pd.concat([ann_df,ttm_df],ignore_index=True)
-    df['Revenue']=pd.to_numeric(df['Revenue'],errors='coerce')
-    df['Net_Income']=pd.to_numeric(df['Net_Income'],errors='coerce')
-    df['EPS']=pd.to_numeric(df['EPS'],errors='coerce')
-    df=clean_financial_data(df)
-    df['Date']=df['Date'].astype(str)
-    df.sort_values('Date',inplace=True)
-    return create_formatted_dataframe(df)
-
-def annual_and_ttm_update(ticker, db_path):
-    conn=get_db_connection(db_path); cur=conn.cursor()
-    ann=fetch_ticker_data(ticker,cur)
-    if not ann:
-        nya=fetch_annual_data_from_yahoo(ticker)
-        if not nya.empty:
-            store_annual_data(ticker, nya, cur)
-            ann=nya
-
-    ttm=fetch_ttm_data(ticker,cur)
-    if not ttm:
-        nyt=fetch_ttm_data_from_yahoo(ticker)
-        if nyt:
-            store_ttm_data(ticker, nyt, cur)
-            ttm=[nyt]
-
-    handle_ttm_duplicates(ticker,cur)
-
-    au=False; tu=False
-
-    if ann:
-        lad=get_latest_annual_data_date(ann)
-        au=needs_update(lad,13) or check_null_fields(ann,['Revenue','Net_Income','EPS'])
-
-    if ttm:
-        valid=[r['Quarter'] for r in ttm if isinstance(r.get('Quarter'),str) and r['Quarter'].strip()]
-        if valid:
-            lttm=max(datetime.strptime(q,'%Y-%m-%d') for q in valid)
-        else:
-            lttm=None
-        tu=(lttm is None) or needs_update(lttm,4) or check_null_fields(ttm,['TTM_Revenue','TTM_Net_Income','TTM_EPS'])
-
-    if au:
-        nya=fetch_annual_data_from_yahoo(ticker)
-        if not nya.empty:
-            store_annual_data(ticker, nya, cur)
-    if tu:
-        nyt=fetch_ttm_data_from_yahoo(ticker)
-        if nyt:
-            store_ttm_data(ticker, nyt, cur)
-
-    df=prepare_data_for_charts(ticker,cur)
-    annual_and_ttm_update_charts="charts"
-    generate_financial_charts(ticker, annual_and_ttm_update_charts, df)
-
-    conn.close()
-    logging.debug(f"Update for {ticker} completed")
-
-if __name__ == "__main__":
-    annual_and_ttm_update("PG", "Stock Data.db")
+        ax.annotate(lbl, xy=(bar.get_x()+bar.get_width
