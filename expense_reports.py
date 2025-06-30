@@ -55,7 +55,7 @@ def _fmt_short(x: float, d: int = 1) -> str:
 def _all_nan_or_zero(col: pd.Series) -> bool:
     return (col.replace(0, np.nan).notna().sum() == 0)
 
-def pick_any(row, labels):  # fuzzy match
+def pick_any(row, labels):
     for k in row.index:
         if pd.notna(row[k]) and any(lbl.lower() in k.lower() for lbl in labels):
             return row[k]
@@ -100,10 +100,11 @@ def store(tkr, *, mode="annual", conn=None):
     conn.commit(); cur.close()
     if own: conn.close()
 
-def yearly(tkr):
-    conn = sqlite3.connect(DB_PATH)
+def yearly(tkr, conn=None):
+    own = conn is None
+    if own: conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("SELECT * FROM IncomeStatement WHERE ticker=?", conn, params=(tkr,))
-    conn.close()
+    if own: conn.close()
     if df.empty: return df
     df["period_ending"] = pd.to_datetime(df["period_ending"])
     df["year_int"] = df["period_ending"].dt.year
@@ -111,12 +112,13 @@ def yearly(tkr):
     g["year_label"] = g["year_int"].astype(str)
     return g
 
-def ttm(tkr):
-    conn = sqlite3.connect(DB_PATH)
+def ttm(tkr, conn=None):
+    own = conn is None
+    if own: conn = sqlite3.connect(DB_PATH)
     q = pd.read_sql_query(
         "SELECT * FROM QuarterlyIncomeStatement WHERE ticker=? ORDER BY period_ending DESC",
         conn, params=(tkr,))
-    conn.close()
+    if own: conn.close()
     if q.empty: return q
     q["period_ending"] = pd.to_datetime(q["period_ending"])
     recent = q.head(4).sort_values("period_ending")
@@ -172,13 +174,13 @@ def chart_pct(df, tkr):
 def write_html(df: pd.DataFrame, out_path: str):
     df.to_html(out_path, index=False, border=0, justify="center")
 
-def generate_expense_reports(tkr, *, rebuild_schema=False):
-    ensure(drop=rebuild_schema)
-    store(tkr, mode="annual")
-    store(tkr, mode="quarterly")
-    yearly_df = yearly(tkr)
+def generate_expense_reports(tkr, *, rebuild_schema=False, conn=None):
+    ensure(drop=rebuild_schema, conn=conn)
+    store(tkr, mode="annual", conn=conn)
+    store(tkr, mode="quarterly", conn=conn)
+    yearly_df = yearly(tkr, conn=conn)
     if yearly_df.empty: return
-    full = pd.concat([yearly_df, ttm(tkr)], ignore_index=True)
+    full = pd.concat([yearly_df, ttm(tkr, conn=conn)], ignore_index=True)
     chart_abs(full, tkr)
     chart_pct(full, tkr)
 
