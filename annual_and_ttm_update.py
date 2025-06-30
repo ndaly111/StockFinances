@@ -13,19 +13,19 @@ from functools import lru_cache
 # ─────────────────────────────────────────────────────────────────────────────
 def get_db_connection(db_path):
     conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_symbol ON Annual_Data(Symbol);")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_symbol_quarter ON TTM_Data(Symbol, Quarter);")
+    cursor = conn.cursor()
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_symbol ON Annual_Data(Symbol);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_symbol_quarter ON TTM_Data(Symbol, Quarter);")
     conn.commit()
     return conn
 
 def fetch_ticker_data(ticker, cursor):
     try:
         cursor.execute("PRAGMA table_info(Annual_Data)")
-        cols = [c[1] for c in cursor.fetchall()]
+        columns = [col[1] for col in cursor.fetchall()]
         cursor.execute("SELECT * FROM Annual_Data WHERE Symbol = ? ORDER BY Date ASC", (ticker,))
-        rows = [dict(zip(cols, r)) for r in cursor.fetchall()]
-        return rows if rows else None
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return results if results else None
     except sqlite3.Error as e:
         logging.error(f"Database error: {e}")
         return None
@@ -33,10 +33,10 @@ def fetch_ticker_data(ticker, cursor):
 def fetch_ttm_data(ticker, cursor):
     try:
         cursor.execute("PRAGMA table_info(TTM_Data)")
-        cols = [c[1] for c in cursor.fetchall()]
+        columns = [col[1] for col in cursor.fetchall()]
         cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ? ORDER BY Quarter DESC", (ticker,))
-        rows = [dict(zip(cols, r)) for r in cursor.fetchall()]
-        return rows if rows else None
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return results if results else None
     except sqlite3.Error as e:
         logging.error(f"Database error: {e}")
         return None
@@ -44,14 +44,10 @@ def fetch_ttm_data(ticker, cursor):
 # ─────────────────────────────────────────────────────────────────────────────
 # Date utilities
 # ─────────────────────────────────────────────────────────────────────────────
-
 def get_latest_annual_data_date(ticker_data):
-    """
-    Returns the most recent 'Date' from the list-of-dicts or DataFrame
-    in ticker_data, or None if it can't parse any.
-    """
     if isinstance(ticker_data, pd.DataFrame):
         if ticker_data.empty:
+            logging.warning("Ticker data is an empty DataFrame. Returning None.")
             return None
         try:
             dates = pd.to_datetime(ticker_data['Date'], format='%Y-%m-%d', errors='coerce')
@@ -61,9 +57,9 @@ def get_latest_annual_data_date(ticker_data):
             return None
 
     if not ticker_data:
+        logging.warning("Ticker data is empty or None. Returning None.")
         return None
 
-    # assume list of dicts
     parsed = []
     for row in ticker_data:
         d = row.get('Date')
@@ -75,22 +71,25 @@ def get_latest_annual_data_date(ticker_data):
     return max(parsed) if parsed else None
 
 def calculate_next_check_date(latest_date, months):
-    return None if latest_date is None else latest_date + timedelta(days=30*months)
+    if latest_date is None:
+        return None
+    return latest_date + timedelta(days=months * 30)
 
 def needs_update(latest_date, months):
     if latest_date is None:
         return True
-    nxt = calculate_next_check_date(latest_date, months)
-    return nxt is None or nxt <= datetime.now()
+    next_check = calculate_next_check_date(latest_date, months)
+    return next_check is None or next_check <= datetime.now()
 
 def check_null_fields(data, fields):
     if not isinstance(data, list):
+        print(f"Warning: Expected list, got {type(data)}. Returning False.")
         return False
     for entry in data:
         if not isinstance(entry, dict):
             continue
-        for f in fields:
-            if entry.get(f) in (None, ""):
+        for field in fields:
+            if entry.get(field) in (None, ""):
                 return True
     return False
 
@@ -98,7 +97,7 @@ def check_null_fields(data, fields):
 # Cleaning & fetching from Yahoo
 # ─────────────────────────────────────────────────────────────────────────────
 def clean_financial_data(df):
-    df.dropna(subset=['Revenue','Net_Income','EPS'], how='all', inplace=True)
+    df.dropna(axis=0, how='all', subset=['Revenue', 'Net_Income', 'EPS'], inplace=True)
     df.ffill(inplace=True)
     df.bfill(inplace=True)
     df.infer_objects(copy=False)
@@ -109,21 +108,25 @@ def fetch_annual_data_from_yahoo(ticker):
     logging.info("Fetching annual data from Yahoo Finance")
     try:
         stock = yf.Ticker(ticker)
-        fin = stock.financials
-        if fin.empty:
+        financials = stock.financials
+        if financials.empty:
             return pd.DataFrame()
-        fin = fin.T
-        fin['Date'] = fin.index
-        mapping = {'Total Revenue':'Revenue','Net Income':'Net_Income','Basic EPS':'EPS'}
-        rename = {y:db for y,db in mapping.items() if y in fin.columns}
-        if len(rename)<len(mapping):
-            missing = set(mapping.values())-set(rename.values())
-            logging.warning(f"Missing {missing} for {ticker}")
+        financials = financials.T
+        financials['Date'] = financials.index
+        column_mapping = {
+            'Total Revenue': 'Revenue',
+            'Net Income': 'Net_Income',
+            'Basic EPS': 'EPS'
+        }
+        renamed = {yahoo: db for yahoo, db in column_mapping.items() if yahoo in financials.columns}
+        if len(renamed) < len(column_mapping):
+            missing = set(column_mapping.values()) - set(renamed.values())
+            logging.warning(f"Missing required columns for {ticker}: {missing}")
             return pd.DataFrame()
-        fin.rename(columns=rename, inplace=True)
-        return clean_financial_data(fin)
+        financials.rename(columns=renamed, inplace=True)
+        return clean_financial_data(financials)
     except Exception as e:
-        logging.error(f"Error fetching annual for {ticker}: {e}")
+        logging.error(f"Error fetching data from Yahoo Finance for {ticker}: {e}")
         return pd.DataFrame()
 
 @lru_cache(maxsize=32)
@@ -131,140 +134,331 @@ def fetch_ttm_data_from_yahoo(ticker):
     logging.info("Fetching TTM data from Yahoo Finance")
     try:
         stock = yf.Ticker(ticker)
-        q = stock.quarterly_financials
-        if q is None or q.empty:
+        ttm_financials = stock.quarterly_financials
+        if ttm_financials is None or ttm_financials.empty:
+            logging.info(f"No TTM financial data available for {ticker}.")
             return None
-        data = {}
+        ttm_data = {}
         try:
-            data['TTM_Revenue']    = q.loc['Total Revenue'][:4].sum()
-            data['TTM_Net_Income'] = q.loc['Net Income'][:4].sum()
+            ttm_data['TTM_Revenue'] = ttm_financials.loc['Total Revenue', :].iloc[:4].sum()
+            ttm_data['TTM_Net_Income'] = ttm_financials.loc['Net Income', :].iloc[:4].sum()
         except KeyError:
-            data['TTM_Revenue']=data['TTM_Net_Income']=None
-        data['TTM_EPS'] = stock.info.get('trailingEps')
-        data['Shares_Outstanding'] = stock.info.get('sharesOutstanding')
-        data['Quarter'] = q.columns[0].strftime('%Y-%m-%d')
-        return data
+            ttm_data['TTM_Revenue'] = None
+            ttm_data['TTM_Net_Income'] = None
+        ttm_data['TTM_EPS'] = stock.info.get('trailingEps')
+        ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding')
+        ttm_data['Quarter'] = ttm_financials.columns[0].strftime('%Y-%m-%d')
+        return ttm_data
     except Exception as e:
-        logging.error(f"Error fetching TTM for {ticker}: {e}")
+        logging.error(f"Error fetching TTM data from Yahoo Finance for {ticker}: {e}")
         return None
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Storage
 # ─────────────────────────────────────────────────────────────────────────────
-def store_annual_data(ticker, df, cursor):
+def store_annual_data(ticker, annual_data, cursor):
     logging.info("Storing annual data")
-    for _, row in df.iterrows():
-        d = row['Date']
-        ds = d.strftime('%Y-%m-%d') if isinstance(d, pd.Timestamp) else d
+    for _, row in annual_data.iterrows():
+        date_str = row['Date'].strftime('%Y-%m-%d') if isinstance(row['Date'], pd.Timestamp) else row['Date']
         cursor.execute("""
-            SELECT 1 FROM Annual_Data
-             WHERE Symbol=? AND Date=? 
-               AND Revenue IS NOT NULL AND Net_Income IS NOT NULL AND EPS IS NOT NULL
-        """,(ticker,ds))
+            SELECT * FROM Annual_Data
+            WHERE Symbol = ? AND Date = ? AND Revenue IS NOT NULL AND Net_Income IS NOT NULL AND EPS IS NOT NULL;
+        """, (ticker, date_str))
         if cursor.fetchone():
             continue
         try:
             cursor.execute("""
-            INSERT INTO Annual_Data
-              (Symbol,Date,Revenue,Net_Income,EPS,Last_Updated)
-            VALUES(?,?,?,?,?,CURRENT_TIMESTAMP)
-            ON CONFLICT(Symbol,Date) DO UPDATE
-             SET Revenue=EXCLUDED.Revenue,
-                 Net_Income=EXCLUDED.Net_Income,
-                 EPS=EXCLUDED.EPS,
-                 Last_Updated=CURRENT_TIMESTAMP
-             WHERE Revenue IS NULL OR Net_Income IS NULL OR EPS IS NULL;
-            """,(ticker,ds,row['Revenue'],row['Net_Income'],row['EPS']))
+                INSERT INTO Annual_Data (Symbol, Date, Revenue, Net_Income, EPS, Last_Updated)
+                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(Symbol, Date) DO UPDATE SET
+                  Revenue = EXCLUDED.Revenue,
+                  Net_Income = EXCLUDED.Net_Income,
+                  EPS = EXCLUDED.EPS,
+                  Last_Updated = CURRENT_TIMESTAMP
+                WHERE Revenue IS NULL OR Net_Income IS NULL OR EPS IS NULL;
+            """, (ticker, date_str, row['Revenue'], row['Net_Income'], row['EPS']))
             cursor.connection.commit()
         except sqlite3.Error as e:
-            logging.error(f"DB error storing annual {ticker}: {e}")
+            logging.error(f"Database error while storing/updating annual data for {ticker}: {e}")
 
-def store_ttm_data(ticker, data, cursor):
+def store_ttm_data(ticker, ttm_data, cursor):
     logging.info("Storing TTM data")
-    vals=(
+    ttm_values = (
         ticker,
-        data.get('TTM_Revenue'),
-        data.get('TTM_Net_Income'),
-        data.get('TTM_EPS'),
-        data.get('Shares_Outstanding'),
-        data.get('Quarter'),
+        ttm_data['TTM_Revenue'],
+        ttm_data['TTM_Net_Income'],
+        ttm_data['TTM_EPS'],
+        ttm_data.get('Shares_Outstanding'),
+        ttm_data['Quarter']
     )
     try:
         cursor.execute("""
-        INSERT OR REPLACE INTO TTM_Data
-          (Symbol,TTM_Revenue,TTM_Net_Income,TTM_EPS,Shares_Outstanding,Quarter,Last_Updated)
-        VALUES(?,?,?,?,?,?           ,CURRENT_TIMESTAMP);
-        """, vals)
+            INSERT OR REPLACE INTO TTM_Data (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS, Shares_Outstanding, Quarter, Last_Updated)
+            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
+        """, ttm_values)
         cursor.connection.commit()
     except sqlite3.Error as e:
-        logging.error(f"DB error storing TTM {ticker}: {e}")
+        logging.error(f"Database error while storing/updating TTM data for {ticker}: {e}")
 
 def handle_ttm_duplicates(ticker, cursor):
-    logging.info("Checking for duplicate TTM entries")
+    logging.info("Checking for duplicate TTM entries for ticker")
     try:
-        cursor.execute("SELECT * FROM TTM_Data WHERE Symbol=? ORDER BY Quarter DESC",(ticker,))
-        rows=cursor.fetchall()
-        if len(rows)>1:
-            keep=rows[0][5]  # Quarter column
-            cursor.execute("DELETE FROM TTM_Data WHERE Symbol=? AND Quarter<>?",(ticker,keep))
+        cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ? ORDER BY Quarter DESC", (ticker,))
+        results = cursor.fetchall()
+        if len(results) > 1:
+            most_recent_quarter = results[0][5]  # 6th column is Quarter
+            cursor.execute(
+                "DELETE FROM TTM_Data WHERE Symbol = ? AND Quarter != ?",
+                (ticker, most_recent_quarter)
+            )
             cursor.connection.commit()
-            logging.info(f"Removed duplicates, kept {keep}")
+            logging.info(f"Cleared duplicate TTM entries for {ticker}, keeping only {most_recent_quarter}")
             return True
     except sqlite3.Error as e:
-        logging.error(f"DB error dedup TTM {ticker}: {e}")
+        logging.error(f"Database error during duplicate check: {e}")
     return False
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Chart & table helpers
 # ─────────────────────────────────────────────────────────────────────────────
-def chart_needs_update(path, last_update, *_):
-    if not os.path.exists(path):
+def chart_needs_update(chart_path, last_data_update, *_):
+    if not os.path.exists(chart_path):
         return True
-    lu = datetime.fromtimestamp(os.path.getmtime(path))
-    return last_update > lu
+    last_chart_update = datetime.fromtimestamp(os.path.getmtime(chart_path))
+    return last_data_update > last_chart_update
 
 def create_formatted_dataframe(df):
-    def fmt(v):
-        if pd.isna(v): return "N/A"
-        if abs(v)>=1e9: return f"${v/1e9:,.1f}B"
-        if abs(v)>=1e6: return f"${v/1e6:,.1f}M"
+    def format_value(v):
+        if pd.isna(v):
+            return "N/A"
+        if abs(v) >= 1e9:
+            return f"${v/1e9:,.1f}B"
+        if abs(v) >= 1e6:
+            return f"${v/1e6:,.1f}M"
         return f"${v/1e3:,.1f}K"
-    df['Formatted_Revenue']    = df['Revenue'].apply(fmt)
-    df['Formatted_Net_Income'] = df['Net_Income'].apply(fmt)
+    df['Formatted_Revenue']    = df['Revenue'].apply(format_value)
+    df['Formatted_Net_Income'] = df['Net_Income'].apply(format_value)
     df['Formatted_EPS']        = df['EPS'].apply(lambda x: f"${x:.2f}" if pd.notna(x) else "N/A")
     return df
 
 def add_eps_value_labels(ax, bars, df):
     for bar in bars:
-        h=bar.get_height()
-        lbl=df.loc[df['EPS']==h,'Formatted_EPS'].iat[0]
-        off=12 if h>=0 else -12
-        ax.annotate(lbl, xy=(bar.get_x()+bar.get_width()/2,h),
-                    xytext=(0,off), textcoords="offset points",
-                    ha='center', va='bottom')
+        h = bar.get_height()
+        label = df.loc[df['EPS'] == h, 'Formatted_EPS'].iat[0]
+        offset = 12 if h >= 0 else -12
+        ax.annotate(
+            label,
+            xy=(bar.get_x() + bar.get_width() / 2, h),
+            xytext=(0, offset),
+            textcoords="offset points",
+            ha='center', va='bottom'
+        )
 
-def generate_eps_chart(ticker, out_dir, df):
-    if df.empty: return
-    path=os.path.join(out_dir,f"{ticker}_eps_chart.png")
-    df['EPS']=pd.to_numeric(df['EPS'],errors='coerce')
-    pos=np.arange(len(df)); w=0.4
-    fig,ax=plt.subplots(figsize=(8,5))
-    bars=ax.bar(pos,df['EPS'],w,color='teal')
-    ax.grid(True,axis='y',linestyle='--',linewidth=0.5)
-    ax.axhline(0,color='black',linewidth=2)
-    ax.set_ylabel('EPS'); ax.set_title(f"EPS Chart for {ticker}")
-    ax.set_xticks(pos); ax.set_xticklabels(df['Date'],rotation=0)
-    add_eps_value_labels(ax,bars,df)
-    plt.tight_layout()
-    os.makedirs(out_dir,exist_ok=True)
-    plt.savefig(path); plt.close()
-
-def add_value_labels(ax,bars,df,colname,sf):
+def add_value_labels(ax, bars, df, column, scale_factor):
     for bar in bars:
-        h=bar.get_height()
-        scaled=h*sf
-        col='Net_Income' if 'Net_Income' in colname else 'Revenue'
-        matches=df.loc[np.isclose(df[col],scaled,atol=1e-2),colname]
-        lbl=matches.iat[0] if not matches.empty else "N/A"
-        off=3 if h>=0 else -12
-        ax.annotate(lbl, xy=(bar.get_x()+bar.get_width
+        h = bar.get_height()
+        scaled_value = h * scale_factor
+        col_name = 'Net_Income' if 'Net_Income' in column else 'Revenue'
+        matches = df.loc[np.isclose(df[col_name], scaled_value, atol=1e-2), column]
+        label = matches.iat[0] if not matches.empty else "N/A"
+        offset = 3 if h >= 0 else -12
+        ax.annotate(
+            label,
+            xy=(bar.get_x() + bar.get_width() / 2, h),
+            xytext=(0, offset),
+            textcoords="offset points",
+            ha='center', va='bottom'
+        )
+
+def generate_eps_chart(ticker, charts_output_dir, financial_data_df):
+    if financial_data_df.empty:
+        return
+    eps_chart_path = os.path.join(charts_output_dir, f"{ticker}_eps_chart.png")
+    financial_data_df['EPS'] = pd.to_numeric(financial_data_df['EPS'], errors='coerce')
+    positions = np.arange(len(financial_data_df))
+    width = 0.4
+    fig, ax = plt.subplots(figsize=(8,5))
+    bars = ax.bar(positions, financial_data_df['EPS'], width, label='EPS', color='teal')
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='grey', axis='y')
+    ax.axhline(0, color='black', linewidth=2)
+    ax.set_ylabel('Earnings Per Share (EPS)')
+    ax.set_title(f'EPS Chart for {ticker}')
+    ax.set_xticks(positions)
+    ax.set_xticklabels(financial_data_df['Date'], rotation=0)
+    values = financial_data_df['EPS'].abs()
+    buffer = values.max() * 0.2
+    max_v, min_v = values.max(), financial_data_df['EPS'].min()
+    ax.set_ylim(min_v - buffer if min_v < 0 else 0, max_v + buffer)
+    add_eps_value_labels(ax, bars, financial_data_df)
+    plt.tight_layout()
+    os.makedirs(charts_output_dir, exist_ok=True)
+    plt.savefig(eps_chart_path)
+    plt.close(fig)
+
+def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_path):
+    df = create_formatted_dataframe(financial_data_df.copy())
+    df['Revenue'] = pd.to_numeric(df['Revenue'].replace('[\$,]', '', regex=True), errors='coerce')
+    df['Net_Income'] = pd.to_numeric(df['Net_Income'].replace('[\$,]', '', regex=True), errors='coerce')
+    df['Date'] = df['Date'].astype(str)
+    positions = np.arange(len(df))
+    width = 0.3
+    fig, ax = plt.subplots(figsize=(10,6))
+    max_net = df['Net_Income'].max()
+    if abs(max_net) >= 1e9:
+        sf, le, ylabel = 1e9, 'B', 'Amount (Billions $)'
+    else:
+        sf, le, ylabel = 1e6, 'M', 'Amount (Millions $)'
+    rev_vals = (df['Revenue'] / sf).append(df['Net_Income'] / sf)
+    buffer = rev_vals.abs().max() * 0.2
+    low = (df['Net_Income'].min()/sf) - buffer if df['Net_Income'].min() < 0 else 0
+    high = rev_vals.max() + buffer
+    bars1 = ax.bar(positions - width/2, df['Revenue']/sf, width, label=f'Revenue ({le})', color='green')
+    bars2 = ax.bar(positions + width/2, df['Net_Income']/sf, width, label=f'Net Income ({le})', color='blue')
+    ax.set_ylabel(ylabel)
+    ax.set_ylim(low, high)
+    ax.set_title(f'Revenue and Net Income for {ticker}')
+    ax.set_xticks(positions)
+    ax.set_xticklabels(df['Date'], rotation=0)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='grey', axis='y')
+    ax.axhline(0, color='black', linewidth=1)
+    add_value_labels(ax, bars1, df, 'Formatted_Revenue', sf)
+    add_value_labels(ax, bars2, df, 'Formatted_Net_Income', sf)
+    plt.tight_layout()
+    os.makedirs(os.path.dirname(revenue_chart_path) or ".", exist_ok=True)
+    plt.savefig(revenue_chart_path)
+    plt.close(fig)
+
+def calculate_and_format_changes(df):
+    df.sort_values('Date', ascending=True, inplace=True)
+    for col in ['Revenue','Net_Income','EPS']:
+        if df[col].dtype == object:
+            df[col] = df[col].replace('[\$,MK]', '', regex=True).astype(float) * 1e3
+    for col in ['Revenue','Net_Income','EPS']:
+        cc = col + '_Change'
+        df[cc] = df[col].pct_change(fill_method=None) * 100
+        df[cc] = df[cc].apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "N/A")
+    return df
+
+def style_changes(val):
+    if isinstance(val, str) and '%' in val:
+        return 'color: red;' if '-' in val else 'color: green;'
+    return ''
+
+def generate_financial_data_table_html(ticker, df, charts_output_dir):
+    df = calculate_and_format_changes(df)
+    keep = ['Date','Formatted_Revenue','Formatted_Net_Income','Formatted_EPS',
+            'Revenue_Change','Net_Income_Change','EPS_Change']
+    df = df[keep]
+    df.columns = ['Date','Revenue','Net Income','EPS','Revenue Change','Net Income Change','EPS Change']
+    avg = df[['Revenue Change','Net Income Change','EPS Change']]\
+           .replace('N/A',np.nan)\
+           .apply(lambda x: pd.to_numeric(x.str.replace('%',''), errors='coerce'))\
+           .mean()\
+           .apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "N/A")
+    avg_row = pd.Series(['Average','','',''] + avg.tolist(), index=df.columns)
+    df = pd.concat([df, pd.DataFrame([avg_row])], ignore_index=True)
+    styled = df.style.applymap(style_changes, subset=['Revenue Change','Net Income Change','EPS Change'])
+    html = styled.to_html()
+    path = os.path.join(charts_output_dir, f"{ticker}_rev_net_table.html")
+    os.makedirs(charts_output_dir, exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(html)
+    print(f"Financial data table for {ticker} saved to {path}")
+
+def prepare_data_for_charts(ticker, cursor):
+    print("Preparing data for charts")
+    cursor.execute("SELECT Date, Revenue, Net_Income, EPS, Last_Updated FROM Annual_Data WHERE Symbol = ? ORDER BY Date", (ticker,))
+    ann = cursor.fetchall()
+    print("---fetching all annual data", ann)
+    cursor.execute("SELECT 'TTM' AS Date, TTM_Revenue AS Revenue, TTM_Net_Income AS Net_Income, TTM_EPS AS EPS, Last_Updated FROM TTM_Data WHERE Symbol = ?", (ticker,))
+    ttm = cursor.fetchall()
+    print("---fetching all ttm data from database", ttm)
+    cursor.execute("SELECT 'TTM' AS Date, TTM_Revenue AS Revenue, TTM_Net_Income AS Net_Income, TTM_EPS AS EPS, Quarter, Last_Updated FROM TTM_Data WHERE Symbol = ?", (ticker,))
+    ttmb = cursor.fetchall()
+    print("---fetching all ttm data from database", ttmb)
+
+    annual_df = pd.DataFrame(ann, columns=['Date','Revenue','Net_Income','EPS','Last_Updated'])
+    ttm_df    = pd.DataFrame(ttm, columns=['Date','Revenue','Net_Income','EPS','Last_Updated'])
+    ttm_dfb   = pd.DataFrame(ttmb, columns=['Date','Revenue','Net_Income','EPS','Quarter','Last_Updated'])
+    print("---converting df to correct names", annual_df, ttm_df)
+
+    annual_df['Last_Updated'] = pd.to_datetime(annual_df['Last_Updated'], errors='coerce')
+    ttm_df['Last_Updated']    = pd.to_datetime(ttm_df['Last_Updated'], errors='coerce')
+    print("---converting all last updated entries are timestamps")
+
+    if not ttm_df.empty:
+        last_q = ttm_dfb.loc[0,'Quarter']
+        if not str(last_q).startswith("TTM"):
+            ttm_df.at[0,'Date'] = f"TTM {last_q}"
+        print("---extracting last quarter date", last_q)
+
+    if not ann and not ttm:
+        return pd.DataFrame()
+
+    annual_df.dropna(axis=1, how='all', inplace=True)
+    ttm_df.dropna(axis=1, how='all', inplace=True)
+    combined = pd.concat([annual_df, ttm_df], ignore_index=True)
+    print("---combining annual df and ttm df", combined)
+
+    combined['Revenue']    = pd.to_numeric(combined['Revenue'], errors='coerce')
+    combined['Net_Income'] = pd.to_numeric(combined['Net_Income'], errors='coerce')
+    combined['EPS']        = pd.to_numeric(combined['EPS'], errors='coerce')
+    combined = clean_financial_data(combined)
+    combined['Date'] = combined['Date'].astype(str)
+    combined.sort_values('Date', inplace=True)
+    combined = create_formatted_dataframe(combined)
+    print("---combined df:", combined)
+    return combined
+
+def annual_and_ttm_update(ticker, db_path):
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+
+    # Annual
+    annual_data = fetch_ticker_data(ticker, cursor)
+    if not annual_data:
+        new_ann = fetch_annual_data_from_yahoo(ticker)
+        if not new_ann.empty:
+            store_annual_data(ticker, new_ann, cursor)
+            annual_data = [row for _, row in new_ann.iterrows()]
+
+    # TTM
+    ttm_data = fetch_ttm_data(ticker, cursor)
+    if not ttm_data:
+        new_ttm = fetch_ttm_data_from_yahoo(ticker)
+        if new_ttm:
+            store_ttm_data(ticker, new_ttm, cursor)
+            ttm_data = [new_ttm]
+
+    handle_ttm_duplicates(ticker, cursor)
+
+    lad = get_latest_annual_data_date(pd.DataFrame(annual_data) if isinstance(annual_data, list) else annual_data)
+    ttm_dates = [datetime.strptime(r['Quarter'], '%Y-%m-%d') for r in (ttm_data or []) if r.get('Quarter')]
+    ltd = max(ttm_dates) if ttm_dates else None
+
+    ann_upd = needs_update(lad, 13) or check_null_fields(annual_data, ['Revenue','Net_Income','EPS'])
+    ttm_upd = needs_update(ltd, 4)  or check_null_fields(ttm_data, ['TTM_Revenue','TTM_Net_Income','TTM_EPS'])
+
+    if ann_upd:
+        new_ann = fetch_annual_data_from_yahoo(ticker)
+        if not new_ann.empty:
+            store_annual_data(ticker, new_ann, cursor)
+
+    if ttm_upd:
+        new_ttm = fetch_ttm_data_from_yahoo(ticker)
+        if new_ttm:
+            store_ttm_data(ticker, new_ttm, cursor)
+
+    combined_df = prepare_data_for_charts(ticker, cursor)
+    charts_output_dir = "charts"
+    generate_revenue_net_income_chart(combined_df, ticker, os.path.join(charts_output_dir, f"{ticker}_revenue_net_income_chart.png"))
+    generate_eps_chart(ticker, charts_output_dir, combined_df)
+    generate_financial_data_table_html(ticker, combined_df, charts_output_dir)
+
+    conn.close()
+    logging.debug(f"Update for {ticker} completed")
+
+if __name__ == "__main__":
+    ticker = "PG"
+    db_path = "Stock Data.db"
+    annual_and_ttm_update(ticker, db_path)
