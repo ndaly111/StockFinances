@@ -1,6 +1,6 @@
-# main_remote.py  – 2025-07-03
+# main_remote.py – 2025-07-03
 # ────────────────────────────────────────────────────────────────────
-import os, sqlite3, pandas as pd, yfinance as yf
+import os, sqlite3, pandas as pd, yfinance as yf, math
 from datetime import datetime
 
 import ticker_manager
@@ -16,7 +16,7 @@ from balancesheet_chart import (
     plot_chart, create_and_save_table
 )
 from implied_growth_summary import generate_all_summaries
-from Forward_data import scrape_forward_data          # ← fast scraper
+from Forward_data import scrape_forward_data
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from ticker_info import prepare_data_for_display, generate_html_table
 from expense_reports import generate_expense_reports
@@ -36,7 +36,7 @@ CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
 
 # ────────────────────────────────────────────────────────────────────
-# Helper functions
+# Helpers
 # ────────────────────────────────────────────────────────────────────
 def manage_tickers(tickers_file, is_remote=False):
     tickers = ticker_manager.read_tickers(tickers_file)
@@ -54,10 +54,10 @@ def establish_database_connection(db_path):
 def log_average_valuations(avg_values, tickers_file):
     if tickers_file != "tickers.csv":
         return
-    keys = ("Nicks_TTM_Value_Average",
-            "Nicks_Forward_Value_Average",
-            "Finviz_TTM_Value_Average")
-    if not all(k in avg_values for k in keys):
+    req = ("Nicks_TTM_Value_Average",
+           "Nicks_Forward_Value_Average",
+           "Finviz_TTM_Value_Average")
+    if not all(k in avg_values for k in req):
         print("[WARNING] Missing keys in avg_values; skipping DB insert.")
         return
     today = datetime.now().strftime("%Y-%m-%d")
@@ -89,13 +89,21 @@ def balancesheet_chart(ticker):
     data = fetch_bs_for_chart(ticker)
     if data is None:
         return
+
     plot_chart(data, CHARTS_DIR, ticker)
-    debt, equity = data.get("Total_Debt"), data.get("Total_Equity")
-    if debt in (None, pd.NA) or equity in (None, 0, pd.NA):
+
+    debt   = data.get("Total_Debt")
+    equity = data.get("Total_Equity")
+
+    def _is_missing(x):
+        return x is None or (isinstance(x, (float,int)) and math.isnan(x)) or pd.isna(x)
+
+    if _is_missing(debt) or _is_missing(equity) or equity == 0:
         print(f"[INFO] Skipping Debt/Equity ratio for {ticker}")
         data["Debt_to_Equity_Ratio"] = None
     else:
         data["Debt_to_Equity_Ratio"] = debt / equity
+
     create_and_save_table(data, CHARTS_DIR, ticker)
 
 def fetch_and_update_balance_sheet_data(ticker, cursor):
@@ -114,7 +122,7 @@ def fetch_10_year_treasury_yield():
         return None
 
 # ────────────────────────────────────────────────────────────────────
-# Main workflow
+# Main
 # ────────────────────────────────────────────────────────────────────
 def mini_main():
     financial_data, dashboard_data = {}, []
@@ -134,11 +142,9 @@ def mini_main():
             annual_and_ttm_update(ticker, DB_PATH)
             fetch_and_update_balance_sheet_data(ticker, cursor)
             balancesheet_chart(ticker)
-
-            # ——— FIXED CALL (no path/tablename args needed) ———
             scrape_forward_data(ticker)
-
             generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
+
             prepared, mktcap = prepare_data_for_display(ticker, treasury)
             generate_html_table(prepared, ticker)
             valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
