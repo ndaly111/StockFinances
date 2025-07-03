@@ -1,9 +1,8 @@
-# Forward_data.py  – 2025-07-03  (robust + fast)
+# Forward_data.py  – 2025-07-03  (safe analysts lookup)
 # ───────────────────────────────────────────────────────────────────
 """
-Scrape Zacks annual consensus EPS / revenue forecasts and store them
-into the SQLite table ForwardFinancialData.  Safe for single-ticker
-or multithreaded batch use.
+Scrape Zacks annual consensus EPS / revenue forecasts and store them in
+SQLite.  Safe for single-ticker or multithreaded batch use.
 """
 # ───────────────────────────────────────────────────────────────────
 import re, calendar, logging, sqlite3, time, traceback, math
@@ -21,17 +20,13 @@ from sqlite3 import OperationalError
 # ───────────────────────────────────────────────────────────────────
 DB_PATH    = "Stock Data.db"
 TABLE_NAME = "ForwardFinancialData"
-
 HEADERS = {
     "User-Agent":
         ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
          "AppleWebKit/537.36 (KHTML, like Gecko) "
          "Chrome/124.0.0.0 Safari/537.3")
 }
-
 NUM_RE  = re.compile(r"([0-9.\-]+)([MBT]?)")
-
-# ——— the missing global (needed for single-ticker path) ———
 SESSION = requests.Session()
 
 logging.basicConfig(level=logging.INFO,
@@ -43,8 +38,7 @@ logging.basicConfig(level=logging.INFO,
 def _ensure_table() -> None:
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("PRAGMA journal_mode=WAL")
-        cur = conn.cursor()
-        cur.execute(f"""
+        conn.execute(f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
             Ticker TEXT NOT NULL,
             Date   TEXT NOT NULL,
@@ -77,7 +71,7 @@ def _connect():
             pass
 
 # ───────────────────────────────────────────────────────────────────
-# Utility fns
+# Utility
 # ───────────────────────────────────────────────────────────────────
 def _last_day(date_str: str) -> str:
     try:
@@ -98,7 +92,7 @@ def _to_number(series: pd.Series) -> pd.Series:
     return series.map(_conv)
 
 # ───────────────────────────────────────────────────────────────────
-# Scraping core
+# Scraping
 # ───────────────────────────────────────────────────────────────────
 def _fetch_html(ticker: str, session: requests.Session) -> Optional[BeautifulSoup]:
     url = f"https://www.zacks.com/stock/quote/{ticker.replace('-', '.')}/detailed-earning-estimates"
@@ -121,20 +115,27 @@ def _parse(soup: BeautifulSoup) -> Optional[pd.DataFrame]:
     if sales_df.shape[1] < 5 or earnings_df.shape[1] < 5:
         return None
 
-    def _analysts(df):
-        s = df.loc[df.iloc[:,0].str.contains("# of Estimates", na=False),1]
-        return int(str(s.iat[0]).replace(",","")) if not s.empty else None
+    # ————— safe analyst-count extractor —————
+    def _analysts(df) -> Optional[int]:
+        mask = df.iloc[:, 0].astype(str).str.contains("# of Estimates", na=False)
+        if not mask.any():
+            return None
+        # use integer-pos .iloc to avoid KeyError when columns aren’t numeric
+        val = str(df.loc[mask].iloc[0, 1]).replace(",", "")
+        return int(val) if val.isdigit() else None
 
     rev_analysts, eps_analysts = _analysts(sales_df), _analysts(earnings_df)
     if rev_analysts is None or eps_analysts is None:
         return None
 
+    # Consensus rows
     cons_rev = sales_df.loc[sales_df.iloc[:,0].str.contains("Consensus", na=False)]
     cons_eps = earnings_df.loc[earnings_df.iloc[:,0].str.contains("Consensus", na=False)]
     if cons_rev.empty or cons_eps.empty:
         return None
     cons_rev, cons_eps = cons_rev.iloc[0], cons_eps.iloc[0]
 
+    # Period headers
     this_hdr, next_hdr = sales_df.columns[3:5]
     this_date, next_date = _last_day(this_hdr.split("(")[-1].rstrip(")")), _last_day(next_hdr.split("(")[-1].rstrip(")"))
     if not this_date or not next_date:
@@ -192,26 +193,6 @@ def scrape_forward_data(ticker: str) -> None:
         logging.info(f"{ticker}: no data scraped")
         return
     _store(df, ticker)
-
-# Optional threaded batch function (unchanged)
-def scrape_forward_data_batch(tickers: List[str], max_workers: int = 6) -> None:
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-    def _worker(tkr):
-        with requests.Session() as sess:
-            d = scrape_annual_estimates(tkr, sess)
-            if not d.empty:
-                _store(d, tkr)
-            else:
-                logging.info(f"{tkr}: no data")
-    with ThreadPoolExecutor(max_workers=max_workers) as ex:
-        fut_to_tkr = {ex.submit(_worker, t): t for t in tickers}
-        for fut in as_completed(fut_to_tkr):
-            tkr = fut_to_tkr[fut]
-            try:
-                fut.result()
-                logging.info(f"{tkr}: done")
-            except Exception:
-                logging.error(f"{tkr}: FAILED\n{traceback.format_exc()}")
 
 # ───────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
