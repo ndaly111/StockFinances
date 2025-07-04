@@ -24,6 +24,7 @@ from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import valuation_update, process_update_growth_csv
 from index_growth_table import index_growth
 from eps_dividend_generator import eps_dividend_generator
+from index_growth_charts import render_index_growth_charts
 from generate_earnings_tables import generate_earnings_tables
 
 # ────────────────────────────────────────────────────────────────────
@@ -157,6 +158,7 @@ def mini_main():
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
         generate_earnings_tables()
+        render_index_growth_charts()
 
         html_generator2(
             tickers,
