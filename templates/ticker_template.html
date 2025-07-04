@@ -26,7 +26,7 @@
     <div class="carousel-item"><img src="../{{ ticker_data.forecast_eps_chart_path }}"     alt="EPS Forecast"></div>
   </div>
 
-  <h1>{{ ticker_data.ticker }} – Y/Y % Change</h1>
+  <h1>{{ ticker_data.ticker }} – Y/Y %% Change</h1>
   <div class="carousel-container">
     <img class="carousel-item" src="../{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Rev YoY">
     <img class="carousel-item" src="../{{ ticker_data.eps_yoy_change_chart_path }}"     alt="EPS YoY">
@@ -35,32 +35,16 @@
 
   <div class="balance-sheet-container">
     <div class="balance-sheet-table">{{ ticker_data.balance_sheet_table_html | safe }}</div>
-    <div class="balance-sheet-chart">
-      <img src="../{{ ticker_data.balance_sheet_chart_path }}" alt="BS Chart">
-    </div>
+    <div class="balance-sheet-chart"><img src="../{{ ticker_data.balance_sheet_chart_path }}" alt="BS Chart"></div>
   </div>
 
   <h1>{{ ticker_data.ticker }} – Expense Overview</h1>
   <div class="carousel-container">
     <img class="carousel-item" src="../{{ ticker_data.expense_chart_path }}"         alt="Rev vs Exp">
-    <img class="carousel-item" src="../{{ ticker_data.expense_percent_chart_path }}" alt="Exp % of Rev">
+    <img class="carousel-item" src="../{{ ticker_data.expense_percent_chart_path }}" alt="Exp %% of Rev">
     <div class="carousel-item">{{ ticker_data.expense_abs_html | safe }}</div>
     <div class="carousel-item">{{ ticker_data.expense_yoy_html | safe }}</div>
   </div>
-
-  {% if ticker_data.unmapped_expense_html %}
-  <h1>{{ ticker_data.ticker }} – Unmapped Items</h1>
-  <div>{{ ticker_data.unmapped_expense_html | safe }}</div>
-  {% endif %}
-
-  {% if ticker_data.valuation_chart %}
-  <h1>{{ ticker_data.ticker }} – Valuation Chart</h1>
-  <img src="../{{ ticker_data.valuation_chart }}" alt="Valuation">
-  <div class="valuation-tables">
-    {{ ticker_data.valuation_info_table | safe }}
-    {{ ticker_data.valuation_data_table | safe }}
-  </div>
-  {% endif %}
 
   {% if ticker_data.implied_growth_chart_path %}
   <h1>{{ ticker_data.ticker }} – Implied Growth Summary</h1>
