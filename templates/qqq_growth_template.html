@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8">
-<title>QQQ – Implied Growth Summary</title>
-<link rel="stylesheet" href="../style.css"></head>
+<title>QQQ – Implied Growth & P/E</title>
+<link rel="stylesheet" href="style.css"></head>
 <body>
-  <header><a href="../index.html">← Home</a></header>
+  <header><a href="index.html">← Home</a></header>
+
   <h1>QQQ – Implied Growth Summary</h1>
-  <img src="../charts/qqq_growth_chart.png" style="max-width:100%%;" alt="QQQ Growth Chart">
+  <img src="charts/qqq_growth_chart.png" style="max-width:100%%;" alt="QQQ Growth Chart">
   {{ qqq_growth_summary | safe }}
+
+  <h1>QQQ – P/E Ratio Summary</h1>
+  <img src="charts/qqq_pe_chart.png" style="max-width:100%%;" alt="QQQ P/E Chart">
+  {{ qqq_pe_summary | safe }}
 </body>
 </html>

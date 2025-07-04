@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8">
-<title>SPY – Implied Growth Summary</title>
-<link rel="stylesheet" href="../style.css"></head>
+<title>SPY – Implied Growth & P/E</title>
+<link rel="stylesheet" href="style.css"></head>
 <body>
-  <header><a href="../index.html">← Home</a></header>
+  <header><a href="index.html">← Home</a></header>
+
   <h1>SPY – Implied Growth Summary</h1>
-  <img src="../charts/spy_growth_chart.png" style="max-width:100%%;" alt="SPY Growth Chart">
+  <img src="charts/spy_growth_chart.png" style="max-width:100%%;" alt="SPY Growth Chart">
   {{ spy_growth_summary | safe }}
+
+  <h1>SPY – P/E Ratio Summary</h1>
+  <img src="charts/spy_pe_chart.png" style="max-width:100%%;" alt="SPY P/E Chart">
+  {{ spy_pe_summary | safe }}
 </body>
 </html>
