@@ -1,76 +1,62 @@
-# log_index_growth.py
-# --------------------------------------------------------------------
-# Logs implied growth rates for SPY and QQQ into Index_Growth_History
-# --------------------------------------------------------------------
+# index_growth_table.py
+# ---------------------------------------------------------------------
+# Provides the public mini-main  index_growth()
+#   • Logs today’s SPY + QQQ implied growth to the DB
+#   • Regenerates charts & summary HTML tables
+#   • Returns one combined HTML snippet (SPY + QQQ) for the dashboard
+# ---------------------------------------------------------------------
 
-import sqlite3
+import os
 from datetime import datetime
-import yfinance as yf
 
-DB_PATH      = "Stock Data.db"
-TABLE_NAME   = "Index_Growth_History"
-INDEXES      = ["SPY", "QQQ"]
-TREASURY_YLD = 0.045            # 10-yr yield used in Gordon model
+from log_index_growth    import log_index_growth          # writes today's data
+from index_growth_charts import render_index_growth_charts
 
-# ───────────────────────────────────────────────────────────
-#  Public helper functions (names unchanged from your original)
-# ───────────────────────────────────────────────────────────
-def compute_growth(ttm_pe: float, fwd_pe: float):
-    """Implied growth via simple Gordon Growth rearrangement."""
-    if not ttm_pe or not fwd_pe:
-        return None, None
-    return TREASURY_YLD * ttm_pe - 1, TREASURY_YLD * fwd_pe - 1
+CHART_DIR = "charts"
+SUMMARY_FILES = {
+    "SPY": "spy_growth_summary.html",
+    "QQQ": "qqq_growth_summary.html",
+}
 
-def fetch_pe_ratios(ticker: str):
-    """Return (trailingPE, forwardPE) from yfinance."""
-    info = yf.Ticker(ticker).info
-    return info.get("trailingPE"), info.get("forwardPE")
+def _read_html(path: str, fallback: str = "<p>No data available.</p>") -> str:
+    """Utility: load HTML file or return fallback text."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return fallback
 
-def ensure_table_exists(conn: sqlite3.Connection):
-    conn.execute(f"""
-        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-            Date           TEXT,
-            Ticker         TEXT,
-            Growth_Type    TEXT,   -- 'TTM' | 'Forward'
-            Implied_Growth REAL,
-            PRIMARY KEY (Date, Ticker, Growth_Type)
-        )
-    """)
-    conn.commit()
+# ------------------------------------------------------------------ #
+#  mini-main (public) – this is what main_remote.py imports & calls  #
+# ------------------------------------------------------------------ #
+def index_growth() -> str:
+    """
+    Mini-main: orchestrates the full SPY & QQQ pipeline and returns
+    an HTML snippet ready for embedding in the home page.
+    """
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{ts}] Updating SPY & QQQ implied-growth data …")
 
-# ───────────────────────────────────────────────────────────
-#  Main routine
-# ───────────────────────────────────────────────────────────
-def log_index_growth():
-    """Store today’s implied growth for SPY & QQQ."""
-    today = datetime.today().strftime("%Y-%m-%d")
-    conn  = sqlite3.connect(DB_PATH)
-    ensure_table_exists(conn)
-    cur   = conn.cursor()
-
-    for tk in INDEXES:
-        ttm_pe, fwd_pe         = fetch_pe_ratios(tk)
-        ttm_growth, fwd_growth = compute_growth(ttm_pe, fwd_pe)
-
-        if ttm_growth is not None:
-            cur.execute(f"""
-                INSERT OR REPLACE INTO {TABLE_NAME}
-                (Date, Ticker, Growth_Type, Implied_Growth)
-                VALUES (?, ?, 'TTM', ?)
-            """, (today, tk, ttm_growth))
-
-        if fwd_growth is not None:
-            cur.execute(f"""
-                INSERT OR REPLACE INTO {TABLE_NAME}
-                (Date, Ticker, Growth_Type, Implied_Growth)
-                VALUES (?, ?, 'Forward', ?)
-            """, (today, tk, fwd_growth))
-
-        print(f"Logged {tk} — TTM: {ttm_growth:.2%} | Fwd: {fwd_growth:.2%}")
-
-    conn.commit()
-    conn.close()
-
-# Mini-main for manual test runs
-if __name__ == "__main__":
+    # 1️⃣  Append today’s data
     log_index_growth()
+
+    # 2️⃣  Rebuild charts & summary tables
+    render_index_growth_charts()
+
+    # 3️⃣  Collate both summaries into a single block
+    blocks = []
+    for ticker, fname in SUMMARY_FILES.items():
+        blocks.append(f"<h3>{ticker}</h3>")
+        blocks.append(_read_html(os.path.join(CHART_DIR, fname)))
+
+    return "\n".join(blocks)
+
+# ------------------------------------------------------------------ #
+#  Stand-alone execution (optional)                                  #
+# ------------------------------------------------------------------ #
+if __name__ == "__main__":
+    html_snippet = index_growth()            # run mini-main
+    out_path = os.path.join(CHART_DIR, "spy_qqq_combined_summary.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html_snippet)
+    print(f"Combined summary written to {out_path}")
