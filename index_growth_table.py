@@ -1,9 +1,9 @@
 # index_growth_table.py
 # ───────────────────────────────────────────────────────────
-# Mini-main  index_growth(treasury_yield)  — called by main_remote.py
+# Mini-main  index_growth(treasury_yield)  — imported by main_remote.py
 #
-# • Logs today’s implied growth for SPY & QQQ into SQLite
-# • Regenerates charts + summary tables
+# • Logs today’s implied growth for SPY & QQQ
+# • Generates/updates charts + summary HTML tables
 # • Returns one combined HTML snippet for the dashboard
 #
 # Stand-alone test:  python index_growth_table.py
@@ -20,43 +20,56 @@ from matplotlib.ticker import PercentFormatter
 DB_PATH        = "Stock Data.db"
 TABLE_NAME     = "Index_Growth_History"
 INDEXES        = ["SPY", "QQQ"]
-FALLBACK_YIELD = 0.045     # 4.5 % used if caller passes None
+FALLBACK_YIELD = 0.045       # 4.5 % if caller passes None
 CHART_DIR      = "charts"
 os.makedirs(CHART_DIR, exist_ok=True)
 
-# ─── Helper: normalize yield to decimal ────────────────────
-def _normalize_yield(value):
+# ─── Yield normalizer ─────────────────────────────────────
+def _normalize_yield(val):
     """
-    Accepts 0.043 → 0.043   | 4.3 → 0.043   | 43.0 (^TNX) → 0.043
+    Accepts 0.043 → 0.043   | 4.3 → 0.043  | 43.0 (^TNX) → 0.043
     """
-    if value is None:
+    if val is None:
         return FALLBACK_YIELD
     try:
-        v = float(value)
-        if v < 0.5:   # already decimal
-            return v
-        if v < 20:    # percent form
-            return v / 100
-        return v / 1000  # ^TNX quote
+        v = float(val)
+        if v < 0.5:  return v          # already decimal
+        if v < 20:   return v / 100    # percent form
+        return v / 1000                # ^TNX quote
     except Exception:
         return FALLBACK_YIELD
 
-# ─── DB helpers ─────────────────────────────────────────────
+# ─── Data helpers ──────────────────────────────────────────
 def _compute_growth(ttm_pe, fwd_pe, y):
     if not ttm_pe or not fwd_pe:
         return None, None
     return y * ttm_pe - 1, y * fwd_pe - 1
 
-def _fetch_pe(ticker):
+def _fetch_pe(ticker: str):
+    """
+    Returns (trailingPE, forwardPE).
+    If forwardPE missing, compute as price / forwardEps when possible.
+    """
     info = yf.Ticker(ticker).info
-    return info.get("trailingPE"), info.get("forwardPE")
+    ttm  = info.get("trailingPE")
+    fwd  = info.get("forwardPE")
+
+    if fwd is None:
+        price    = info.get("regularMarketPrice")
+        fwd_eps  = info.get("forwardEps")
+        if price and fwd_eps:
+            try:
+                fwd = price / fwd_eps
+            except ZeroDivisionError:
+                fwd = None
+    return ttm, fwd
 
 def _ensure_table(conn):
     conn.execute(f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
             Date TEXT,
             Ticker TEXT,
-            Growth_Type TEXT,      -- 'TTM' | 'Forward'
+            Growth_Type TEXT,    -- 'TTM' | 'Forward'
             Implied_Growth REAL,
             PRIMARY KEY (Date, Ticker, Growth_Type)
         )
@@ -68,8 +81,9 @@ def _log_today(yld):
         _ensure_table(conn)
         cur = conn.cursor()
         for tk in INDEXES:
-            ttm_pe, fwd_pe   = _fetch_pe(tk)
-            ttm_g, fwd_g     = _compute_growth(ttm_pe, fwd_pe, yld)
+            ttm_pe, fwd_pe = _fetch_pe(tk)
+            ttm_g, fwd_g   = _compute_growth(ttm_pe, fwd_pe, yld)
+
             if ttm_g is not None:
                 cur.execute(f"""
                     INSERT OR REPLACE INTO {TABLE_NAME}
@@ -82,23 +96,28 @@ def _log_today(yld):
                 """, (today, tk, fwd_g))
         conn.commit()
 
-# ─── Chart & summary generation ────────────────────────────
+# ─── Chart + summary generation ───────────────────────────
 def _hist_df(tk):
     with sqlite3.connect(DB_PATH) as conn:
-        df = pd.read_sql_query(
-            "SELECT Date, Growth_Type, Implied_Growth "
-            "FROM Index_Growth_History "
-            "WHERE Ticker = ? ORDER BY Date ASC",
-            conn, params=(tk,))
-    if df.empty:
-        return None
+        df = pd.read_sql_query("""
+            SELECT Date, Growth_Type, Implied_Growth
+            FROM Index_Growth_History
+            WHERE Ticker = ? ORDER BY Date ASC
+        """, conn, params=(tk,))
+    if df.empty: return None
     df["Date"] = pd.to_datetime(df["Date"])
     return df.pivot(index="Date", columns="Growth_Type", values="Implied_Growth")
 
 def _plot_and_table(tk):
     df = _hist_df(tk)
-    if df is None or len(df) < 3:
+
+    # Always write a summary table, even with <3 rows
+    if df is None or df.empty:
+        with open(os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
+                  "w", encoding="utf-8") as f:
+            f.write("<p>No implied-growth data yet.</p>")
         return
+
     summary = {
         col: {
             "Average": df[col].mean(),
@@ -108,7 +127,24 @@ def _plot_and_table(tk):
         } for col in ["TTM", "Forward"] if col in df
     }
 
-    # chart
+    # Summary HTML
+    rows, link = [], f'<a href="{tk.lower()}_growth.html">{tk}</a>'
+    for g in ["TTM", "Forward"]:
+        if g not in summary: continue
+        for stat, val in summary[g].items():
+            rows.append({
+                "Ticker": link, "Growth Type": g,
+                "Statistic": stat, "Value": f"{val:.2%}"
+            })
+    pd.DataFrame(rows).to_html(
+        os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
+        index=False, escape=False
+    )
+
+    # Draw chart only when ≥3 rows
+    if len(df) < 3:
+        return
+
     fig, ax = plt.subplots(figsize=(10, 6))
     if "TTM" in df:
         ax.plot(df.index, df["TTM"], label="TTM", color="blue")
@@ -128,32 +164,17 @@ def _plot_and_table(tk):
     plt.savefig(os.path.join(CHART_DIR, f"{tk.lower()}_growth_chart.png"))
     plt.close()
 
-    # summary HTML
-    rows, link = [], f'<a href="{tk.lower()}_growth.html">{tk}</a>'
-    for g in ["TTM", "Forward"]:
-        if g not in summary: continue
-        for stat, val in summary[g].items():
-            rows.append({
-                "Ticker": link, "Growth Type": g,
-                "Statistic": stat, "Value": f"{val:.2%}"
-            })
-    pd.DataFrame(rows).to_html(
-        os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
-        index=False, escape=False
-    )
-
 def _refresh_assets():
     for tk in INDEXES:
         _plot_and_table(tk)
 
-# ─── MINI-MAIN (imported by main_remote.py) ─────────────────
+# ─── MINI-MAIN — called by main_remote.py ──────────────────
 def index_growth(treasury_yield: float | None = None) -> str:
     """
     Parameters
     ----------
     treasury_yield : float or None
-        Raw 10-year yield fetched in main_remote.py.
-        Accepts decimal (0.043), percent (4.3) or ^TNX quote (43.0).
+        10-year yield fetched in main_remote.py (0.043, 4.3, 43.0, etc.)
     Returns
     -------
     str – combined SPY & QQQ summary HTML snippet.
@@ -174,7 +195,7 @@ def index_growth(treasury_yield: float | None = None) -> str:
 
 # ─── Stand-alone test run ──────────────────────────────────
 if __name__ == "__main__":
-    html = index_growth()  # uses fallback yield
+    html = index_growth()      # uses fallback yield
     out  = os.path.join(CHART_DIR, "spy_qqq_combined_summary.html")
     with open(out, "w", encoding="utf-8") as f:
         f.write(html)
