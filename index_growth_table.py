@@ -1,148 +1,202 @@
-#!/usr/bin/env python3
-"""
-Module: index_growth_table.py
+# index_growth_table.py
+# ───────────────────────────────────────────────────────────
+# Mini-main  index_growth(treasury_yield)  — imported by main_remote.py
+#
+# • Logs today’s implied growth for SPY & QQQ
+# • Generates/updates charts + summary HTML tables
+# • Returns one combined HTML snippet for the dashboard
+#
+# Stand-alone test:  python index_growth_table.py
+# ───────────────────────────────────────────────────────────
 
-Fetches trailing P/E ratios for SPY and QQQ, caches them in stock data.db,
-retrieves the 10‑year Treasury yield, computes implied growth,
-and writes an HTML table to charts/spy_qqq_growth.html.
-"""
-
-import os
-import time
-import sqlite3
-import yfinance as yf
+import os, sqlite3
 from datetime import datetime
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
-# Ensure output folder exists
-os.makedirs("charts", exist_ok=True)
+# ─── Configuration ─────────────────────────────────────────
+DB_PATH        = "Stock Data.db"
+TABLE_NAME     = "Index_Growth_History"
+INDEXES        = ["SPY", "QQQ"]
+FALLBACK_YIELD = 0.045       # 4.5 % if caller passes None
+CHART_DIR      = "charts"
+os.makedirs(CHART_DIR, exist_ok=True)
 
-# Path to your database in the project root
-DB_PATH = "Stock Data.db"
+# ─── Yield normalizer ─────────────────────────────────────
+def _normalize_yield(val):
+    """
+    Accepts 0.043 → 0.043   | 4.3 → 0.043  | 43.0 (^TNX) → 0.043
+    """
+    if val is None:
+        return FALLBACK_YIELD
+    try:
+        v = float(val)
+        if v < 0.5:  return v          # already decimal
+        if v < 20:   return v / 100    # percent form
+        return v / 1000                # ^TNX quote
+    except Exception:
+        return FALLBACK_YIELD
 
-# Create the cache table if missing
-with sqlite3.connect(DB_PATH) as conn:
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS pe_cache (
-            ticker    TEXT PRIMARY KEY,
-            pe        REAL,
-            timestamp TEXT
-        )
-    ''')
-    conn.commit()
+# ─── Data helpers ──────────────────────────────────────────
+def _compute_growth(ttm_pe, fwd_pe, y):
+    if not ttm_pe or not fwd_pe:
+        return None, None
+    return y * ttm_pe - 1, y * fwd_pe - 1
 
+def _fetch_pe(ticker: str):
+    """
+    Returns (trailingPE, forwardPE).
+    If forwardPE missing, compute as price / forwardEps when possible.
+    """
+    info = yf.Ticker(ticker).info
+    ttm  = info.get("trailingPE")
+    fwd  = info.get("forwardPE")
 
-def fetch_trailing_pe(ticker, retries=3, delay=1):
-    now = datetime.utcnow()
-    # 1) Check cache
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT pe, timestamp FROM pe_cache WHERE ticker = ?", (ticker,))
-        row = c.fetchone()
-        if row:
-            pe_cached, ts = row
+    if fwd is None:
+        price    = info.get("regularMarketPrice")
+        fwd_eps  = info.get("forwardEps")
+        if price and fwd_eps:
             try:
-                if datetime.fromisoformat(ts).date() == now.date():
-                    print(f"[Cache] {ticker} P/E = {pe_cached:.2f}")
-                    return pe_cached
-            except Exception:
-                pass  # fall through to re-fetch
+                fwd = price / fwd_eps
+            except ZeroDivisionError:
+                fwd = None
+    return ttm, fwd
 
-    # 2) Fetch from yfinance
-    pe = None
-    for attempt in range(1, retries + 1):
-        try:
-            stock = yf.Ticker(ticker)
-            info = stock.info or {}
-            pe = info.get("trailingPE")
-            if pe:
-                break
+def _ensure_table(conn):
+    conn.execute(f"""
+        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+            Date TEXT,
+            Ticker TEXT,
+            Growth_Type TEXT,    -- 'TTM' | 'Forward'
+            Implied_Growth REAL,
+            PRIMARY KEY (Date, Ticker, Growth_Type)
+        )
+    """)
 
-            # Fallback: price / trailingEps
-            price = info.get("previousClose") or info.get("regularMarketPrice")
-            eps   = info.get("trailingEps")
-            if price is None:
-                price = getattr(stock, "fast_info", {}).get("lastPrice")
-            if eps is None:
-                try:
-                    eps = stock.quarterly_earnings["Earnings"].iloc[-1]
-                except Exception:
-                    eps = None
-
-            if price and eps:
-                pe = price / eps
-                print(f"[Fallback] {ticker} P/E = {price:.2f}/{eps:.2f} = {pe:.2f}")
-                break
-
-            print(f"[Attempt {attempt}] No P/E for {ticker}; keys: {list(info.keys())}")
-        except Exception as e:
-            print(f"[Error][Attempt {attempt}] fetching P/E for {ticker}: {e}")
-
-        time.sleep(delay)
-
-    if pe is None:
-        print(f"[Failed] Could not find P/E for {ticker} after {retries} attempts.")
-        return None
-
-    # 3) Cache the fresh value
+def _log_today(yld):
+    today = datetime.today().strftime("%Y-%m-%d")
     with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute('''
-            INSERT OR REPLACE INTO pe_cache (ticker, pe, timestamp)
-            VALUES (?, ?, ?)
-        ''', (ticker, float(pe), now.isoformat()))
+        _ensure_table(conn)
+        cur = conn.cursor()
+        for tk in INDEXES:
+            ttm_pe, fwd_pe = _fetch_pe(tk)
+            ttm_g, fwd_g   = _compute_growth(ttm_pe, fwd_pe, yld)
+
+            if ttm_g is not None:
+                cur.execute(f"""
+                    INSERT OR REPLACE INTO {TABLE_NAME}
+                    VALUES (?,?, 'TTM', ?)
+                """, (today, tk, ttm_g))
+            if fwd_g is not None:
+                cur.execute(f"""
+                    INSERT OR REPLACE INTO {TABLE_NAME}
+                    VALUES (?,?, 'Forward', ?)
+                """, (today, tk, fwd_g))
         conn.commit()
-        print(f"[Cached] {ticker} P/E = {pe:.2f} into {DB_PATH}")
 
-    return pe
+# ─── Chart + summary generation ───────────────────────────
+def _hist_df(tk):
+    with sqlite3.connect(DB_PATH) as conn:
+        df = pd.read_sql_query("""
+            SELECT Date, Growth_Type, Implied_Growth
+            FROM Index_Growth_History
+            WHERE Ticker = ? ORDER BY Date ASC
+        """, conn, params=(tk,))
+    if df.empty: return None
+    df["Date"] = pd.to_datetime(df["Date"])
+    return df.pivot(index="Date", columns="Growth_Type", values="Implied_Growth")
 
+def _plot_and_table(tk):
+    df = _hist_df(tk)
 
-def fetch_treasury_yield():
-    try:
-        info = yf.Ticker("^TNX").info or {}
-        y = info.get("regularMarketPrice")
-        return float(y) / 100 if y is not None else None
-    except Exception as e:
-        print(f"[Error] fetching treasury yield: {e}")
-        return None
+    # Always write a summary table, even with <3 rows
+    if df is None or df.empty:
+        with open(os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
+                  "w", encoding="utf-8") as f:
+            f.write("<p>No implied-growth data yet.</p>")
+        return
 
+    summary = {
+        col: {
+            "Average": df[col].mean(),
+            "Median":  df[col].median(),
+            "Min":     df[col].min(),
+            "Max":     df[col].max()
+        } for col in ["TTM", "Forward"] if col in df
+    }
 
-def compute_implied_growth(pe_ratio, treasury_yield):
-    if pe_ratio is None or treasury_yield is None:
-        return None
-    try:
-        return ((pe_ratio / 10) ** (1 / 10)) + treasury_yield - 1
-    except Exception as e:
-        print(f"[Error] computing implied growth: {e}")
-        return None
+    # Summary HTML
+    rows, link = [], f'<a href="{tk.lower()}_growth.html">{tk}</a>'
+    for g in ["TTM", "Forward"]:
+        if g not in summary: continue
+        for stat, val in summary[g].items():
+            rows.append({
+                "Ticker": link, "Growth Type": g,
+                "Statistic": stat, "Value": f"{val:.2%}"
+            })
+    pd.DataFrame(rows).to_html(
+        os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
+        index=False, escape=False
+    )
 
+    # Draw chart only when ≥3 rows
+    if len(df) < 3:
+        return
 
-def create_table_row(ticker, pe_ratio, implied_growth):
-    pe_str     = f"{pe_ratio:.1f}" if pe_ratio is not None else "N/A"
-    growth_str = f"{implied_growth * 100:.1f}%" if implied_growth is not None else "N/A"
-    return f"<tr><td>{ticker}</td><td>{pe_str}</td><td>{growth_str}</td></tr>"
+    fig, ax = plt.subplots(figsize=(10, 6))
+    if "TTM" in df:
+        ax.plot(df.index, df["TTM"], label="TTM", color="blue")
+        for lbl, ls in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
+            ax.axhline(summary["TTM"][lbl], color="blue", linestyle=ls, linewidth=1)
+    if "Forward" in df:
+        ax.plot(df.index, df["Forward"], label="Forward", color="green")
+        for lbl, ls in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
+            ax.axhline(summary["Forward"][lbl], color="green", linestyle=ls, linewidth=1)
 
+    ax.set_title(f"{tk} Implied Growth Rates Over Time")
+    ax.set_ylabel("Implied Growth Rate")
+    ax.yaxis.set_major_formatter(PercentFormatter(1.0))
+    ax.grid(True, linestyle="--", alpha=0.4)
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(CHART_DIR, f"{tk.lower()}_growth_chart.png"))
+    plt.close()
 
-def index_growth(treasury_yield=None):
-    if treasury_yield:
-        treasury_yield = float(str(treasury_yield).strip('%')) / 100
-    else:
-        treasury_yield = fetch_treasury_yield() or 0.035
+def _refresh_assets():
+    for tk in INDEXES:
+        _plot_and_table(tk)
 
-    tickers = ["SPY", "QQQ"]
-    rows    = ["<tr><th>Ticker</th><th>P/E Ratio</th><th>Implied Growth</th></tr>"]
+# ─── MINI-MAIN — called by main_remote.py ──────────────────
+def index_growth(treasury_yield: float | None = None) -> str:
+    """
+    Parameters
+    ----------
+    treasury_yield : float or None
+        10-year yield fetched in main_remote.py (0.043, 4.3, 43.0, etc.)
+    Returns
+    -------
+    str – combined SPY & QQQ summary HTML snippet.
+    """
+    y = _normalize_yield(treasury_yield)
+    print(f"[index_growth] Using 10-yr yield = {y:.4f}")
 
-    for tk in tickers:
-        pe     = fetch_trailing_pe(tk)
-        growth = compute_implied_growth(pe, treasury_yield)
-        rows.append(create_table_row(tk, pe, growth))
+    _log_today(y)
+    _refresh_assets()
 
-    return "<table border='1' cellspacing='0' cellpadding='4'>" + "".join(rows) + "</table>"
+    blocks = []
+    for tk in INDEXES:
+        blocks.append(f"<h3>{tk}</h3>")
+        with open(os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
+                  encoding="utf-8") as f:
+            blocks.append(f.read())
+    return "\n".join(blocks)
 
-
+# ─── Stand-alone test run ──────────────────────────────────
 if __name__ == "__main__":
-    html = index_growth()
-    path = os.path.join("charts", "spy_qqq_growth.html")
-    with open(path, "w", encoding="utf-8") as f:
+    html = index_growth()      # uses fallback yield
+    out  = os.path.join(CHART_DIR, "spy_qqq_combined_summary.html")
+    with open(out, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"Wrote SPY/QQQ growth table to {path}")
+    print("Wrote", out)
