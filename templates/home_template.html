@@ -1,1 +1,62 @@
-...
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nick's Stock Financials</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+  <style>
+    .positive { color: green; }
+    .negative { color: red; }
+    .center-table { margin: 0 auto; width: 80%; }
+    .highlight-soon { background-color: #fff3cd; }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#sortable-table').DataTable({
+        "pageLength": 100,
+        "createdRow": function(row, data, dataIndex) {
+          $('td', row).each(function() {
+            var v = $(this).text();
+            if (v.includes('%')) {
+              var n = parseFloat(v.replace('%',''));
+              if (!isNaN(n)) {
+                $(this).addClass(n < 0 ? 'negative' : 'positive');
+              }
+            }
+          });
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <header><h1>Financial Overview</h1></header>
+
+  <nav class="navigation">
+    {% for t in tickers %}
+      <a href="pages/{{t}}_page.html" class="home-button">{{t}}</a> |
+    {% endfor %}
+  </nav>
+
+  <div id="spy-qqq-growth" class="center-table">
+    <h2>SPY vs QQQ Overview</h2>
+    {{ spy_qqq_growth | safe }}
+  </div>
+
+  <div class="center-table">
+    <h2>Past Earnings (Last 7 Days)</h2>
+    {{ earnings_past | safe }}
+    <h2>Upcoming Earnings</h2>
+    {{ earnings_upcoming | safe }}
+  </div>
+
+  <div>
+    {{ dashboard_table | safe }}
+  </div>
+
+  <footer><p>Nick's Financial Data Dashboard</p></footer>
+</body>
+</html>
