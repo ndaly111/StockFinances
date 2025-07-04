@@ -1,173 +1,181 @@
-# main_remote.py – 2025-07-03
-# ────────────────────────────────────────────────────────────────────
-import os, sqlite3, pandas as pd, yfinance as yf, math
+# index_growth_table.py
+# ───────────────────────────────────────────────────────────
+# Mini-main  index_growth(treasury_yield)  — called by main_remote.py
+#
+# • Logs today’s implied growth for SPY & QQQ into SQLite
+# • Regenerates charts + summary tables
+# • Returns one combined HTML snippet for the dashboard
+#
+# Stand-alone test:  python index_growth_table.py
+# ───────────────────────────────────────────────────────────
+
+import os, sqlite3
 from datetime import datetime
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
-import ticker_manager
-from annual_and_ttm_update import annual_and_ttm_update
-from html_generator import create_html_for_tickers
-from balance_sheet_data_fetcher import (
-    fetch_balance_sheet_data, check_missing_balance_sheet_data,
-    is_balance_sheet_data_outdated, fetch_balance_sheet_data_from_yahoo,
-    store_fetched_balance_sheet_data
-)
-from balancesheet_chart import (
-    fetch_balance_sheet_data as fetch_bs_for_chart,
-    plot_chart, create_and_save_table
-)
-from implied_growth_summary import generate_all_summaries
-from Forward_data import scrape_forward_data
-from forecasted_earnings_chart import generate_forecast_charts_and_tables
-from ticker_info import prepare_data_for_display, generate_html_table
-from expense_reports import generate_expense_reports
-from html_generator2 import html_generator2, generate_dashboard_table
-from valuation_update import valuation_update, process_update_growth_csv
-from index_growth_table import index_growth
-from eps_dividend_generator import eps_dividend_generator
-from generate_earnings_tables import generate_earnings_tables
+# ─── Configuration ─────────────────────────────────────────
+DB_PATH        = "Stock Data.db"
+TABLE_NAME     = "Index_Growth_History"
+INDEXES        = ["SPY", "QQQ"]
+FALLBACK_YIELD = 0.045     # 4.5 % used if caller passes None
+CHART_DIR      = "charts"
+os.makedirs(CHART_DIR, exist_ok=True)
 
-# ────────────────────────────────────────────────────────────────────
-# Constants
-# ────────────────────────────────────────────────────────────────────
-TICKERS_FILE_PATH = "tickers.csv"
-DB_PATH           = "Stock Data.db"
-UPDATE_GROWTH_CSV = "update_growth.csv"
-CHARTS_DIR        = "charts/"
-TABLE_NAME        = "ForwardFinancialData"
-
-# ────────────────────────────────────────────────────────────────────
-# Helpers
-# ────────────────────────────────────────────────────────────────────
-def manage_tickers(tickers_file, is_remote=False):
-    tickers = ticker_manager.read_tickers(tickers_file)
-    tickers = ticker_manager.modify_tickers(tickers, is_remote)
-    tickers = sorted(tickers)
-    ticker_manager.write_tickers(tickers, tickers_file)
-    return tickers
-
-def establish_database_connection(db_path):
-    if not os.path.exists(db_path):
-        print(f"[ERROR] Database not found at {db_path}")
-        return None
-    return sqlite3.connect(db_path)
-
-def log_average_valuations(avg_values, tickers_file):
-    if tickers_file != "tickers.csv":
-        return
-    req = ("Nicks_TTM_Value_Average",
-           "Nicks_Forward_Value_Average",
-           "Finviz_TTM_Value_Average")
-    if not all(k in avg_values for k in req):
-        print("[WARNING] Missing keys in avg_values; skipping DB insert.")
-        return
-    today = datetime.now().strftime("%Y-%m-%d")
-    with sqlite3.connect(DB_PATH) as conn:
-        cur = conn.cursor()
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS AverageValuations (
-            date DATE PRIMARY KEY,
-            avg_ttm_valuation REAL,
-            avg_forward_valuation REAL,
-            avg_finviz_valuation REAL
-        );
-        """)
-        cur.execute("SELECT 1 FROM AverageValuations WHERE date = ?", (today,))
-        if not cur.fetchone():
-            cur.execute("""
-            INSERT INTO AverageValuations
-              (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
-            VALUES (?, ?, ?, ?);
-            """, (
-                today,
-                avg_values["Nicks_TTM_Value_Average"],
-                avg_values["Nicks_Forward_Value_Average"],
-                avg_values["Finviz_TTM_Value_Average"]
-            ))
-            conn.commit()
-
-def balancesheet_chart(ticker):
-    data = fetch_bs_for_chart(ticker)
-    if data is None:
-        return
-
-    plot_chart(data, CHARTS_DIR, ticker)
-
-    debt   = data.get("Total_Debt")
-    equity = data.get("Total_Equity")
-
-    def _is_missing(x):
-        return x is None or (isinstance(x, (float,int)) and math.isnan(x)) or pd.isna(x)
-
-    if _is_missing(debt) or _is_missing(equity) or equity == 0:
-        print(f"[INFO] Skipping Debt/Equity ratio for {ticker}")
-        data["Debt_to_Equity_Ratio"] = None
-    else:
-        data["Debt_to_Equity_Ratio"] = debt / equity
-
-    create_and_save_table(data, CHARTS_DIR, ticker)
-
-def fetch_and_update_balance_sheet_data(ticker, cursor):
-    current = fetch_balance_sheet_data(ticker, cursor)
-    if (check_missing_balance_sheet_data(ticker, cursor) or
-        is_balance_sheet_data_outdated(current)):
-        fresh = fetch_balance_sheet_data_from_yahoo(ticker)
-        if fresh:
-            store_fetched_balance_sheet_data(cursor, fresh)
-
-def fetch_10_year_treasury_yield():
+# ─── Helper: normalize yield to decimal ────────────────────
+def _normalize_yield(value):
+    """
+    Accepts 0.043 → 0.043   | 4.3 → 0.043   | 43.0 (^TNX) → 0.043
+    """
+    if value is None:
+        return FALLBACK_YIELD
     try:
-        return yf.Ticker("^TNX").info.get("regularMarketPrice")
-    except Exception as e:
-        print(f"[YF] Error fetching 10Y Treasury Yield: {e}")
-        return None
+        v = float(value)
+        if v < 0.5:   # already decimal
+            return v
+        if v < 20:    # percent form
+            return v / 100
+        return v / 1000  # ^TNX quote
+    except Exception:
+        return FALLBACK_YIELD
 
-# ────────────────────────────────────────────────────────────────────
-# Main
-# ────────────────────────────────────────────────────────────────────
-def mini_main():
-    financial_data, dashboard_data = {}, []
-    treasury = fetch_10_year_treasury_yield()
+# ─── DB helpers ─────────────────────────────────────────────
+def _compute_growth(ttm_pe, fwd_pe, y):
+    if not ttm_pe or not fwd_pe:
+        return None, None
+    return y * ttm_pe - 1, y * fwd_pe - 1
 
-    tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
-    conn = establish_database_connection(DB_PATH)
-    if not conn:
-        return
+def _fetch_pe(ticker):
+    info = yf.Ticker(ticker).info
+    return info.get("trailingPE"), info.get("forwardPE")
 
-    try:
-        cursor = conn.cursor()
-        process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
-
-        for ticker in tickers:
-            print(f"[main] Processing {ticker}")
-            annual_and_ttm_update(ticker, DB_PATH)
-            fetch_and_update_balance_sheet_data(ticker, cursor)
-            balancesheet_chart(ticker)
-            scrape_forward_data(ticker)
-            generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
-
-            prepared, mktcap = prepare_data_for_display(ticker, treasury)
-            generate_html_table(prepared, ticker)
-            valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
-            generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
-
-        eps_dividend_generator()
-        generate_all_summaries()
-
-        full_html, avg_vals = generate_dashboard_table(dashboard_data)
-        log_average_valuations(avg_vals, TICKERS_FILE_PATH)
-        spy_qqq_html = index_growth(treasury)
-        generate_earnings_tables()
-
-        html_generator2(
-            tickers,
-            financial_data,
-            full_html,
-            avg_vals,
-            spy_qqq_html
+def _ensure_table(conn):
+    conn.execute(f"""
+        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+            Date TEXT,
+            Ticker TEXT,
+            Growth_Type TEXT,      -- 'TTM' | 'Forward'
+            Implied_Growth REAL,
+            PRIMARY KEY (Date, Ticker, Growth_Type)
         )
-    finally:
-        conn.close()
+    """)
 
-# ────────────────────────────────────────────────────────────────────
+def _log_today(yld):
+    today = datetime.today().strftime("%Y-%m-%d")
+    with sqlite3.connect(DB_PATH) as conn:
+        _ensure_table(conn)
+        cur = conn.cursor()
+        for tk in INDEXES:
+            ttm_pe, fwd_pe   = _fetch_pe(tk)
+            ttm_g, fwd_g     = _compute_growth(ttm_pe, fwd_pe, yld)
+            if ttm_g is not None:
+                cur.execute(f"""
+                    INSERT OR REPLACE INTO {TABLE_NAME}
+                    VALUES (?,?, 'TTM', ?)
+                """, (today, tk, ttm_g))
+            if fwd_g is not None:
+                cur.execute(f"""
+                    INSERT OR REPLACE INTO {TABLE_NAME}
+                    VALUES (?,?, 'Forward', ?)
+                """, (today, tk, fwd_g))
+        conn.commit()
+
+# ─── Chart & summary generation ────────────────────────────
+def _hist_df(tk):
+    with sqlite3.connect(DB_PATH) as conn:
+        df = pd.read_sql_query(
+            "SELECT Date, Growth_Type, Implied_Growth "
+            "FROM Index_Growth_History "
+            "WHERE Ticker = ? ORDER BY Date ASC",
+            conn, params=(tk,))
+    if df.empty:
+        return None
+    df["Date"] = pd.to_datetime(df["Date"])
+    return df.pivot(index="Date", columns="Growth_Type", values="Implied_Growth")
+
+def _plot_and_table(tk):
+    df = _hist_df(tk)
+    if df is None or len(df) < 3:
+        return
+    summary = {
+        col: {
+            "Average": df[col].mean(),
+            "Median":  df[col].median(),
+            "Min":     df[col].min(),
+            "Max":     df[col].max()
+        } for col in ["TTM", "Forward"] if col in df
+    }
+
+    # chart
+    fig, ax = plt.subplots(figsize=(10, 6))
+    if "TTM" in df:
+        ax.plot(df.index, df["TTM"], label="TTM", color="blue")
+        for lbl, ls in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
+            ax.axhline(summary["TTM"][lbl], color="blue", linestyle=ls, linewidth=1)
+    if "Forward" in df:
+        ax.plot(df.index, df["Forward"], label="Forward", color="green")
+        for lbl, ls in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
+            ax.axhline(summary["Forward"][lbl], color="green", linestyle=ls, linewidth=1)
+
+    ax.set_title(f"{tk} Implied Growth Rates Over Time")
+    ax.set_ylabel("Implied Growth Rate")
+    ax.yaxis.set_major_formatter(PercentFormatter(1.0))
+    ax.grid(True, linestyle="--", alpha=0.4)
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(CHART_DIR, f"{tk.lower()}_growth_chart.png"))
+    plt.close()
+
+    # summary HTML
+    rows, link = [], f'<a href="{tk.lower()}_growth.html">{tk}</a>'
+    for g in ["TTM", "Forward"]:
+        if g not in summary: continue
+        for stat, val in summary[g].items():
+            rows.append({
+                "Ticker": link, "Growth Type": g,
+                "Statistic": stat, "Value": f"{val:.2%}"
+            })
+    pd.DataFrame(rows).to_html(
+        os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
+        index=False, escape=False
+    )
+
+def _refresh_assets():
+    for tk in INDEXES:
+        _plot_and_table(tk)
+
+# ─── MINI-MAIN (imported by main_remote.py) ─────────────────
+def index_growth(treasury_yield: float | None = None) -> str:
+    """
+    Parameters
+    ----------
+    treasury_yield : float or None
+        Raw 10-year yield fetched in main_remote.py.
+        Accepts decimal (0.043), percent (4.3) or ^TNX quote (43.0).
+    Returns
+    -------
+    str – combined SPY & QQQ summary HTML snippet.
+    """
+    y = _normalize_yield(treasury_yield)
+    print(f"[index_growth] Using 10-yr yield = {y:.4f}")
+
+    _log_today(y)
+    _refresh_assets()
+
+    blocks = []
+    for tk in INDEXES:
+        blocks.append(f"<h3>{tk}</h3>")
+        with open(os.path.join(CHART_DIR, f"{tk.lower()}_growth_summary.html"),
+                  encoding="utf-8") as f:
+            blocks.append(f.read())
+    return "\n".join(blocks)
+
+# ─── Stand-alone test run ──────────────────────────────────
 if __name__ == "__main__":
-    mini_main()
+    html = index_growth()  # uses fallback yield
+    out  = os.path.join(CHART_DIR, "spy_qqq_combined_summary.html")
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(html)
+    print("Wrote", out)
