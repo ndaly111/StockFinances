@@ -1,114 +1,56 @@
-# index_growth_charts.py
-# --------------------------------------------------------------------
-# Generates historical implied growth charts and summary tables
-# for SPY and QQQ using the Index_Growth_History table
-# --------------------------------------------------------------------
+# index_growth_table.py
+# ---------------------------------------------------------------------
+# Exposes index_growth() for main_remote.py
+#   • Logs today’s SPY/QQQ implied growth
+#   • Regenerates charts + summary tables
+#   • Returns a single HTML snippet combining SPY & QQQ summaries
+# ---------------------------------------------------------------------
 
-import sqlite3
 import os
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.ticker import PercentFormatter
+from datetime import datetime
+from log_index_growth import log_index_growth       # stores today’s values
+from index_growth_charts import render_index_growth_charts
 
-DB_PATH = "Stock Data.db"
-OUTPUT_DIR = "charts"
-TABLE_NAME = "Index_Growth_History"
-TICKERS = ["SPY", "QQQ"]
+CHART_DIR = "charts"
+SUMMARY_FILES = {
+    "SPY":  "spy_growth_summary.html",
+    "QQQ":  "qqq_growth_summary.html",
+}
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+def _read_html(path: str, placeholder: str = "No data available.") -> str:
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return f"<p>{placeholder}</p>"
 
-def fetch_growth_data(ticker):
-    """Pull historical growth data for a given index"""
-    conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query(f"""
-        SELECT Date, Growth_Type, Implied_Growth
-        FROM {TABLE_NAME}
-        WHERE Ticker = ?
-        ORDER BY Date ASC
-    """, conn, params=(ticker,))
-    conn.close()
+def index_growth() -> str:
+    """
+    Runs the full SPY/QQQ pipeline and returns an HTML block
+    ready to embed in the dashboard home page.
+    """
+    # 1) Update DB with today’s data
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Logging index growth …")
+    log_index_growth()
 
-    if df.empty:
-        return None
-
-    df["Date"] = pd.to_datetime(df["Date"])
-    df = df.pivot(index="Date", columns="Growth_Type", values="Implied_Growth")
-    return df
-
-def compute_summary(df):
-    """Compute avg, median, min, max for TTM and Forward"""
-    summary = {}
-    for col in ["TTM", "Forward"]:
-        if col in df:
-            summary[col] = {
-                "Average": df[col].mean(),
-                "Median": df[col].median(),
-                "Min": df[col].min(),
-                "Max": df[col].max()
-            }
-        else:
-            summary[col] = {}
-    return summary
-
-def plot_growth_chart(df, summary, ticker):
-    """Plot TTM and Forward growth lines with summary stats"""
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    if "TTM" in df:
-        ax.plot(df.index, df["TTM"], label="TTM Growth", color="blue", linewidth=2)
-        for label, style in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
-            if label in summary["TTM"]:
-                ax.axhline(y=summary["TTM"][label], color="blue", linestyle=style, linewidth=1)
-
-    if "Forward" in df:
-        ax.plot(df.index, df["Forward"], label="Forward Growth", color="green", linewidth=2)
-        for label, style in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
-            if label in summary["Forward"]:
-                ax.axhline(y=summary["Forward"][label], color="green", linestyle=style, linewidth=1)
-
-    ax.set_title(f"{ticker} Implied Growth Rates Over Time")
-    ax.set_ylabel("Implied Growth Rate")
-    ax.yaxis.set_major_formatter(PercentFormatter(1.0))
-    ax.grid(True, linestyle="--", alpha=0.5)
-    ax.legend()
-
-    output_path = os.path.join(OUTPUT_DIR, f"{ticker.lower()}_growth_chart.png")
-    plt.tight_layout()
-    plt.savefig(output_path)
-    plt.close()
-
-def render_summary_table(summary, ticker):
-    """Save summary stats as an HTML table with linked Ticker column"""
-    rows = []
-    link = f'<a href="{ticker.lower()}_growth.html">{ticker}</a>'
-    for col in ["TTM", "Forward"]:
-        for stat in ["Average", "Median", "Min", "Max"]:
-            value = summary.get(col, {}).get(stat)
-            if value is not None:
-                rows.append({
-                    "Ticker": link,
-                    "Growth Type": col,
-                    "Statistic": stat,
-                    "Value": f"{value:.2%}"
-                })
-
-    df = pd.DataFrame(rows)
-    html = df.to_html(index=False, escape=False)
-    output_path = os.path.join(OUTPUT_DIR, f"{ticker.lower()}_growth_summary.html")
-    with open(output_path, "w") as f:
-        f.write(html)
-
-def render_index_growth_charts():
-    for ticker in TICKERS:
-        df = fetch_growth_data(ticker)
-        if df is None or len(df) < 3:
-            print(f"Not enough data to render chart for {ticker}")
-            continue
-        summary = compute_summary(df)
-        plot_growth_chart(df, summary, ticker)
-        render_summary_table(summary, ticker)
-        print(f"Generated chart and summary for {ticker}")
-
-# Mini-main
-if __name__ == "__main__":
+    # 2) Regenerate charts + summary tables
+    print("Building growth charts & summary tables …")
     render_index_growth_charts()
+
+    # 3) Combine SPY & QQQ summary tables into one HTML snippet
+    blocks = []
+    for ticker, fname in SUMMARY_FILES.items():
+        full_path = os.path.join(CHART_DIR, fname)
+        blocks.append(f"<h3>{ticker}</h3>")
+        blocks.append(_read_html(full_path))
+
+    combined_html = "\n".join(blocks)
+    return combined_html
+
+# Mini-main for standalone testing
+if __name__ == "__main__":
+    html_snippet = index_growth()
+    out_path = os.path.join(CHART_DIR, "spy_qqq_combined_summary.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html_snippet)
+    print(f"Wrote combined summary to {out_path}")
