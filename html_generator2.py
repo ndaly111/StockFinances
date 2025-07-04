@@ -19,12 +19,12 @@ def create_template(path: str, content: str):
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             if f.read() == content:
-                return                          # no change
+                return
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
 
 # ─── DB helpers ────────────────────────────────────────────
-def get_company_short_name(ticker: str, cur) -> str:
+def get_company_short_name(ticker: str, cur):
     cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker = ?", (ticker,))
     row = cur.fetchone()
     if row and row[0]:
@@ -45,12 +45,11 @@ def get_file_content_or_placeholder(path: str, placeholder="No data available"):
         return placeholder
 
 # ───────────────────────────────────────────────────────────
-# Template setup  (HOME + TICKER + NEW SPY/QQQ pages)
+# Template setup  (home, ticker, spy, qqq)
 # ───────────────────────────────────────────────────────────
 def ensure_templates_exist():
-    # ─── home_template.html (original body) ───
-    home_template_content = """
-<!DOCTYPE html>
+    # ─── Home template (original body) ───
+    home_template_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -112,11 +111,10 @@ def ensure_templates_exist():
   <footer><p>Nick's Financial Data Dashboard</p></footer>
 </body>
 </html>
-""".lstrip()
+"""
 
-    # ─── ticker_template.html (original body) ───
-    ticker_template_content = """
-<!DOCTYPE html>
+    # ─── Ticker template (original body) ───
+    ticker_template_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -189,14 +187,13 @@ def ensure_templates_exist():
   <footer><a href="../index.html" class="home-button">Back to Home</a></footer>
 </body>
 </html>
-""".lstrip()
+"""
 
     create_template("templates/home_template.html",   home_template_content)
     create_template("templates/ticker_template.html", ticker_template_content)
 
-    # ─── NEW: SPY & QQQ growth templates ───
-    spy_tpl = """
-<!DOCTYPE html>
+    # ─── NEW: SPY / QQQ growth templates ───
+    spy_tpl = """<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8">
 <title>SPY – Implied Growth Summary</title>
@@ -208,45 +205,154 @@ def ensure_templates_exist():
   {{ spy_growth_summary | safe }}
 </body>
 </html>
-""".lstrip()
-
+"""
     qqq_tpl = spy_tpl.replace("SPY", "QQQ").replace("spy_", "qqq_")
-
     create_template("templates/spy_growth_template.html", spy_tpl)
     create_template("templates/qqq_growth_template.html", qqq_tpl)
 
 # ───────────────────────────────────────────────────────────
-# Build SPY/QQQ standalone pages
+# Render SPY & QQQ growth standalone pages
 # ───────────────────────────────────────────────────────────
 def render_spy_qqq_growth_pages():
     chart_dir, out_dir = "charts", "."
-    env_paths = {
+    spec = {
         "spy": ("spy_growth_template.html", "spy_growth_summary.html", "spy_growth.html"),
         "qqq": ("qqq_growth_template.html", "qqq_growth_summary.html", "qqq_growth.html")
     }
-
-    for k, (tpl_name, summary_file, output_file) in env_paths.items():
+    for key, (tpl_name, summary_file, output_file) in spec.items():
         try:
             tpl_path = os.path.join("templates", tpl_name)
             html_template = open(tpl_path, encoding="utf-8").read()
             tpl = Template(html_template)
-
             summary_html = get_file_content_or_placeholder(
-                os.path.join(chart_dir, summary_file), "No data available."
-            )
-            rendered = tpl.render(**{f"{k}_growth_summary": summary_html})
-
+                os.path.join(chart_dir, summary_file), "No data available.")
+            rendered = tpl.render(**{f"{key}_growth_summary": summary_html})
             with open(os.path.join(out_dir, output_file), "w", encoding="utf-8") as f:
                 f.write(rendered)
             print(f"[html_generator2] Rendered {output_file}")
         except Exception as e:
-            print(f"Error rendering {k.upper()} growth page: {e}")
+            print(f"Error rendering {key.upper()} growth page: {e}")
 
 # ───────────────────────────────────────────────────────────
-# create_home_page, prepare_and_generate_ticker_pages,
-# generate_dashboard_table  (unchanged – same as your current file)
+# Build index.html
 # ───────────────────────────────────────────────────────────
-# ...  (functions omitted here for brevity – keep exactly as in your version)
+def create_home_page(tickers, output_dir,
+                     dashboard_table, avg_values,
+                     spy_qqq_growth="", earnings_past="", earnings_upcoming=""):
+    tpl = env.get_template("home_template.html")
+    with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
+        f.write(tpl.render(
+            tickers=tickers,
+            dashboard_table=dashboard_table,
+            dashboard_data=avg_values,
+            spy_qqq_growth=spy_qqq_growth,
+            earnings_past=earnings_past,
+            earnings_upcoming=earnings_upcoming
+        ))
+
+# ───────────────────────────────────────────────────────────
+# Generate per-ticker pages
+# ───────────────────────────────────────────────────────────
+def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        for t in tickers:
+            d = {
+                "ticker": t,
+                "company_name": get_company_short_name(t, cur),
+                "ticker_info": get_file_content_or_placeholder(f"{charts_dir}/{t}_ticker_info.html"),
+                "revenue_net_income_chart_path": f"{charts_dir}/{t}_revenue_net_income_chart.png",
+                "eps_chart_path":               f"{charts_dir}/{t}_eps_chart.png",
+                "financial_table": get_file_content_or_placeholder(f"{charts_dir}/{t}_rev_net_table.html"),
+                "forecast_rev_net_chart_path": f"{charts_dir}/{t}_Revenue_Net_Income_Forecast.png",
+                "forecast_eps_chart_path":     f"{charts_dir}/{t}_EPS_Forecast.png",
+                "yoy_growth_table_html":       get_file_content_or_placeholder(f"{charts_dir}/{t}_yoy_growth_tbl.html"),
+                "expense_chart_path":          f"{charts_dir}/{t}_rev_expense_chart.png",
+                "expense_percent_chart_path":  f"{charts_dir}/{t}_expense_percent_chart.png",
+                "expense_abs_html": get_file_content_or_placeholder(f"{charts_dir}/{t}_expense_absolute.html"),
+                "expense_yoy_html": get_file_content_or_placeholder(f"{charts_dir}/{t}_yoy_expense_change.html"),
+                "balance_sheet_chart_path":    f"{charts_dir}/{t}_balance_sheet_chart.png",
+                "balance_sheet_table_html":    get_file_content_or_placeholder(f"{charts_dir}/{t}_balance_sheet_table.html"),
+                "revenue_yoy_change_chart_path": f"{charts_dir}/{t}_revenue_yoy_change.png",
+                "eps_yoy_change_chart_path":      f"{charts_dir}/{t}_eps_yoy_change.png",
+                "valuation_chart":              f"{charts_dir}/{t}_valuation_chart.png",
+                "valuation_info_table":         get_file_content_or_placeholder(f"{charts_dir}/{t}_valuation_info.html"),
+                "valuation_data_table":         get_file_content_or_placeholder(f"{charts_dir}/{t}_valuation_table.html"),
+                "unmapped_expense_html":        get_file_content_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html", "No unmapped expenses."),
+                "eps_dividend_chart_path":      f"{charts_dir}/{t}_eps_dividend_forecast.png",
+                "implied_growth_chart_path":    f"{charts_dir}/{t}_implied_growth_plot.png",
+                "implied_growth_table_html":    get_file_content_or_placeholder(
+                    f"{charts_dir}/{t}_implied_growth_summary.html",
+                    "No implied growth data available."
+                )
+            }
+            out_path = os.path.join(output_dir, "pages", f"{t}_page.html")
+            ensure_directory_exists(os.path.dirname(out_path))
+            tpl = env.get_template("ticker_template.html")
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(tpl.render(ticker_data=d))
+
+# ───────────────────────────────────────────────────────────
+# Dashboard table + summary
+# ───────────────────────────────────────────────────────────
+def generate_dashboard_table(dashboard_data):
+    df = pd.DataFrame(dashboard_data, columns=[
+        "Ticker", "Share Price",
+        "Nick's TTM Value", "Nick's Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
+    ])
+
+    def link_ticker(t):
+        if t == "SPY":
+            return '<a href="spy_growth.html">SPY</a>'
+        if t == "QQQ":
+            return '<a href="qqq_growth.html">QQQ</a>'
+        return f'<a href="pages/{t}_page.html">{t}</a>'
+
+    df["Ticker"] = df["Ticker"].apply(link_ticker)
+
+    for col in ["Nick's TTM Value", "Nick's Forward Value",
+                "Finviz TTM Value", "Finviz Forward Value"]:
+        df[col+"_num"] = (
+            df[col].astype(str)
+                   .str.rstrip("%")
+                   .replace("-", np.nan)
+                   .astype(float)
+        )
+    df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
+
+    ttm, fwd   = df["Nick's TTM Value_num"].dropna(),   df["Nick's Forward Value_num"].dropna()
+    fttm, ffwd = df["Finviz TTM Value_num"].dropna(),   df["Finviz Forward Value_num"].dropna()
+
+    fmt = lambda x: f"{x:.1f}%" if pd.notnull(x) else "–"
+    summary_rows = [
+        ["Average", fmt(ttm.mean()), fmt(fwd.mean()), fmt(fttm.mean()), fmt(ffwd.mean())],
+        ["Median",  fmt(ttm.median()), fmt(fwd.median()), fmt(fttm.median()), fmt(ffwd.median())]
+    ]
+    avg_html = pd.DataFrame(summary_rows, columns=[
+        "Metric", "Nick's TTM Value", "Nick's Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
+    ]).to_html(index=False, escape=False, classes="table table-striped")
+
+    display = df[[
+        "Ticker", "Share Price",
+        "Nick's TTM Value", "Nick's Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
+    ]]
+    dash_html = display.to_html(index=False, escape=False,
+                                classes="table table-striped", table_id="sortable-table")
+
+    with open("charts/dashboard.html", "w", encoding="utf-8") as f:
+        f.write(avg_html + dash_html)
+
+    return avg_html + dash_html, {
+        "Nicks_TTM_Value_Average": ttm.mean(),     "Nicks_TTM_Value_Median": ttm.median(),
+        "Nicks_Forward_Value_Average": fwd.mean(), "Nicks_Forward_Value_Median": fwd.median(),
+        "Finviz_TTM_Value_Average": fttm.mean() if not fttm.empty else None,
+        "Finviz_TTM_Value_Median": fttm.median() if not fttm.empty else None,
+        "Finviz_Forward_Value_Average": ffwd.mean() if not ffwd.empty else None,
+        "Finviz_Forward_Value_Median": ffwd.median() if not ffwd.empty else None
+    }
 
 # ───────────────────────────────────────────────────────────
 # MAIN WRAPPER
@@ -257,8 +363,8 @@ def html_generator2(tickers, financial_data,
 
     ensure_templates_exist()
 
-    past     = get_file_content_or_placeholder("charts/earnings_past.html")
-    upcoming = get_file_content_or_placeholder("charts/earnings_upcoming.html")
+    earnings_past     = get_file_content_or_placeholder("charts/earnings_past.html")
+    earnings_upcoming = get_file_content_or_placeholder("charts/earnings_upcoming.html")
 
     create_home_page(
         tickers=tickers,
@@ -266,8 +372,8 @@ def html_generator2(tickers, financial_data,
         dashboard_table=full_dashboard_html,
         avg_values=avg_values,
         spy_qqq_growth=spy_qqq_growth_html,
-        earnings_past=past,
-        earnings_upcoming=upcoming
+        earnings_past=earnings_past,
+        earnings_upcoming=earnings_upcoming
     )
 
     prepare_and_generate_ticker_pages(tickers, ".", "charts/")
