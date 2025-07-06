@@ -1,4 +1,5 @@
-name: Segment revenue TXT (manual)
+# .github/workflows/segment_revenue_report.yml
+name: Segment revenue TXT
 
 on:
   workflow_dispatch: {}
@@ -23,7 +24,8 @@ jobs:
         env:
           SEC_EMAIL: ${{ secrets.SEC_EMAIL }}
         run: |
-          python StockFinances/segment_revenue_report.py
+          cd StockFinances
+          python segment_revenue_report.py
 
       - name: Commit report
         run: |
