@@ -1,5 +1,5 @@
 # .github/workflows/segment_revenue_report.yml
-name: Segment revenue TXT
+name: Segment revenue TXT (manual)
 
 on:
   workflow_dispatch: {}
