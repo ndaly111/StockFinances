@@ -1,126 +1,130 @@
 #!/usr/bin/env python3
 """
-segment_revenue_fetcher.py
-----------------------------------------------------------
-Pulls product / geographic **business-segment revenue** from
-the SEC XBRL “company-concept” API and stores one tidy CSV
-per ticker in ./segment_data/.
+segment_revenue_report.py
+────────────────────────────────────────────────────────────
+One-shot script that pulls BUSINESS-SEGMENT revenue from the
+SEC XBRL “company-concept” API and writes everything into
+segment_report.txt.
 
-• Handles ticker→CIK mapping automatically (downloads the
-  official SEC mapping once per run and caches it locally).
-• Adds a proper SEC-compliant User-Agent header (uses the
-  e-mail you store in the SEC_EMAIL environment variable).
-• Defaults to the “RevenueFromContractWithCustomerExcluding
-  AssessedTax” GAAP tag, which every 10-K must report.
-----------------------------------------------------------
-Usage (local):
-    export SEC_EMAIL="you@yourdomain.com"
-    python segment_revenue_fetcher.py AAPL MSFT GOOGL
-The GitHub Action (next section) sets SEC_EMAIL for you.
+• Call from CLI: python segment_revenue_report.py AAPL MSFT …
+• Or leave args blank and it will read tickers (one per line)
+  from tickers.txt if that file exists.
+• Uses the SEC_EMAIL environment variable (already in your
+  repo secrets) for the required User-Agent header.
 """
 
-import json, os, sys, time, csv, pathlib, requests, pandas as pd
+from __future__ import annotations
+import json, os, sys, time, pathlib, requests, textwrap
 from datetime import datetime
 
-# ──────────────────────────────────────────────────────────
-# Configuration
-# ──────────────────────────────────────────────────────────
-TAG          = "RevenueFromContractWithCustomerExcludingAssessedTax"
-TAXONOMY     = "us-gaap"
-UNIT         = "USD"                   # change if you prefer another unit
-OUT_DIR      = pathlib.Path("segment_data")
-CACHE_FILE   = pathlib.Path(".cik_cache.json")
-HEADERS      = {
-    # SEC requires a *descriptive* UA with contact info  [oai_citation:0‡sec.gov](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data?utm_source=chatgpt.com)
-    "User-Agent": os.getenv("SEC_EMAIL", "anonymous@example.com"),
+# ─────────────────────────────
+# Config – edit if you like
+# ─────────────────────────────
+TAG      = "RevenueFromContractWithCustomerExcludingAssessedTax"
+TAXONOMY = "us-gaap"
+UNIT     = "USD"
+OUTFILE  = pathlib.Path("segment_report.txt")
+CACHE    = pathlib.Path(".cik_cache.json")
+UA       = os.getenv("SEC_EMAIL", "anonymous@example.com")
+
+HEADERS = {
+    "User-Agent": UA,
     "Accept-Encoding": "gzip, deflate",
 }
 
-API_TMPL = (
-    "https://data.sec.gov/api/xbrl/companyconcept/{cik}/"
-    f"{TAXONOMY}/{TAG}.json"
-)
+API_TMPL = ("https://data.sec.gov/api/xbrl/companyconcept/{cik}/"
+            f"{TAXONOMY}/{TAG}.json")
 
-# ──────────────────────────────────────────────────────────
-# Helper functions
-# ──────────────────────────────────────────────────────────
-def load_ticker_cik_map() -> dict[str, str]:
-    """Download & cache the official SEC ticker→CIK mapping."""
-    if CACHE_FILE.exists() and CACHE_FILE.stat().st_mtime > time.time() - 7 * 86400:
-        return json.loads(CACHE_FILE.read_text())
+# ─────────────────────────────
+# Helpers
+# ─────────────────────────────
+def ticker_to_cik_map() -> dict[str, str]:
+    """Download & cache official SEC ticker→CIK mapping."""
+    if CACHE.exists() and CACHE.stat().st_mtime > time.time() - 7*86400:
+        return json.loads(CACHE.read_text())
 
-    url = "https://www.sec.gov/files/company_tickers.json"
+    url  = "https://www.sec.gov/files/company_tickers.json"
     data = requests.get(url, headers=HEADERS, timeout=30).json()
-    mapping = {entry["ticker"]: f'{int(entry["cik_str"]):010d}'
-               for entry in data.values()}
-    CACHE_FILE.write_text(json.dumps(mapping))
+    mapping = {d["ticker"]: f'{int(d["cik_str"]):010d}' for d in data.values()}
+    CACHE.write_text(json.dumps(mapping))
     return mapping
 
 
-def fetch_segment_facts(cik: str) -> list[dict]:
-    """Return list of XBRL facts that include a segment dimension."""
-    url   = API_TMPL.format(cik=cik)
-    resp  = requests.get(url, headers=HEADERS, timeout=60)
-    resp.raise_for_status()            # fail loud if tag doesn’t exist
-    payload = resp.json()              #  [oai_citation:1‡sec.gov](https://www.sec.gov/search-filings/edgar-application-programming-interfaces?utm_source=chatgpt.com)
+def latest_segment_revenue(cik: str) -> tuple[str, list[tuple[str, float]]]:
+    """
+    Return (YYYY-MM-DD of latest period,
+            list of (segment name, revenue) pairs, descending).
+    """
+    url = API_TMPL.format(cik=cik)
+    payload = requests.get(url, headers=HEADERS, timeout=60).json()
 
-    facts = []
-    for unit, items in payload.get("units", {}).items():
-        if unit != UNIT:
-            continue
-        facts.extend([f for f in items if f.get("segment")])
-    return facts
+    # flatten all facts with the right unit & a segment dimension
+    facts = [f for unit, items in payload.get("units", {}).items()
+             if unit == UNIT
+             for f in items if f.get("segment")]
 
-
-def tidy_dataframe(facts: list[dict]) -> pd.DataFrame:
-    """Convert raw facts list into a tidy DataFrame."""
     if not facts:
-        return pd.DataFrame()
+        return "", []
 
-    df = pd.DataFrame(facts)
-    df = df[["segment", "end", "value"]]
-    df["end"] = pd.to_datetime(df["end"])
-    df = df.rename(columns={"segment": "Segment",
-                            "end": "PeriodEnd",
-                            "value": "Revenue"})
-    # aggregate duplicates (same segment & period)
-    df = df.groupby(["Segment", "PeriodEnd"], as_index=False)["Revenue"].sum()
-    # show latest period first
-    return df.sort_values(["PeriodEnd", "Revenue"], ascending=[False, False])
-
-
-def save_csv(df: pd.DataFrame, ticker: str) -> None:
-    """Write the DataFrame to ./segment_data/{ticker}_segments.csv"""
-    OUT_DIR.mkdir(exist_ok=True)
-    fname = OUT_DIR / f"{ticker.upper()}_segments.csv"
-    df.to_csv(fname, index=False)
-    print(f"✓ Saved {fname.relative_to(pathlib.Path.cwd())}")
-
-
-# ──────────────────────────────────────────────────────────
-# Main routine
-# ──────────────────────────────────────────────────────────
-def main(tickers: list[str]) -> None:
-    if not tickers:
-        print("⚠  No tickers supplied. Usage: python segment_revenue_fetcher.py AAPL MSFT ...")
-        sys.exit(1)
-
-    ticker_map = load_ticker_cik_map()
-    for t in tickers:
-        cik = ticker_map.get(t.upper())
-        if not cik:
-            print(f"✗  {t}: ticker not found in SEC list, skipping.")
+    # pick the latest reporting period
+    latest_end = max(f["end"] for f in facts)
+    segment_totals = {}
+    for f in facts:
+        if f["end"] != latest_end:
             continue
+        seg = f["segment"]
+        segment_totals[seg] = segment_totals.get(seg, 0) + f["value"]
 
+    # sort descending by revenue
+    sorted_items = sorted(segment_totals.items(),
+                          key=lambda kv: kv[1],
+                          reverse=True)
+    return latest_end, sorted_items
+
+
+def load_tickers(cmdline: list[str]) -> list[str]:
+    if cmdline:
+        return cmdline
+    tick_file = pathlib.Path("tickers.txt")
+    if tick_file.exists():
+        return [t.strip() for t in tick_file.read_text().splitlines() if t.strip()]
+    print("⚠  No tickers supplied and tickers.txt not found.")
+    sys.exit(1)
+
+
+# ─────────────────────────────
+# Main
+# ─────────────────────────────
+def segment_revenue_report() -> None:
+    tickers = load_tickers(sys.argv[1:])
+    mapping = ticker_to_cik_map()
+
+    lines: list[str] = []
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    lines.append(f"Business-segment revenue report — generated {timestamp}\n")
+
+    for t in tickers:
+        cik = mapping.get(t.upper())
+        if not cik:
+            lines.append(f"{t.upper()}: † ticker not found in SEC list\n")
+            continue
         try:
-            facts = fetch_segment_facts(cik)
-            df    = tidy_dataframe(facts)
-            if df.empty:
-                print(f"✗  {t}: no segment data under {TAG}.")
-            else:
-                save_csv(df, t)
+            end_date, segments = latest_segment_revenue(cik)
+            if not segments:
+                lines.append(f"{t.upper()}: † NO segment data for tag {TAG}\n")
+                continue
+            lines.append(f"{t.upper()}  (period end {end_date})")
+            for name, val in segments:
+                val_fmt = f"${val:,.0f}"
+                indent  = " " * 4
+                lines.append(f"{indent}{val_fmt:<15}  {name}")
+            lines.append("")  # blank line between companies
         except Exception as e:
-            print(f"✗  {t}: {e}")
+            lines.append(f"{t.upper()}: † ERROR — {e}\n")
+
+    OUTFILE.write_text("\n".join(lines))
+    print(f"✓ Wrote {OUTFILE.relative_to(pathlib.Path.cwd())}")
+
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    segment_revenue_report()
