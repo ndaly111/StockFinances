@@ -23,9 +23,7 @@ jobs:
       - name: Run segment report
         env:
           SEC_EMAIL: ${{ secrets.SEC_EMAIL }}
-        run: |
-          cd StockFinances
-          python segment_revenue_report.py
+        run: python segment_revenue_report.py
 
       - name: Commit report
         run: |
