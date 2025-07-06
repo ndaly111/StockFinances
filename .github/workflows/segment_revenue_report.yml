@@ -1,38 +1,23 @@
-name: Segment revenue report (manual)
+# .github/workflows/segment_revenue_report.yml
+name: Segment revenue TXT (manual)
 
-on:
-  workflow_dispatch:
-    inputs:
-      tickers:
-        description: 'Space-separated tickers (leave blank to use tickers.txt)'
-        required: false
-        default: ''
+on: { workflow_dispatch: {} }
 
 jobs:
   run:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install deps
-        run: python -m pip install --upgrade pip requests
-
-      - name: Generate TXT report
-        env:
-          SEC_EMAIL: ${{ secrets.SEC_EMAIL }}
-        run: |
-          python segment_revenue_report.py ${{ github.event.inputs.tickers }}
-      
+        with: { python-version: '3.11' }
+      - run: python -m pip install --upgrade pip requests
+      - name: Generate segment_report.txt
+        env: { SEC_EMAIL: ${{ secrets.SEC_EMAIL }} }
+        run: python segment_revenue_report.py   # defaults to AAPL MSFT TSLA
       - name: Commit report
         run: |
-          git config --global user.name  "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
+          git config --global user.name  "github-actions"
           git add segment_report.txt
-          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          git commit -m "Segment revenue report $timestamp" || echo "Nothing to commit"
+          git commit -m "Update segment_report.txt" || echo "no changes"
           git push
