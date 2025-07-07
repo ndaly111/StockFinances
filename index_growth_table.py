@@ -139,7 +139,7 @@ def _overview():
     return (
         "<table border='1' style='border-collapse:collapse;'>"
         "<thead><tr><th>Ticker</th><th>P/E</th><th>Growth</th>"
-        "<th>P/E&nbsp;%tile</th><th>Growth&nbsp;%tile</th></tr></thead>"
+        "<th>P/E percentile</th><th>Growth Percentile</th></tr></thead>"
         "<tbody>"+ "".join(rows) +"</tbody></table>"
     )
 
