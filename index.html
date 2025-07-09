@@ -10,18 +10,20 @@
   <script>
     $(function(){
       $('#sortable-table').DataTable({
-        pageLength:100,responsive:true,scrollX:true,
+        pageLength:100,
+        responsive:true,
+        scrollX:true,
+        columnDefs:[{type:'num',targets:[2,3,4,5,6]}],   // force numeric sort
         createdRow:function(row){
           $('td',row).each(function(){
-            var txt=$(this).text();
-            if(txt.includes('%')){
-              var n=parseFloat(txt.replace('%',''));
-              if(isNaN(n)) return;
-              $(this).attr('data-order', n);   // numeric sort key ★
+            var txt=$(this).text().trim();
+            if(txt.includes('%') || txt==='–'){
+              var n = (txt==='–') ? -999 : parseFloat(txt.replace('%',''));
+              $(this).attr('data-order', n);           // numeric key
               var col=$(this).index();
-              if(col===6){                     // Implied-Growth Pctile
+              if(col===6){                             // Implied-Growth Pctile
                 $(this).addClass(n<50?'negative':'positive');
-              }else{                           // other % columns
+              }else{                                   // other % columns
                 $(this).addClass(n<0?'negative':'positive');
               }
             }
