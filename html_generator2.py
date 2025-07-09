@@ -3,7 +3,7 @@
 # -----------------------------------------------------------
 # • Builds index.html, per-ticker pages, SPY/QQQ pages
 # • Dashboard shows “Implied-Growth Pctile” column
-# • DataTables sorts % columns numerically via data-order
+# • % columns sorted numerically via data-order
 # -----------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
@@ -43,22 +43,23 @@ def ensure_templates_exist():
   <title>Nick's Stock Financials</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-  <style>td.positive{color:green;}td.negative{color:red;}.center-table{margin:0 auto;width:100%%}</style>
+  <style>
+    td.positive{color:green;}td.negative{color:red;}
+    .center-table{margin:0 auto;width:100%%}
+  </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
   <script>
     $(function(){
       $('#sortable-table').DataTable({
         pageLength:100,
-        responsive:true,
         scrollX:true,
-        columnDefs:[{type:'num',targets:[2,3,4,5,6]}],   // force numeric sort
         createdRow:function(row){
           $('td',row).each(function(){
             var txt=$(this).text().trim();
             if(txt.includes('%') || txt==='–'){
               var n = (txt==='–') ? -999 : parseFloat(txt.replace('%',''));
-              $(this).attr('data-order', n);           // numeric key
+              $(this).attr('data-order', n);           // numeric sort key
               var col=$(this).index();
               if(col===6){                             // Implied-Growth Pctile
                 $(this).addClass(n<50?'negative':'positive');
@@ -98,14 +99,15 @@ def ensure_templates_exist():
   <footer><p>Nick's Financial Data Dashboard</p></footer>
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
-    # ticker_template.html and spy/qqq templates assumed unchanged.
 
 # ───────── dashboard builder ───────────────────────────────
 def generate_dashboard_table(raw_rows):
-    base_cols = ["Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value",
+    base_cols = ["Ticker", "Share Price",
+                 "Nick's TTM Value", "Nick's Forward Value",
                  "Finviz TTM Value", "Finviz Forward Value"]
     df = pd.DataFrame(raw_rows, columns=base_cols)
 
+    # Latest TTM growth-percentile
     with sqlite3.connect(DB_PATH) as conn:
         pct = pd.read_sql_query(
             """SELECT Ticker, Percentile FROM Index_Growth_Pctile
@@ -113,7 +115,7 @@ def generate_dashboard_table(raw_rows):
                  AND Date=(SELECT MAX(Date) FROM Index_Growth_Pctile)""", conn)
     df = df.merge(pct, how="left", on="Ticker")
 
-    # format %
+    # Format % columns
     for col in base_cols[2:]:
         num = pd.to_numeric(df[col].astype(str).str.rstrip("%"), errors="coerce")
         df[col+"_num"] = num
@@ -124,14 +126,14 @@ def generate_dashboard_table(raw_rows):
         lambda x: f"{x:.0f}%" if pd.notnull(x) else "–")
     df.drop(columns="Percentile", inplace=True)
 
-    # hyperlinks
+    # Link tickers
     def link(t):
         return f'<a href="{"spy_growth.html" if t=="SPY" else "qqq_growth.html" if t=="QQQ" else f"pages/{t}_page.html"}">{t}</a>'
     df["Ticker"] = df["Ticker"].apply(link)
 
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
 
-    # summary rows
+    # Summary rows
     pc = lambda s: f"{s:.1f}%" if pd.notnull(s) else "–"
     ttm, fwd = df["Nick's TTM Value_num"].dropna(), df["Nick's Forward Value_num"].dropna()
     fttm, ffwd = df["Finviz TTM Value_num"].dropna(), df["Finviz Forward Value_num"].dropna()
@@ -140,20 +142,19 @@ def generate_dashboard_table(raw_rows):
     avg_html = pd.DataFrame(summary, columns=["Metric"]+base_cols[2:]).to_html(
         index=False, classes="table table-striped", escape=False)
 
-    dash_cols = base_cols + ["Implied-Growth Pctile"]
-    dash_html = df[dash_cols].to_html(index=False, classes="table table-striped",
-                                      table_id="sortable-table", escape=False)
+    dash_html = df[base_cols + ["Implied-Growth Pctile"]].to_html(
+        index=False, classes="table table-striped", table_id="sortable-table", escape=False)
 
     ensure_directory_exists("charts")
-    open("charts/dashboard.html", "w", encoding="utf-8").write(avg_html+dash_html)
+    open("charts/dashboard.html", "w", encoding="utf-8").write(avg_html + dash_html)
 
-    return avg_html+dash_html, {
-        "Nicks_TTM_Value_Average": ttm.mean(),  "Nicks_TTM_Value_Median":  ttm.median(),
+    return avg_html + dash_html, {
+        "Nicks_TTM_Value_Average": ttm.mean(), "Nicks_TTM_Value_Median": ttm.median(),
         "Nicks_Forward_Value_Average": fwd.mean(), "Nicks_Forward_Value_Median": fwd.median(),
         "Finviz_TTM_Value_Average": fttm.mean() if not fttm.empty else None,
-        "Finviz_TTM_Value_Median":  fttm.median() if not fttm.empty else None,
+        "Finviz_TTM_Value_Median": fttm.median() if not fttm.empty else None,
         "Finviz_Forward_Value_Average": ffwd.mean() if not ffwd.empty else None,
-        "Finviz_Forward_Value_Median":  ffwd.median() if not ffwd.empty else None
+        "Finviz_Forward_Value_Median": ffwd.median() if not ffwd.empty else None
     }
 
 # ───────── ancillary page builders (unchanged) ────────────
@@ -210,15 +211,14 @@ def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
                    dashboard_data=avg_vals, spy_qqq_growth=spy_qqq_html,
                    earnings_past=earnings_past, earnings_upcoming=earnings_upcoming))
 
-# ───────── main wrapper (signature matches main_remote.py) ─
+# ───────── main wrapper (matches main_remote.py) ───────────
 def html_generator2(tickers,
-                    financial_data,          # kept for backward-compat; unused
+                    financial_data,          # kept for backward-compat (unused)
                     full_dashboard_html,
                     avg_values,
                     spy_qqq_growth_html=""):
 
     ensure_templates_exist()
-
     create_home_page(
         tickers, full_dashboard_html, avg_values, spy_qqq_growth_html,
         get_file_or_placeholder("charts/earnings_past.html"),
