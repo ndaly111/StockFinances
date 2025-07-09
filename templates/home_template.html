@@ -4,7 +4,7 @@
   <title>Nick's Stock Financials</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-  <style>td.positive{color:green;}td.negative{color:red;} .center-table{margin:0 auto;width:100%%}</style>
+  <style>td.positive{color:green;}td.negative{color:red;}.center-table{margin:0 auto;width:100%%}</style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
   <script>
@@ -17,10 +17,11 @@
             if(txt.includes('%')){
               var n=parseFloat(txt.replace('%',''));
               if(isNaN(n)) return;
+              $(this).attr('data-order', n);   // numeric sort key ★
               var col=$(this).index();
-              if(col===6){                      // percentile column
+              if(col===6){                     // Implied-Growth Pctile
                 $(this).addClass(n<50?'negative':'positive');
-              }else{
+              }else{                           // other % columns
                 $(this).addClass(n<0?'negative':'positive');
               }
             }
