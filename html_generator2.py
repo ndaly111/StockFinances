@@ -2,11 +2,11 @@
 # html_generator2.py
 # -----------------------------------------------------------
 # • Builds index.html, per-ticker pages, SPY/QQQ pages
-# • Dashboard now has “Implied-Growth Pctile” column
-# • DataTables sorts % columns numerically via data-order attr
+# • Dashboard shows “Implied-Growth Pctile” column
+# • DataTables sorts % columns numerically via data-order
 # -----------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
-import os, sqlite3, numpy as np, pandas as pd, yfinance as yf
+import os, sqlite3, pandas as pd, yfinance as yf
 
 DB_PATH = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
@@ -16,8 +16,8 @@ def ensure_directory_exists(p):  os.makedirs(p, exist_ok=True) if p else None
 
 def create_template(path, content):
     ensure_directory_exists(os.path.dirname(path))
-    if not os.path.exists(path) or open(path,encoding="utf-8").read()!=content:
-        open(path,"w",encoding="utf-8").write(content)
+    if not os.path.exists(path) or open(path, encoding="utf-8").read() != content:
+        open(path, "w", encoding="utf-8").write(content)
 
 def get_company_short_name(tk, cur):
     cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker=?", (tk,))
@@ -49,18 +49,20 @@ def ensure_templates_exist():
   <script>
     $(function(){
       $('#sortable-table').DataTable({
-        pageLength:100,responsive:true,scrollX:true,
+        pageLength:100,
+        responsive:true,
+        scrollX:true,
+        columnDefs:[{type:'num',targets:[2,3,4,5,6]}],   // force numeric sort
         createdRow:function(row){
           $('td',row).each(function(){
-            var txt=$(this).text();
-            if(txt.includes('%')){
-              var n=parseFloat(txt.replace('%',''));
-              if(isNaN(n)) return;
-              $(this).attr('data-order', n);   // numeric sort key ★
+            var txt=$(this).text().trim();
+            if(txt.includes('%') || txt==='–'){
+              var n = (txt==='–') ? -999 : parseFloat(txt.replace('%',''));
+              $(this).attr('data-order', n);           // numeric key
               var col=$(this).index();
-              if(col===6){                     // Implied-Growth Pctile
+              if(col===6){                             // Implied-Growth Pctile
                 $(this).addClass(n<50?'negative':'positive');
-              }else{                           // other % columns
+              }else{                                   // other % columns
                 $(this).addClass(n<0?'negative':'positive');
               }
             }
@@ -95,17 +97,15 @@ def ensure_templates_exist():
 
   <footer><p>Nick's Financial Data Dashboard</p></footer>
 </div></body></html>"""
-
     create_template("templates/home_template.html", home_tpl)
-    # ticker_template.html, spy/qqq templates assumed already present.
+    # ticker_template.html and spy/qqq templates assumed unchanged.
 
 # ───────── dashboard builder ───────────────────────────────
 def generate_dashboard_table(raw_rows):
-    base_cols = ["Ticker","Share Price","Nick's TTM Value","Nick's Forward Value",
-                 "Finviz TTM Value","Finviz Forward Value"]
+    base_cols = ["Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value",
+                 "Finviz TTM Value", "Finviz Forward Value"]
     df = pd.DataFrame(raw_rows, columns=base_cols)
 
-    # latest TTM percentile
     with sqlite3.connect(DB_PATH) as conn:
         pct = pd.read_sql_query(
             """SELECT Ticker, Percentile FROM Index_Growth_Pctile
@@ -145,13 +145,11 @@ def generate_dashboard_table(raw_rows):
                                       table_id="sortable-table", escape=False)
 
     ensure_directory_exists("charts")
-    open("charts/dashboard.html","w",encoding="utf-8").write(avg_html+dash_html)
+    open("charts/dashboard.html", "w", encoding="utf-8").write(avg_html+dash_html)
 
     return avg_html+dash_html, {
-        "Nicks_TTM_Value_Average": ttm.mean(),
-        "Nicks_TTM_Value_Median":  ttm.median(),
-        "Nicks_Forward_Value_Average": fwd.mean(),
-        "Nicks_Forward_Value_Median":  fwd.median(),
+        "Nicks_TTM_Value_Average": ttm.mean(),  "Nicks_TTM_Value_Median":  ttm.median(),
+        "Nicks_Forward_Value_Average": fwd.mean(), "Nicks_Forward_Value_Median": fwd.median(),
         "Finviz_TTM_Value_Average": fttm.mean() if not fttm.empty else None,
         "Finviz_TTM_Value_Median":  fttm.median() if not fttm.empty else None,
         "Finviz_Forward_Value_Average": ffwd.mean() if not ffwd.empty else None,
@@ -161,13 +159,13 @@ def generate_dashboard_table(raw_rows):
 # ───────── ancillary page builders (unchanged) ────────────
 def render_spy_qqq_growth_pages():
     chart_dir, out_dir = "charts", "."
-    for key in ("spy","qqq"):
+    for key in ("spy", "qqq"):
         tpl = Template(get_file_or_placeholder(f"templates/{key}_growth_template.html"))
         rendered = tpl.render(**{
             f"{key}_growth_summary": get_file_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
             f"{key}_pe_summary":     get_file_or_placeholder(f"{chart_dir}/{key}_pe_summary.html")
         })
-        open(f"{out_dir}/{key}_growth.html","w",encoding="utf-8").write(rendered)
+        open(f"{out_dir}/{key}_growth.html", "w", encoding="utf-8").write(rendered)
 
 def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
     ensure_directory_exists("pages")
@@ -176,7 +174,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
         for t in tickers:
             d = {
               "ticker": t,
-              "company_name": get_company_short_name(t,cur),
+              "company_name": get_company_short_name(t, cur),
               "ticker_info": get_file_or_placeholder(f"{charts_dir}/{t}_ticker_info.html"),
               "revenue_net_income_chart_path": f"{charts_dir}/{t}_revenue_net_income_chart.png",
               "eps_chart_path": f"{charts_dir}/{t}_eps_chart.png",
@@ -195,31 +193,32 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
               "valuation_chart": f"{charts_dir}/{t}_valuation_chart.png",
               "valuation_info_table": get_file_or_placeholder(f"{charts_dir}/{t}_valuation_info.html"),
               "valuation_data_table": get_file_or_placeholder(f"{charts_dir}/{t}_valuation_table.html"),
-              "unmapped_expense_html": get_file_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html","No unmapped expenses."),
+              "unmapped_expense_html": get_file_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html", "No unmapped expenses."),
               "eps_dividend_chart_path": f"{charts_dir}/{t}_eps_dividend_forecast.png",
               "implied_growth_chart_path": f"{charts_dir}/{t}_implied_growth_plot.png",
               "implied_growth_table_html": get_file_or_placeholder(
-                    f"{charts_dir}/{t}_implied_growth_summary.html","No implied growth data available.")
+                    f"{charts_dir}/{t}_implied_growth_summary.html", "No implied growth data available.")
             }
             html = env.get_template("ticker_template.html").render(ticker_data=d)
-            open(f"pages/{t}_page.html","w",encoding="utf-8").write(html)
+            open(f"pages/{t}_page.html", "w", encoding="utf-8").write(html)
 
 def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
                      earnings_past="", earnings_upcoming=""):
     tpl = env.get_template("home_template.html")
-    open("index.html","w",encoding="utf-8").write(
+    open("index.html", "w", encoding="utf-8").write(
         tpl.render(tickers=tickers, dashboard_table=dashboard_html,
                    dashboard_data=avg_vals, spy_qqq_growth=spy_qqq_html,
                    earnings_past=earnings_past, earnings_upcoming=earnings_upcoming))
 
 # ───────── main wrapper (signature matches main_remote.py) ─
 def html_generator2(tickers,
-                    financial_data,          # kept for backward-compat (unused)
+                    financial_data,          # kept for backward-compat; unused
                     full_dashboard_html,
                     avg_values,
                     spy_qqq_growth_html=""):
 
     ensure_templates_exist()
+
     create_home_page(
         tickers, full_dashboard_html, avg_values, spy_qqq_growth_html,
         get_file_or_placeholder("charts/earnings_past.html"),
