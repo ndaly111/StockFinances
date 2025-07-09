@@ -113,4 +113,23 @@ th {
 img {
     max-width: 100%;
     height: auto;
+
+    /* ───────── Layout wrapper ───────── */
+:root { --max-content-width: 1200px; }   /* tweak if you prefer */
+
+.container {
+  max-width: var(--max-content-width);
+  margin: 0 auto;             /* center horizontally */
+  padding: 0 1rem;            /* breathing room left/right */
+}
+
+/* Override your table width to respect the wrapper */
+.container table { width: 100%; }
+
+/* ───────── Mobile tweaks ───────── */
+@media (max-width: 768px) {
+  body  { font-size: 0.9rem; }          /* bump base font */
+  th, td{ padding: 6px; font-size: 0.85rem; }
+  .home-button { font-size: 0.8rem; padding: 6px 12px; }
+}
 }
