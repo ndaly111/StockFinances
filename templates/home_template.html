@@ -6,21 +6,21 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
   <style>
-    .positive { color: green; }
-    .negative { color: red; }
+    td.positive { color: green; }
+    td.negative { color: red; }
     .center-table { margin: 0 auto; width: 80%%; }
   </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
   <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
       $('#sortable-table').DataTable({
-        "pageLength": 100,
-        "createdRow": function(row) {
-          $('td', row).each(function() {
-            var v = $(this).text();
-            if (v.includes('%%')) {
-              var n = parseFloat(v.replace('%%',''));
+        pageLength: 100,
+        createdRow: function (row) {
+          $('td', row).each(function () {
+            var txt = $(this).text();
+            if (txt.includes('%')) {                // add colour classes
+              var n = parseFloat(txt.replace('%', ''));
               if (!isNaN(n)) {
                 $(this).addClass(n < 0 ? 'negative' : 'positive');
               }

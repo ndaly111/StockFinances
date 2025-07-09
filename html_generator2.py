@@ -1,9 +1,7 @@
+#!/usr/bin/env python3
+# html_generator2.py — builds index.html, per-ticker pages, SPY/QQQ pages
+# (colour coding restored, NaN% shown as “–”)
 # ───────────────────────────────────────────────────────────
-# html_generator2.py  —  FULL FILE
-# Builds index.html, per-ticker pages, and SPY/QQQ pages
-# (each SPY/QQQ page shows both Implied-Growth and P/E sections)
-# ───────────────────────────────────────────────────────────
-
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, numpy as np, pandas as pd, yfinance as yf
 
@@ -11,8 +9,9 @@ import os, sqlite3, numpy as np, pandas as pd, yfinance as yf
 db_path = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
 
+# ─── Generic helpers ──────────────────────────────────────
 def ensure_directory_exists(path: str):
-    if not os.path.exists(path):
+    if path and not os.path.exists(path):
         os.makedirs(path)
 
 def create_template(path: str, content: str):
@@ -25,24 +24,26 @@ def create_template(path: str, content: str):
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
 
-# ─── DB helpers ────────────────────────────────────────────
+# ─── DB & file helpers (restored) ─────────────────────────
 def get_company_short_name(ticker: str, cur):
+    """
+    Pull short name from cache; fetch from yfinance on first use.
+    """
     cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker = ?", (ticker,))
     row = cur.fetchone()
     if row and row[0]:
         return row[0]
 
     info = yf.Ticker(ticker).info or {}
-    name = info.get("shortName", "").strip()
-    if name:
-        cur.execute("UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?", (name, ticker))
-        cur.connection.commit()
-        return name
-    return ticker
+    name = info.get("shortName", "").strip() or ticker
+    cur.execute("UPDATE Tickers_Info SET short_name = ? WHERE ticker = ?", (name, ticker))
+    cur.connection.commit()
+    return name
 
 def get_file_content_or_placeholder(path: str, placeholder="No data available"):
     try:
-        return open(path, "r", encoding="utf-8").read()
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
     except FileNotFoundError:
         return placeholder
 
@@ -59,21 +60,21 @@ def ensure_templates_exist():
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
   <style>
-    .positive { color: green; }
-    .negative { color: red; }
+    td.positive { color: green; }
+    td.negative { color: red; }
     .center-table { margin: 0 auto; width: 80%%; }
   </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
   <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
       $('#sortable-table').DataTable({
-        "pageLength": 100,
-        "createdRow": function(row) {
-          $('td', row).each(function() {
-            var v = $(this).text();
-            if (v.includes('%%')) {
-              var n = parseFloat(v.replace('%%',''));
+        pageLength: 100,
+        createdRow: function (row) {
+          $('td', row).each(function () {
+            var txt = $(this).text();
+            if (txt.includes('%')) {                // add colour classes
+              var n = parseFloat(txt.replace('%', ''));
               if (!isNaN(n)) {
                 $(this).addClass(n < 0 ? 'negative' : 'positive');
               }
@@ -111,8 +112,7 @@ def ensure_templates_exist():
 </body>
 </html>
 """
-
-    # ─── Ticker template (unchanged from original) ───
+    # ─── Ticker template (unchanged) ───
     ticker_template_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -171,11 +171,10 @@ def ensure_templates_exist():
 </body>
 </html>
 """
-
     create_template("templates/home_template.html",   home_template_content)
     create_template("templates/ticker_template.html", ticker_template_content)
 
-    # ─── SPY & QQQ templates (Implied-Growth + P/E) ───
+    # ─── SPY & QQQ templates (unchanged) ───
     spy_tpl = """<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8">
@@ -195,7 +194,6 @@ def ensure_templates_exist():
 </html>
 """
     qqq_tpl = spy_tpl.replace("SPY", "QQQ").replace("spy_", "qqq_")
-
     create_template("templates/spy_growth_template.html", spy_tpl)
     create_template("templates/qqq_growth_template.html", qqq_tpl)
 
@@ -213,17 +211,14 @@ def render_spy_qqq_growth_pages():
                 "qqq_growth.html")
     }
     for key, (tpl_name, growth_file, pe_file, output_file) in mapping.items():
-        try:
-            tpl = Template(open(os.path.join("templates", tpl_name), encoding="utf-8").read())
-            rendered = tpl.render(**{
-                f"{key}_growth_summary": get_file_content_or_placeholder(os.path.join(chart_dir, growth_file)),
-                f"{key}_pe_summary":     get_file_content_or_placeholder(os.path.join(chart_dir, pe_file))
-            })
-            with open(os.path.join(out_dir, output_file), "w", encoding="utf-8") as f:
-                f.write(rendered)
-            print(f"[html_generator2] Rendered {output_file}")
-        except Exception as e:
-            print(f"Error rendering {key.upper()} page: {e}")
+        tpl = Template(open(os.path.join("templates", tpl_name), encoding="utf-8").read())
+        rendered = tpl.render(**{
+            f"{key}_growth_summary": get_file_content_or_placeholder(os.path.join(chart_dir, growth_file)),
+            f"{key}_pe_summary":     get_file_content_or_placeholder(os.path.join(chart_dir, pe_file))
+        })
+        with open(os.path.join(out_dir, output_file), "w", encoding="utf-8") as f:
+            f.write(rendered)
+        print(f"[html_generator2] Rendered {output_file}")
 
 # ───────────────────────────────────────────────────────────
 # Build index.html
@@ -243,7 +238,7 @@ def create_home_page(tickers, output_dir,
         ))
 
 # ───────────────────────────────────────────────────────────
-# Generate per-ticker pages (unchanged logic)
+# Generate per-ticker pages
 # ───────────────────────────────────────────────────────────
 def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
     with sqlite3.connect(db_path) as conn:
@@ -283,47 +278,52 @@ def prepare_and_generate_ticker_pages(tickers, output_dir, charts_dir):
                 f.write(env.get_template("ticker_template.html").render(ticker_data=d))
 
 # ───────────────────────────────────────────────────────────
-# Dashboard table + summary (restored)
+# Dashboard table + summary (NaN→dash & colour classes)
 # ───────────────────────────────────────────────────────────
 def generate_dashboard_table(dashboard_data):
-    df = pd.DataFrame(dashboard_data, columns=[
-        "Ticker", "Share Price",
-        "Nick's TTM Value", "Nick's Forward Value",
-        "Finviz TTM Value", "Finviz Forward Value"
-    ])
+    df = pd.DataFrame(
+        dashboard_data,
+        columns=["Ticker", "Share Price",
+                 "Nick's TTM Value", "Nick's Forward Value",
+                 "Finviz TTM Value", "Finviz Forward Value"]
+    )
 
     def link(t):
         if t == "SPY": return '<a href="spy_growth.html">SPY</a>'
         if t == "QQQ": return '<a href="qqq_growth.html">QQQ</a>'
         return f'<a href="pages/{t}_page.html">{t}</a>'
-
     df["Ticker"] = df["Ticker"].apply(link)
 
-    for col in ["Nick's TTM Value", "Nick's Forward Value", "Finviz TTM Value", "Finviz Forward Value"]:
-        df[col+"_num"] = (
-            df[col].astype(str).str.rstrip("%").replace("-", np.nan).astype(float)
-        )
+    for col in ["Nick's TTM Value", "Nick's Forward Value",
+                "Finviz TTM Value", "Finviz Forward Value"]:
+        num = pd.to_numeric(df[col].astype(str).str.rstrip("%"), errors="coerce")
+        df[col + "_num"] = num
+        df[col] = num.apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "–")
 
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
 
-    ttm, fwd   = df["Nick's TTM Value_num"].dropna(),   df["Nick's Forward Value_num"].dropna()
-    fttm, ffwd = df["Finviz TTM Value_num"].dropna(),   df["Finviz Forward Value_num"].dropna()
+    ttm   = df["Nick's TTM Value_num"].dropna()
+    fwd   = df["Nick's Forward Value_num"].dropna()
+    fttm  = df["Finviz TTM Value_num"].dropna()
+    ffwd  = df["Finviz Forward Value_num"].dropna()
 
-    fmt = lambda x: f"{x:.1f}%" if pd.notnull(x) else "–"
+    pc = lambda s: f"{s:.1f}%" if pd.notnull(s) else "–"
     summary_rows = [
-        ["Average", fmt(ttm.mean()), fmt(fwd.mean()), fmt(fttm.mean()), fmt(ffwd.mean())],
-        ["Median",  fmt(ttm.median()), fmt(fwd.median()), fmt(fttm.median()), fmt(ffwd.median())]
+        ["Average", pc(ttm.mean()), pc(fwd.mean()), pc(fttm.mean()), pc(ffwd.mean())],
+        ["Median",  pc(ttm.median()), pc(fwd.median()), pc(fttm.median()), pc(ffwd.median())]
     ]
-    avg_html = pd.DataFrame(summary_rows, columns=[
-        "Metric", "Nick's TTM Value", "Nick's Forward Value",
-        "Finviz TTM Value", "Finviz Forward Value"
-    ]).to_html(index=False, classes="table table-striped", escape=False)
+    avg_html = pd.DataFrame(
+        summary_rows,
+        columns=["Metric", "Nick's TTM Value", "Nick's Forward Value",
+                 "Finviz TTM Value", "Finviz Forward Value"]
+    ).to_html(index=False, classes="table table-striped", escape=False)
 
     dash_html = df[[
         "Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value",
         "Finviz TTM Value", "Finviz Forward Value"
     ]].to_html(index=False, classes="table table-striped", table_id="sortable-table", escape=False)
 
+    ensure_directory_exists("charts")
     with open("charts/dashboard.html", "w", encoding="utf-8") as f:
         f.write(avg_html + dash_html)
 
