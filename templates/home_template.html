@@ -1,29 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Nick's Stock Financials</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-  <style>
-    td.positive { color: green; }
-    td.negative { color: red; }
-    .center-table { margin: 0 auto; width: 80%%; }
-  </style>
+  <style>td.positive{color:green;}td.negative{color:red;}.center-table{margin:0 auto;width:100%%}</style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
   <script>
-    $(document).ready(function () {
+    $(function(){
       $('#sortable-table').DataTable({
-        pageLength: 100,
-        createdRow: function (row) {
-          $('td', row).each(function () {
-            var txt = $(this).text();
-            if (txt.includes('%')) {                // add colour classes
-              var n = parseFloat(txt.replace('%', ''));
-              if (!isNaN(n)) {
-                $(this).addClass(n < 0 ? 'negative' : 'positive');
-              }
+        pageLength:100,responsive:true,scrollX:true,
+        createdRow:function(r){
+          $('td',r).each(function(){
+            var t=$(this).text();
+            if(t.includes('%')){
+              var n=parseFloat(t.replace('%',''));
+              if(!isNaN(n))$(this).addClass(n<0?'negative':'positive');
             }
           });
         }
@@ -31,12 +25,12 @@
     });
   </script>
 </head>
-<body>
+<body><div class="container">
   <header><h1>Financial Overview</h1></header>
 
   <nav class="navigation">
     {% for t in tickers %}
-      <a href="pages/{{t}}_page.html" class="home-button">{{t}}</a> |
+      <a href="pages/{{t}}_page.html" class="home-button">{{t}}</a>{% if not loop.last %} | {% endif %}
     {% endfor %}
   </nav>
 
@@ -55,5 +49,4 @@
   <div>{{ dashboard_table | safe }}</div>
 
   <footer><p>Nick's Financial Data Dashboard</p></footer>
-</body>
-</html>
+</div></body></html>
