@@ -1,16 +1,19 @@
+#!/usr/bin/env python3
 # implied_growth_summary.py
 # -----------------------------------------------------------
-# Build per-ticker “Implied Growth Summary” HTML table + plot
+# • Builds per-ticker Implied-Growth summary HTML + plot
+# • Back-fills helper table Index_Growth_Pctile
 # -----------------------------------------------------------
 import os, sqlite3, numpy as np, pandas as pd, matplotlib.pyplot as plt
 from datetime import datetime
-from itertools import product           # column re-ordering
+from itertools import product
 
 # ──────────────────────────
 # Configuration
 # ──────────────────────────
 DB_PATH        = 'Stock Data.db'
 TABLE_NAME     = 'Implied_Growth_History'
+PCT_TABLE      = 'Index_Growth_Pctile'       # NEW helper table
 
 CHARTS_DIR     = 'charts'
 HTML_TEMPLATE  = os.path.join(CHARTS_DIR, '{ticker}_implied_growth_summary.html')
@@ -40,7 +43,7 @@ def load_growth_data() -> pd.DataFrame:
         try:
             return pd.read_sql_query(f"SELECT * FROM {TABLE_NAME}", conn)
         except (sqlite3.OperationalError, pd.errors.DatabaseError):
-            return pd.DataFrame()       # ← the colon after except is essential
+            return pd.DataFrame()
 
 def clean_series(s: pd.Series) -> pd.Series:
     return s.apply(lambda x: x if isinstance(x, (int, float)) else None).dropna()
@@ -65,7 +68,33 @@ def write_placeholder(tkr: str) -> str:
     return out
 
 # ──────────────────────────
-# Summary-table generator
+# NEW: percentile back-fill into SQLite
+# ──────────────────────────
+def update_percentile_table(df: pd.DataFrame):
+    if df.empty:
+        return
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(f"""CREATE TABLE IF NOT EXISTS {PCT_TABLE} (
+                           Date TEXT, Ticker TEXT, Growth_Type TEXT, Percentile REAL,
+                           PRIMARY KEY (Date,Ticker,Growth_Type));""")
+        rows = []
+        for (ticker, gtype), sub in df.groupby(['ticker', 'growth_type']):
+            s = sub.sort_values('date_recorded')['growth_value'].dropna()
+            if s.empty:
+                continue
+            # percentile rank within the series
+            pct_series = s.rank(pct=True) * 100
+            rows.extend([
+                (d.strftime("%Y-%m-%d"), ticker, gtype, round(p, 1))
+                for d, p in zip(sub['date_recorded'], pct_series)
+            ])
+        conn.executemany(f"""INSERT OR REPLACE INTO {PCT_TABLE}
+                             VALUES (?,?,?,?)""", rows)
+        conn.commit()
+        print(f"[update_percentile_table] {len(rows)} rows upserted into {PCT_TABLE}")
+
+# ──────────────────────────
+# Summary-table generator (unchanged logic)
 # ──────────────────────────
 def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     df = df.copy()
@@ -104,7 +133,7 @@ def generate_summary_table(df: pd.DataFrame, ticker: str) -> str:
     return out
 
 # ──────────────────────────
-# Line-plot generator
+# Line-plot generator (unchanged)
 # ──────────────────────────
 def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     df = df.copy()
@@ -141,7 +170,7 @@ def plot_growth_chart(df: pd.DataFrame, ticker: str) -> str:
     return out
 
 # ──────────────────────────
-# Batch regenerate
+# Batch regenerate + percentile back-fill
 # ──────────────────────────
 def generate_all_summaries():
     ensure_output_directory()
@@ -149,6 +178,11 @@ def generate_all_summaries():
     if 'ticker' not in df_all.columns:
         print("[generate_all_summaries] Implied_Growth_History table missing.")
         return
+
+    # 1) update percentile helper table
+    update_percentile_table(df_all)
+
+    # 2) per-ticker HTML & charts
     for tkr in df_all['ticker'].unique():
         print(f"[generate_all_summaries] {tkr}")
         dft = df_all[df_all['ticker'] == tkr]
