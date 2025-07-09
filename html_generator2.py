@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# html_generator2.py – adds “Implied-Growth Pctile” to the front dashboard
+# html_generator2.py  –  FULL FILE
+# Builds index.html, per-ticker pages, SPY/QQQ pages
+# Adds “Implied-Growth Pctile” (TTM) column to the dashboard
 # ───────────────────────────────────────────────────────────
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, numpy as np, pandas as pd, yfinance as yf
@@ -7,40 +9,46 @@ import os, sqlite3, numpy as np, pandas as pd, yfinance as yf
 db_path = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
 
-# ─── helpers (unchanged) ──────────────────────────────────
+# ───────────────────────── helpers ────────────────────────
 def ensure_directory_exists(p):  os.makedirs(p, exist_ok=True) if p else None
+
 def create_template(path, content):
     ensure_directory_exists(os.path.dirname(path))
-    if not os.path.exists(path) or open(path,encoding="utf-8").read()!=content:
-        open(path,"w",encoding="utf-8").write(content)
+    if not os.path.exists(path) or open(path, encoding="utf-8").read() != content:
+        open(path, "w", encoding="utf-8").write(content)
 
 def get_company_short_name(tk, cur):
-    cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker=?",(tk,))
-    row=cur.fetchone()
-    if row and row[0]: return row[0]
-    name=(yf.Ticker(tk).info or {}).get("shortName","").strip() or tk
-    cur.execute("UPDATE Tickers_Info SET short_name=? WHERE ticker=?",(name,tk))
-    cur.connection.commit(); return name
+    cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker=?", (tk,))
+    row = cur.fetchone()
+    if row and row[0]:
+        return row[0]
+    name = (yf.Ticker(tk).info or {}).get("shortName", "").strip() or tk
+    cur.execute("UPDATE Tickers_Info SET short_name=? WHERE ticker=?", (name, tk))
+    cur.connection.commit()
+    return name
 
 def get_file_or_placeholder(p, ph="No data available"):
-    try: return open(p,encoding="utf-8").read()
-    except FileNotFoundError: return ph
+    try:
+        return open(p, encoding="utf-8").read()
+    except FileNotFoundError:
+        return ph
 
-# ─── templates – only JS block edited for new colour logic ─
+# ───────────────────── template creation ──────────────────
 def ensure_templates_exist():
-    home_template = """<!DOCTYPE html>
+    # HOME template (JS modified for percentile colours)
+    home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8">
   <title>Nick's Stock Financials</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-  <style>td.positive{color:green;}td.negative{color:red;}.center-table{margin:0 auto;width:80%%}</style>
+  <style>td.positive{color:green;}td.negative{color:red;} .center-table{margin:0 auto;width:100%%}</style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
   <script>
     $(function(){
       $('#sortable-table').DataTable({
-        pageLength:100,
+        pageLength:100,responsive:true,scrollX:true,
         createdRow:function(row){
           $('td',row).each(function(){
             var txt=$(this).text();
@@ -48,9 +56,9 @@ def ensure_templates_exist():
               var n=parseFloat(txt.replace('%',''));
               if(isNaN(n)) return;
               var col=$(this).index();
-              if(col===6){               // Implied-Growth Pctile column
+              if(col===6){                      // percentile column
                 $(this).addClass(n<50?'negative':'positive');
-              }else{                     // existing % columns
+              }else{
                 $(this).addClass(n<0?'negative':'positive');
               }
             }
@@ -60,6 +68,7 @@ def ensure_templates_exist():
     });
   </script>
 </head><body>
+<div class="container">
   <header><h1>Financial Overview</h1></header>
 
   <nav class="navigation">
@@ -83,76 +92,141 @@ def ensure_templates_exist():
   <div>{{ dashboard_table | safe }}</div>
 
   <footer><p>Nick's Financial Data Dashboard</p></footer>
-</body></html>"""
-    create_template("templates/home_template.html", home_template)
-    # ticker / spy-qqq templates unchanged …
+</div></body></html>"""
 
-# ───────────────────────────────────────────────────────────
-# Dashboard table + summary (now includes Pctile)
-# ───────────────────────────────────────────────────────────
-def generate_dashboard_table(dashboard_data):
-    base_cols = ["Ticker","Share Price",
-                 "Nick's TTM Value","Nick's Forward Value",
-                 "Finviz TTM Value","Finviz Forward Value"]
-    df = pd.DataFrame(dashboard_data, columns=base_cols)
+    # ticker & SPY/QQQ templates unchanged (omitted for brevity)
+    create_template("templates/home_template.html", home_tpl)
+    # If you customised ticker/spy/qqq templates already, leave them as-is.
 
-    # ---- pull latest TTM percentile ----
+# ───────────────── dashboard table + avg summary ───────────
+def generate_dashboard_table(raw_rows):
+    # Base dataframe
+    base_cols = ["Ticker", "Share Price", "Nick's TTM Value", "Nick's Forward Value",
+                 "Finviz TTM Value", "Finviz Forward Value"]
+    df = pd.DataFrame(raw_rows, columns=base_cols)
+
+    # ── fetch latest TTM implied-growth percentile
     with sqlite3.connect(db_path) as conn:
         pct = pd.read_sql_query(
-            """SELECT Ticker, Percentile
-                 FROM Index_Growth_Pctile
-                WHERE Growth_Type='TTM'
-                  AND Date=(SELECT MAX(Date) FROM Index_Growth_Pctile)""", conn)
+            """SELECT Ticker, Percentile FROM Index_Growth_Pctile
+               WHERE Growth_Type='TTM'
+                 AND Date=(SELECT MAX(Date) FROM Index_Growth_Pctile)""",
+            conn)
     df = df.merge(pct, how="left", on="Ticker")
 
-    # ---- format numbers & add helper cols ----
+    # ── format % columns + create numeric helpers for sort
     for col in base_cols[2:]:
         num = pd.to_numeric(df[col].astype(str).str.rstrip("%"), errors="coerce")
         df[col+"_num"] = num
-        df[col] = num.apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "–")
+        df[col] = num.map(lambda x: f"{x:.1f}%" if pd.notnull(x) else "–")
 
     df["Implied-Growth Pctile_num"] = df["Percentile"]
-    df["Implied-Growth Pctile"] = df["Percentile"].apply(
+    df["Implied-Growth Pctile"] = df["Percentile"].map(
         lambda x: f"{x:.0f}%" if pd.notnull(x) else "–")
     df.drop(columns="Percentile", inplace=True)
 
-    # ---- hyperlink tickers *after* merge ----
+    # ── hyperlink tickers after merge
     def link(t):
-        if t=="SPY": return '<a href="spy_growth.html">SPY</a>'
-        if t=="QQQ": return '<a href="qqq_growth.html">QQQ</a>'
-        return f'<a href="pages/{t}_page.html">{t}</a>'
+        return f'<a href="{"spy_growth.html" if t=="SPY" else "qqq_growth.html" if t=="QQQ" else f"pages/{t}_page.html"}">{t}</a>'
     df["Ticker"] = df["Ticker"].apply(link)
 
-    # sort by Nick's TTM %
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
 
-    # ---- build summary rows (unchanged logic) ----
-    ttm   = df["Nick's TTM Value_num"].dropna()
-    fwd   = df["Nick's Forward Value_num"].dropna()
-    fttm  = df["Finviz TTM Value_num"].dropna()
-    ffwd  = df["Finviz Forward Value_num"].dropna()
+    # summary rows
     pc = lambda s: f"{s:.1f}%" if pd.notnull(s) else "–"
-    summary = [["Average",pc(ttm.mean()),pc(fwd.mean()),pc(fttm.mean()),pc(ffwd.mean())],
-               ["Median", pc(ttm.median()),pc(fwd.median()),pc(fttm.median()),pc(ffwd.median())]]
+    ttm, fwd = df["Nick's TTM Value_num"].dropna(), df["Nick's Forward Value_num"].dropna()
+    fttm, ffwd = df["Finviz TTM Value_num"].dropna(), df["Finviz Forward Value_num"].dropna()
+    summary = [
+        ["Average", pc(ttm.mean()), pc(fwd.mean()), pc(fttm.mean()), pc(ffwd.mean())],
+        ["Median",  pc(ttm.median()), pc(fwd.median()), pc(fttm.median()), pc(ffwd.median())]
+    ]
     avg_html = pd.DataFrame(summary, columns=["Metric"]+base_cols[2:]).to_html(
         index=False, classes="table table-striped", escape=False)
 
-    # ---- final column order for dashboard ----
     dash_cols = base_cols + ["Implied-Growth Pctile"]
-    dash_html = df[dash_cols].to_html(
-        index=False, classes="table table-striped", table_id="sortable-table", escape=False)
+    dash_html = df[dash_cols].to_html(index=False, classes="table table-striped",
+                                      table_id="sortable-table", escape=False)
 
     ensure_directory_exists("charts")
-    open("charts/dashboard.html","w",encoding="utf-8").write(avg_html+dash_html)
+    open("charts/dashboard.html", "w", encoding="utf-8").write(avg_html + dash_html)
 
-    return avg_html+dash_html, {
-        "Nicks_TTM_Value_Average":ttm.mean(),"Nicks_TTM_Value_Median":ttm.median(),
-        "Nicks_Forward_Value_Average":fwd.mean(),"Nicks_Forward_Value_Median":fwd.median(),
-        "Finviz_TTM_Value_Average":fttm.mean() if not fttm.empty else None,
-        "Finviz_TTM_Value_Median":fttm.median() if not fttm.empty else None,
-        "Finviz_Forward_Value_Average":ffwd.mean() if not ffwd.empty else None,
-        "Finviz_Forward_Value_Median":ffwd.median() if not ffwd.empty else None
+    # dict used elsewhere
+    return avg_html + dash_html, {
+        "Nicks_TTM_Value_Average": ttm.mean(),
+        "Nicks_TTM_Value_Median":  ttm.median(),
+        "Nicks_Forward_Value_Average": fwd.mean(),
+        "Nicks_Forward_Value_Median":  fwd.median(),
+        "Finviz_TTM_Value_Average": fttm.mean() if not fttm.empty else None,
+        "Finviz_TTM_Value_Median":  fttm.median() if not fttm.empty else None,
+        "Finviz_Forward_Value_Average": ffwd.mean() if not ffwd.empty else None,
+        "Finviz_Forward_Value_Median":  ffwd.median() if not ffwd.empty else None
     }
 
-# ─── rest of file (create_home_page, per-ticker pages, etc.) unchanged ──
-# …
+# ───────────────── html build helpers (unchanged) ─────────
+def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
+                     earnings_past="", earnings_upcoming=""):
+    tpl = env.get_template("home_template.html")
+    open("index.html", "w", encoding="utf-8").write(
+        tpl.render(tickers=tickers, dashboard_table=dashboard_html,
+                   dashboard_data=avg_vals, spy_qqq_growth=spy_qqq_html,
+                   earnings_past=earnings_past, earnings_upcoming=earnings_upcoming))
+
+def render_spy_qqq_growth_pages():
+    chart_dir, out_dir = "charts", "."
+    mapping = {"spy": ("spy"), "qqq": ("qqq")}
+    for key in mapping:
+        tpl = Template(get_file_or_placeholder(f"templates/{key}_growth_template.html"))
+        rendered = tpl.render(**{
+            f"{key}_growth_summary": get_file_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
+            f"{key}_pe_summary":     get_file_or_placeholder(f"{chart_dir}/{key}_pe_summary.html")
+        })
+        open(f"{out_dir}/{key}_growth.html", "w", encoding="utf-8").write(rendered)
+
+def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
+    ensure_directory_exists("pages")
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        for t in tickers:
+            d = {
+              "ticker": t,
+              "company_name": get_company_short_name(t, cur),
+              "ticker_info": get_file_or_placeholder(f"{charts_dir}/{t}_ticker_info.html"),
+              "revenue_net_income_chart_path": f"{charts_dir}/{t}_revenue_net_income_chart.png",
+              "eps_chart_path": f"{charts_dir}/{t}_eps_chart.png",
+              "financial_table": get_file_or_placeholder(f"{charts_dir}/{t}_rev_net_table.html"),
+              "forecast_rev_net_chart_path": f"{charts_dir}/{t}_Revenue_Net_Income_Forecast.png",
+              "forecast_eps_chart_path": f"{charts_dir}/{t}_EPS_Forecast.png",
+              "yoy_growth_table_html": get_file_or_placeholder(f"{charts_dir}/{t}_yoy_growth_tbl.html"),
+              "expense_chart_path": f"{charts_dir}/{t}_rev_expense_chart.png",
+              "expense_percent_chart_path": f"{charts_dir}/{t}_expense_percent_chart.png",
+              "expense_abs_html": get_file_or_placeholder(f"{charts_dir}/{t}_expense_absolute.html"),
+              "expense_yoy_html": get_file_or_placeholder(f"{charts_dir}/{t}_yoy_expense_change.html"),
+              "balance_sheet_chart_path": f"{charts_dir}/{t}_balance_sheet_chart.png",
+              "balance_sheet_table_html": get_file_or_placeholder(f"{charts_dir}/{t}_balance_sheet_table.html"),
+              "revenue_yoy_change_chart_path": f"{charts_dir}/{t}_revenue_yoy_change.png",
+              "eps_yoy_change_chart_path": f"{charts_dir}/{t}_eps_yoy_change.png",
+              "valuation_chart": f"{charts_dir}/{t}_valuation_chart.png",
+              "valuation_info_table": get_file_or_placeholder(f"{charts_dir}/{t}_valuation_info.html"),
+              "valuation_data_table": get_file_or_placeholder(f"{charts_dir}/{t}_valuation_table.html"),
+              "unmapped_expense_html": get_file_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html","No unmapped expenses."),
+              "eps_dividend_chart_path": f"{charts_dir}/{t}_eps_dividend_forecast.png",
+              "implied_growth_chart_path": f"{charts_dir}/{t}_implied_growth_plot.png",
+              "implied_growth_table_html": get_file_or_placeholder(
+                    f"{charts_dir}/{t}_implied_growth_summary.html","No implied growth data available.")
+            }
+            html = env.get_template("ticker_template.html").render(ticker_data=d)
+            open(f"pages/{t}_page.html", "w", encoding="utf-8").write(html)
+
+# ───────────────────────── main wrapper ────────────────────
+def html_generator2(tickers, dashboard_rows, spy_qqq_html=""):
+    ensure_templates_exist()
+    dash_html, avg_vals = generate_dashboard_table(dashboard_rows)
+    create_home_page(tickers, dash_html, avg_vals, spy_qqq_html,
+                     get_file_or_placeholder("charts/earnings_past.html"),
+                     get_file_or_placeholder("charts/earnings_upcoming.html"))
+    prepare_and_generate_ticker_pages(tickers)
+    render_spy_qqq_growth_pages()
+
+# ───────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    print("html_generator2 generates pages only when invoked by main_remote.py")
