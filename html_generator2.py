@@ -218,14 +218,27 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
             open(f"pages/{t}_page.html", "w", encoding="utf-8").write(html)
 
 # ───────────────────────── main wrapper ────────────────────
-def html_generator2(tickers, dashboard_rows, spy_qqq_html=""):
+# ───────────────────────── main wrapper  (signature restored) ──────────
+def html_generator2(tickers,
+                    financial_data,          # ← unused, kept for backward-compat
+                    full_dashboard_html,
+                    avg_values,
+                    spy_qqq_growth_html=""):
+
     ensure_templates_exist()
-    dash_html, avg_vals = generate_dashboard_table(dashboard_rows)
-    create_home_page(tickers, dash_html, avg_vals, spy_qqq_html,
-                     get_file_or_placeholder("charts/earnings_past.html"),
-                     get_file_or_placeholder("charts/earnings_upcoming.html"))
-    prepare_and_generate_ticker_pages(tickers)
-    render_spy_qqq_growth_pages()
+
+    # write index.html with the already-built dashboard & averages
+    create_home_page(
+        tickers=tickers,
+        dashboard_html=full_dashboard_html,
+        avg_vals=avg_values,
+        spy_qqq_html=spy_qqq_growth_html,
+        earnings_past=get_file_or_placeholder("charts/earnings_past.html"),
+        earnings_upcoming=get_file_or_placeholder("charts/earnings_upcoming.html")
+    )
+
+    prepare_and_generate_ticker_pages(tickers)     # pages/…_page.html
+    render_spy_qqq_growth_pages()                  # spy_growth.html / qqq_growth.html
 
 # ───────────────────────────────────────────────────────────
 if __name__ == "__main__":
