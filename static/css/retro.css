@@ -1,14 +1,11 @@
 /* === retro.css — late-90s / early-2000s vibe === */
-body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");
-color:#000080;margin:0}
+body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
 h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
 .navbar{background:#C0C0C0;border:2px outset #FFF;padding:6px;text-align:center}
-.button,.navbar a{display:inline-block;border:2px outset #C0C0C0;background:#E0E0E0;
-padding:3px 8px;font-weight:bold;margin:2px}
-table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;
-font-size:.85rem}
-th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}
-td{padding:4px;border:1px solid #8080FF}
+.button,.navbar a{display:inline-block;border:2px outset #C0C0C0;background:#E0E0E0;padding:3px 8px;font-weight:bold;margin:2px}
+table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.85rem}
+th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}td{padding:4px;border:1px solid #8080FF}
 .marquee-wrapper{background:#000080;color:#FFFF00;padding:4px;font-weight:bold}
 .blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
+.container{max-width:none;width:100%;}

@@ -2,7 +2,7 @@
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
 
-  <!-- Retro + existing styles -->
+  <!-- retro + existing -->
   <link rel="stylesheet" href="static/css/retro.css">
   <link rel="stylesheet" href="style.css">
 
@@ -18,12 +18,11 @@
   <script>
     $(function(){
       $('#sortable-table').DataTable({
-        pageLength:100,
-        scrollX:true,
+        pageLength:100,scrollX:true,
         createdRow:function(row){
           $('td',row).each(function(){
             if(!$(this).attr('data-order')) return;
-            var n=parseFloat($(this).data('order')); if(isNaN(n)) return;
+            var n=parseFloat($(this).data('order'));if(isNaN(n)) return;
             var col=$(this).index();
             if(col===6){$(this).addClass(n<50?'negative':'positive');}
             else if(col>=2&&col<=5){$(this).addClass(n<0?'negative':'positive');}
