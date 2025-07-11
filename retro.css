@@ -1,0 +1,71 @@
+/* === retro.css — late-90s / early-2000s vibe === */
+
+/* Global page look */
+body {
+    font-family: "Verdana", Geneva, sans-serif;    /* ubiquitous Win-98 font */
+    background-image: url("../images/retro_bg.gif"); /* optional tiled GIF */
+    background-color: #F0F0FF;                     /* light gray-blue */
+    color: #000080;                                /* navy text */
+    margin: 0;
+}
+
+/* Links */
+a       { color: #0000FF; }        /* bright blue */
+a:visited { color: #800080; }      /* purple */
+a:hover   { text-decoration: underline; }
+
+/* Headings with cheesy drop shadow */
+h1, h2, h3 {
+    color: #FF0000;                /* bright red */
+    text-shadow: 1px 1px #000080;
+    margin: 8px 0;
+}
+
+/* Navigation bar / pseudo-3-D buttons */
+.navbar {
+    background-color: #C0C0C0;
+    border: 2px outset #FFFFFF;
+    padding: 6px;
+    text-align: center;
+}
+.button, .navbar a {
+    display: inline-block;
+    border: 2px outset #C0C0C0;
+    background-color: #E0E0E0;
+    padding: 3px 8px;
+    font-weight: bold;
+    margin: 2px;
+}
+
+/* Tables—thick borders & pastel headers */
+table {
+    border: 2px solid #000080;
+    border-collapse: collapse;
+    background-color: #FFFFFF;
+    width: 100%;
+    font-size: 0.85rem;
+}
+th {
+    background-color: #C0C0FF;
+    padding: 4px;
+    border: 1px solid #8080FF;
+}
+td {
+    padding: 4px;
+    border: 1px solid #8080FF;
+}
+
+/* Marquee wrapper bar */
+.marquee-wrapper {
+    background-color: #000080;
+    color: #FFFF00;
+    padding: 4px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* Optional blinking text (for warnings, etc.) */
+.blink {
+    animation: blink-animation 1s steps(5, start) infinite;
+}
+@keyframes blink-animation { to { visibility: hidden; } }
