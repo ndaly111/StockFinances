@@ -1,135 +1,117 @@
-/* Main body and font styles */
-body {
-    font-family: 'Arial', sans-serif;
-    color: #333;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+/* ───────────────────────────────
+   Base layout + typography
+──────────────────────────────── */
+body{
+    font-family:'Arial',sans-serif;
+    color:#333;
+    margin:0;
+    padding:0;
+    overflow-x:hidden;         /* prevent horizontal scrolling */
+    max-width:1400px;          /* NEW: cap width on ultra-wide screens */
+    margin-inline:auto;        /* centre the whole page horizontally */
 }
 
-/* Navigation bar styles */
-.navigation {
-    text-align: center; /* Center navigation links */
-    padding: 10px 0; /* Padding for the navigation bar */
-    background: #f2f2f2; /* Light grey background for the navigation bar */
+/* ───────────────────────────────
+   Navigation bar (ticker buttons)
+──────────────────────────────── */
+.navigation{
+    text-align:center;
+    padding:10px 0;
+    background:#f2f2f2;
 }
 
-/* Carousel container for interactive elements */
-.carousel-container {
-    white-space: nowrap; /* Ensure the charts don't wrap */
-    overflow-x: auto; /* Enable horizontal scrolling */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    margin: 20px auto; /* Center horizontally */
-    padding: 10px 0; /* Padding to prevent content touching the edges */
-    scroll-snap-type: x mandatory;
-    overflow-x: auto;
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
+/* ───────────────────────────────
+   Carousel strip (charts, etc.)
+──────────────────────────────── */
+.carousel-container{
+    white-space:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    margin:20px auto;
+    padding:10px 0;
+    scroll-snap-type:x mandatory;
+    display:flex;
+    flex-direction:row;
+    gap:20px;
+}
+.carousel-item{
+    flex:0 0 auto;
+    scroll-snap-align:start;
+}
+.carousel-item img{
+    max-width:100%;
+    height:auto;
 }
 
-.carousel-item {
-    flex: 0 0 auto; /* Do not grow, do not shrink, and be automatically sized */
-    scroll-snap-align: start; /* Ensure snapping aligns to the start of the item */
+/* ───────────────────────────────
+   Table styling
+──────────────────────────────── */
+.table{
+    width:80%;
+    margin-inline:auto;
+    border-collapse:collapse;
+}
+th,td{
+    text-align:center;
+    padding:8px;
+    border:1px solid #ddd;
+}
+th{ background:#f2f2f2; }
+
+/* Centre any table placed inside a .center-table wrapper
+   (the SPY-vs-QQQ overview lives there)                    */
+.center-table table{
+    margin-inline:auto;
 }
 
-.carousel-item img {
-    max-width: 100%;
-    height: auto;
+/* ───────────────────────────────
+   Home / nav buttons
+──────────────────────────────── */
+.home-button{
+    padding:10px 20px;
+    font-size:18px;
+    background:#008CBA;
+    color:#fff;
+    border:none;
+    border-radius:5px;
+    text-decoration:none;
+    display:inline-block;
+    margin:5px;
+    cursor:pointer;
+    box-shadow:0 4px 8px rgba(0,0,0,.2);
+}
+.home-button:hover{
+    background:#003f4b;
+    box-shadow:0 6px 12px rgba(0,0,0,.3);
 }
 
-/* Specific styles for tables */
-.table {
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
-    border-collapse: collapse;
+/* ───────────────────────────────
+   Balance-sheet split layout
+──────────────────────────────── */
+.balance-sheet-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    flex-wrap:wrap;
+    margin-bottom:20px;
 }
-
-th, td {
-    text-align: center;
-    padding: 8px;
-    border: 1px solid #ddd;
+.balance-sheet-table,
+.balance-sheet-chart{
+    width:100%;
+    box-sizing:border-box;
+    padding:10px;
+    margin-bottom:10px;
 }
-
-th {
-    background-color: #f2f2f2;
-}
-
-/* Home button styling */
-.home-button {
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #008CBA;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    text-decoration: none;
-    display: inline-block;
-    margin: 5px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.home-button:hover {
-    background-color: #003f4b;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-}
-.balance-sheet-container {
-    display: flex;
-    justify-content: center; /* Center-align flex items horizontally */
-    align-items: center; /* Center-align flex items vertically */
-    text-align: center; /* Center-align the text */
-    flex-wrap: wrap; /* Allow items to wrap to next line on small screens */
-    margin-bottom: 20px;
-}
-
-.balance-sheet-table, .balance-sheet-chart {
-    width: 100%; /* Full width of their container by default */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
-    padding: 10px;
-    margin-bottom: 10px; /* Margin between table and chart */
-}
-
-/* Ensure the balance sheet items sit side by side on larger screens */
-@media (min-width: 768px) {
-    .balance-sheet-table, .balance-sheet-chart {
-        width: calc(50% - 20px);
-        margin-bottom: 0; /* No margin between items */
+@media(min-width:768px){
+    .balance-sheet-table,
+    .balance-sheet-chart{
+        width:calc(50% - 20px); /* side-by-side on larger screens */
+        margin-bottom:0;
     }
 }
+.balance-sheet-chart img{ max-width:100%; height:auto; }
 
-.balance-sheet-chart img {
-    max-width: 100%; /* Make the image responsive */
-    height: auto; /* Maintain aspect ratio */
-}
-
-.chart {
-    max-width: 100%; /* Prevent the chart from being wider than its container */
-    height: auto; /* Maintain aspect ratio */
-}
-
-/* You might need to add this style to constrain the image within its container */
-img {
-    max-width: 100%;
-    height: auto;
-
-    /* ───────── Layout wrapper ───────── */
-:root { --max-content-width: 1200px; }   /* tweak if you prefer */
-
-.container {
-  max-width: var(--max-content-width);
-  margin: 0 auto;             /* center horizontally */
-  padding: 0 1rem;            /* breathing room left/right */
-}
-
-/* Override your table width to respect the wrapper */
-.container table { width: 100%; }
-
-/* ───────── Mobile tweaks ───────── */
-@media (max-width: 768px) {
-  body  { font-size: 0.9rem; }          /* bump base font */
-  th, td{ padding: 6px; font-size: 0.85rem; }
-  .home-button { font-size: 0.8rem; padding: 6px 12px; }
-}
-}
+/* Generic chart / img safety */
+.chart{ max-width:100%; height:auto; }
+img{   max-width:100%; height:auto; }
