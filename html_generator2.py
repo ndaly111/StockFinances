@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-# html_generator2.py – retro-style edition
-# -----------------------------------------------------------
-# • Builds index.html, per-ticker pages, SPY/QQQ pages
-# • Dashboard shows Implied-Growth Pctile column
-# • Adds late-90s / early-2000s look via retro.css + marquee
+# html_generator2.py – retro fix: inject CSS into all pages & remove max-width
 # -----------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
@@ -35,32 +31,34 @@ def get_file_or_placeholder(p, ph="No data available"):
     except FileNotFoundError:
         return ph
 
+# inject retro.css + container override into any HTML string
+def inject_retro(html:str)->str:
+    if "static/css/retro.css" not in html:
+        html = html.replace("<head>", "<head>\n  <link rel=\"stylesheet\" href=\"static/css/retro.css\">", 1)
+    if ".container{max-width:none" not in html:
+        html = html.replace("</head>", "  <style>.container{max-width:none;width:100%;}</style>\n</head>", 1)
+    return html
+
 # ───────── template creation ───────────────────────────────
 def ensure_templates_exist():
-    # --- retro.css ---------------------------------------------------------
     retro_css = r"""/* === retro.css — late-90s / early-2000s vibe === */
-body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");
-color:#000080;margin:0}
+body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
 h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
 .navbar{background:#C0C0C0;border:2px outset #FFF;padding:6px;text-align:center}
-.button,.navbar a{display:inline-block;border:2px outset #C0C0C0;background:#E0E0E0;
-padding:3px 8px;font-weight:bold;margin:2px}
-table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;
-font-size:.85rem}
-th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}
-td{padding:4px;border:1px solid #8080FF}
+.button,.navbar a{display:inline-block;border:2px outset #C0C0C0;background:#E0E0E0;padding:3px 8px;font-weight:bold;margin:2px}
+table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.85rem}
+th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}td{padding:4px;border:1px solid #8080FF}
 .marquee-wrapper{background:#000080;color:#FFFF00;padding:4px;font-weight:bold}
-.blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}"""
+.blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
+.container{max-width:none;width:100%;}"""
     create_template("static/css/retro.css", retro_css)
-    # ----------------------------------------------------------------------
 
-    # --- home_template.html ----------------------------------------------
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
 
-  <!-- Retro + existing styles -->
+  <!-- retro + existing -->
   <link rel="stylesheet" href="static/css/retro.css">
   <link rel="stylesheet" href="style.css">
 
@@ -76,12 +74,11 @@ td{padding:4px;border:1px solid #8080FF}
   <script>
     $(function(){
       $('#sortable-table').DataTable({
-        pageLength:100,
-        scrollX:true,
+        pageLength:100,scrollX:true,
         createdRow:function(row){
           $('td',row).each(function(){
             if(!$(this).attr('data-order')) return;
-            var n=parseFloat($(this).data('order')); if(isNaN(n)) return;
+            var n=parseFloat($(this).data('order'));if(isNaN(n)) return;
             var col=$(this).index();
             if(col===6){$(this).addClass(n<50?'negative':'positive');}
             else if(col>=2&&col<=5){$(this).addClass(n<0?'negative':'positive');}
@@ -124,57 +121,42 @@ td{padding:4px;border:1px solid #8080FF}
   <footer><p>Nick's Financial Data Dashboard</p></footer>
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
-    # ticker_template.html & others unchanged
 # ───────────────────────────────────────────────────────────
 
-# ───────── dashboard builder (unchanged) ─────────────────
+# ───────── dashboard builder (unchanged) ──────────────────
 def generate_dashboard_table(raw_rows):
-    base_cols=["Ticker","Share Price",
-               "Nick's TTM Value","Nick's Forward Value",
-               "Finviz TTM Value","Finviz Forward Value"]
+    base_cols=["Ticker","Share Price","Nick's TTM Value","Nick's Forward Value","Finviz TTM Value","Finviz Forward Value"]
     df=pd.DataFrame(raw_rows,columns=base_cols)
-
     with sqlite3.connect(DB_PATH) as conn:
-        pct=pd.read_sql_query(
-            """SELECT Ticker,Percentile FROM Index_Growth_Pctile
-               WHERE Growth_Type='TTM'
-               AND Date=(SELECT MAX(Date) FROM Index_Growth_Pctile)""",conn)
+        pct=pd.read_sql_query("""SELECT Ticker,Percentile FROM Index_Growth_Pctile
+                                 WHERE Growth_Type='TTM'
+                                 AND Date=(SELECT MAX(Date) FROM Index_Growth_Pctile)""",conn)
     df=df.merge(pct,how="left",on="Ticker")
-
     sp_num=pd.to_numeric(df["Share Price"],errors="coerce")
     df["Share Price_num"]=sp_num
     df["Share Price_disp"]=sp_num.map(lambda x:f"{x:.2f}" if pd.notnull(x) else "–")
-
     pct_cols=base_cols[2:]
     for col in pct_cols:
         num=pd.to_numeric(df[col].astype(str).str.rstrip('%'),errors='coerce')
         df[col+"_num"]=num
         df[col+"_disp"]=num.map(lambda x:f"{x:.1f}" if pd.notnull(x) else "–")
-
     df["Implied-Growth Pctile_num"]=df["Percentile"]
-    df["Implied-Growth Pctile_disp"]=df["Percentile"].map(
-        lambda x:f"{x:.0f}" if pd.notnull(x) else "–")
+    df["Implied-Growth Pctile_disp"]=df["Percentile"].map(lambda x:f"{x:.0f}" if pd.notnull(x) else "–")
     df.drop(columns="Percentile",inplace=True)
-
-    def link(t):
-        return f'<a href="{ "spy_growth.html" if t=="SPY" else "qqq_growth.html" if t=="QQQ" else f"pages/{t}_page.html"}">{t}</a>'
+    def link(t): return f'<a href="{ "spy_growth.html" if t=="SPY" else "qqq_growth.html" if t=="QQQ" else f"pages/{t}_page.html"}">{t}</a>'
     df["Ticker"]=df["Ticker"].apply(link)
-
     df.sort_values("Nick's TTM Value_num",ascending=False,inplace=True)
 
     body=[]
     for _,r in df.iterrows():
-        cells=[
-            f"<td>{r['Ticker']}</td>",
-            f'<td data-order="{r["Share Price_num"] if pd.notnull(r["Share Price_num"]) else -999}">{r["Share Price_disp"]}</td>'
-        ]
+        cells=[f"<td>{r['Ticker']}</td>",
+               f'<td data-order="{r["Share Price_num"] if pd.notnull(r["Share Price_num"]) else -999}">{r["Share Price_disp"]}</td>']
         for col in pct_cols:
             num,disp=r[col+"_num"],r[col+"_disp"]
             cells.append(f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>')
         num,disp=r["Implied-Growth Pctile_num"],r["Implied-Growth Pctile_disp"]
         cells.append(f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>')
         body.append("<tr>"+"".join(cells)+"</tr>")
-
     headers=base_cols+["Implied-Growth Pctile"]
     thead="<thead><tr>"+"".join(f"<th>{h}</th>" for h in headers)+"</tr></thead>"
     dash_html='<table id="sortable-table" style="width:100%">'+thead+"<tbody>"+"".join(body)+"</tbody></table>"
@@ -188,7 +170,6 @@ def generate_dashboard_table(raw_rows):
 
     ensure_directory_exists("charts")
     open("charts/dashboard.html","w",encoding="utf-8").write(avg_html+dash_html)
-
     return avg_html+dash_html,{
         "Nicks_TTM_Value_Average":ttm.mean(),"Nicks_TTM_Value_Median":ttm.median(),
         "Nicks_Forward_Value_Average":fwd.mean(),"Nicks_Forward_Value_Median":fwd.median(),
@@ -197,7 +178,7 @@ def generate_dashboard_table(raw_rows):
         "Finviz_Forward_Value_Average":ffwd.mean() if not ffwd.empty else None,
         "Finviz_Forward_Value_Median":ffwd.median() if not ffwd.empty else None}
 
-# ───────── ancillary page builders (unchanged) ────────────
+# ───────── ancillary page builders (retro-injected) ───────
 def render_spy_qqq_growth_pages():
     chart_dir,out_dir="charts","."
     for key in ("spy","qqq"):
@@ -205,7 +186,7 @@ def render_spy_qqq_growth_pages():
         rendered=tpl.render(**{
             f"{key}_growth_summary":get_file_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
             f"{key}_pe_summary":get_file_or_placeholder(f"{chart_dir}/{key}_pe_summary.html")})
-        open(f"{out_dir}/{key}_growth.html","w",encoding="utf-8").write(rendered)
+        open(f"{out_dir}/{key}_growth.html","w",encoding="utf-8").write(inject_retro(rendered))
 
 def prepare_and_generate_ticker_pages(tickers,charts_dir="charts"):
     ensure_directory_exists("pages")
@@ -236,21 +217,20 @@ def prepare_and_generate_ticker_pages(tickers,charts_dir="charts"):
               "eps_dividend_chart_path":f"{charts_dir}/{t}_eps_dividend_forecast.png",
               "implied_growth_chart_path":f"{charts_dir}/{t}_implied_growth_plot.png",
               "implied_growth_table_html":get_file_or_placeholder(f"{charts_dir}/{t}_implied_growth_summary.html","No implied growth data available.")}
-            open(f"pages/{t}_page.html","w",encoding="utf-8")\
-                .write(env.get_template("ticker_template.html").render(ticker_data=d))
+            rendered=env.get_template("ticker_template.html").render(ticker_data=d)
+            open(f"pages/{t}_page.html","w",encoding="utf-8").write(inject_retro(rendered))
 
 def create_home_page(tickers,dashboard_html,avg_vals,spy_qqq_html,
                      earnings_past="",earnings_upcoming=""):
     tpl=env.get_template("home_template.html")
-    open("index.html","w",encoding="utf-8").write(
-        tpl.render(tickers=tickers,dashboard_table=dashboard_html,
-                   dashboard_data=avg_vals,spy_qqq_growth=spy_qqq_html,
-                   earnings_past=earnings_past,earnings_upcoming=earnings_upcoming))
+    rendered=tpl.render(tickers=tickers,dashboard_table=dashboard_html,
+                        dashboard_data=avg_vals,spy_qqq_growth=spy_qqq_html,
+                        earnings_past=earnings_past,earnings_upcoming=earnings_upcoming)
+    open("index.html","w",encoding="utf-8").write(rendered)
 
 # ───────── main wrapper ───────────────────────────────────
 def html_generator2(tickers,financial_data,full_dashboard_html,
                     avg_values,spy_qqq_growth_html=""):
-
     ensure_templates_exist()
     create_home_page(
         tickers,full_dashboard_html,avg_values,spy_qqq_growth_html,
@@ -259,6 +239,5 @@ def html_generator2(tickers,financial_data,full_dashboard_html,
     prepare_and_generate_ticker_pages(tickers)
     render_spy_qqq_growth_pages()
 
-# -----------------------------------------------------------
 if __name__ == "__main__":
     print("html_generator2 is meant to be called from main_remote.py")
