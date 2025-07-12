@@ -1,9 +1,3 @@
-# index_growth_charts.py
-# --------------------------------------------------------------------
-# Creates / refreshes implied-growth charts + summary tables for
-# SPY and QQQ from the Index_Growth_History table in Stock Data.db
-# --------------------------------------------------------------------
-
 import os, sqlite3, pandas as pd, matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
@@ -76,7 +70,7 @@ def get_percentile(value, series):
 
 def _get_forward_eps_info(ticker):
     with sqlite3.connect(DB_PATH) as conn:
-        df = pd.read_sql_query("SELECT ticker, forward_eps FROM implied_growth", conn)
+        df = pd.read_sql_query("SELECT ticker, forward_eps FROM valuation_summary", conn)
 
     df["ticker"] = df["ticker"].str.upper()
     df = df[df["forward_eps"].notnull()]
@@ -110,7 +104,6 @@ def _build_summary_html(summary, tk):
                 "Value"      : f"{val:.2%}"
             })
 
-    # Add Forward EPS + Percentile
     forward_eps, forward_eps_pct = _get_forward_eps_info(tk)
     if forward_eps is not None:
         rows.append({
