@@ -8,7 +8,6 @@ INDEXES     = ["SPY", "QQQ"]
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# ─── Helpers ─────────────────────────────────────────────────────────
 def _fetch_history(ticker):
     with sqlite3.connect(DB_PATH) as conn:
         df = pd.read_sql_query(
@@ -68,24 +67,51 @@ def get_percentile(value, series):
     count = sum(1 for v in series if v <= value)
     return round(100 * count / len(series), 2)
 
-def _get_forward_eps_info(ticker):
+def _get_forward_eps_from_pe_history(ticker):
     with sqlite3.connect(DB_PATH) as conn:
-        df = pd.read_sql_query("SELECT ticker, forward_eps FROM valuation_summary", conn)
+        # Get latest market price
+        price_df = pd.read_sql_query("SELECT last_price FROM MarketData WHERE ticker = ?", conn, params=(ticker,))
+        if price_df.empty:
+            return None, None
+        price = price_df.iloc[0]["last_price"]
 
-    df["ticker"] = df["ticker"].str.upper()
-    df = df[df["forward_eps"].notnull()]
+        # Get latest PE values for all tickers
+        all_pe = pd.read_sql_query("""
+            SELECT Ticker, MAX(Date) as MaxDate
+            FROM Index_PE_History
+            WHERE PE_Type = 'Forward'
+            GROUP BY Ticker
+        """, conn)
 
-    if df.empty:
-        return None, None
+        pe_df = pd.read_sql_query("""
+            SELECT Ticker, Date, PE_Ratio
+            FROM Index_PE_History
+            WHERE PE_Type = 'Forward'
+        """, conn)
 
-    row = df[df["ticker"] == ticker.upper()]
-    if row.empty:
-        return None, None
+        # Get latest per ticker
+        latest_pe = pd.merge(all_pe, pe_df, left_on=["Ticker", "MaxDate"], right_on=["Ticker", "Date"])
+        latest_pe = latest_pe[["Ticker", "PE_Ratio"]].dropna()
+        latest_pe["Ticker"] = latest_pe["Ticker"].str.upper()
+        latest_pe = latest_pe[latest_pe["PE_Ratio"] > 0]
 
-    value = row.iloc[0]["forward_eps"]
-    percentile = get_percentile(value, df["forward_eps"].tolist())
+        # Calculate Forward EPS = Price / Forward PE
+        latest_pe["Forward_EPS"] = latest_pe["Ticker"].map(
+            lambda tk: _get_price(conn, tk)
+        ) / latest_pe["PE_Ratio"]
 
-    return value, percentile
+        if ticker.upper() not in latest_pe["Ticker"].values:
+            return None, None
+
+        forward_eps = price / latest_pe[latest_pe["Ticker"] == ticker.upper()]["PE_Ratio"].values[0]
+        percentile = get_percentile(forward_eps, latest_pe["Forward_EPS"].tolist())
+        return forward_eps, percentile
+
+def _get_price(conn, ticker):
+    result = pd.read_sql_query("SELECT last_price FROM MarketData WHERE ticker = ?", conn, params=(ticker,))
+    if result.empty:
+        return None
+    return result.iloc[0]["last_price"]
 
 def _build_summary_html(summary, tk):
     out_html = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_summary.html")
@@ -104,40 +130,4 @@ def _build_summary_html(summary, tk):
                 "Value"      : f"{val:.2%}"
             })
 
-    forward_eps, forward_eps_pct = _get_forward_eps_info(tk)
-    if forward_eps is not None:
-        rows.append({
-            "Ticker": link,
-            "Growth Type": "—",
-            "Statistic": "Forward EPS",
-            "Value": f"{forward_eps:.2f}"
-        })
-        rows.append({
-            "Ticker": link,
-            "Growth Type": "—",
-            "Statistic": "Forward EPS Percentile",
-            "Value": f"{forward_eps_pct:.2f}"
-        })
-
-    pd.DataFrame(rows).to_html(out_html, index=False, escape=False)
-
-# ─── Public mini-main ────────────────────────────────────────────────
-def render_index_growth_charts():
-    """
-    Generates or refreshes:
-        charts/spy_growth_chart.png
-        charts/spy_growth_summary.html
-        charts/qqq_growth_chart.png
-        charts/qqq_growth_summary.html
-    """
-    print("[index_growth_charts] Building SPY & QQQ growth assets …")
-    for tk in INDEXES:
-        df       = _fetch_history(tk)
-        summary  = _compute_summary(df) if df is not None else {}
-        _build_summary_html(summary, tk)
-        _build_chart(df, summary, tk)
-    print("[index_growth_charts] Done.")
-
-# ─── Stand-alone entry point ─────────────────────────────────────────
-if __name__ == "__main__":
-    render_index_growth_charts()
+    forward_eps, forward_eps_pct = _get_forward_eps
