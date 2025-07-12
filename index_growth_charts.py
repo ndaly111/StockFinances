@@ -1,32 +1,47 @@
 #!/usr/bin/env python3
-# index_growth_charts.py  –  FULL FILE  (v2025-07-13 g)
+# index_growth_charts.py  –  FULL FILE  (v2025-07-13 h)
 # -----------------------------------------------------------
-# • Generates Implied-Growth & P/E charts + matching summary
-#   tables.  Styling now defers to Pandas’ default so the
-#   P/E table looks exactly like the original top table.
-# • Robust P/E column resolver, numeric coercion, empty-series
-#   guards, CI-safe matplotlib backend, mini-main alias.
+# • Builds Implied-Growth & P/E charts
+# • Creates ONE summary table with BOTH metrics, styled
+#   to match the example screenshot (blue outer border)
 # -----------------------------------------------------------
 
 import os, sqlite3, pandas as pd, matplotlib
-matplotlib.use("Agg")                   # headless / CI backend
+matplotlib.use("Agg")                       # headless-safe backend
 import matplotlib.pyplot as plt
 
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# ───────── helpers ─────────────────────────────────────────
-def _columns(conn):             # existing cols in Index_Growth_History
-    return [r[1] for r in conn.execute("PRAGMA table_info(Index_Growth_History)")]
+# ───────── shared CSS (matches screenshot) ─────────────────
+SUMMARY_CSS = """
+<style>
+.summary-table{
+  width:100%;border-collapse:collapse;
+  font-family:Verdana,Arial,sans-serif;font-size:12px;
+  border:3px solid #003366}
+.summary-table th{
+  background:#f2f2f2;padding:4px 6px;border:1px solid #003366;
+  text-align:center}
+.summary-table td{
+  padding:4px 6px;border:1px solid #003366;text-align:center}
+</style>
+"""
 
-def _pe_col(conn):              # robust P/E column resolver
+# ───────── helpers ─────────────────────────────────────────
+def _columns(conn):
+    return [r[1] for r in conn.execute(
+        "PRAGMA table_info(Index_Growth_History)")]
+
+def _pe_col(conn):
     cols, low = _columns(conn), {}
     for c in cols: low[c.lower()] = c
     pref = ["PE_Ratio","PE","P_E","PERatio","PE_ratio",
-            "TTM_PE","PE_TTM","TTM_PE_Ratio","PriceEarnings","Price_Earnings"]
-    for p in pref:               # exact/near-exact first
+            "TTM_PE","PE_TTM","TTM_PE_Ratio",
+            "PriceEarnings","Price_Earnings"]
+    for p in pref:
         if p.lower() in low: return low[p.lower()]
-    for c in cols:               # fuzzy “pe”
+    for c in cols:
         cln = c.replace("_","").lower()
         if "pe" in cln and "pct" not in cln and "percent" not in cln:
             return c
@@ -34,27 +49,23 @@ def _pe_col(conn):              # robust P/E column resolver
 
 def _series(conn, col, tk="SPY"):
     df = pd.read_sql(
-        f"""SELECT Date,{col}
-            FROM   Index_Growth_History
-            WHERE  Ticker=? AND Growth_Type='TTM'
-            ORDER  BY Date""", conn, params=(tk,))
+        f"""SELECT Date,{col} FROM Index_Growth_History
+            WHERE Ticker=? AND Growth_Type='TTM'
+            ORDER BY Date""", conn, params=(tk,))
     df["Date"] = pd.to_datetime(df["Date"])
     return pd.to_numeric(df.set_index("Date")[col], errors="coerce").dropna()
 
-def _pctile(s): return "—" if s.empty else round(s.rank(pct=True).iloc[-1]*100, 2)
+def _pctile(s):
+    return "—" if s.empty else round(s.rank(pct=True).iloc[-1]*100, 2)
 
 def _row(label, s):
     if s.empty:
-        return {"Metric": label, "Latest": "N/A", "Avg": "N/A", "Med": "N/A",
-                "Min": "N/A", "Max": "N/A", "%ctile": "—"}
+        return dict(Metric=label, Latest="N/A", Avg="N/A", Med="N/A",
+                    Min="N/A", Max="N/A", **{"%ctile":"—"})
     r = lambda f: round(f(s), 2)
-    return {"Metric": label,
-            "Latest": r(lambda x: x.iloc[-1]),
-            "Avg":    r(pd.Series.mean),
-            "Med":    r(pd.Series.median),
-            "Min":    r(pd.Series.min),
-            "Max":    r(pd.Series.max),
-            "%ctile": _pctile(s)}
+    return dict(Metric=label, Latest=r(lambda x:x.iloc[-1]), Avg=r(pd.Series.mean),
+                Med=r(pd.Series.median), Min=r(pd.Series.min),
+                Max=r(pd.Series.max), **{"%ctile":_pctile(s)})
 
 def _chart(s, title, ylab, fname):
     plt.figure()
@@ -64,7 +75,6 @@ def _chart(s, title, ylab, fname):
     path = os.path.join(OUT_DIR, fname)
     plt.savefig(path); plt.close(); return path
 
-# simple green/red text colour for percentile column
 def _color_pct(val):
     try:
         v = float(val)
@@ -73,20 +83,34 @@ def _color_pct(val):
     except: pass
     return ""
 
-def _html(df, fname, pct_cols=None):
-    pct_cols = pct_cols or []
-    fmt = {c: "{:,.2%}".format for c in pct_cols}
+def _write_summary(df, tk):
+    fname = f"{tk}_summary.html"                 # main filename
+    path  = os.path.join(OUT_DIR, fname)
 
     html = (df.style
-              .format(fmt)
+              .format({"Latest":"{:.2f}".format,
+                       "Avg":"{:.2f}".format,
+                       "Med":"{:.2f}".format,
+                       "Min":"{:.2f}".format,
+                       "Max":"{:.2f}".format,
+                       "%ctile":"{:.2f}".format})
               .hide(axis="index")
-              .map(_color_pct, subset="%ctile")   # Styler.map → no warning
-              .to_html())                         # ← default Pandas styling
-    path = os.path.join(OUT_DIR, fname)
-    open(path, "w", encoding="utf-8").write(html)
+              .map(_color_pct, subset="%ctile")
+              .set_table_attributes('class="summary-table"')
+              .to_html())
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(SUMMARY_CSS + html)
+
+    # legacy filenames → same content
+    for legacy in [f"{tk}_implied_growth_summary.html",
+                   f"{tk}_pe_ratio_summary.html"]:
+        open(os.path.join(OUT_DIR, legacy), "w",
+             encoding="utf-8").write(SUMMARY_CSS + html)
+
     return path
 
-# ───────── callable entry-point / mini-main ─────────────────
+# ───────── callable entry-point / mini-main ────────────────
 def render_index_growth_charts(tk="SPY"):
     with sqlite3.connect(DB_PATH) as conn:
         ig_s = _series(conn, "Implied_Growth", tk)
@@ -97,20 +121,15 @@ def render_index_growth_charts(tk="SPY"):
     pe_png = _chart(pe_s, f"{tk} P/E Ratio", "P/E",
                     f"{tk}_pe_ratio.png")
 
-    ig_html = _html(
-        pd.DataFrame([_row("Implied Growth (TTM)", ig_s)]),
-        f"{tk}_implied_growth_summary.html",
-        pct_cols=["Latest", "Avg", "Med", "Min", "Max"]
-    )
-    pe_html = _html(
-        pd.DataFrame([_row("P/E Ratio (TTM)", pe_s)]),
-        f"{tk}_pe_ratio_summary.html"
-    )
+    summary_html = _write_summary(
+        pd.DataFrame([_row("Implied Growth (TTM)", ig_s),
+                      _row("PE Ratio (TTM)",       pe_s)]),
+        tk)
 
     return {"implied_chart": ig_png, "pe_chart": pe_png,
-            "implied_table": ig_html, "pe_table": pe_html}
+            "summary_table": summary_html}
 
-# legacy one-liner alias
+# legacy alias
 mini_main = render_index_growth_charts
 
 if __name__ == "__main__":
