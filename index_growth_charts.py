@@ -1,3 +1,6 @@
+# index_growth_charts.py
+# Builds SPY & QQQ implied growth charts and summary tables
+
 import os, sqlite3, pandas as pd, matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
@@ -8,6 +11,7 @@ INDEXES     = ["SPY", "QQQ"]
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# ─── Helpers ─────────────────────────────────────────────────────────
 def _fetch_history(ticker):
     with sqlite3.connect(DB_PATH) as conn:
         df = pd.read_sql_query(
@@ -61,57 +65,47 @@ def _build_chart(df, summary, tk):
     plt.close()
 
 def get_percentile(value, series):
-    series = [v for v in series if v is not None]
+    series = [v for v in series if v is not None and v > 0]
     if not series:
         return None
     count = sum(1 for v in series if v <= value)
     return round(100 * count / len(series), 2)
 
-def _get_forward_eps_from_pe_history(ticker):
+def _get_price(conn, ticker):
+    df = pd.read_sql_query("SELECT last_price FROM MarketData WHERE ticker = ?", conn, params=(ticker,))
+    if df.empty:
+        return None
+    return df.iloc[0]["last_price"]
+
+def _get_forward_eps_info(ticker):
     with sqlite3.connect(DB_PATH) as conn:
-        # Get latest market price
-        price_df = pd.read_sql_query("SELECT last_price FROM MarketData WHERE ticker = ?", conn, params=(ticker,))
-        if price_df.empty:
+        price = _get_price(conn, ticker)
+        if price is None:
             return None, None
-        price = price_df.iloc[0]["last_price"]
 
-        # Get latest PE values for all tickers
-        all_pe = pd.read_sql_query("""
-            SELECT Ticker, MAX(Date) as MaxDate
-            FROM Index_PE_History
-            WHERE PE_Type = 'Forward'
-            GROUP BY Ticker
-        """, conn)
-
-        pe_df = pd.read_sql_query("""
+        pe_all = pd.read_sql_query("""
             SELECT Ticker, Date, PE_Ratio
             FROM Index_PE_History
             WHERE PE_Type = 'Forward'
         """, conn)
 
-        # Get latest per ticker
-        latest_pe = pd.merge(all_pe, pe_df, left_on=["Ticker", "MaxDate"], right_on=["Ticker", "Date"])
-        latest_pe = latest_pe[["Ticker", "PE_Ratio"]].dropna()
-        latest_pe["Ticker"] = latest_pe["Ticker"].str.upper()
+        latest_pe = (
+            pe_all.sort_values(["Ticker", "Date"])
+            .dropna()
+            .drop_duplicates(subset=["Ticker"], keep="last")
+        )
+
         latest_pe = latest_pe[latest_pe["PE_Ratio"] > 0]
+        latest_pe["Forward_EPS"] = latest_pe["Ticker"].map(lambda t: _get_price(conn, t)) / latest_pe["PE_Ratio"]
 
-        # Calculate Forward EPS = Price / Forward PE
-        latest_pe["Forward_EPS"] = latest_pe["Ticker"].map(
-            lambda tk: _get_price(conn, tk)
-        ) / latest_pe["PE_Ratio"]
-
-        if ticker.upper() not in latest_pe["Ticker"].values:
+        this_row = latest_pe[latest_pe["Ticker"].str.upper() == ticker.upper()]
+        if this_row.empty:
             return None, None
 
-        forward_eps = price / latest_pe[latest_pe["Ticker"] == ticker.upper()]["PE_Ratio"].values[0]
-        percentile = get_percentile(forward_eps, latest_pe["Forward_EPS"].tolist())
-        return forward_eps, percentile
+        this_eps = price / this_row["PE_Ratio"].values[0]
+        percentile = get_percentile(this_eps, latest_pe["Forward_EPS"].tolist())
 
-def _get_price(conn, ticker):
-    result = pd.read_sql_query("SELECT last_price FROM MarketData WHERE ticker = ?", conn, params=(ticker,))
-    if result.empty:
-        return None
-    return result.iloc[0]["last_price"]
+        return this_eps, percentile
 
 def _build_summary_html(summary, tk):
     out_html = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_summary.html")
@@ -130,4 +124,33 @@ def _build_summary_html(summary, tk):
                 "Value"      : f"{val:.2%}"
             })
 
-    forward_eps, forward_eps_pct = _get_forward_eps
+    forward_eps, forward_eps_pct = _get_forward_eps_info(tk)
+    if forward_eps is not None:
+        rows.append({
+            "Ticker": link,
+            "Growth Type": "—",
+            "Statistic": "Forward EPS (calculated)",
+            "Value": f"{forward_eps:.2f}"
+        })
+        rows.append({
+            "Ticker": link,
+            "Growth Type": "—",
+            "Statistic": "Forward EPS Percentile",
+            "Value": f"{forward_eps_pct:.2f}"
+        })
+
+    pd.DataFrame(rows).to_html(out_html, index=False, escape=False)
+
+# ─── PUBLIC FUNCTION FOR MAIN SCRIPT ─────────────────────────────────
+def render_index_growth_charts():
+    print("[index_growth_charts] Building SPY & QQQ growth assets …")
+    for tk in INDEXES:
+        df       = _fetch_history(tk)
+        summary  = _compute_summary(df) if df is not None else {}
+        _build_summary_html(summary, tk)
+        _build_chart(df, summary, tk)
+    print("[index_growth_charts] Done.")
+
+# ─── MAIN ENTRY ──────────────────────────────────────────────────────
+if __name__ == "__main__":
+    render_index_growth_charts()
