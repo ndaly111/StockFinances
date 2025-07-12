@@ -6,6 +6,7 @@
 
 import os, sqlite3, pandas as pd, matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
+from scipy.stats import percentileofscore
 
 DB_PATH     = "Stock Data.db"
 TABLE       = "Index_Growth_History"
@@ -41,7 +42,6 @@ def _compute_summary(df):
 
 def _build_chart(df, summary, tk):
     out_png = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_chart.png")
-    # Guard: if df is None or empty, write a 1×1 transparent PNG placeholder
     if df is None or df.empty:
         plt.figure(figsize=(0.01,0.01))
         plt.axis("off")
@@ -68,9 +68,28 @@ def _build_chart(df, summary, tk):
     plt.savefig(out_png)
     plt.close()
 
+def _get_forward_eps_info(ticker):
+    with sqlite3.connect(DB_PATH) as conn:
+        df = pd.read_sql_query("SELECT ticker, forward_eps FROM implied_growth", conn)
+
+    df["ticker"] = df["ticker"].str.upper()
+    df = df[df["forward_eps"].notnull()]
+
+    if df.empty:
+        return None, None
+
+    row = df[df["ticker"] == ticker.upper()]
+    if row.empty:
+        return None, None
+
+    value = row.iloc[0]["forward_eps"]
+    percentile = round(percentileofscore(df["forward_eps"], value), 2)
+
+    return value, percentile
+
 def _build_summary_html(summary, tk):
     out_html = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_summary.html")
-    if not summary:                 # no data yet
+    if not summary:
         open(out_html, "w", encoding="utf-8").write("<p>No implied-growth data yet.</p>")
         return
 
@@ -84,6 +103,23 @@ def _build_summary_html(summary, tk):
                 "Statistic"  : stat,
                 "Value"      : f"{val:.2%}"
             })
+
+    # Add Forward EPS + Percentile
+    forward_eps, forward_eps_pct = _get_forward_eps_info(tk)
+    if forward_eps is not None:
+        rows.append({
+            "Ticker": link,
+            "Growth Type": "—",
+            "Statistic": "Forward EPS",
+            "Value": f"{forward_eps:.2f}"
+        })
+        rows.append({
+            "Ticker": link,
+            "Growth Type": "—",
+            "Statistic": "Forward EPS Percentile",
+            "Value": f"{forward_eps_pct:.2f}"
+        })
+
     pd.DataFrame(rows).to_html(out_html, index=False, escape=False)
 
 # ─── Public mini-main ────────────────────────────────────────────────
