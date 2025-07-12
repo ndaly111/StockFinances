@@ -1,37 +1,33 @@
 #!/usr/bin/env python3
-# index_growth_charts.py  –  FULL FILE  (v2025-07-13 i)
+# index_growth_charts.py  –  FULL FILE  (v2025-07-13 j)
 # -----------------------------------------------------------
 # • Builds Implied-Growth & P/E charts
-# • Writes ONE summary table styled exactly like the
-#   reference screenshot (blue outer frame, grey header, grid)
+# • Writes ONE summary table with BOTH metrics
+#   formatted exactly like reference screenshot
 # -----------------------------------------------------------
 
 import os, sqlite3, pandas as pd, matplotlib
-matplotlib.use("Agg")                  # CI / headless backend
+matplotlib.use("Agg")                         # headless / CI backend
 import matplotlib.pyplot as plt
 
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# ───────── table CSS (pixel-perfect match) ─────────────────
+# ───────── table CSS (matches screenshot) ─────────────────
 SUMMARY_CSS = """
 <style>
 .summary-table{
-  width:100%;
-  border-collapse:collapse;
-  font-family:Verdana,Arial,sans-serif;
-  font-size:12px;
-  border:3px solid #003366;               /* blue outer frame */
+  width:100%;border-collapse:collapse;
+  font-family:Verdana,Arial,sans-serif;font-size:12px;
+  border:3px solid #003366;                 /* blue outer frame */
 }
 .summary-table th{
-  background:#f2f2f2;                     /* light-grey header */
-  padding:4px 6px;
-  border:1px solid #B0B0B0;               /* mid-grey grid */
+  background:#f2f2f2;                       /* light-grey header */
+  padding:4px 6px;border:1px solid #B0B0B0; /* mid-grey grid */
   text-align:center;
 }
 .summary-table td{
-  padding:4px 6px;
-  border:1px solid #B0B0B0;               /* mid-grey grid */
+  padding:4px 6px;border:1px solid #B0B0B0; /* mid-grey grid */
   text-align:center;
 }
 </style>
@@ -39,8 +35,7 @@ SUMMARY_CSS = """
 
 # ───────── helpers ─────────────────────────────────────────
 def _columns(conn):
-    return [r[1] for r in conn.execute(
-            "PRAGMA table_info(Index_Growth_History)")]
+    return [r[1] for r in conn.execute("PRAGMA table_info(Index_Growth_History)")]
 
 def _pe_col(conn):
     cols, low = _columns(conn), {}
@@ -50,8 +45,9 @@ def _pe_col(conn):
             "PriceEarnings","Price_Earnings"]
     for p in pref:
         if p.lower() in low: return low[p.lower()]
-    for c in cols:                                  # fuzzy fallback
-        if "pe" in c.lower().replace("_","") and "pct" not in c.lower():
+    for c in cols:
+        cln = c.replace("_","").lower()
+        if "pe" in cln and "pct" not in cln and "percent" not in cln:
             return c
     raise RuntimeError("No P/E column in Index_Growth_History")
 
@@ -60,7 +56,8 @@ def _series(conn, col, tk="SPY"):
         f"""SELECT Date,{col}
               FROM Index_Growth_History
              WHERE Ticker=? AND Growth_Type='TTM'
-          ORDER BY Date""", conn, params=(tk,))
+          ORDER BY Date""",
+        conn, params=(tk,))
     df["Date"] = pd.to_datetime(df["Date"])
     return pd.to_numeric(df.set_index("Date")[col], errors="coerce").dropna()
 
@@ -71,9 +68,13 @@ def _row(label, s):
         return {"Metric":label,"Latest":"N/A","Avg":"N/A","Med":"N/A",
                 "Min":"N/A","Max":"N/A","%ctile":"—"}
     r = lambda f: round(f(s),2)
-    return {"Metric":label,"Latest":r(lambda x:x.iloc[-1]),"Avg":r(pd.Series.mean),
-            "Med":r(pd.Series.median),"Min":r(pd.Series.min),
-            "Max":r(pd.Series.max),"%ctile":_pctile(s)}
+    return {"Metric":label,
+            "Latest":r(lambda x:x.iloc[-1]),
+            "Avg":   r(pd.Series.mean),
+            "Med":   r(pd.Series.median),
+            "Min":   r(pd.Series.min),
+            "Max":   r(pd.Series.max),
+            "%ctile":_pctile(s)}
 
 def _chart(s, title, ylab, fname):
     plt.figure()
@@ -83,39 +84,39 @@ def _chart(s, title, ylab, fname):
     path = os.path.join(OUT_DIR, fname)
     plt.savefig(path); plt.close(); return path
 
-def _pct_color(val):        # green ≤30, red ≥70
+def _pct_color(val):          # green ≤30, red ≥70
     try:
-        v = float(val)
-        if v <= 30: return "color:#008800;font-weight:bold"
-        if v >= 70: return "color:#CC0000;font-weight:bold"
+        v=float(val)
+        if v<=30: return "color:#008800;font-weight:bold"
+        if v>=70: return "color:#CC0000;font-weight:bold"
     except: pass
     return ""
 
+# ── safe formatter: only format floats; leave strings (e.g., "N/A") intact
+_fmt = lambda v: "" if pd.isna(v) else (f"{v:.2f}" if isinstance(v,(int,float)) else v)
+
 def _write_summary(df, tk):
-    html = (
+    styled = (
         df.style
-          .format({"Latest":"{:.2f}".format,"Avg":"{:.2f}".format,
-                   "Med":"{:.2f}".format,"Min":"{:.2f}".format,
-                   "Max":"{:.2f}".format,"%ctile":"{:.2f}".format})
+          .format({c:_fmt for c in ["Latest","Avg","Med","Min","Max","%ctile"]})
           .hide(axis="index")
           .map(_pct_color, subset="%ctile")
           .set_table_attributes('class="summary-table"')
           .to_html()
     )
-    final_html = SUMMARY_CSS + html
-    # main + legacy filenames (so templates don’t break)
+    html = SUMMARY_CSS + styled
     for name in [f"{tk}_summary.html",
                  f"{tk}_implied_growth_summary.html",
                  f"{tk}_pe_ratio_summary.html"]:
         with open(os.path.join(OUT_DIR, name), "w", encoding="utf-8") as f:
-            f.write(final_html)
+            f.write(html)
     return os.path.join(OUT_DIR, f"{tk}_summary.html")
 
-# ───────── callable entry-point / mini-main ────────────────
+# ───────── callable entry-point / mini-main ───────────────
 def render_index_growth_charts(tk="SPY"):
     with sqlite3.connect(DB_PATH) as conn:
         ig_s = _series(conn, "Implied_Growth", tk)
-        pe_s = _series(conn, _pe_col(conn), tk)
+        pe_s = _series(conn, _pe_col(conn),   tk)
 
     ig_png = _chart(ig_s, f"{tk} Implied Growth (TTM)",
                     "Implied Growth Rate", f"{tk}_implied_growth.png")
