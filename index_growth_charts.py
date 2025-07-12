@@ -1,8 +1,5 @@
 # index_growth_charts.py
-# --------------------------------------------------------------------
-# Creates / refreshes implied-growth charts + summary tables for
-# SPY and QQQ from the Index_Growth_History table in Stock Data.db
-# --------------------------------------------------------------------
+# Builds SPY & QQQ implied growth charts and summary tables
 
 import os, sqlite3, pandas as pd, matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
@@ -41,7 +38,6 @@ def _compute_summary(df):
 
 def _build_chart(df, summary, tk):
     out_png = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_chart.png")
-    # Guard: if df is None or empty, write a 1×1 transparent PNG placeholder
     if df is None or df.empty:
         plt.figure(figsize=(0.01,0.01))
         plt.axis("off")
@@ -68,9 +64,52 @@ def _build_chart(df, summary, tk):
     plt.savefig(out_png)
     plt.close()
 
+def get_percentile(value, series):
+    series = [v for v in series if v is not None and v > 0]
+    if not series:
+        return None
+    count = sum(1 for v in series if v <= value)
+    return round(100 * count / len(series), 2)
+
+def _get_price(conn, ticker):
+    df = pd.read_sql_query("SELECT last_price FROM MarketData WHERE ticker = ?", conn, params=(ticker,))
+    if df.empty:
+        return None
+    return df.iloc[0]["last_price"]
+
+def _get_forward_eps_info(ticker):
+    with sqlite3.connect(DB_PATH) as conn:
+        price = _get_price(conn, ticker)
+        if price is None:
+            return None, None
+
+        pe_all = pd.read_sql_query("""
+            SELECT Ticker, Date, PE_Ratio
+            FROM Index_PE_History
+            WHERE PE_Type = 'Forward'
+        """, conn)
+
+        latest_pe = (
+            pe_all.sort_values(["Ticker", "Date"])
+            .dropna()
+            .drop_duplicates(subset=["Ticker"], keep="last")
+        )
+
+        latest_pe = latest_pe[latest_pe["PE_Ratio"] > 0]
+        latest_pe["Forward_EPS"] = latest_pe["Ticker"].map(lambda t: _get_price(conn, t)) / latest_pe["PE_Ratio"]
+
+        this_row = latest_pe[latest_pe["Ticker"].str.upper() == ticker.upper()]
+        if this_row.empty:
+            return None, None
+
+        this_eps = price / this_row["PE_Ratio"].values[0]
+        percentile = get_percentile(this_eps, latest_pe["Forward_EPS"].tolist())
+
+        return this_eps, percentile
+
 def _build_summary_html(summary, tk):
     out_html = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_summary.html")
-    if not summary:                 # no data yet
+    if not summary:
         open(out_html, "w", encoding="utf-8").write("<p>No implied-growth data yet.</p>")
         return
 
@@ -84,17 +123,26 @@ def _build_summary_html(summary, tk):
                 "Statistic"  : stat,
                 "Value"      : f"{val:.2%}"
             })
+
+    forward_eps, forward_eps_pct = _get_forward_eps_info(tk)
+    if forward_eps is not None:
+        rows.append({
+            "Ticker": link,
+            "Growth Type": "—",
+            "Statistic": "Forward EPS (calculated)",
+            "Value": f"{forward_eps:.2f}"
+        })
+        rows.append({
+            "Ticker": link,
+            "Growth Type": "—",
+            "Statistic": "Forward EPS Percentile",
+            "Value": f"{forward_eps_pct:.2f}"
+        })
+
     pd.DataFrame(rows).to_html(out_html, index=False, escape=False)
 
-# ─── Public mini-main ────────────────────────────────────────────────
+# ─── PUBLIC FUNCTION FOR MAIN SCRIPT ─────────────────────────────────
 def render_index_growth_charts():
-    """
-    Generates or refreshes:
-        charts/spy_growth_chart.png
-        charts/spy_growth_summary.html
-        charts/qqq_growth_chart.png
-        charts/qqq_growth_summary.html
-    """
     print("[index_growth_charts] Building SPY & QQQ growth assets …")
     for tk in INDEXES:
         df       = _fetch_history(tk)
@@ -103,6 +151,6 @@ def render_index_growth_charts():
         _build_chart(df, summary, tk)
     print("[index_growth_charts] Done.")
 
-# ─── Stand-alone entry point ─────────────────────────────────────────
+# ─── MAIN ENTRY ──────────────────────────────────────────────────────
 if __name__ == "__main__":
     render_index_growth_charts()
