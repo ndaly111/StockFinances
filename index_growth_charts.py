@@ -6,7 +6,6 @@
 
 import os, sqlite3, pandas as pd, matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
-from scipy.stats import percentileofscore
 
 DB_PATH     = "Stock Data.db"
 TABLE       = "Index_Growth_History"
@@ -68,6 +67,13 @@ def _build_chart(df, summary, tk):
     plt.savefig(out_png)
     plt.close()
 
+def get_percentile(value, series):
+    series = [v for v in series if v is not None]
+    if not series:
+        return None
+    count = sum(1 for v in series if v <= value)
+    return round(100 * count / len(series), 2)
+
 def _get_forward_eps_info(ticker):
     with sqlite3.connect(DB_PATH) as conn:
         df = pd.read_sql_query("SELECT ticker, forward_eps FROM implied_growth", conn)
@@ -83,7 +89,7 @@ def _get_forward_eps_info(ticker):
         return None, None
 
     value = row.iloc[0]["forward_eps"]
-    percentile = round(percentileofscore(df["forward_eps"], value), 2)
+    percentile = get_percentile(value, df["forward_eps"].tolist())
 
     return value, percentile
 
