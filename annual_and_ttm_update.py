@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-# ─────────────────────────────────────────────────────────────
-#  annual_and_ttm_update.py   —  2025-07-11 single-row TTM patch
-#     • TTM_Data uses Symbol as the sole PRIMARY KEY
-#     • On first run it drops the old composite-PK table if present
-#     • Subsequent runs just upsert the one latest TTM row
-# ─────────────────────────────────────────────────────────────
-import logging
-import os
-import sqlite3
+# annual_and_ttm_update.py  — 2025-07-12 “single-row TTM” (failsafe edition)
+# ---------------------------------------------------------------------------
+#  • Ensures exactly ONE TTM row per Symbol
+#  • If an old composite-PK table exists it is renamed, not dropped
+#  • TTM row is written with INSERT OR REPLACE (robust to any PK/UNIQUE flags)
+# ---------------------------------------------------------------------------
+import logging, os, sqlite3, time
 from datetime import datetime
 from functools import lru_cache
 
@@ -19,16 +17,32 @@ DB_PATH   = "Stock Data.db"
 CHART_DIR = "charts"
 os.makedirs(CHART_DIR, exist_ok=True)
 
-# ───────────────────────── DB helpers ─────────────────────────
+# ─────────────────────────── DB helpers ────────────────────────────
+def _rename_legacy_ttm(cur: sqlite3.Cursor):
+    """Detect legacy (composite-PK) TTM_Data and rename it."""
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='TTM_Data'")
+    if not cur.fetchone():
+        return  # no table → nothing to rename
+
+    cur.execute("PRAGMA table_info(TTM_Data)")
+    pk_cols = [row for row in cur.fetchall() if row[5] > 0]  # col[5] == pk flag
+    if len(pk_cols) == 1 and pk_cols[0][1] == "Symbol":
+        return  # already new schema
+
+    ts = int(time.time())
+    cur.execute(f"ALTER TABLE TTM_Data RENAME TO TTM_Data_OLD_{ts}")
+    logging.info("Legacy TTM_Data table renamed to TTM_Data_OLD_%s", ts)
+
+
 def get_db_connection(db_path: str) -> sqlite3.Connection:
-    """
-    Ensure the tables exist with correct schemas.
-    If TTM_Data still has the old composite PK, rebuild it with Symbol-only PK.
-    """
+    """Open the DB and ensure schemas + UNIQUE constraint are correct."""
     conn = sqlite3.connect(db_path)
     cur  = conn.cursor()
 
-    # ---------- Annual_Data (unchanged) ----------
+    # ---- make sure legacy table (if any) is renamed first ----
+    _rename_legacy_ttm(cur)
+
+    # Annual_Data (never changed)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS Annual_Data(
             Symbol TEXT,
@@ -41,21 +55,10 @@ def get_db_connection(db_path: str) -> sqlite3.Connection:
         );
     """)
 
-    # ---------- TTM_Data  (migrate if needed) ----------
-    def _is_new_schema():
-        cur.execute("PRAGMA table_info(TTM_Data)")
-        cols = cur.fetchall()
-        if not cols:                 # table doesn’t exist yet
-            return False
-        pk_cols = [c for c in cols if c[5] == 1]
-        return len(pk_cols) == 1 and pk_cols[0][1] == "Symbol"
-
-    if not _is_new_schema():
-        cur.execute("DROP TABLE IF EXISTS TTM_Data")
-
+    # Clean one-row TTM table
     cur.execute("""
         CREATE TABLE IF NOT EXISTS TTM_Data(
-            Symbol TEXT PRIMARY KEY,            -- single-column PK
+            Symbol TEXT PRIMARY KEY,            -- ← the only PK
             TTM_Revenue        REAL,
             TTM_Net_Income     REAL,
             TTM_EPS            REAL,
@@ -64,11 +67,11 @@ def get_db_connection(db_path: str) -> sqlite3.Connection:
             Last_Updated       TEXT
         );
     """)
+    # Extra safeguard: UNIQUE(Symbol) even if an odd PK state remains
+    cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_ttm_symbol_unique ON TTM_Data(Symbol)")
 
-    # Helpful indexes for reads
     cur.execute("CREATE INDEX IF NOT EXISTS idx_annual_symbol ON Annual_Data(Symbol)")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_ttm_symbol   ON TTM_Data(Symbol)")
-
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_ttm_symbol    ON TTM_Data(Symbol)")
     conn.commit()
     return conn
 
@@ -91,98 +94,81 @@ def _clean_financial_df(df: pd.DataFrame) -> pd.DataFrame:
 
 # ─────────────────── fetch from Yahoo Finance ─────────────────
 @lru_cache(maxsize=32)
-def _fetch_annual_from_yahoo(tkr: str) -> pd.DataFrame:
+def _fetch_annual(tkr: str) -> pd.DataFrame:
     logging.info("Fetching ANNUAL data from Yahoo Finance")
     fin = yf.Ticker(tkr).financials
     if fin is None or fin.empty:
         return pd.DataFrame()
     fin = fin.T
     fin["Date"] = fin.index
-    fin.rename(columns={
-        "Total Revenue": "Revenue",
-        "Net Income":    "Net_Income",
-        "Basic EPS":     "EPS",
-    }, inplace=True)
+    fin.rename(columns={"Total Revenue": "Revenue",
+                        "Net Income":    "Net_Income",
+                        "Basic EPS":     "EPS"}, inplace=True)
     return _clean_financial_df(fin)
 
 @lru_cache(maxsize=32)
-def _fetch_ttm_from_yahoo(tkr: str) -> dict | None:
+def _fetch_ttm(tkr: str) -> dict | None:
     logging.info("Fetching TTM data from Yahoo Finance")
-    ticker = yf.Ticker(tkr)
-    q = ticker.quarterly_financials
+    tk = yf.Ticker(tkr)
+    q = tk.quarterly_financials
     if q is None or q.empty:
         return None
     return {
         "TTM_Revenue":        q.loc["Total Revenue"].iloc[:4].sum(),
         "TTM_Net_Income":     q.loc["Net Income"].iloc[:4].sum(),
-        "TTM_EPS":            ticker.info.get("trailingEps", np.nan),
-        "Shares_Outstanding": ticker.info.get("sharesOutstanding", np.nan),
+        "TTM_EPS":            tk.info.get("trailingEps", np.nan),
+        "Shares_Outstanding": tk.info.get("sharesOutstanding", np.nan),
         "Quarter":            q.columns[0].strftime("%Y-%m-%d"),
     }
 
-# ───────────────────── storage helpers ───────────────────────
+# ──────────────────── storage helpers ────────────────────────
 def _store_annual(tkr: str, df: pd.DataFrame, cur: sqlite3.Cursor):
     for _, row in df.iterrows():
         d = row["Date"].strftime("%Y-%m-%d") if hasattr(row["Date"], "strftime") else row["Date"]
         cur.execute("""
-            INSERT INTO Annual_Data
+            INSERT OR REPLACE INTO Annual_Data
                 (Symbol, Date, Revenue, Net_Income, EPS, Last_Updated)
-            VALUES (?,?,?,?,?,CURRENT_TIMESTAMP)
-            ON CONFLICT(Symbol,Date) DO UPDATE SET
-                Revenue      = COALESCE(EXCLUDED.Revenue,      Revenue),
-                Net_Income   = COALESCE(EXCLUDED.Net_Income,   Net_Income),
-                EPS          = COALESCE(EXCLUDED.EPS,          EPS),
-                Last_Updated = CURRENT_TIMESTAMP
+            VALUES (?,?,?,?,?,CURRENT_TIMESTAMP);
         """, (tkr, d,
               _to_float(row["Revenue"]),
               _to_float(row["Net_Income"]),
               _to_float(row["EPS"])))
 
-def _store_ttm(tkr: str, dct: dict, cur: sqlite3.Cursor):
-    """
-    Overwrite the single TTM row for <tkr>.
-    """
+def _store_ttm(tkr: str, d: dict, cur: sqlite3.Cursor):
     cur.execute("""
-        INSERT INTO TTM_Data
+        INSERT OR REPLACE INTO TTM_Data
             (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS,
              Shares_Outstanding, Quarter, Last_Updated)
-        VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP)
-        ON CONFLICT(Symbol) DO UPDATE SET
-            TTM_Revenue        = COALESCE(EXCLUDED.TTM_Revenue,        TTM_Revenue),
-            TTM_Net_Income     = COALESCE(EXCLUDED.TTM_Net_Income,     TTM_Net_Income),
-            TTM_EPS            = COALESCE(EXCLUDED.TTM_EPS,            TTM_EPS),
-            Shares_Outstanding = COALESCE(EXCLUDED.Shares_Outstanding, Shares_Outstanding),
-            Quarter            = COALESCE(EXCLUDED.Quarter,            Quarter),
-            Last_Updated       = CURRENT_TIMESTAMP
+        VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP);
     """, (
         tkr,
-        _to_float(dct.get("TTM_Revenue")),
-        _to_float(dct.get("TTM_Net_Income")),
-        _to_float(dct.get("TTM_EPS")),
-        _to_float(dct.get("Shares_Outstanding")),
-        dct.get("Quarter"),
+        _to_float(d.get("TTM_Revenue")),
+        _to_float(d.get("TTM_Net_Income")),
+        _to_float(d.get("TTM_EPS")),
+        _to_float(d.get("Shares_Outstanding")),
+        d.get("Quarter"),
     ))
 
-# ─────────────────────── main updater ────────────────────────
+# ───────────────────────── main entry ─────────────────────────
 def annual_and_ttm_update(tkr: str, db_path: str = DB_PATH):
     conn = get_db_connection(db_path)
     cur  = conn.cursor()
 
-    # ---- Annual (only fetch if empty) ------------------------
+    # Annual (only if none exist)
     cur.execute("SELECT 1 FROM Annual_Data WHERE Symbol=? LIMIT 1", (tkr,))
     if not cur.fetchone():
-        df = _fetch_annual_from_yahoo(tkr)
+        df = _fetch_annual(tkr)
         if not df.empty:
             _store_annual(tkr, df, cur)
 
-    # ---- TTM (always save latest, overwriting prior row) -----
-    ttm_dict = _fetch_ttm_from_yahoo(tkr)
-    if ttm_dict:                             # None if Yahoo failed
-        _store_ttm(tkr, ttm_dict, cur)
+    # TTM (overwrite with latest every run)
+    ttm = _fetch_ttm(tkr)
+    if ttm:
+        _store_ttm(tkr, ttm, cur)
 
     conn.commit()
     conn.close()
-    logging.info("[%s] annual + TTM update complete", tkr)
+    logging.info("[%s] annual+TTM update complete", tkr)
 
 # stand-alone sanity test
 if __name__ == "__main__":
