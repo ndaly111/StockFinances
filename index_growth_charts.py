@@ -1,152 +1,137 @@
 # index_growth_charts.py
 # -----------------------------------------------------------
-# Builds SPY & QQQ implied-growth charts + summary tables
+# Builds SPY & QQQ implied-growth / PE percentile tables + chart
 # -----------------------------------------------------------
 
 import os, sqlite3, pandas as pd, matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
-from scipy.stats import percentileofscore   # now available
+from scipy.stats import percentileofscore
 
 DB_PATH     = "Stock Data.db"
-TABLE       = "Index_Growth_History"
-OUTPUT_DIR  = "charts"
+OUT_DIR     = "charts"
 INDEXES     = ["SPY", "QQQ"]
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(OUT_DIR, exist_ok=True)
 
-# ─── Helpers ────────────────────────────────────────────────
-def _fetch_history(ticker):
+# ─── helpers ────────────────────────────────────────────────
+def _latest_by_type(table, type_col, val_col, type_val):
+    """
+    Return a dataframe with one latest {val_col} per ticker for the given type.
+    """
     with sqlite3.connect(DB_PATH) as conn:
         df = pd.read_sql_query(
-            f"SELECT Date, Growth_Type, Implied_Growth "
-            f"FROM {TABLE} WHERE Ticker = ? ORDER BY Date ASC",
-            conn, params=(ticker,)
+            f"""
+            SELECT Ticker, Date, {val_col}
+            FROM   {table}
+            WHERE  {type_col} = ?
+                  AND {val_col} IS NOT NULL
+            ORDER BY Ticker, Date
+            """,
+            conn,
+            params=(type_val,),
+        )
+    if df.empty:
+        return pd.DataFrame(columns=["Ticker", val_col])
+    latest = (
+        df.drop_duplicates(subset=["Ticker"], keep="last")
+          .reset_index(drop=True)[["Ticker", val_col]]
+    )
+    latest["Ticker"] = latest["Ticker"].str.upper()
+    return latest
+
+def _percentile(series, value):
+    return round(percentileofscore(series, value), 2)
+
+# ─── build HTML summary ─────────────────────────────────────
+def _build_summary_html(ticker, ig_val, ig_pct, pe_val, pe_pct,
+                        fwd_eps=None, fwd_pct=None):
+    rows = [
+        {"Metric": "Implied Growth (TTM)", "Value": f"{ig_val:.2%}", "Percentile": ig_pct},
+        {"Metric": "PE Ratio (TTM)",       "Value": f"{pe_val:.2f}", "Percentile": pe_pct},
+    ]
+    if fwd_eps is not None:
+        rows.append(
+            {"Metric": "Forward EPS", "Value": f"{fwd_eps:.2f}", "Percentile": fwd_pct}
+        )
+
+    html_path = os.path.join(OUT_DIR, f"{ticker.lower()}_growth_summary.html")
+    pd.DataFrame(rows).to_html(html_path, index=False)
+
+# ─── chart (unchanged from earlier) ─────────────────────────
+def _fetch_growth_history(ticker):
+    with sqlite3.connect(DB_PATH) as conn:
+        df = pd.read_sql_query(
+            """
+            SELECT Date, Growth_Type, Implied_Growth
+            FROM Index_Growth_History
+            WHERE Ticker = ?
+            ORDER BY Date
+            """,
+            conn,
+            params=(ticker,),
         )
     if df.empty:
         return None
     df["Date"] = pd.to_datetime(df["Date"])
     return df.pivot(index="Date", columns="Growth_Type", values="Implied_Growth")
 
-def _compute_summary(df):
+def _build_growth_chart(df, ticker):
+    out_png = os.path.join(OUT_DIR, f"{ticker.lower()}_growth_chart.png")
     if df is None or df.empty:
-        return {}
-    out = {}
-    for col in ["TTM", "Forward"]:
-        if col in df:
-            out[col] = {
-                "Average": df[col].mean(),
-                "Median" : df[col].median(),
-                "Min"    : df[col].min(),
-                "Max"    : df[col].max()
-            }
-    return out
+        plt.figure(figsize=(0.01,0.01)); plt.axis("off"); plt.savefig(out_png, transparent=True)
+        plt.close(); return
+    plt.figure(figsize=(10,6))
+    plt.plot(df.index, df["TTM"], label="TTM", color="blue")
+    plt.title(f"{ticker} Implied Growth (TTM)"); plt.ylabel("Implied Growth Rate")
+    plt.gca().yaxis.set_major_formatter(PercentFormatter(1.0)); plt.grid(True, ls="--", alpha=.4)
+    plt.tight_layout(); plt.savefig(out_png); plt.close()
 
-def _build_chart(df, summary, tk):
-    out_png = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_chart.png")
-    if df is None or df.empty:
-        plt.figure(figsize=(0.01, 0.01))
-        plt.axis("off")
-        plt.savefig(out_png, transparent=True, dpi=10)
-        plt.close()
-        return
+# ─── main routine ───────────────────────────────────────────
+def render_index_growth_charts():
+    print("[index_growth_charts] rebuilding SPY + QQQ pages …")
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    if "TTM" in df:
-        ax.plot(df.index, df["TTM"], label="TTM", color="blue")
-        for lbl, ls in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
-            ax.axhline(summary["TTM"][lbl], color="blue", linestyle=ls, linewidth=1)
-    if "Forward" in df:
-        ax.plot(df.index, df["Forward"], label="Forward", color="green")
-        for lbl, ls in [("Average", ":"), ("Median", "--"), ("Min", "-."), ("Max", "-.")]:
-            ax.axhline(summary["Forward"][lbl], color="green", linestyle=ls, linewidth=1)
+    # pull universes once
+    ig_univ = _latest_by_type("Index_Growth_History",
+                              "Growth_Type", "Implied_Growth", "TTM")
+    pe_univ = _latest_by_type("Index_PE_History",
+                              "PE_Type", "PE_Ratio", "TTM")
 
-    ax.set_title(f"{tk} Implied Growth Rates Over Time")
-    ax.set_ylabel("Implied Growth Rate")
-    ax.yaxis.set_major_formatter(PercentFormatter(1.0))
-    ax.grid(True, linestyle="--", alpha=0.4)
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig(out_png)
-    plt.close()
+    for tk in INDEXES:
+        # latest TTM implied-growth for this ticker
+        ig_row = ig_univ[ig_univ["Ticker"] == tk]
+        pe_row = pe_univ[pe_univ["Ticker"] == tk]
+        if ig_row.empty or pe_row.empty:
+            print(f"  ! Skipping {tk} (missing data)"); continue
 
-# ─── Forward-EPS helpers ───────────────────────────────────
-def _get_price(conn, ticker):
-    row = pd.read_sql_query(
-        "SELECT last_price FROM MarketData WHERE ticker = ?", conn, params=(ticker,)
-    )
-    return None if row.empty else row["last_price"].iloc[0]
+        ig_val = ig_row["Implied_Growth"].iloc[0]
+        ig_pct = _percentile(ig_univ["Implied_Growth"], ig_val)
 
-def _get_forward_eps_info(ticker):
-    with sqlite3.connect(DB_PATH) as conn:
-        price = _get_price(conn, ticker)
-        if price is None:
-            return None, None
+        pe_val = pe_row["PE_Ratio"].iloc[0]
+        pe_pct = _percentile(pe_univ["PE_Ratio"], pe_val)
 
-        pe_df = pd.read_sql_query("""
-            SELECT Ticker, Date, PE_Ratio
-            FROM Index_PE_History
-            WHERE PE_Type = 'Forward' AND PE_Ratio > 0
-            ORDER BY Ticker, Date
-        """, conn)
-
-        latest = (
-            pe_df.dropna()
-                 .sort_values(["Ticker", "Date"])
-                 .drop_duplicates(subset=["Ticker"], keep="last")
-        )
-        if latest.empty:
-            return None, None
-
-        # Calculate Forward-EPS for every index ticker
-        latest["Ticker"] = latest["Ticker"].str.upper()
-        latest["Forward_EPS"] = latest.apply(
-            lambda r: _get_price(conn, r["Ticker"]) / r["PE_Ratio"], axis=1
-        )
-
-        row = latest[latest["Ticker"] == ticker.upper()]
-        if row.empty:
-            return None, None
-
-        this_eps = price / row["PE_Ratio"].iloc[0]
-        pct      = percentileofscore(latest["Forward_EPS"], this_eps)  # 0-100 scale
-        return round(this_eps, 2), round(pct, 2)
-
-# ─── HTML summary ───────────────────────────────────────────
-def _build_summary_html(summary, tk):
-    out_html = os.path.join(OUTPUT_DIR, f"{tk.lower()}_growth_summary.html")
-    if not summary:
-        Path(out_html).write_text("<p>No implied-growth data yet.</p>", encoding="utf-8")
-        return
-
-    rows = []
-    link = f'<a href="{tk.lower()}_growth.html">{tk}</a>'
-    for gtype, stats in summary.items():
-        for stat, val in stats.items():
-            rows.append(
-                {"Ticker": link, "Growth Type": gtype, "Statistic": stat, "Value": f"{val:.2%}"}
+        # optional forward-eps section (only appears if forward PE exists)
+        fwd_eps = fwd_pct = None
+        fwd_pe_univ = _latest_by_type("Index_PE_History",
+                                      "PE_Type", "PE_Ratio", "Forward")
+        if not fwd_pe_univ.empty and tk in fwd_pe_univ["Ticker"].values:
+            with sqlite3.connect(DB_PATH) as conn:
+                price = pd.read_sql_query(
+                    "SELECT last_price FROM MarketData WHERE ticker = ?",
+                    conn, params=(tk,)
+                )["last_price"].iloc[0]
+            fwd_pe  = fwd_pe_univ[fwd_pe_univ["Ticker"] == tk]["PE_Ratio"].iloc[0]
+            fwd_eps = price / fwd_pe
+            fwd_pct = _percentile(
+                price / fwd_pe_univ["PE_Ratio"], fwd_eps
             )
 
-    fwd_eps, fwd_pct = _get_forward_eps_info(tk)
-    if fwd_eps is not None:
-        rows.append(
-            {"Ticker": link, "Growth Type": "—", "Statistic": "Forward EPS", "Value": f"{fwd_eps:.2f}"}
-        )
-        rows.append(
-            {"Ticker": link, "Growth Type": "—", "Statistic": "Forward EPS %tile", "Value": f"{fwd_pct:.2f}"}
-        )
+        # write HTML table + chart
+        _build_summary_html(tk, ig_val, ig_pct, pe_val, pe_pct,
+                            fwd_eps, fwd_pct)
+        _build_growth_chart(_fetch_growth_history(tk), tk)
 
-    pd.DataFrame(rows).to_html(out_html, index=False, escape=False)
+    print("[index_growth_charts] done.")
 
-# ─── Public entrypoint (importable) ─────────────────────────
-def render_index_growth_charts():
-    print("[index_growth_charts] Building SPY & QQQ growth assets …")
-    for tk in INDEXES:
-        df      = _fetch_history(tk)
-        summary = _compute_summary(df)
-        _build_summary_html(summary, tk)
-        _build_chart(df, summary, tk)
-    print("[index_growth_charts] Done.")
-
-# ─── CLI run ────────────────────────────────────────────────
+# standalone run
 if __name__ == "__main__":
     render_index_growth_charts()
