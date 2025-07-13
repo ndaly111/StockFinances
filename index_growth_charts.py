@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
-# index_growth_charts.py  –  FULL FILE  (v2025-07-14 e)
+# index_growth_charts.py  –  FULL FILE  (v2025-07-14 f)
 # -----------------------------------------------------------
 # Outputs
-#   • <T>_implied_growth.png | <T>_pe_ratio.png
+#   • <T>_implied_growth.png  |  <T>_pe_ratio.png
 #   • Growth tables:
 #       <T>_implied_growth_summary.html
 #       <t>_growth_summary.html
-#       <T>_growth_tbl.html              (very old pages)
+#       <T>_growth_tbl.html          (very old pages)
 #   • P/E tables:
 #       <T>_pe_ratio_summary.html
 #       <t>_pe_summary.html
 # -----------------------------------------------------------
 
 import os, sqlite3, pandas as pd, matplotlib
-matplotlib.use("Agg")                     # headless / CI backend
+matplotlib.use("Agg")                         # headless / CI backend
 import matplotlib.pyplot as plt
 
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# ───────── CSS (blue frame, grey grid) ─────────────────────
+# ───────── CSS (blue frame + grey grid) ────────────────────
 SUMMARY_CSS = """
 <style>
 .summary-table{width:100%;border-collapse:collapse;
@@ -33,7 +33,7 @@ SUMMARY_CSS = """
 
 # ───────── helpers ─────────────────────────────────────────
 def _columns(conn):
-    return [row[1] for row in conn.execute("PRAGMA table_info(Index_Growth_History)")]
+    return [r[1] for r in conn.execute("PRAGMA table_info(Index_Growth_History)")]
 
 def _pe_col(conn):
     cols = _columns(conn); low = {c.lower(): c for c in cols}
@@ -43,7 +43,7 @@ def _pe_col(conn):
     for p in pref:
         if p.lower() in low: return low[p.lower()]
     for c in cols:
-        cln = c.replace("_","").lower()
+        cln = c.replace("_", "").lower()
         if "pe" in cln and "pct" not in cln and "percent" not in cln:
             return c
     raise RuntimeError("No P/E column found in Index_Growth_History")
@@ -53,22 +53,21 @@ def _series(conn, col, tk):
         f"""SELECT Date,{col}
               FROM Index_Growth_History
              WHERE Ticker=? AND Growth_Type='TTM'
-          ORDER  BY Date""", conn, params=(tk,))
+          ORDER  BY Date""",
+        conn, params=(tk,))
     df["Date"] = pd.to_datetime(df["Date"])
     return pd.to_numeric(df.set_index("Date")[col], errors="coerce").dropna()
 
-# ── percentile helper: whole number, no decimals ───────────
-def _pctile(s) -> str:
-    """Return whole-number percentile (e.g. 87.44 → '87')."""
+def _pctile(s) -> str:                       # whole-number percentile
     return "—" if s.empty else str(int(round(s.rank(pct=True).iloc[-1] * 100)))
 
-def _pct_fmt(x: float) -> str:                 # 0.1923 → '19.23 %'
-    return f"{x * 100:.2f} %"                 # NBSP keeps % with the number
+def _pct_fmt(x: float) -> str:               # 0.1923 → '19.23 %'
+    return f"{x * 100:.2f} %"
 
 def _row(label, s, pct=False):
     if s.empty:
         return dict(Metric=label, Latest="N/A", Avg="N/A", Med="N/A",
-                    Min="N/A", Max="N/A", **{"%ctile":"—"})
+                    Min="N/A", Max="N/A", **{"%ctile": "—"})
     stats = dict(
         Metric = label,
         Latest = s.iloc[-1],
@@ -78,20 +77,23 @@ def _row(label, s, pct=False):
         Max    = s.max(),
         **{"%ctile": _pctile(s)}
     )
-    if pct:                                     # convert core stats to XX.XX %
-        for k in ("Latest","Avg","Med","Min","Max"):
+    if pct:                                  # convert to XX.XX %
+        for k in ("Latest", "Avg", "Med", "Min", "Max"):
             stats[k] = _pct_fmt(stats[k])
+    else:                                    # numeric table -> two decimals
+        for k in ("Latest", "Avg", "Med", "Min", "Max"):
+            stats[k] = f"{stats[k]:.2f}"
     return stats
 
-def _chart(s, title, ylab, fname):
+def _chart(series, title, ylab, fname):
     plt.figure()
-    plt.plot(s.index, s.values)
+    plt.plot(series.index, series.values)
     plt.title(title); plt.ylabel(ylab)
     plt.xticks(rotation=45, ha="right"); plt.tight_layout()
     path = os.path.join(OUT_DIR, fname)
     plt.savefig(path); plt.close(); return path
 
-def _pct_color(v):                              # green ≤30, red ≥70
+def _pct_color(v):                           # green ≤30, red ≥70
     try:
         v = float(v)
         if v <= 30: return "color:#008800;font-weight:bold"
@@ -110,7 +112,8 @@ def _save_tables(tk, ig_df, pe_df):
     files = {
         f"{tk}_implied_growth_summary.html": _build_html(ig_df),
         f"{tk.lower()}_growth_summary.html": _build_html(ig_df),
-        f"{tk}_growth_tbl.html":             _build_html(ig_df),   # legacy
+        f"{tk}_growth_tbl.html":             _build_html(ig_df),  # legacy
+
         f"{tk}_pe_ratio_summary.html":       _build_html(pe_df),
         f"{tk.lower()}_pe_summary.html":     _build_html(pe_df)
     }
@@ -122,11 +125,11 @@ def _save_tables(tk, ig_df, pe_df):
 def render_index_growth_charts(tk="SPY"):
     with sqlite3.connect(DB_PATH) as conn:
         ig_s = _series(conn, "Implied_Growth", tk)
-        pe_s = _series(conn, _pe_col(conn),   tk)
+        pe_s = _series(conn, _pe_col(conn),    tk)
 
     _chart(ig_s, f"{tk} Implied Growth (TTM)",
            "Implied Growth Rate", f"{tk}_implied_growth.png")
-    _chart(pe_s, f"{tk} P/E Ratio", "P/E",
+    _chart(pe_s, f"{tk} P/E Ratio", "P/E",     # ← now uses pe_s
            f"{tk}_pe_ratio.png")
 
     _save_tables(
