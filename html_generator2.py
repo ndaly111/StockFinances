@@ -34,7 +34,7 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
     except FileNotFoundError:
         return ph
 
-# Inject retro CSS + container override into any HTML string
+# Inject retro CSS + container override
 def inject_retro(html: str) -> str:
     if '/static/css/retro.css' not in html:
         html = html.replace(
@@ -134,18 +134,132 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 # ───────────────────────────────────────────────────────────
-# ───────── dashboard builder (unchanged) ───────────────────
-# ... [UNCHANGED content omitted for brevity] ...
+
+# ───────── dashboard builder  (exported to main_remote.py) ─
+def generate_dashboard_table(raw_rows):
+    base_cols = [
+        "Ticker", "Share Price",
+        "Nick's TTM Value", "Nick's Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
+    ]
+    df = pd.DataFrame(raw_rows, columns=base_cols)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        pct = pd.read_sql_query(
+            """SELECT Ticker, Percentile
+                 FROM Index_Growth_Pctile
+                WHERE Growth_Type='TTM'
+                  AND Date = (SELECT MAX(Date) FROM Index_Growth_Pctile)""",
+            conn
+        )
+
+    df = df.merge(pct, how="left", on="Ticker")
+
+    # numeric / display columns
+    sp_num = pd.to_numeric(df["Share Price"], errors="coerce")
+    df["Share Price_num"]  = sp_num
+    df["Share Price_disp"] = sp_num.map(lambda x: f"{x:.2f}" if pd.notnull(x) else "–")
+
+    pct_cols = base_cols[2:]
+    for col in pct_cols:
+        num = pd.to_numeric(df[col].astype(str).str.rstrip('%'), errors="coerce")
+        df[col + "_num"]  = num
+        df[col + "_disp"] = num.map(lambda x: f"{x:.1f}" if pd.notnull(x) else "–")
+
+    df["Implied-Growth Pctile_num"]  = df["Percentile"]
+    df["Implied-Growth Pctile_disp"] = df["Percentile"].map(
+        lambda x: f"{x:.0f}" if pd.notnull(x) else "–"
+    )
+    df.drop(columns="Percentile", inplace=True)
+
+    def link(t):
+        if t == "SPY":
+            return '<a href="spy_growth.html">SPY</a>'
+        if t == "QQQ":
+            return '<a href="qqq_growth.html">QQQ</a>'
+        return f'<a href="pages/{t}_page.html">{t}</a>'
+
+    df["Ticker"] = df["Ticker"].apply(link)
+    df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
+
+    # Build table rows
+    body = []
+    for _, r in df.iterrows():
+        cells = [
+            f"<td>{r['Ticker']}</td>",
+            f'<td data-order="{r["Share Price_num"] if pd.notnull(r["Share Price_num"]) else -999}">'
+            f'{r["Share Price_disp"]}</td>'
+        ]
+
+        for col in pct_cols:
+            num, disp = r[col + "_num"], r[col + "_disp"]
+            cells.append(
+                f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>'
+            )
+
+        num, disp = r["Implied-Growth Pctile_num"], r["Implied-Growth Pctile_disp"]
+        cells.append(
+            f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>'
+        )
+
+        body.append("<tr>" + "".join(cells) + "</tr>")
+
+    headers = base_cols + ["Implied-Growth Pctile"]
+    thead = "<thead><tr>" + "".join(f"<th>{h}</th>" for h in headers) + "</tr></thead>"
+    dash_html = (
+        '<table id="sortable-table" style="width:100%">' +
+        thead +
+        "<tbody>" + "".join(body) + "</tbody></table>"
+    )
+
+    # Summary stats
+    pc = lambda s: f"{s:.1f}" if pd.notnull(s) else "–"
+    ttm, fwd = df["Nick's TTM Value_num"].dropna(), df["Nick's Forward Value_num"].dropna()
+    fttm, ffwd = (
+        df["Finviz TTM Value_num"].dropna(),
+        df["Finviz Forward Value_num"].dropna()
+    )
+
+    summary = [
+        ["Average", pc(ttm.mean()), pc(fwd.mean()), pc(fttm.mean()), pc(ffwd.mean())],
+        ["Median",  pc(ttm.median()), pc(fwd.median()), pc(fttm.median()), pc(ffwd.median())]
+    ]
+    avg_html = pd.DataFrame(
+        summary, columns=["Metric"] + pct_cols
+    ).to_html(index=False, escape=False)
+
+    ensure_directory_exists("charts")
+    with open("charts/dashboard.html", "w", encoding="utf-8") as f:
+        f.write(avg_html + dash_html)
+
+    return avg_html + dash_html, {
+        "Nicks_TTM_Value_Average":       ttm.mean(),
+        "Nicks_TTM_Value_Median":        ttm.median(),
+        "Nicks_Forward_Value_Average":   fwd.mean(),
+        "Nicks_Forward_Value_Median":    fwd.median(),
+        "Finviz_TTM_Value_Average":      fttm.mean() if not fttm.empty else None,
+        "Finviz_TTM_Value_Median":       fttm.median() if not fttm.empty else None,
+        "Finviz_Forward_Value_Average":  ffwd.mean() if not ffwd.empty else None,
+        "Finviz_Forward_Value_Median":   ffwd.median() if not ffwd.empty else None
+    }
 
 # ───────── ancillary page builders (retro-injected) ───────
 def render_spy_qqq_growth_pages():
     chart_dir, out_dir = "charts", "."
     for key in ("spy", "qqq"):
-        tpl = Template(get_file_or_placeholder(f"templates/{key}_growth_template.html"))
-        rendered = tpl.render(**{
-            f"{key}_growth_summary": get_file_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
-            f"{key}_pe_summary":     get_file_or_placeholder(f"{chart_dir}/{key}_pe_summary.html")
-        })
+        tpl = Template(
+            get_file_or_placeholder(f"templates/{key}_growth_template.html")
+        )
+        rendered = tpl.render(
+            **{
+                f"{key}_growth_summary": get_file_or_placeholder(
+                    f"{chart_dir}/{key}_growth_summary.html"
+                ),
+                f"{key}_pe_summary": get_file_or_placeholder(
+                    f"{chart_dir}/{key}_pe_summary.html"
+                ),
+            }
+        )
         with open(f"{out_dir}/{key}_growth.html", "w", encoding="utf-8") as f:
             f.write(inject_retro(rendered))
 
