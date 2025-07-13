@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
-# index_growth_charts.py  –  FULL FILE  (v2025-07-14 f)
+# index_growth_charts.py  –  FULL FILE  (v2025-07-14 g)
 # -----------------------------------------------------------
-# Outputs
-#   • <T>_implied_growth.png  |  <T>_pe_ratio.png
-#   • Growth tables:
-#       <T>_implied_growth_summary.html
-#       <t>_growth_summary.html
-#       <T>_growth_tbl.html          (very old pages)
-#   • P/E tables:
-#       <T>_pe_ratio_summary.html
-#       <t>_pe_summary.html
+# • Reads Implied_Growth from   Index_Growth_History
+# • Reads P/E          from     Index_PE_History
+# • Generates charts + tables under all legacy filenames
 # -----------------------------------------------------------
 
 import os, sqlite3, pandas as pd, matplotlib
-matplotlib.use("Agg")                         # headless / CI backend
+matplotlib.use("Agg")                     # headless / CI backend
 import matplotlib.pyplot as plt
 
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# ───────── CSS (blue frame + grey grid) ────────────────────
+# ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
 <style>
 .summary-table{width:100%;border-collapse:collapse;
@@ -32,36 +26,30 @@ SUMMARY_CSS = """
 """
 
 # ───────── helpers ─────────────────────────────────────────
-def _columns(conn):
-    return [r[1] for r in conn.execute("PRAGMA table_info(Index_Growth_History)")]
-
-def _pe_col(conn):
-    cols = _columns(conn); low = {c.lower(): c for c in cols}
-    pref = ["PE_Ratio","PE","P_E","PERatio","PE_ratio",
-            "TTM_PE","PE_TTM","TTM_PE_Ratio",
-            "PriceEarnings","Price_Earnings"]
-    for p in pref:
-        if p.lower() in low: return low[p.lower()]
-    for c in cols:
-        cln = c.replace("_", "").lower()
-        if "pe" in cln and "pct" not in cln and "percent" not in cln:
-            return c
-    raise RuntimeError("No P/E column found in Index_Growth_History")
-
-def _series(conn, col, tk):
+def _series_growth(conn, tk):
+    """Return Implied_Growth (TTM) series for ticker tk."""
     df = pd.read_sql(
-        f"""SELECT Date,{col}
-              FROM Index_Growth_History
-             WHERE Ticker=? AND Growth_Type='TTM'
-          ORDER  BY Date""",
-        conn, params=(tk,))
+        """SELECT Date, Implied_Growth AS val
+             FROM Index_Growth_History
+            WHERE Ticker=? AND Growth_Type='TTM'
+         ORDER BY Date""", conn, params=(tk,))
     df["Date"] = pd.to_datetime(df["Date"])
-    return pd.to_numeric(df.set_index("Date")[col], errors="coerce").dropna()
+    return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
 
-def _pctile(s) -> str:                       # whole-number percentile
+def _series_pe(conn, tk):
+    """Return PE_Ratio (TTM) series for ticker tk."""
+    df = pd.read_sql(
+        """SELECT Date, PE_Ratio AS val
+             FROM Index_PE_History
+            WHERE Ticker=? AND PE_Type='TTM'
+         ORDER BY Date""", conn, params=(tk,))
+    df["Date"] = pd.to_datetime(df["Date"])
+    return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
+
+def _pctile(s) -> str:                      # whole-number percentile
     return "—" if s.empty else str(int(round(s.rank(pct=True).iloc[-1] * 100)))
 
-def _pct_fmt(x: float) -> str:               # 0.1923 → '19.23 %'
+def _pct_fmt(x: float) -> str:              # 0.1923 → '19.23 %'
     return f"{x * 100:.2f} %"
 
 def _row(label, s, pct=False):
@@ -77,11 +65,11 @@ def _row(label, s, pct=False):
         Max    = s.max(),
         **{"%ctile": _pctile(s)}
     )
-    if pct:                                  # convert to XX.XX %
-        for k in ("Latest", "Avg", "Med", "Min", "Max"):
+    if pct:                                 # convert to XX.XX %
+        for k in ("Latest","Avg","Med","Min","Max"):
             stats[k] = _pct_fmt(stats[k])
-    else:                                    # numeric table -> two decimals
-        for k in ("Latest", "Avg", "Med", "Min", "Max"):
+    else:                                   # numeric table → two decimals
+        for k in ("Latest","Avg","Med","Min","Max"):
             stats[k] = f"{stats[k]:.2f}"
     return stats
 
@@ -93,11 +81,11 @@ def _chart(series, title, ylab, fname):
     path = os.path.join(OUT_DIR, fname)
     plt.savefig(path); plt.close(); return path
 
-def _pct_color(v):                           # green ≤30, red ≥70
+def _pct_color(v):                          # green ≤30, red ≥70
     try:
-        v = float(v)
-        if v <= 30: return "color:#008800;font-weight:bold"
-        if v >= 70: return "color:#CC0000;font-weight:bold"
+        v=float(v)
+        if v<=30: return "color:#008800;font-weight:bold"
+        if v>=70: return "color:#CC0000;font-weight:bold"
     except: pass
     return ""
 
@@ -112,7 +100,7 @@ def _save_tables(tk, ig_df, pe_df):
     files = {
         f"{tk}_implied_growth_summary.html": _build_html(ig_df),
         f"{tk.lower()}_growth_summary.html": _build_html(ig_df),
-        f"{tk}_growth_tbl.html":             _build_html(ig_df),  # legacy
+        f"{tk}_growth_tbl.html":             _build_html(ig_df),   # legacy
 
         f"{tk}_pe_ratio_summary.html":       _build_html(pe_df),
         f"{tk.lower()}_pe_summary.html":     _build_html(pe_df)
@@ -124,18 +112,18 @@ def _save_tables(tk, ig_df, pe_df):
 # ───────── callable entry-point / mini-main ────────────────
 def render_index_growth_charts(tk="SPY"):
     with sqlite3.connect(DB_PATH) as conn:
-        ig_s = _series(conn, "Implied_Growth", tk)
-        pe_s = _series(conn, _pe_col(conn),    tk)
+        ig_s = _series_growth(conn, tk)
+        pe_s = _series_pe(conn, tk)
 
     _chart(ig_s, f"{tk} Implied Growth (TTM)",
            "Implied Growth Rate", f"{tk}_implied_growth.png")
-    _chart(pe_s, f"{tk} P/E Ratio", "P/E",     # ← now uses pe_s
+    _chart(pe_s, f"{tk} P/E Ratio", "P/E",
            f"{tk}_pe_ratio.png")
 
     _save_tables(
         tk,
         pd.DataFrame([_row("Implied Growth (TTM)", ig_s, pct=True)]),
-        pd.DataFrame([_row("PE Ratio (TTM)",       pe_s, pct=False)])
+        pd.DataFrame([_row("P/E Ratio (TTM)",       pe_s, pct=False)])
     )
 
 # legacy alias
