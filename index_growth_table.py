@@ -88,23 +88,50 @@ def _log_today(y):
 
 # ─── Helper: percentile without SciPy ─────────────────────
 def _percentile(series, value):
-    """Return percentile rank (1-99) for *value* within *series*."""
-    if value is None or len(series) < 2:
+    """Return percentile rank (1-99) for *value* within *series*.
+
+    The input *series* may be unsorted and contain NaNs. Values are
+    converted to floats, sorted and compared using ``searchsorted`` so the
+    calculation only considers the distribution for the given ticker.
+    """
+    s = pd.to_numeric(series, errors="coerce").dropna().sort_values()
+    if s.empty or value is None or np.isnan(value):
         return None
-    pct = (np.sum(series <= value) / len(series)) * 100
+    # ``searchsorted`` gives the insertion index for the value which is the
+    # count of elements <= value when ``side='right'`` is used.
+    rank = np.searchsorted(s.values, float(value), side="right")
+    pct = (rank / len(s)) * 100
     return max(1, min(99, int(round(pct))))
 
 # ─── Convenience: latest TTM implied growth ──────────────
 def _latest_ttm_growth(tk):
     with sqlite3.connect(DB_PATH) as conn:
-        row = conn.execute("""
-            SELECT Implied_Growth FROM Index_Growth_History
-            WHERE Ticker=? AND Growth_Type='TTM'
-            ORDER BY Date DESC LIMIT 1
-        """, (tk,)).fetchone()
+        row = conn.execute(
+            """
+                SELECT Implied_Growth FROM Index_Growth_History
+                WHERE Ticker=? AND Growth_Type='TTM'
+                ORDER BY Date DESC LIMIT 1
+            """,
+            (tk,),
+        ).fetchone()
+    return row[0] if row else None
+
+def _latest_ttm_pe(tk):
+    """Return latest recorded TTM P/E ratio for ticker *tk*."""
+    with sqlite3.connect(DB_PATH) as conn:
+        row = conn.execute(
+            """
+                SELECT PE_Ratio FROM Index_PE_History
+                WHERE Ticker=? AND PE_Type='TTM'
+                ORDER BY Date DESC LIMIT 1
+            """,
+            (tk,),
+        ).fetchone()
     return row[0] if row else None
 
 def _history_series(conn, table, tk, col, where):
+    # Fetch series for a single index only. This ensures percentile
+    # calculations are based solely on values recorded for *tk*.
     q = f"SELECT {col} FROM {table} WHERE Ticker=? AND {where}"
     return pd.read_sql_query(q, conn, params=(tk,))[col].dropna()
 
@@ -113,8 +140,8 @@ def _overview():
     with sqlite3.connect(DB_PATH) as conn:
         rows = []
         for tk in IDXES:
-            ttm_pe, _ = _fetch_pe(tk)
-            growth    = _latest_ttm_growth(tk)
+            ttm_pe = _latest_ttm_pe(tk)
+            growth = _latest_ttm_growth(tk)
 
             pe_hist = _history_series(conn, "Index_PE_History", tk,
                                       "PE_Ratio", "PE_Type='TTM'")
