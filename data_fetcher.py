@@ -190,6 +190,8 @@ def store_annual_data(ticker, annual_data, cursor):
     print("data_fetcher (new)7 storing annual data")
     print(f"Storing updated annual data for {ticker}")
 
+    rows_to_upsert = []
+
     for index, row in annual_data.iterrows():
         # Convert the Date from Timestamp to string format if necessary
         date_str = row['Date'].strftime('%Y-%m-%d') if isinstance(row['Date'], pd.Timestamp) else row['Date']
@@ -198,17 +200,19 @@ def store_annual_data(ticker, annual_data, cursor):
         cursor.execute("""
             SELECT * FROM Annual_Data
             WHERE Symbol = ? AND Date = ? AND Revenue IS NOT NULL AND Net_Income IS NOT NULL AND EPS IS NOT NULL;
-        """, (ticker, date_str))  # Use date_str instead of row['Date']
+        """, (ticker, date_str))
         existing_row = cursor.fetchone()
 
         # If the row exists and is complete, skip the update for this row
         if existing_row:
-            print(f"Complete data already exists for {ticker} on {date_str}. Skipping update.")  # Use date_str in log
+            print(f"Complete data already exists for {ticker} on {date_str}. Skipping update.")
             continue
 
-        # Otherwise, insert or update the row
+        rows_to_upsert.append((ticker, date_str, row['Revenue'], row['Net_Income'], row['EPS']))
+
+    if rows_to_upsert:
         try:
-            cursor.execute("""
+            insert_sql = """
                 INSERT INTO Annual_Data (Symbol, Date, Revenue, Net_Income, EPS, Last_Updated)
                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 ON CONFLICT(Symbol, Date) DO UPDATE SET
@@ -217,7 +221,8 @@ def store_annual_data(ticker, annual_data, cursor):
                 EPS = EXCLUDED.EPS,
                 Last_Updated = CURRENT_TIMESTAMP
                 WHERE Revenue IS NULL OR Net_Income IS NULL OR EPS IS NULL;
-            """, (ticker, date_str, row['Revenue'], row['Net_Income'], row['EPS']))  # Use date_str here as well
+            """
+            cursor.executemany(insert_sql, rows_to_upsert)
             cursor.connection.commit()
         except sqlite3.Error as e:
             print(f"Database error while storing/updating annual data for {ticker}: {e}")

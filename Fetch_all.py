@@ -12,9 +12,19 @@ def fetch_and_store_all_data(ticker, cursor):
         financials = stock.financials.T
         financials['Date'] = financials.index.strftime('%Y-%m-%d')  # Use full date instead of just year
 
-        # Store annual financial data
-        for index, row in financials.iterrows():
-            cursor.execute("""
+        # Prepare annual financial data rows for bulk insert
+        rows_to_insert = [
+            (
+                ticker,
+                row['Date'],
+                row.get('Total Revenue'),
+                row.get('Net Income'),
+                row.get('Basic EPS')
+            )
+            for _, row in financials.iterrows()
+        ]
+
+        insert_sql = """
                 INSERT INTO Annual_Data (Symbol, Date, Revenue, Net_Income, EPS, Last_Updated)
                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 ON CONFLICT(Symbol, Date) DO UPDATE SET
@@ -22,7 +32,9 @@ def fetch_and_store_all_data(ticker, cursor):
                 Net_Income = excluded.Net_Income,
                 EPS = excluded.EPS,
                 Last_Updated = CURRENT_TIMESTAMP;
-            """, (ticker, row['Date'], row.get('Total Revenue'), row.get('Net Income'), row.get('Basic EPS')))
+            """
+
+        cursor.executemany(insert_sql, rows_to_insert)
     except Exception as e:
         print(f"Error fetching/storing annual data for {ticker}: {e}")
 
@@ -40,6 +52,7 @@ def fetch_and_store_all_data(ticker, cursor):
             TTM_EPS = excluded.TTM_EPS,
             Last_Updated = CURRENT_TIMESTAMP;
         """, (ticker, ttm_data.get('Total Revenue'), ttm_data.get('Net Income'), ttm_data.get('Basic EPS'), quarter_end_date))
+        cursor.connection.commit()
     except Exception as e:
         print(f"Error fetching/storing TTM data for {ticker}: {e}")
 
