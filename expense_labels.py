@@ -68,3 +68,15 @@ OTHER_OPERATING = [
     "Excise Taxes",
     "Other Operating Expenses",
 ]
+
+# Expense categories that should be ignored entirely. These entries typically
+# represent totals that already include other line items and would otherwise
+# lead to double-counting when stacking expenses.
+IGNORE_CATEGORIES = [
+    "Operating Expense",
+    "Operating Expenses",
+    "Total Operating Expense",
+    "Total Operating Expenses",
+    "Total Expenses",
+    "Operating Income",
+]
