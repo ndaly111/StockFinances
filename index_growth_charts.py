@@ -6,7 +6,7 @@
 # • Generates charts + tables under all legacy filenames
 # -----------------------------------------------------------
 
-import os, sqlite3, pandas as pd, matplotlib
+import os, sqlite3, pandas as pd, numpy as np, matplotlib
 matplotlib.use("Agg")                     # headless / CI backend
 import matplotlib.pyplot as plt
 
@@ -47,7 +47,15 @@ def _series_pe(conn, tk):
     return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
 
 def _pctile(s) -> str:                      # whole-number percentile
-    return "—" if s.empty else str(int(round(s.rank(pct=True).iloc[-1] * 100)))
+    """Return percentile rank of the latest value in *s* (1-99)."""
+    s = pd.to_numeric(s, errors="coerce").dropna()
+    if s.empty:
+        return "—"
+    val = s.iloc[-1]
+    s_sorted = s.sort_values()
+    rank = np.searchsorted(s_sorted.values, float(val), side="right")
+    pct  = (rank / len(s_sorted)) * 100
+    return str(int(round(max(1, min(99, pct)))))
 
 def _pct_fmt(x: float) -> str:              # 0.1923 → '19.23 %'
     return f"{x * 100:.2f} %"
