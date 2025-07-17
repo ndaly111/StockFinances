@@ -22,10 +22,18 @@ from matplotlib.ticker import FuncFormatter
 # ──────────────────────────────────────────────────────────────
 # label aliases live in expense_labels.py
 # ──────────────────────────────────────────────────────────────
-from expense_labels import (COST_OF_REVENUE, FACILITIES_DA, GENERAL_AND_ADMIN,
-                            INSURANCE_CLAIMS, OTHER_OPERATING, PERSONNEL_COSTS,
-                            RESEARCH_AND_DEVELOPMENT, SELLING_AND_MARKETING,
-                            SGA_COMBINED)
+from expense_labels import (
+    COST_OF_REVENUE,
+    FACILITIES_DA,
+    GENERAL_AND_ADMIN,
+    INSURANCE_CLAIMS,
+    OTHER_OPERATING,
+    PERSONNEL_COSTS,
+    RESEARCH_AND_DEVELOPMENT,
+    SELLING_AND_MARKETING,
+    SGA_COMBINED,
+    IGNORE_CATEGORIES,
+)
 
 DB_PATH    = "Stock Data.db"
 OUTPUT_DIR = "charts"
@@ -58,9 +66,16 @@ def _clean(v):
 
 
 def _pick_any(row: pd.Series, labels: list[str]):
-    """Return the first non-null column whose name contains ≥1 label substring."""
+    """Return the first non-null column whose name contains ≥1 label substring.
+
+    Columns matching any ignore pattern are skipped to avoid double-counting
+    aggregate totals such as "Operating Expense".
+    """
     for k in row.index:
-        if pd.notna(row[k]) and any(lbl.lower() in k.lower() for lbl in labels):
+        kl = k.lower()
+        if any(ig.lower() in kl for ig in IGNORE_CATEGORIES):
+            continue
+        if pd.notna(row[k]) and any(lbl.lower() in kl for lbl in labels):
             return row[k]
     return None
 
