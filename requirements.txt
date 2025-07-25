@@ -8,3 +8,4 @@ peewee
 sec-edgar-downloader
 lxml
 scipy
+deps
