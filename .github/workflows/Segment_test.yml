@@ -1,8 +1,14 @@
 name: Segment-Test
+# ──────────────────────────────────────────────────────────────
+# Runs a quick sanity-check that pulls the latest 10-K business-
+# segment data for AAPL, MSFT, and TSLA, prints it, and uploads
+# an HTML table as an artifact.
+# Requires a repository secret named  **Email**  (your SEC address).
+# ──────────────────────────────────────────────────────────────
 
 on:
-  workflow_dispatch:
-  push:
+  workflow_dispatch:      # run manually from the Actions tab
+  push:                   # or automatically when these files change
     paths:
       - segment_test.py
       - .github/workflows/segment-test.yml
@@ -10,17 +16,33 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+
     env:
-      Email: ${{ secrets.Email }}   # ← uses your secret exactly
+      Email: ${{ secrets.Email }}   # ← make sure the secret exists
+
     steps:
+      # 1️⃣  Check out your repo
       - uses: actions/checkout@v4
+
+      # 2️⃣  Set up Python
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      # 3️⃣  Install dependencies
+      #     • pandas      – DataFrame handling
+      #     • requests    – HTTP calls
+      #     • tabulate    – pretty Markdown tables for console output
       - name: Install deps
-        run: pip install pandas requests
-      - name: Run test script
+        run: |
+          pip install --upgrade pip
+          pip install pandas requests tabulate
+
+      # 4️⃣  Run the test script
+      - name: Run segment test
         run: python segment_test.py
+
+      # 5️⃣  Upload the generated HTML file as an artifact
       - name: Upload HTML result
         uses: actions/upload-artifact@v4
         with:
