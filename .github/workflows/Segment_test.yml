@@ -1,0 +1,28 @@
+name: Segment-Test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - segment_test.py
+      - .github/workflows/segment-test.yml
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      Email: ${{ secrets.Email }}   # ← uses your secret exactly
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install pandas requests
+      - name: Run test script
+        run: python segment_test.py
+      - name: Upload HTML result
+        uses: actions/upload-artifact@v4
+        with:
+          name: segment-tables
+          path: segment_tables.html
