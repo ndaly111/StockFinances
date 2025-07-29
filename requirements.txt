@@ -9,5 +9,4 @@ sec-edgar-downloader
 lxml
 scipy
 deps
-arelle
-zipfile
+arelle-python
