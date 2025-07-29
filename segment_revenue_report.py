@@ -14,19 +14,19 @@ import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
 # ── SINGLE definitive directory that Arelle will use ─────────────────────────
-TMP_DIR         = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
-USER_APP_DIR    = TMP_DIR / ".arelle"      # exact folder Arelle expects
+TMP_DIR      = pathlib.Path(tempfile.gettempdir(), "arelle-ci")     # /tmp/arelle-ci
+USER_APP_DIR = TMP_DIR / ".arelle"                                  # …/.arelle
 USER_APP_DIR.mkdir(parents=True, exist_ok=True)
 
-# Set both env vars *before* importing Arelle
-os.environ["ARELLE_USER_APP_DIR"] = str(USER_APP_DIR)
-# (HOME override no longer needed)
+# Tell Python (and therefore Arelle) that this scratch folder *is* “home”
+os.environ["HOME"]                 = str(TMP_DIR)       # ← absolutely crucial on CI
+os.environ["ARELLE_USER_APP_DIR"]  = str(USER_APP_DIR)  # belt-and-suspenders
 
 # ── now import Arelle – it will use /tmp/arelle-ci/.arelle ───────────────────
 from arelle import Cntlr, ModelManager
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
-EMAIL = os.getenv("Email")
+EMAIL = os.getenv("Email")  # set this as a repository/organisation secret
 if not EMAIL:
     raise SystemExit("ERROR: export Email='your.sec.address@example.com' first")
 
@@ -39,7 +39,7 @@ REV_RE     = re.compile(r"(Revenue|Sales|NetSales)", re.I)
 OPINC_RE   = re.compile(r"(OperatingIncome|OperatingProfit|OperatingIncomeLoss)", re.I)
 PAUSE_SEC  = 0.30   # courteous rate
 
-# ── DB helpers (unchanged from previous version) ──────────────────────────────
+# ── DB helpers ────────────────────────────────────────────────────────────────
 def ensure_tables(conn):
     cur = conn.cursor()
     cur.executescript("""
@@ -89,7 +89,8 @@ def download_instance(cik, acc, doc):
 
 # ── Inline-XBRL parser ────────────────────────────────────────────────────────
 def stream_segment_facts(html_bytes):
-    cntlr = Cntlr.Cntlr(logFileName=None)  # uses /tmp/arelle-ci
+    # explicitly pass our scratch dir so nothing leaks back to /home/<other-user>
+    cntlr = Cntlr.Cntlr(logFileName=None, userAppDir=str(USER_APP_DIR))
     model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(html_bytes))
     for fact in model.facts:
         dims = fact.context.segDimValues
