@@ -4,9 +4,9 @@ segment_etl.py – Business-segment ETL for MSFT, AAPL, TSLA
 ──────────────────────────────────────────────────────────
 • Pulls latest 10-K + three 10-Qs per company
 • Parses Inline-XBRL with Arelle (keeps dimensions)
-• Filters rows whose axis ends with “SegmentsAxis”
-• Classifies concepts → REV / OPINC / UNKNOWN (stored in concept_map)
-• Writes annual & quarterly facts into segment_facts (one table)
+• Filters rows whose axis name ends with “SegmentsAxis”
+• Classifies concepts → REV / OPINC / UNKNOWN (persists lookup in concept_map)
+• Stores facts (annual & quarterly) in segment_facts (one table)
 • Prints annual + TTM snapshot for verification
 """
 
@@ -20,7 +20,7 @@ for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
 import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
-# ---- force Arelle to use a writable temp directory --------------------------
+# ---- force Arelle to use a writable temp directory ---------------------------
 TMP_ARELLE_DIR = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
 TMP_ARELLE_DIR.mkdir(parents=True, exist_ok=True)
 os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)
@@ -29,7 +29,7 @@ os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)
 from arelle import Cntlr, ModelManager
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-EMAIL        = os.getenv("Email")
+EMAIL = os.getenv("Email")
 if not EMAIL:
     raise SystemExit("ERROR: export Email='your.sec.address@example.com' first")
 
@@ -105,7 +105,8 @@ def download_instance(cik: str, accession: str, primary_doc: str) -> bytes:
 
 # ─── XBRL PARSER ──────────────────────────────────────────────────────────────
 def stream_segment_facts(inst_bytes: bytes):
-    cntlr = Cntlr.Cntlr(logFileName=None, userAppDir=str(TMP_ARELLE_DIR))
+    """Yield dicts for each business-segment fact in one Inline-XBRL instance."""
+    cntlr = Cntlr.Cntlr(logFileName=None)   # user dir set via env var
     model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(inst_bytes))
     for fact in model.facts:
         dims = fact.context.segDimValues
