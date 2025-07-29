@@ -9,7 +9,13 @@ segment_etl.py  –  Business-segment ETL for MSFT, AAPL, TSLA
 • Stores facts (annual & quarterly) in table segment_facts
 • Prints annual + TTM summary per ticker for verification
 """
-
+# --- compatibility shim for Python ≥3.10 ---
+import collections, collections.abc
+for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
+    if not hasattr(collections, _alias):
+        setattr(collections, _alias, getattr(collections.abc, _alias))
+# -------------------------------------------
+from arelle import Cntlr, ModelManager
 import os, re, io, zipfile, time, sqlite3, requests, pandas as pd
 from datetime import datetime
 from arelle import Cntlr, ModelManager
