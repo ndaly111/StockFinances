@@ -82,13 +82,14 @@ def latest_filings(cik: str):
     forms = subm["filings"]["recent"]["form"]
     picks = []
     for a, f in zip(acc, forms):
-        if f in ("10-K", "10-K/A") and not any(frm.startswith("10-K") for frm in picks):
+        if f in ("10-K", "10-K/A") and not any(frm[1].startswith("10-K") for frm in picks):
             picks.append((a.replace("-", ""), f))
         elif f.startswith("10-Q") and len([x for x in picks if x[1].startswith("10-Q")]) < 3:
             picks.append((a.replace("-", ""), f))
         if len(picks) >= 4:          # 1K + 3Q
             break
     return picks
+
 
 def download_instance(cik: str, accession: str) -> bytes:
     url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{accession}.zip"
