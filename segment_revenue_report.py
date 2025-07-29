@@ -75,31 +75,24 @@ def classify_concept(cur: sqlite3.Cursor, concept: str, label: str) -> str:
 
 # ─────────── SEC HELPERS ───────────────────────────────────────────────────────
 def latest_filings(cik: str):
-    """Return accession numbers: 1×10-K, up to 3×10-Q after that."""
     subm = requests.get(f"https://data.sec.gov/submissions/CIK{cik}.json",
                         headers=HEADERS, timeout=30).json()
-    acc   = subm["filings"]["recent"]["accessionNumber"]
-    forms = subm["filings"]["recent"]["form"]
-    picks = []
-    for a, f in zip(acc, forms):
-        if f in ("10-K", "10-K/A") and not any(frm[1].startswith("10-K") for frm in picks):
-            picks.append((a.replace("-", ""), f))
-        elif f.startswith("10-Q") and len([x for x in picks if x[1].startswith("10-Q")]) < 3:
-            picks.append((a.replace("-", ""), f))
-        if len(picks) >= 4:          # 1K + 3Q
+    pairs = []
+    for acc, form, doc in zip(subm["filings"]["recent"]["accessionNumber"],
+                              subm["filings"]["recent"]["form"],
+                              subm["filings"]["recent"]["primaryDocument"]):
+        clean_acc = acc.replace("-", "")
+        pairs.append((clean_acc, form, doc))
+        if len(pairs) >= 4:
             break
-    return picks
+    return pairs
 
-
-def download_instance(cik: str, accession: str) -> bytes:
-    # Remove leading zeros from CIK
-    cik_no_zeros = str(int(cik))
-
-    # Construct correct URL for inline XBRL
-    url = f"https://www.sec.gov/Archives/edgar/data/{cik_no_zeros}/{accession}/R{cik_no_zeros}.htm"
-    response = requests.get(url, headers=HEADERS, timeout=60)
-    response.raise_for_status()
-    return response.content
+def download_instance(cik: str, accession: str, primary_doc: str) -> bytes:
+    cik_num = str(int(cik))
+    url = f"https://www.sec.gov/Archives/edgar/data/{cik_num}/{accession}/{primary_doc}"
+    resp = requests.get(url, headers=HEADERS, timeout=60)
+    resp.raise_for_status()
+    return resp.content
 
 # ─────────── XBRL PARSER ───────────────────────────────────────────────────────
 def stream_segment_facts(inst_bytes: bytes):
