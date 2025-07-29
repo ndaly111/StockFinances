@@ -13,93 +13,87 @@ for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
 import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
-# ---- Crucial fix: force HOME and ARELLE_USER_APP_DIR to writable /tmp --------
+# ── Step 1: guaranteed writable dir in /tmp ───────────────────────────────────
 TMP_ARELLE_DIR = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
 TMP_ARELLE_DIR.mkdir(parents=True, exist_ok=True)
-os.environ["HOME"] = str(TMP_ARELLE_DIR)
-os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)
-# -----------------------------------------------------------------------------
 
-from arelle import Cntlr, ModelManager  # import AFTER setting environment
+# ── Step 2: monkey-patch expanduser BEFORE importing Arelle ───────────────────
+import os.path as _osp
+_expanduser_orig = _osp.expanduser
+def _expanduser_hijack(path):
+    return str(TMP_ARELLE_DIR) if path.startswith("~") else _expanduser_orig(path)
+_osp.expanduser = _expanduser_hijack
+# (no harm to restore later; not needed here)
 
-# ─── CONFIG ───────────────────────────────────────────────────────────────────
+# ── Step 3: import Arelle – it now resolves ~/.arelle into /tmp/arelle-ci ────
+from arelle import Cntlr, ModelManager
+
+# ── CONFIG ────────────────────────────────────────────────────────────────────
 EMAIL = os.getenv("Email")
 if not EMAIL:
     raise SystemExit("ERROR: export Email='your.sec.address@example.com' first")
 
-HEADERS      = {"User-Agent": f"{EMAIL} - segment ETL"}
-DB_PATH      = "Stock Data.db"
-TICKER2CIK   = {"MSFT": "0000789019", "AAPL": "0000320193", "TSLA": "0001318605"}
+HEADERS    = {"User-Agent": f"{EMAIL} - segment ETL"}
+DB_PATH    = "Stock Data.db"
+TICKER2CIK = {"MSFT": "0000789019", "AAPL": "0000320193", "TSLA": "0001318605"}
 
-SEG_AX_RE    = re.compile(r"SegmentsAxis$", re.I)
-REV_RE       = re.compile(r"(Revenue|Sales|NetSales)", re.I)
-OPINC_RE     = re.compile(r"(OperatingIncome|OperatingProfit|OperatingIncomeLoss)", re.I)
+SEG_AX_RE  = re.compile(r"SegmentsAxis$", re.I)
+REV_RE     = re.compile(r"(Revenue|Sales|NetSales)", re.I)
+OPINC_RE   = re.compile(r"(OperatingIncome|OperatingProfit|OperatingIncomeLoss)", re.I)
+PAUSE_SEC  = 0.30   # courteous rate
 
-PAUSE_SEC    = 0.30        # SEC guidance: <10 req/s
-
-# ─── DB SETUP ─────────────────────────────────────────────────────────────────
-def ensure_tables(conn: sqlite3.Connection):
+# ── DB helpers (unchanged from previous version) ──────────────────────────────
+def ensure_tables(conn):
     cur = conn.cursor()
     cur.executescript("""
     CREATE TABLE IF NOT EXISTS concept_map (
-        concept       TEXT PRIMARY KEY,
-        metric_class  TEXT CHECK(metric_class IN ('REV','OPINC','IGNORE','UNKNOWN'))
+        concept TEXT PRIMARY KEY,
+        metric_class TEXT CHECK(metric_class IN ('REV','OPINC','IGNORE','UNKNOWN'))
     );
     CREATE TABLE IF NOT EXISTS segment_facts (
-        cik            TEXT,
-        ticker         TEXT,
-        fiscal_year    INTEGER,
-        axis_member    TEXT,
-        concept        TEXT,
-        metric_class   TEXT,
-        value_usd      REAL,
-        form           TEXT,
-        end_date       TEXT,
-        period_months  INTEGER,
+        cik TEXT, ticker TEXT, fiscal_year INTEGER,
+        axis_member TEXT, concept TEXT, metric_class TEXT,
+        value_usd REAL, form TEXT, end_date TEXT, period_months INTEGER,
         PRIMARY KEY (cik, axis_member, concept, end_date)
     );
-    """)
-    conn.commit()
+    """); conn.commit()
 
-def classify_concept(cur: sqlite3.Cursor, concept: str, label: str) -> str:
+def classify_concept(cur, concept, label):
     cur.execute("SELECT metric_class FROM concept_map WHERE concept=?", (concept,))
     row = cur.fetchone()
     if row:
         return row[0]
-    cls = ("REV"   if REV_RE.search(concept)   or REV_RE.search(label)   else
-           "OPINC" if OPINC_RE.search(concept) or OPINC_RE.search(label) else
-           "UNKNOWN")
+    cls = ("REV" if REV_RE.search(concept) or REV_RE.search(label)
+           else "OPINC" if OPINC_RE.search(concept) or OPINC_RE.search(label)
+           else "UNKNOWN")
     cur.execute("INSERT OR IGNORE INTO concept_map VALUES (?,?)", (concept, cls))
     return cls
 
-# ─── SEC HELPERS ──────────────────────────────────────────────────────────────
-def latest_filings(cik: str):
-    subm = requests.get(f"https://data.sec.gov/submissions/CIK{cik}.json",
-                        headers=HEADERS, timeout=30).json()
+# ── SEC helpers ───────────────────────────────────────────────────────────────
+def latest_filings(cik):
+    sub = requests.get(f"https://data.sec.gov/submissions/CIK{cik}.json",
+                       headers=HEADERS, timeout=30).json()
     picks = []
-    for acc, form, doc in zip(subm["filings"]["recent"]["accessionNumber"],
-                              subm["filings"]["recent"]["form"],
-                              subm["filings"]["recent"]["primaryDocument"]):
-        acc_clean = acc.replace("-", "")
+    for acc, form, doc in zip(sub["filings"]["recent"]["accessionNumber"],
+                              sub["filings"]["recent"]["form"],
+                              sub["filings"]["recent"]["primaryDocument"]):
+        acc = acc.replace("-", "")
         if form.startswith("10-K") and not any(p[1].startswith("10-K") for p in picks):
-            picks.append((acc_clean, form, doc))
+            picks.append((acc, form, doc))
         elif form.startswith("10-Q") and len([p for p in picks if p[1].startswith("10-Q")]) < 3:
-            picks.append((acc_clean, form, doc))
-        if len(picks) >= 4:
-            break
+            picks.append((acc, form, doc))
+        if len(picks) >= 4: break
     return picks
 
-def download_instance(cik: str, accession: str, primary_doc: str) -> bytes:
-    cik_num = str(int(cik))  # strip leading zeros
-    url = f"https://www.sec.gov/Archives/edgar/data/{cik_num}/{accession}/{primary_doc}"
-    resp = requests.get(url, headers=HEADERS, timeout=60)
-    resp.raise_for_status()
-    return resp.content
+def download_instance(cik, acc, doc):
+    url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc}/{doc}"
+    r = requests.get(url, headers=HEADERS, timeout=60); r.raise_for_status()
+    return r.content
 
-# ─── XBRL PARSER ──────────────────────────────────────────────────────────────
-def stream_segment_facts(inst_bytes: bytes):
-    cntlr = Cntlr.Cntlr(logFileName=None)
-    model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(inst_bytes))
+# ── Inline-XBRL parser ────────────────────────────────────────────────────────
+def stream_segment_facts(html_bytes):
+    cntlr = Cntlr.Cntlr(logFileName=None)  # uses /tmp/arelle-ci
+    model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(html_bytes))
     for fact in model.facts:
         dims = fact.context.segDimValues
         if not dims or not any(SEG_AX_RE.search(ax.localName) for ax, _ in dims):
@@ -107,69 +101,49 @@ def stream_segment_facts(inst_bytes: bytes):
         axis, member = next(iter(dims))
         end   = fact.context.endDatetime.date()
         start = fact.context.startDatetime.date()
-        period_months = (end.year - start.year) * 12 + (end.month - start.month)
-        yield {
-            "concept":       fact.concept.qname.localName,
-            "label":         fact.concept.label() or fact.concept.qname.localName,
-            "member":        member.localName,
-            "value":         float(fact.value or 0),
-            "end":           end.isoformat(),
-            "period_months": period_months,
-        }
+        months = (end.year-start.year)*12 + (end.month-start.month)
+        yield dict(concept=fact.concept.qname.localName,
+                   label=fact.concept.label() or fact.concept.qname.localName,
+                   member=member.localName,
+                   value=float(fact.value or 0),
+                   end=end.isoformat(),
+                   period_months=months)
     model.close()
 
-# ─── MAIN ETL ─────────────────────────────────────────────────────────────────
+# ── Main ETL ──────────────────────────────────────────────────────────────────
 def run_etl():
-    conn = sqlite3.connect(DB_PATH)
-    ensure_tables(conn)
-    cur = conn.cursor()
-
+    conn = sqlite3.connect(DB_PATH); ensure_tables(conn); cur = conn.cursor()
     for tk, cik in TICKER2CIK.items():
         print(f"▶ {tk} ({cik})")
-        for accession, form, doc in latest_filings(cik):
+        for acc, form, doc in latest_filings(cik):
             try:
-                inst = download_instance(cik, accession, doc)
+                inst = download_instance(cik, acc, doc)
             except Exception as e:
-                print(f"  • skip {form} {accession[:10]} – {e}")
-                continue
-
+                print(f"  • skip {form} {acc[:10]} – {e}"); continue
             for f in stream_segment_facts(inst):
                 cls = classify_concept(cur, f["concept"], f["label"])
-                if cls == "IGNORE":
-                    continue
+                if cls == "IGNORE": continue
                 fy = datetime.fromisoformat(f["end"]).year
                 cur.execute("""
                 INSERT OR REPLACE INTO segment_facts
                   (cik,ticker,fiscal_year,axis_member,concept,metric_class,
                    value_usd,form,end_date,period_months)
-                VALUES (?,?,?,?,?,?,?,?,?,?)
-                """, (cik, tk, fy, f["member"], f["concept"], cls,
-                      f["value"], form, f["end"], f["period_months"]))
-            conn.commit()
-            time.sleep(PAUSE_SEC)
+                VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                (cik, tk, fy, f["member"], f["concept"], cls,
+                 f["value"], form, f["end"], f["period_months"]))
+            conn.commit(); time.sleep(PAUSE_SEC)
 
-    # ─── verification pivot ───────────────────────────────────────────────────
     df = pd.read_sql_query("""
-        WITH latest_year AS (
-          SELECT ticker, MAX(fiscal_year) fy
-          FROM segment_facts GROUP BY ticker)
-        SELECT s.ticker,
-               s.axis_member AS segment,
-               SUM(CASE WHEN s.metric_class='REV'  AND s.period_months=12 THEN s.value_usd END) AS annual_rev,
-               SUM(CASE WHEN s.metric_class='REV'  AND s.period_months=3
-                        AND DATE(s.end_date) >= DATE('now','-365 day') THEN s.value_usd END) AS ttm_rev,
-               SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=12 THEN s.value_usd END) AS annual_opinc,
-               SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=3
-                        AND DATE(s.end_date) >= DATE('now','-365 day') THEN s.value_usd END) AS ttm_opinc
-        FROM segment_facts s
-        JOIN latest_year y ON y.ticker=s.ticker AND y.fy=s.fiscal_year
-        GROUP BY s.ticker, segment
-        ORDER BY s.ticker, annual_rev DESC;
-    """, conn)
-
+     WITH latest AS (SELECT ticker, MAX(fiscal_year) fy FROM segment_facts GROUP BY ticker)
+     SELECT s.ticker, s.axis_member AS segment,
+            SUM(CASE WHEN s.metric_class='REV'   AND s.period_months=12 THEN s.value_usd END) AS annual_rev,
+            SUM(CASE WHEN s.metric_class='REV'   AND s.period_months=3  AND DATE(s.end_date)>=DATE('now','-365 day') THEN s.value_usd END) AS ttm_rev,
+            SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=12 THEN s.value_usd END) AS annual_opinc,
+            SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=3  AND DATE(s.end_date)>=DATE('now','-365 day') THEN s.value_usd END) AS ttm_opinc
+     FROM segment_facts s JOIN latest l ON l.ticker=s.ticker AND l.fy=s.fiscal_year
+     GROUP BY s.ticker, segment ORDER BY s.ticker, annual_rev DESC""", conn)
     print("\n=== Annual + TTM snapshot ===")
     print(df.to_string(index=False, float_format='{:,.0f}'.format))
-
     conn.close()
 
 if __name__ == "__main__":
