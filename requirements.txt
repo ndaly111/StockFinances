@@ -20,4 +20,4 @@ lxml
 requests          # used by the ETL scripts
 
 # XBRL parser (needed for business-segment data)
-arelle==2.4       # pre-built wheel, works with Python ≤ 3.10
+arelle==2.2       # pre-built wheel, works with Python ≤ 3.10
