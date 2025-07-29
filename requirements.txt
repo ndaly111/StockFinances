@@ -1,12 +1,23 @@
+# Core data + analysis
 pandas
-yfinance
-matplotlib
 numpy
-jinja2
-pdfkit
-peewee
-sec-edgar-downloader
-lxml
 scipy
-deps
-arelle-python
+
+# Finance / data sources
+yfinance
+sec-edgar-downloader
+
+# Plotting & HTML generation
+matplotlib
+jinja2
+pdfkit            # (remember: wkhtmltopdf must be on the runner if you call pdfkit)
+
+# Database / ORM
+peewee
+
+# XML & web helpers
+lxml
+requests          # used by the ETL scripts
+
+# XBRL parser (needed for business-segment data)
+arelle==2.4       # pre-built wheel, works with Python ≤ 3.10
