@@ -1,34 +1,38 @@
-# .github/workflows/segment_revenue_report.yml
 name: Segment revenue TXT (manual)
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch: {}        # run from the Actions tab
 
 jobs:
   run:
     runs-on: ubuntu-latest
+    env:
+      Email: ${{ secrets.Email }}      # make sure the secret is named “Email”
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      # 1️⃣  Check out code
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # 2️⃣  Set up Python
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
+      # 3️⃣  Install everything in requirements.txt
       - name: Install dependencies
-        run: python -m pip install --upgrade pip requests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
+      # 4️⃣  Run the script
       - name: Run segment report
-        env:
-          SEC_EMAIL: ${{ secrets.SEC_EMAIL }}
         run: python segment_revenue_report.py
 
+      # 5️⃣  Commit updated output file (if generated)
       - name: Commit report
         run: |
-          git config --global user.email  "github-actions@users.noreply.github.com"
-          git config --global user.name   "github-actions"
-          git add segment_report.txt
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git config --global user.name  "github-actions"
+          git add segment_report.txt || true
           git commit -m "Update segment_report.txt" || echo "No changes"
           git push
