@@ -92,11 +92,14 @@ def latest_filings(cik: str):
 
 
 def download_instance(cik: str, accession: str) -> bytes:
-    url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{accession}.zip"
-    zbytes = requests.get(url, headers=HEADERS, timeout=60).content
-    with zipfile.ZipFile(io.BytesIO(zbytes)) as z:
-        inst_name = next(n for n in z.namelist() if n.endswith(".xml"))
-        return z.read(inst_name)
+    # Remove leading zeros from CIK
+    cik_no_zeros = str(int(cik))
+
+    # Construct correct URL for inline XBRL
+    url = f"https://www.sec.gov/Archives/edgar/data/{cik_no_zeros}/{accession}/R{cik_no_zeros}.htm"
+    response = requests.get(url, headers=HEADERS, timeout=60)
+    response.raise_for_status()
+    return response.content
 
 # ─────────── XBRL PARSER ───────────────────────────────────────────────────────
 def stream_segment_facts(inst_bytes: bytes):
