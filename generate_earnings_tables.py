@@ -1,9 +1,15 @@
 """
-Re-writes earnings tables, coping with yfinance’s new lower-case columns.
-Save as generate_earnings_tables.py (same location as before).
+generate_earnings_tables.py
+Builds / refreshes earnings tables and HTML for your dashboard.
+
+Key fixes
+─────────
+1. Handles yfinance's new lower-case column names.
+2. Always overwrites prior NULL rows in the DB.
+3. Converts NaN → None before writing, so HTML shows blanks instead of “None”.
 """
 
-import os, sqlite3, logging, pandas as pd, yfinance as yf
+import os, sqlite3, logging, math, pandas as pd, yfinance as yf
 from datetime import datetime, timedelta, timezone
 from ticker_manager import read_tickers, modify_tickers          # ← unchanged
 
@@ -16,17 +22,23 @@ PAST_WINDOW_DAYS     = 7
 UPCOMING_WINDOW_DAYS = 90
 LOG = logging.getLogger(__name__)
 
-# ──────────────────────── DB HELPERS ────────────────────────
+# ────────────────── DB HELPERS ──────────────────
 def _ensure_tables(conn: sqlite3.Connection):
     cur = conn.cursor()
     cur.executescript("""
       CREATE TABLE IF NOT EXISTS earnings_past (
-        ticker TEXT, earnings_date TEXT,
-        eps_estimate REAL, reported_eps REAL, surprise_percent REAL,
-        timestamp TEXT, PRIMARY KEY(ticker, earnings_date)
+        ticker TEXT,
+        earnings_date TEXT,
+        eps_estimate REAL,
+        reported_eps REAL,
+        surprise_percent REAL,
+        timestamp TEXT,
+        PRIMARY KEY(ticker, earnings_date)
       );
       CREATE TABLE IF NOT EXISTS earnings_upcoming (
-        ticker TEXT, earnings_date TEXT, timestamp TEXT,
+        ticker TEXT,
+        earnings_date TEXT,
+        timestamp TEXT,
         PRIMARY KEY(ticker, earnings_date)
       );
       CREATE INDEX IF NOT EXISTS idx_past_date    ON earnings_past(earnings_date);
@@ -41,9 +53,9 @@ def _upsert_past(conn, tic, edate, est, actual, surpr):
            surprise_percent, timestamp)
         VALUES (?, ?, ?, ?, ?, ?)
         ON CONFLICT(ticker, earnings_date) DO UPDATE SET
-            eps_estimate     = COALESCE(excluded.eps_estimate,  earnings_past.eps_estimate),
-            reported_eps     = COALESCE(excluded.reported_eps,  earnings_past.reported_eps),
-            surprise_percent = COALESCE(excluded.surprise_percent, earnings_past.surprise_percent),
+            eps_estimate     = excluded.eps_estimate,
+            reported_eps     = excluded.reported_eps,
+            surprise_percent = excluded.surprise_percent,
             timestamp        = excluded.timestamp;
     """, (tic, edate.isoformat(), est, actual, surpr,
           datetime.utcnow().isoformat()))
@@ -55,9 +67,9 @@ def _upsert_upcoming(conn, tic, edate):
         VALUES (?, ?, ?)
     """, (tic, edate.isoformat(), datetime.utcnow().isoformat()))
 
-# ──────────────────────── SMALL UTILITIES ─────────────────────
+# ────────────────── SMALL UTILITIES ──────────────────
 def _pick(row, *names):
-    """Return the first non-missing value found among possible column names."""
+    """Return the first non-missing value among the provided column names."""
     for n in names:
         if n in row and pd.notna(row[n]):
             return row[n]
@@ -66,7 +78,13 @@ def _pick(row, *names):
 def _to_pct(x):
     return pd.to_numeric(x, errors='coerce')
 
-# ──────────────────────── FETCH & STORE ──────────────────────
+def _clean(val):
+    """Convert NaN → None; cast numbers to float; leave strings untouched."""
+    if val is None or (isinstance(val, float) and math.isnan(val)):
+        return None
+    return float(val) if isinstance(val, (int, float)) else val
+
+# ────────────────── FETCH & STORE ──────────────────
 def _fetch_and_store(conn: sqlite3.Connection, tickers: list[str]):
     today           = datetime.now(timezone.utc).date()
     past_cutoff     = today - timedelta(days=PAST_WINDOW_DAYS)
@@ -75,28 +93,29 @@ def _fetch_and_store(conn: sqlite3.Connection, tickers: list[str]):
 
     for tic in tickers:
         try:
-            cal = yf.Ticker(tic).get_earnings_dates(limit=60)
+            cal = yf.Ticker(tic).get_earnings_dates(limit=60)   # past + future
             if cal is None or cal.empty:
                 continue
             cal.index = pd.to_datetime(cal.index).tz_localize(None).date
 
-            # ----- recent / today -----
+            # ----- Past & today -----
             for ed, row in cal.iterrows():
                 if past_cutoff <= ed <= today:
                     if ed == today:
                         reporting_today.add(tic)
                     _upsert_past(
                         conn, tic, ed,
-                        _pick(row, 'EPS Estimate', 'epsestimate'),
-                        _pick(row, 'Reported EPS', 'epsactual'),
-                        _to_pct(_pick(row, 'Surprise(%)', 'surprise(%)', 'epssurprisepct'))
+                        _clean(_pick(row, 'EPS Estimate', 'epsestimate')),
+                        _clean(_pick(row, 'Reported EPS', 'epsactual')),
+                        _clean(_to_pct(_pick(row, 'Surprise(%)', 'surprise(%)',
+                                             'epssurprisepct')))
                     )
 
-            # ----- upcoming -----
+            # ----- Upcoming -----
             for ed in cal.index[(cal.index > today) & (cal.index <= upcoming_cutoff)]:
                 _upsert_upcoming(conn, tic, ed)
 
-            # ----- back-fill via history -----
+            # ----- Back-fill via history -----
             hist = yf.Ticker(tic).get_earnings_history()
             if hist is not None and not hist.empty:
                 for _, h in hist.iterrows():
@@ -104,10 +123,10 @@ def _fetch_and_store(conn: sqlite3.Connection, tickers: list[str]):
                     if past_cutoff <= ed <= today:
                         _upsert_past(
                             conn, tic, ed,
-                            _pick(h, 'epsEstimate', 'epsestimate'),
-                            _pick(h, 'epsActual',   'epsactual'),
-                            _to_pct(_pick(h, 'surprisePercent',
-                                           'surprisepercent', 'epssurprisepct'))
+                            _clean(_pick(h, 'epsEstimate', 'epsestimate')),
+                            _clean(_pick(h, 'epsActual',   'epsactual')),
+                            _clean(_to_pct(_pick(h, 'surprisePercent',
+                                                 'surprisepercent', 'epssurprisepct')))
                         )
 
         except Exception:
@@ -116,7 +135,7 @@ def _fetch_and_store(conn: sqlite3.Connection, tickers: list[str]):
     conn.commit()
     return reporting_today
 
-# ───────────────────── RENDERERS (unchanged) ────────────────────
+# ────────────────── RENDERERS (unchanged) ──────────────────
 def _render_past_html(conn, reporting_today):
     today = datetime.utcnow().date()
     past_cutoff = today - timedelta(days=PAST_WINDOW_DAYS)
@@ -191,7 +210,7 @@ def _render_upcoming_html(conn):
                  "</ul></details>")
     return html
 
-# ────────────────────────── MAIN ────────────────────────────
+# ────────────────────────── MAIN ──────────────────────────
 def generate_earnings_tables():
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s %(levelname)s %(message)s")
@@ -209,5 +228,6 @@ def generate_earnings_tables():
     with open(PAST_HTML, 'w', encoding='utf-8')     as f: f.write(past_html)
     with open(UPCOMING_HTML, 'w', encoding='utf-8') as f: f.write(upcoming_html)
 
+# Mini-main entry-point
 if __name__ == "__main__":
     generate_earnings_tables()
