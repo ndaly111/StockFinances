@@ -1,26 +1,26 @@
+
 #!/usr/bin/env python3
 """
 segment_etl.py – Business-segment ETL for MSFT, AAPL, TSLA
 """
 
-# ── compatibility shim for Py≥3.10 (Arelle 2.x expects old aliases) ───────────
+# compatibility shim for Py≥3.10
 import collections, collections.abc
 for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
     if not hasattr(collections, _alias):
         setattr(collections, _alias, getattr(collections.abc, _alias))
-# ──────────────────────────────────────────────────────────────────────────────
 
 import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
-# ---- force Arelle to use a writable directory --------------------------------
+# Setup writable directory for Arelle
 TMP_ARELLE_DIR = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
 TMP_ARELLE_DIR.mkdir(parents=True, exist_ok=True)
-os.environ["HOME"]                = str(TMP_ARELLE_DIR)   # ← NEW: Arelle uses ~
-os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)   # (harmless but kept)
-# -----------------------------------------------------------------------------
+os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)
 
-from arelle import Cntlr, ModelManager   # import AFTER env override
+from arelle import Cntlr, ModelManager
+
+# [Rest of your script remains unchanged...]
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 EMAIL = os.getenv("Email")
