@@ -1,26 +1,26 @@
-
 #!/usr/bin/env python3
 """
-segment_etl.py – Business-segment ETL for MSFT, AAPL, TSLA
+segment_revenue_report.py – Business-segment ETL for MSFT, AAPL, TSLA
 """
 
-# compatibility shim for Py≥3.10
+# ── compatibility shim for Py≥3.10 (Arelle 2.x expects old aliases) ───────────
 import collections, collections.abc
 for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
     if not hasattr(collections, _alias):
         setattr(collections, _alias, getattr(collections.abc, _alias))
+# ──────────────────────────────────────────────────────────────────────────────
 
 import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
-# Setup writable directory for Arelle
+# ---- Crucial fix: force HOME and ARELLE_USER_APP_DIR to writable /tmp --------
 TMP_ARELLE_DIR = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
 TMP_ARELLE_DIR.mkdir(parents=True, exist_ok=True)
+os.environ["HOME"] = str(TMP_ARELLE_DIR)
 os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)
+# -----------------------------------------------------------------------------
 
-from arelle import Cntlr, ModelManager
-
-# [Rest of your script remains unchanged...]
+from arelle import Cntlr, ModelManager  # import AFTER setting environment
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 EMAIL = os.getenv("Email")
@@ -74,7 +74,6 @@ def classify_concept(cur: sqlite3.Cursor, concept: str, label: str) -> str:
 
 # ─── SEC HELPERS ──────────────────────────────────────────────────────────────
 def latest_filings(cik: str):
-    """Return up to 4 tuples: (accession, form, primary_document)."""
     subm = requests.get(f"https://data.sec.gov/submissions/CIK{cik}.json",
                         headers=HEADERS, timeout=30).json()
     picks = []
@@ -99,7 +98,7 @@ def download_instance(cik: str, accession: str, primary_doc: str) -> bytes:
 
 # ─── XBRL PARSER ──────────────────────────────────────────────────────────────
 def stream_segment_facts(inst_bytes: bytes):
-    cntlr = Cntlr.Cntlr(logFileName=None)      # home dir now writable
+    cntlr = Cntlr.Cntlr(logFileName=None)
     model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(inst_bytes))
     for fact in model.facts:
         dims = fact.context.segDimValues
@@ -170,12 +169,6 @@ def run_etl():
 
     print("\n=== Annual + TTM snapshot ===")
     print(df.to_string(index=False, float_format='{:,.0f}'.format))
-
-    unknown = pd.read_sql_query(
-        "SELECT concept FROM concept_map WHERE metric_class='UNKNOWN'", conn)
-    if not unknown.empty:
-        print("\n⚠️  Review & label these concepts (metric_class='UNKNOWN'):\n",
-              unknown['concept'].to_list())
 
     conn.close()
 
