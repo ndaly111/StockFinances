@@ -6,18 +6,27 @@ segment_etl.py – Business-segment ETL for MSFT, AAPL, TSLA
 • Parses Inline-XBRL with Arelle (keeps dimensions)
 • Filters rows whose axis ends with “SegmentsAxis”
 • Classifies concepts → REV / OPINC / UNKNOWN (stored in concept_map)
-• Writes annual & quarterly facts into segment_facts
+• Writes annual & quarterly facts into segment_facts (one table)
 • Prints annual + TTM snapshot for verification
 """
+
 # ── compatibility shim for Py≥3.10 (Arelle 2.x expects old aliases) ───────────
 import collections, collections.abc
 for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
     if not hasattr(collections, _alias):
         setattr(collections, _alias, getattr(collections.abc, _alias))
 # ──────────────────────────────────────────────────────────────────────────────
-from arelle import Cntlr, ModelManager
-import os, re, io, time, sqlite3, requests, pandas as pd
+
+import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
+
+# ---- force Arelle to use a writable temp directory --------------------------
+TMP_ARELLE_DIR = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
+TMP_ARELLE_DIR.mkdir(parents=True, exist_ok=True)
+os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)
+# -----------------------------------------------------------------------------
+
+from arelle import Cntlr, ModelManager
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 EMAIL        = os.getenv("Email")
@@ -27,10 +36,12 @@ if not EMAIL:
 HEADERS      = {"User-Agent": f"{EMAIL} - segment ETL"}
 DB_PATH      = "Stock Data.db"
 TICKER2CIK   = {"MSFT": "0000789019", "AAPL": "0000320193", "TSLA": "0001318605"}
+
 SEG_AX_RE    = re.compile(r"SegmentsAxis$", re.I)
 REV_RE       = re.compile(r"(Revenue|Sales|NetSales)", re.I)
 OPINC_RE     = re.compile(r"(OperatingIncome|OperatingProfit|OperatingIncomeLoss)", re.I)
-PAUSE_SEC    = 0.30            # keep well <10 req/s
+
+PAUSE_SEC    = 0.30        # SEC guidance: <10 req/s
 
 # ─── DB SETUP ─────────────────────────────────────────────────────────────────
 def ensure_tables(conn: sqlite3.Connection):
@@ -61,14 +72,9 @@ def classify_concept(cur: sqlite3.Cursor, concept: str, label: str) -> str:
     row = cur.fetchone()
     if row:
         return row[0]
-
-    if REV_RE.search(concept) or REV_RE.search(label):
-        cls = "REV"
-    elif OPINC_RE.search(concept) or OPINC_RE.search(label):
-        cls = "OPINC"
-    else:
-        cls = "UNKNOWN"
-
+    cls = ("REV"   if REV_RE.search(concept)   or REV_RE.search(label)   else
+           "OPINC" if OPINC_RE.search(concept) or OPINC_RE.search(label) else
+           "UNKNOWN")
     cur.execute("INSERT OR IGNORE INTO concept_map VALUES (?,?)", (concept, cls))
     return cls
 
@@ -77,17 +83,15 @@ def latest_filings(cik: str):
     """Return up to 4 tuples: (accession, form, primary_document)."""
     subm = requests.get(f"https://data.sec.gov/submissions/CIK{cik}.json",
                         headers=HEADERS, timeout=30).json()
-
     picks = []
     for acc, form, doc in zip(subm["filings"]["recent"]["accessionNumber"],
                               subm["filings"]["recent"]["form"],
                               subm["filings"]["recent"]["primaryDocument"]):
-        clean_acc = acc.replace("-", "")
-        # keep 1×10-K + 3×10-Q at most
+        acc_clean = acc.replace("-", "")
         if form.startswith("10-K") and not any(p[1].startswith("10-K") for p in picks):
-            picks.append((clean_acc, form, doc))
+            picks.append((acc_clean, form, doc))
         elif form.startswith("10-Q") and len([p for p in picks if p[1].startswith("10-Q")]) < 3:
-            picks.append((clean_acc, form, doc))
+            picks.append((acc_clean, form, doc))
         if len(picks) >= 4:
             break
     return picks
@@ -101,8 +105,7 @@ def download_instance(cik: str, accession: str, primary_doc: str) -> bytes:
 
 # ─── XBRL PARSER ──────────────────────────────────────────────────────────────
 def stream_segment_facts(inst_bytes: bytes):
-    """Yield dicts for each business-segment fact in one Inline-XBRL instance."""
-    cntlr = Cntlr.Cntlr(logFileName="logToPrint")
+    cntlr = Cntlr.Cntlr(logFileName=None, userAppDir=str(TMP_ARELLE_DIR))
     model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(inst_bytes))
     for fact in model.facts:
         dims = fact.context.segDimValues
@@ -130,9 +133,9 @@ def run_etl():
 
     for tk, cik in TICKER2CIK.items():
         print(f"▶ {tk} ({cik})")
-        for accession, form, doc in latest_filings(cik):          # ← unpack 3
+        for accession, form, doc in latest_filings(cik):
             try:
-                inst = download_instance(cik, accession, doc)     # ← pass 3rd arg
+                inst = download_instance(cik, accession, doc)
             except Exception as e:
                 print(f"  • skip {form} {accession[:10]} – {e}")
                 continue
@@ -152,7 +155,7 @@ def run_etl():
             conn.commit()
             time.sleep(PAUSE_SEC)
 
-    # ─ verification pivot ───────────────────────────────────
+    # ─── verification pivot ───────────────────────────────────────────────────
     df = pd.read_sql_query("""
         WITH latest_year AS (
           SELECT ticker, MAX(fiscal_year) fy
@@ -160,13 +163,11 @@ def run_etl():
         SELECT s.ticker,
                s.axis_member AS segment,
                SUM(CASE WHEN s.metric_class='REV'  AND s.period_months=12 THEN s.value_usd END) AS annual_rev,
-               SUM(CASE WHEN s.metric_class='REV'  AND s.period_months=3  AND
-                        DATE(s.end_date) >= DATE('now','-365 day')
-                        THEN s.value_usd END) AS ttm_rev,
+               SUM(CASE WHEN s.metric_class='REV'  AND s.period_months=3
+                        AND DATE(s.end_date) >= DATE('now','-365 day') THEN s.value_usd END) AS ttm_rev,
                SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=12 THEN s.value_usd END) AS annual_opinc,
-               SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=3  AND
-                        DATE(s.end_date) >= DATE('now','-365 day')
-                        THEN s.value_usd END) AS ttm_opinc
+               SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=3
+                        AND DATE(s.end_date) >= DATE('now','-365 day') THEN s.value_usd END) AS ttm_opinc
         FROM segment_facts s
         JOIN latest_year y ON y.ticker=s.ticker AND y.fy=s.fiscal_year
         GROUP BY s.ticker, segment
