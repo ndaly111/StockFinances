@@ -13,19 +13,16 @@ for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
 import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
-# ── Step 1: guaranteed writable dir in /tmp ───────────────────────────────────
-TMP_ARELLE_DIR = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
-TMP_ARELLE_DIR.mkdir(parents=True, exist_ok=True)
+# ── SINGLE definitive directory that Arelle will use ─────────────────────────
+TMP_DIR         = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
+USER_APP_DIR    = TMP_DIR / ".arelle"      # exact folder Arelle expects
+USER_APP_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── Step 2: monkey-patch expanduser BEFORE importing Arelle ───────────────────
-import os.path as _osp
-_expanduser_orig = _osp.expanduser
-def _expanduser_hijack(path):
-    return str(TMP_ARELLE_DIR) if path.startswith("~") else _expanduser_orig(path)
-_osp.expanduser = _expanduser_hijack
-# (no harm to restore later; not needed here)
+# Set both env vars *before* importing Arelle
+os.environ["ARELLE_USER_APP_DIR"] = str(USER_APP_DIR)
+# (HOME override no longer needed)
 
-# ── Step 3: import Arelle – it now resolves ~/.arelle into /tmp/arelle-ci ────
+# ── now import Arelle – it will use /tmp/arelle-ci/.arelle ───────────────────
 from arelle import Cntlr, ModelManager
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
