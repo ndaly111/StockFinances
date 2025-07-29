@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
 """
 segment_etl.py – Business-segment ETL for MSFT, AAPL, TSLA
-──────────────────────────────────────────────────────────
-• Pulls latest 10-K + three 10-Qs per company
-• Parses Inline-XBRL with Arelle (keeps dimensions)
-• Filters rows whose axis name ends with “SegmentsAxis”
-• Classifies concepts → REV / OPINC / UNKNOWN (persists lookup in concept_map)
-• Stores facts (annual & quarterly) in segment_facts (one table)
-• Prints annual + TTM snapshot for verification
 """
 
 # ── compatibility shim for Py≥3.10 (Arelle 2.x expects old aliases) ───────────
@@ -20,13 +13,14 @@ for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
 import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
-# ---- force Arelle to use a writable temp directory ---------------------------
+# ---- force Arelle to use a writable directory --------------------------------
 TMP_ARELLE_DIR = pathlib.Path(tempfile.gettempdir(), "arelle-ci")
 TMP_ARELLE_DIR.mkdir(parents=True, exist_ok=True)
-os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)
+os.environ["HOME"]                = str(TMP_ARELLE_DIR)   # ← NEW: Arelle uses ~
+os.environ["ARELLE_USER_APP_DIR"] = str(TMP_ARELLE_DIR)   # (harmless but kept)
 # -----------------------------------------------------------------------------
 
-from arelle import Cntlr, ModelManager
+from arelle import Cntlr, ModelManager   # import AFTER env override
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 EMAIL = os.getenv("Email")
@@ -105,8 +99,7 @@ def download_instance(cik: str, accession: str, primary_doc: str) -> bytes:
 
 # ─── XBRL PARSER ──────────────────────────────────────────────────────────────
 def stream_segment_facts(inst_bytes: bytes):
-    """Yield dicts for each business-segment fact in one Inline-XBRL instance."""
-    cntlr = Cntlr.Cntlr(logFileName=None)   # user dir set via env var
+    cntlr = Cntlr.Cntlr(logFileName=None)      # home dir now writable
     model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(inst_bytes))
     for fact in model.facts:
         dims = fact.context.segDimValues
