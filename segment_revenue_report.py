@@ -1,78 +1,148 @@
 #!/usr/bin/env python3
 """
-segment_revenue_report.py
-────────────────────────────────────────────────────────────
-Downloads BUSINESS-SEGMENT revenue from the SEC XBRL API
-and writes a single TXT file: segment_report.txt.
-
-• CLI:  python segment_revenue_report.py            → uses default list
-        python segment_revenue_report.py IBM ORCL   → override list
-• Defaults to AAPL, MSFT, TSLA when nothing supplied.
+segment_revenue_report.py – Business-segment ETL for MSFT, AAPL, TSLA
 """
 
-from __future__ import annotations
-import json, os, sys, time, pathlib, requests
+# ── compatibility shim for Py≥3.10 (Arelle 2.x expects old aliases) ───────────
+import collections, collections.abc
+for _alias in ("MutableSet", "MutableMapping", "MutableSequence"):
+    if not hasattr(collections, _alias):
+        setattr(collections, _alias, getattr(collections.abc, _alias))
+# ──────────────────────────────────────────────────────────────────────────────
+
+import os, re, io, time, sqlite3, tempfile, pathlib, requests, pandas as pd
 from datetime import datetime
 
-TAG      = "RevenueFromContractWithCustomerExcludingAssessedTax"
-TAXONOMY = "us-gaap"
-UNIT     = "USD"
-OUTFILE  = pathlib.Path("segment_report.txt")
-CACHE    = pathlib.Path(".cik_cache.json")
-UA       = os.getenv("SEC_EMAIL", "anonymous@example.com")
+# ── SINGLE definitive directory that Arelle will use ─────────────────────────
+TMP_DIR      = pathlib.Path(tempfile.gettempdir(), "arelle-ci")     # /tmp/arelle-ci
+USER_APP_DIR = TMP_DIR / ".arelle"                                  # …/.arelle
+USER_APP_DIR.mkdir(parents=True, exist_ok=True)
 
-HEADERS  = {"User-Agent": UA, "Accept-Encoding": "gzip, deflate"}
-API_TMPL = ("https://data.sec.gov/api/xbrl/companyconcept/{cik}/"
-            f"{TAXONOMY}/{TAG}.json")
+# Tell Python (and therefore Arelle) that this scratch folder *is* “home”
+os.environ["HOME"]                 = str(TMP_DIR)       # ← absolutely crucial on CI
+os.environ["ARELLE_USER_APP_DIR"]  = str(USER_APP_DIR)  # belt-and-suspenders
 
-# ─────────────────────────────
-def _ticker_map() -> dict[str, str]:
-    if CACHE.exists() and CACHE.stat().st_mtime > time.time() - 7*86400:
-        return json.loads(CACHE.read_text())
-    url = "https://www.sec.gov/files/company_tickers.json"
-    data = requests.get(url, headers=HEADERS, timeout=30).json()
-    mapping = {d["ticker"]: f'{int(d["cik_str"]):010d}' for d in data.values()}
-    CACHE.write_text(json.dumps(mapping));  return mapping
+# ── now import Arelle – it will use /tmp/arelle-ci/.arelle ───────────────────
+from arelle import Cntlr, ModelManager
 
-def _latest_segments(cik: str):
-    payload = requests.get(API_TMPL.format(cik=cik), headers=HEADERS, timeout=60).json()
-    facts = [f for u, items in payload.get("units", {}).items() if u == UNIT
-             for f in items if f.get("segment")]
-    if not facts: return "", []
-    latest = max(f["end"] for f in facts)
-    totals = {}
-    for f in facts:
-        if f["end"] != latest: continue
-        totals[f["segment"]] = totals.get(f["segment"], 0) + f["value"]
-    return latest, sorted(totals.items(), key=lambda kv: kv[1], reverse=True)
+# ── CONFIG ────────────────────────────────────────────────────────────────────
+EMAIL = os.getenv("Email")  # set this as a repository/organisation secret
+if not EMAIL:
+    raise SystemExit("ERROR: export Email='your.sec.address@example.com' first")
 
-def _load_tickers(cli: list[str]):
-    if cli: return cli
-    f = pathlib.Path("tickers.txt")
-    if f.exists(): return [t.strip() for t in f.read_text().splitlines() if t.strip()]
-    return ["AAPL", "MSFT", "TSLA"]           # ← default list
+HEADERS    = {"User-Agent": f"{EMAIL} - segment ETL"}
+DB_PATH    = "Stock Data.db"
+TICKER2CIK = {"MSFT": "0000789019", "AAPL": "0000320193", "TSLA": "0001318605"}
 
-# ─────────────────────────────
-def segment_revenue_report() -> None:
-    tickers = _load_tickers(sys.argv[1:])
-    mapping = _ticker_map()
-    lines   = [f"Segment revenue report — {datetime.utcnow():%Y-%m-%d %H:%M UTC}\n"]
-    for t in tickers:
-        cik = mapping.get(t.upper())
-        if not cik:
-            lines.append(f"{t.upper()}: † ticker not in SEC list\n");  continue
-        try:
-            end, segs = _latest_segments(cik)
-            if not segs:
-                lines.append(f"{t.upper()}: † NO segment data for tag {TAG}\n");  continue
-            lines.append(f"{t.upper()}  (period end {end})")
-            for name, val in segs:
-                lines.append(f"    ${val:,.0f}  {name}")
-            lines.append("")
-        except Exception as e:
-            lines.append(f"{t.upper()}: † ERROR — {e}\n")
-    OUTFILE.write_text("\n".join(lines))
-    print(f"✓ Wrote {OUTFILE}")
+SEG_AX_RE  = re.compile(r"SegmentsAxis$", re.I)
+REV_RE     = re.compile(r"(Revenue|Sales|NetSales)", re.I)
+OPINC_RE   = re.compile(r"(OperatingIncome|OperatingProfit|OperatingIncomeLoss)", re.I)
+PAUSE_SEC  = 0.30   # courteous rate
+
+# ── DB helpers ────────────────────────────────────────────────────────────────
+def ensure_tables(conn):
+    cur = conn.cursor()
+    cur.executescript("""
+    CREATE TABLE IF NOT EXISTS concept_map (
+        concept TEXT PRIMARY KEY,
+        metric_class TEXT CHECK(metric_class IN ('REV','OPINC','IGNORE','UNKNOWN'))
+    );
+    CREATE TABLE IF NOT EXISTS segment_facts (
+        cik TEXT, ticker TEXT, fiscal_year INTEGER,
+        axis_member TEXT, concept TEXT, metric_class TEXT,
+        value_usd REAL, form TEXT, end_date TEXT, period_months INTEGER,
+        PRIMARY KEY (cik, axis_member, concept, end_date)
+    );
+    """); conn.commit()
+
+def classify_concept(cur, concept, label):
+    cur.execute("SELECT metric_class FROM concept_map WHERE concept=?", (concept,))
+    row = cur.fetchone()
+    if row:
+        return row[0]
+    cls = ("REV" if REV_RE.search(concept) or REV_RE.search(label)
+           else "OPINC" if OPINC_RE.search(concept) or OPINC_RE.search(label)
+           else "UNKNOWN")
+    cur.execute("INSERT OR IGNORE INTO concept_map VALUES (?,?)", (concept, cls))
+    return cls
+
+# ── SEC helpers ───────────────────────────────────────────────────────────────
+def latest_filings(cik):
+    sub = requests.get(f"https://data.sec.gov/submissions/CIK{cik}.json",
+                       headers=HEADERS, timeout=30).json()
+    picks = []
+    for acc, form, doc in zip(sub["filings"]["recent"]["accessionNumber"],
+                              sub["filings"]["recent"]["form"],
+                              sub["filings"]["recent"]["primaryDocument"]):
+        acc = acc.replace("-", "")
+        if form.startswith("10-K") and not any(p[1].startswith("10-K") for p in picks):
+            picks.append((acc, form, doc))
+        elif form.startswith("10-Q") and len([p for p in picks if p[1].startswith("10-Q")]) < 3:
+            picks.append((acc, form, doc))
+        if len(picks) >= 4: break
+    return picks
+
+def download_instance(cik, acc, doc):
+    url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc}/{doc}"
+    r = requests.get(url, headers=HEADERS, timeout=60); r.raise_for_status()
+    return r.content
+
+# ── Inline-XBRL parser ────────────────────────────────────────────────────────
+def stream_segment_facts(html_bytes):
+    # explicitly pass our scratch dir so nothing leaks back to /home/<other-user>
+    cntlr = Cntlr.Cntlr(logFileName=None, userAppDir=str(USER_APP_DIR))
+    model = ModelManager.initialize(cntlr).loadXbrl(io.BytesIO(html_bytes))
+    for fact in model.facts:
+        dims = fact.context.segDimValues
+        if not dims or not any(SEG_AX_RE.search(ax.localName) for ax, _ in dims):
+            continue
+        axis, member = next(iter(dims))
+        end   = fact.context.endDatetime.date()
+        start = fact.context.startDatetime.date()
+        months = (end.year-start.year)*12 + (end.month-start.month)
+        yield dict(concept=fact.concept.qname.localName,
+                   label=fact.concept.label() or fact.concept.qname.localName,
+                   member=member.localName,
+                   value=float(fact.value or 0),
+                   end=end.isoformat(),
+                   period_months=months)
+    model.close()
+
+# ── Main ETL ──────────────────────────────────────────────────────────────────
+def run_etl():
+    conn = sqlite3.connect(DB_PATH); ensure_tables(conn); cur = conn.cursor()
+    for tk, cik in TICKER2CIK.items():
+        print(f"▶ {tk} ({cik})")
+        for acc, form, doc in latest_filings(cik):
+            try:
+                inst = download_instance(cik, acc, doc)
+            except Exception as e:
+                print(f"  • skip {form} {acc[:10]} – {e}"); continue
+            for f in stream_segment_facts(inst):
+                cls = classify_concept(cur, f["concept"], f["label"])
+                if cls == "IGNORE": continue
+                fy = datetime.fromisoformat(f["end"]).year
+                cur.execute("""
+                INSERT OR REPLACE INTO segment_facts
+                  (cik,ticker,fiscal_year,axis_member,concept,metric_class,
+                   value_usd,form,end_date,period_months)
+                VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                (cik, tk, fy, f["member"], f["concept"], cls,
+                 f["value"], form, f["end"], f["period_months"]))
+            conn.commit(); time.sleep(PAUSE_SEC)
+
+    df = pd.read_sql_query("""
+     WITH latest AS (SELECT ticker, MAX(fiscal_year) fy FROM segment_facts GROUP BY ticker)
+     SELECT s.ticker, s.axis_member AS segment,
+            SUM(CASE WHEN s.metric_class='REV'   AND s.period_months=12 THEN s.value_usd END) AS annual_rev,
+            SUM(CASE WHEN s.metric_class='REV'   AND s.period_months=3  AND DATE(s.end_date)>=DATE('now','-365 day') THEN s.value_usd END) AS ttm_rev,
+            SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=12 THEN s.value_usd END) AS annual_opinc,
+            SUM(CASE WHEN s.metric_class='OPINC' AND s.period_months=3  AND DATE(s.end_date)>=DATE('now','-365 day') THEN s.value_usd END) AS ttm_opinc
+     FROM segment_facts s JOIN latest l ON l.ticker=s.ticker AND l.fy=s.fiscal_year
+     GROUP BY s.ticker, segment ORDER BY s.ticker, annual_rev DESC""", conn)
+    print("\n=== Annual + TTM snapshot ===")
+    print(df.to_string(index=False, float_format='{:,.0f}'.format))
+    conn.close()
 
 if __name__ == "__main__":
-    segment_revenue_report()
+    run_etl()
