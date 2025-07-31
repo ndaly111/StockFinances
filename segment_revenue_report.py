@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 # ── USER SETTINGS ──────────────────────────────────────────────────────────────
 TICKERS     = ["AAPL", "MSFT", "TSLA"]        # add any tickers here
-USER_AGENT  = "SegmentScraper/1.2 (you@real-email.com)"  # SEC requires contact
+USER_AGENT  = f"SegmentScraper/1.2 ({os.environ['Email']})"  # Email comes from GitHub secret"  # SEC requires contact
 PAUSE_SEC   = 0.25
 YEARS_BACK  = 3
 CATALOG_DIR = "segment_catalogs"              # folder to store JSON catalogs
