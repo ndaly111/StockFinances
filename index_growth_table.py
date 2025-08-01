@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# index_growth_table.py  –  UNIFIED STYLE VERSION  (2025-07-14 rev h)
+# index_growth_table.py  –  UNIFIED STYLE VERSION  (2025-08-01 rev i)
 # ────────────────────────────────────────────────────────────
 # Mini-main index_growth(treasury_yield)
 #   • Logs SPY & QQQ implied-growth + P/E history
@@ -48,7 +48,8 @@ def _build_html(df: pd.DataFrame) -> str:
     sty = (
         df.style
           .hide(axis="index")
-          .map(_pct_color, subset="%ctile", na_action="ignore")
+          # NOTE: no na_action kwarg (avoids pandas passing it to func)
+          .map(lambda v: _pct_color(v), subset="%ctile")
           .set_table_attributes('class="summary-table"')
     )
     return SUMMARY_CSS + sty.to_html()
