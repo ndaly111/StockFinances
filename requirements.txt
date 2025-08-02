@@ -3,7 +3,7 @@ numpy
 scipy
 yfinance
 sec-edgar-downloader
-matplotlib
+matplotlib          # still needed for other parts of the site
 jinja2
 pdfkit
 peewee
@@ -11,3 +11,4 @@ lxml
 requests
 isodate
 arelle==2.2
+plotly>=5           # ← NEW – brings in its own deps (tenacity etc.)
