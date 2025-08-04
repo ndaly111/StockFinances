@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────
-#  generate_earnings_tables.py   (full working version, 29-Jul-2025)
+#  generate_earnings_tables.py   (fixed 04-Aug-2025)
 # ──────────────────────────────────────────────────────────────
 """
 Builds / refreshes earnings tables for the dashboard.
@@ -22,7 +22,7 @@ from bs4 import BeautifulSoup
 
 from ticker_manager import read_tickers, modify_tickers   # unchanged
 
-# ─── CONFIG ─────────────────────────────────────────────
+# ─── CONFIG ──────────────────────────────────────────────────
 DB_PATH              = "Stock Data.db"
 OUTPUT_DIR           = "charts"
 PAST_HTML            = os.path.join(OUTPUT_DIR, "earnings_past.html")
@@ -32,7 +32,7 @@ UPCOMING_WINDOW_DAYS = 90
 HEADERS              = {'User-Agent': 'Mozilla/5.0'}
 LOG                  = logging.getLogger(__name__)
 
-# ─── DB SET-UP ──────────────────────────────────────────
+# ─── DB SET-UP ───────────────────────────────────────────────
 def _ensure_tables(conn):
     conn.executescript("""
     CREATE TABLE IF NOT EXISTS earnings_past (
@@ -50,12 +50,12 @@ def _ensure_tables(conn):
         timestamp TEXT,
         PRIMARY KEY(ticker, earnings_date));
 
-    CREATE INDEX IF NOT EXISTS idx_past_date    ON earnings_past(earnings_date);
+    CREATE INDEX IF NOT EXISTS idx_past_date     ON earnings_past(earnings_date);
     CREATE INDEX IF NOT EXISTS idx_upcoming_date ON earnings_upcoming(earnings_date);
     """)
     conn.commit()
 
-# ─── LITTLE HELPERS ────────────────────────────────────
+# ─── LITTLE HELPERS ─────────────────────────────────────────
 def _clean(x):
     return None if x is None or (isinstance(x, float) and math.isnan(x)) else float(x)
 
@@ -84,7 +84,7 @@ def _finviz_eps_next_q(tic):
         LOG.warning("Finviz scrape failed for %s: %s", tic, e)
     return None
 
-# ─── FETCH + STORE ─────────────────────────────────────
+# ─── FETCH + STORE ──────────────────────────────────────────
 def _fetch_and_store(conn, tickers):
     today           = datetime.now(timezone.utc).date()
     past_cutoff     = today - timedelta(days=PAST_WINDOW_DAYS)
@@ -155,7 +155,7 @@ def _fetch_and_store(conn, tickers):
     conn.commit()
     return reporting_today
 
-# ─── HTML RENDERERS ────────────────────────────────────
+# ─── HTML RENDERERS ────────────────────────────────────────
 def _render_past_html(conn, reporting_today):
     today       = datetime.utcnow().date()
     past_cutoff = today - timedelta(days=PAST_WINDOW_DAYS)
@@ -166,6 +166,11 @@ def _render_past_html(conn, reporting_today):
         params=[past_cutoff.isoformat(), today.isoformat()],
         parse_dates=["earnings_date"]
     )
+
+    # ── FIX: force numeric dtypes ───────────────────────────
+    for col in ("eps_estimate", "reported_eps", "surprise_percent"):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    # ────────────────────────────────────────────────────────
 
     if df.empty:
         return f"<p>No earnings in the past {PAST_WINDOW_DAYS} days.</p>"
@@ -233,7 +238,7 @@ def _render_upcoming_html(conn):
                  "</ul></details>")
     return html
 
-# ─── MAIN ENTRYPOINT ──────────────────────────────────
+# ─── MAIN ENTRYPOINT ────────────────────────────────────────
 def generate_earnings_tables():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
