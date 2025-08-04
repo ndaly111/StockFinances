@@ -1,192 +1,266 @@
-# ─────────────────────────────────────────────────────────────
-#  generate_earnings_tables.py   (29-Jul-2025, Zacks edition)
-# ─────────────────────────────────────────────────────────────
-import os, sqlite3, logging, math, re, requests
-from datetime import datetime, timedelta, timezone
+#!/usr/bin/env python3
+# index_growth_table.py  –  Interactive charts under the original filenames
+# (2025-08-03 rev Q)
+# ─────────────────────────────────────────────────────────────────────────
+# • Logs implied-growth, P/E, EPS and 10-yr yield
+# • Generates three Plotly-JS + table HTML files per index:
+#     1) <ticker>_growth.html        (Implied Growth)
+#     2) <ticker>_pe.html            (P/E ratio)
+#     3) <ticker>_eps_yield.html     (EPS vs 10-yr yield)
+# • Keeps overview table unchanged (links to <ticker>_growth.html)
+# ─────────────────────────────────────────────────────────────────────────
 
-import pandas as pd, yfinance as yf
-from bs4 import BeautifulSoup
-from ticker_manager import read_tickers, modify_tickers
+import os, sqlite3, numpy as np, pandas as pd, shutil
+from datetime import datetime
+import yfinance as yf
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
-# CONFIG
-DB_PATH, OUTPUT_DIR = "Stock Data.db", "charts"
-PAST_HTML  = os.path.join(OUTPUT_DIR, "earnings_past.html")
-UPCOMING_HTML = os.path.join(OUTPUT_DIR, "earnings_upcoming.html")
-PAST_WINDOW_DAYS, UPCOMING_WINDOW_DAYS = 7, 90
-HEADERS = {"User-Agent": "Mozilla/5.0"}
-LOG = logging.getLogger(__name__)
+# ─── Config ──────────────────────────────────────────────
+DB_PATH, CHART_DIR = "Stock Data.db", "charts"
+IDXES              = ["SPY", "QQQ"]
+FALLBACK_YIELD     = 0.045            # 4.5 %
+os.makedirs(CHART_DIR, exist_ok=True)
 
-# ─── DB helpers ──────────────────────────────────────────────
+# ─── CSS + summary-table helper ──────────────────────────
+SUMMARY_CSS = """
+<style>
+.summary-table{width:100%;border-collapse:collapse;
+  font-family:Verdana,Arial,sans-serif;font-size:12px;
+  border:3px solid #003366;}
+.summary-table th{background:#f2f2f2;padding:4px 6px;
+  border:1px solid #B0B0B0;text-align:center;}
+.summary-table td{padding:4px 6px;border:1px solid #B0B0B0;text-align:center;}
+</style>
+"""
+def _pct_color(v):
+    try:
+        v=float(v)
+        if v<=30: return "color:#008800;font-weight:bold"
+        if v>=70: return "color:#CC0000;font-weight:bold"
+    except: pass
+    return ""
+def _build_html(df: pd.DataFrame) -> str:
+    return (df.style.hide(axis="index")
+                 .map(lambda x: _pct_color(x), subset="%ctile")
+                 .set_table_attributes('class="summary-table"')
+            ).to_html()
+
+# ─── Yield normaliser ────────────────────────────────────
+def _norm_yld(v):
+    try:
+        if v is None: return FALLBACK_YIELD
+        v=float(v)
+        if v<0.5:  return v          # already decimal
+        if v<20:   return v/100      # quoted “4.22”
+        return v/1000               # ^TNX style
+    except: return FALLBACK_YIELD
+
+# ─── yfinance helpers ────────────────────────────────────
+def _fetch_pe_eps(tk):
+    info=yf.Ticker(tk).info
+    ttm_pe = info.get("trailingPE")
+    fwd_pe = info.get("forwardPE")
+    ttm_eps= info.get("trailingEps")
+    if fwd_pe is None:
+        px, eps_f = info.get("regularMarketPrice"), info.get("forwardEps")
+        if px and eps_f:
+            try: fwd_pe = px/eps_f
+            except ZeroDivisionError: pass
+    return ttm_pe, fwd_pe, ttm_eps
+
+def _growth(ttm_pe,fwd_pe,y):
+    return (y*ttm_pe-1 if ttm_pe else None,
+            y*fwd_pe-1 if fwd_pe else None)
+
+# ─── DB helpers ──────────────────────────────────────────
 def _ensure_tables(conn):
     conn.executescript("""
-    CREATE TABLE IF NOT EXISTS earnings_past (
-      ticker TEXT, earnings_date TEXT,
-      eps_estimate REAL, reported_eps REAL, surprise_percent REAL,
-      timestamp TEXT, PRIMARY KEY(ticker, earnings_date));
-    CREATE TABLE IF NOT EXISTS earnings_upcoming (
-      ticker TEXT, earnings_date TEXT,
-      timestamp TEXT, PRIMARY KEY(ticker, earnings_date));
-    CREATE INDEX IF NOT EXISTS idx_past_date    ON earnings_past(earnings_date);
-    CREATE INDEX IF NOT EXISTS idx_upcoming_date ON earnings_upcoming(earnings_date);
+    CREATE TABLE IF NOT EXISTS Index_Growth_History (
+      Date TEXT, Ticker TEXT, Growth_Type TEXT, Implied_Growth REAL,
+      PRIMARY KEY (Date,Ticker,Growth_Type));
+    CREATE TABLE IF NOT EXISTS Index_PE_History (
+      Date TEXT, Ticker TEXT, PE_Type TEXT, PE_Ratio REAL,
+      PRIMARY KEY (Date,Ticker,PE_Type));
+    CREATE TABLE IF NOT EXISTS Index_EPS_History (
+      Date TEXT, Ticker TEXT, EPS_Type TEXT, EPS REAL,
+      PRIMARY KEY (Date,Ticker,EPS_Type));
+    CREATE TABLE IF NOT EXISTS Treasury_Yield_History (
+      Date TEXT PRIMARY KEY, TenYr REAL);
     """)
-    conn.commit()
 
-# ─── utilities ───────────────────────────────────────────────
-def _clean(x):
-    return None if x is None or (isinstance(x, float) and math.isnan(x)) else float(x)
-
-def _calc_surprise(est, act):
-    if est is None or act is None or est == 0:
-        return None
-    return round((act - est) / abs(est) * 100, 2)
-
-# Zacks scraper: current-quarter EPS estimate
-_zacks_rx = re.compile(r"Current Qtr\)</td><td.*?>\s*([+-]?\d+\.\d+)")
-def _zacks_estimate(tic: str):
-    url = f"https://www.zacks.com/stock/quote/{tic}?q={tic}"
-    try:
-        html = requests.get(url, headers=HEADERS, timeout=10).text
-        match = _zacks_rx.search(html)
-        if match:
-            return float(match.group(1))
-    except Exception as e:
-        LOG.warning("Zacks scrape failed for %s: %s", tic, e)
-    return None
-
-# ─── core fetch/store ───────────────────────────────────────
-def _fetch_and_store(conn, tickers):
-    today   = datetime.now(timezone.utc).date()
-    past_ct = today - timedelta(days=PAST_WINDOW_DAYS)
-    up_ct   = today + timedelta(days=UPCOMING_WINDOW_DAYS)
-    reporting_today = set()
-
-    for tic in tickers:
-        try:
-            cal = yf.Ticker(tic).get_earnings_dates(limit=60)
-            if cal is None or cal.empty:
-                continue
-            cal.index = pd.to_datetime(cal.index).tz_localize(None).date
-            for ed, row in cal.iterrows():
-                est = _clean(row.get("EPS Estimate") or row.get("epsestimate"))
-                act = _clean(row.get("Reported EPS") or row.get("epsactual"))
-
-                # fallback: Zacks estimate
-                if est is None:
-                    est = _zacks_estimate(tic)
-
-                surpr = _calc_surprise(est, act)
-
-                if past_ct <= ed <= today:
-                    if ed == today:
-                        reporting_today.add(tic)
-                    conn.execute("""
-                      INSERT INTO earnings_past
-                      (ticker, earnings_date, eps_estimate, reported_eps,
-                       surprise_percent, timestamp)
-                      VALUES (?,?,?,?,?,?)
-                      ON CONFLICT(ticker, earnings_date) DO UPDATE SET
-                        eps_estimate     = excluded.eps_estimate,
-                        reported_eps     = excluded.reported_eps,
-                        surprise_percent = excluded.surprise_percent,
-                        timestamp        = excluded.timestamp;
-                    """, (tic, ed.isoformat(), est, act, surpr,
-                          datetime.utcnow().isoformat()))
-                elif today < ed <= up_ct:
-                    conn.execute("""
-                      INSERT OR REPLACE INTO earnings_upcoming
-                      (ticker, earnings_date, timestamp)
-                      VALUES (?,?,?);
-                    """, (tic, ed.isoformat(), datetime.utcnow().isoformat()))
-        except Exception:
-            LOG.exception("Failed on %s", tic)
-
-    conn.commit()
-    return reporting_today
-
-# ─── HTML renderers ──────────────────────────────────────────
-def _render_past_html(conn, reporting_today):
-    today = datetime.utcnow().date()
-    past_ct = today - timedelta(days=PAST_WINDOW_DAYS)
-    df = pd.read_sql("SELECT * FROM earnings_past WHERE earnings_date BETWEEN ? AND ? ORDER BY earnings_date DESC",
-                     conn, params=[past_ct.isoformat(), today.isoformat()],
-                     parse_dates=["earnings_date"])
-
-    if df.empty:
-        return f"<p>No earnings in the past {PAST_WINDOW_DAYS} days.</p>"
-
-    df["surprise_percent"] = pd.to_numeric(df["surprise_percent"], errors="coerce")
-    df["Surprise_HTML"] = df["surprise_percent"].apply(
-        lambda x: "-" if pd.isna(x) else
-        f'<span class="{"positive" if x>0 else "negative"}">{x:+.2f}%</span>'
-    )
-
-    beats  = df[df.surprise_percent > 0].nlargest(5, "surprise_percent")
-    misses = df[df.surprise_percent < 0].nsmallest(5, "surprise_percent")
-
-    header = (
-        f"<p>Showing earnings from {past_ct} to {today}.</p>"
-        + (f"<p><b>Reporting Today:</b> {', '.join(sorted(reporting_today))}</p>"
-           if reporting_today else "")
-        + "<h3>Top 5 Beats</h3><ul>"
-        + "".join(f"<li>{r.ticker}: {r.surprise_percent:+.2f}%</li>" for _, r in beats.iterrows())
-        + "</ul><h3>Top 5 Misses</h3><ul>"
-        + "".join(f"<li>{r.ticker}: {r.surprise_percent:+.2f}%</li>" for _, r in misses.iterrows())
-        + "</ul>"
-    )
-
-    display = (df[["ticker","earnings_date","eps_estimate","reported_eps","Surprise_HTML"]]
-               .rename(columns={"ticker":"Ticker","earnings_date":"Date",
-                                "eps_estimate":"EPS Est","reported_eps":"Reported EPS",
-                                "Surprise_HTML":"Surprise"}))
-
-    head = display.head(10).to_html(index=False, escape=False, classes="center-table", border=0)
-    if len(display) > 10:
-        rest  = display.iloc[10:].to_html(index=False, escape=False, classes="center-table", border=0)
-        table = head + f"<details><summary>Show More</summary>{rest}</details>"
-    else:
-        table = head
-    return header + table
-
-def _render_upcoming_html(conn):
-    today = datetime.utcnow().date()
-    up_ct = today + timedelta(days=UPCOMING_WINDOW_DAYS)
-    df = pd.read_sql("SELECT * FROM earnings_upcoming WHERE earnings_date>? AND earnings_date<=? ORDER BY earnings_date",
-                     conn, params=[today.isoformat(), up_ct.isoformat()],
-                     parse_dates=["earnings_date"])
-    if df.empty:
-        return f"<p>No upcoming earnings in the next {UPCOMING_WINDOW_DAYS} days.</p>"
-
-    df["Date"] = df["earnings_date"].dt.date
-    early_ct = today + timedelta(days=PAST_WINDOW_DAYS)
-    early, later = df[df.Date <= early_ct], df[df.Date > early_ct]
-
-    html = ""
-    if not early.empty:
-        html += "<h3>Next 7 Days</h3><ul>" + \
-                "".join(f"<li>{r.ticker} — {r.Date}</li>" for _, r in early.iterrows()) + \
-                "</ul>"
-    if not later.empty:
-        html += ("<details><summary>Beyond 7 Days</summary><ul>" +
-                 "".join(f"<li>{r.ticker} — {r.Date}</li>" for _, r in later.iterrows()) +
-                 "</ul></details>")
-    return html
-
-# ─── main ────────────────────────────────────────────────────
-def generate_earnings_tables():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    yf.set_tz_cache_location(os.path.join(OUTPUT_DIR, "tz_cache"))
-
-    tickers = modify_tickers(read_tickers("tickers.csv"), is_remote=True)
-
+def _log_today(y):
+    today=datetime.today().strftime("%Y-%m-%d")
     with sqlite3.connect(DB_PATH) as conn:
-        _ensure_tables(conn)
-        reporting_today = _fetch_and_store(conn, tickers)
-        past_html       = _render_past_html(conn, reporting_today)
-        upcoming_html   = _render_upcoming_html(conn)
+        _ensure_tables(conn); cur=conn.cursor()
+        cur.execute("INSERT OR REPLACE INTO Treasury_Yield_History VALUES (?,?)",
+                    (today,y))
+        for tk in IDXES:
+            ttm_pe,fwd_pe,ttm_eps=_fetch_pe_eps(tk)
+            ttm_g,fwd_g=_growth(ttm_pe,fwd_pe,y)
+            if ttm_g  is not None: cur.execute(
+                "INSERT OR REPLACE INTO Index_Growth_History VALUES (?,?, 'TTM', ?)",
+                (today,tk,ttm_g))
+            if fwd_g  is not None: cur.execute(
+                "INSERT OR REPLACE INTO Index_Growth_History VALUES (?,?, 'Forward', ?)",
+                (today,tk,fwd_g))
+            if ttm_pe is not None: cur.execute(
+                "INSERT OR REPLACE INTO Index_PE_History VALUES (?,?, 'TTM', ?)",
+                (today,tk,ttm_pe))
+            if fwd_pe is not None: cur.execute(
+                "INSERT OR REPLACE INTO Index_PE_History VALUES (?,?, 'Forward', ?)",
+                (today,tk,fwd_pe))
+            if ttm_eps is not None: cur.execute(
+                "INSERT OR REPLACE INTO Index_EPS_History VALUES (?,?, 'TTM', ?)",
+                (today,tk,ttm_eps))
+        conn.commit()
 
-    with open(PAST_HTML, "w", encoding="utf-8")     as f: f.write(past_html)
-    with open(UPCOMING_HTML, "w", encoding="utf-8") as f: f.write(upcoming_html)
+# ─── Series fetchers ─────────────────────────────────────
+def _pivot(tk,tbl,typ_col,val_col):
+    with sqlite3.connect(DB_PATH) as conn:
+        df=pd.read_sql_query(
+            f"SELECT Date,{typ_col},{val_col} AS v FROM {tbl} "
+            "WHERE Ticker=? ORDER BY Date ASC", conn, params=(tk,))
+    if df.empty: return None
+    df["Date"]=pd.to_datetime(df["Date"])
+    return df.pivot(index="Date",columns=typ_col,values="v")
 
-if __name__ == "__main__":
-    generate_earnings_tables()
+def _yield_series():
+    with sqlite3.connect(DB_PATH) as conn:
+        df=pd.read_sql_query(
+            "SELECT Date,TenYr FROM Treasury_Yield_History ORDER BY Date ASC", conn)
+    if df.empty: return None
+    df["Date"]=pd.to_datetime(df["Date"])
+    return df.set_index("Date")["TenYr"]
+
+def _history_series(conn,table,tk,col,where):
+    q=f"SELECT {col} FROM {table} WHERE Ticker=? AND {where}"
+    return pd.read_sql_query(q,conn,params=(tk,))[col].dropna()
+
+# ─── Stats summary ───────────────────────────────────────
+def _percentile(s,v):
+    s=pd.to_numeric(s,errors="coerce").dropna().sort_values()
+    if s.empty or v is None or np.isnan(v): return None
+    rank=np.searchsorted(s.values,float(v),side="right")
+    return max(1,min(99,round(rank/len(s)*100)))
+
+def _summary(df):
+    if df is None or df.empty: return {}
+    out={}
+    for col in df.columns:
+        s=df[col].dropna()
+        if s.empty: continue
+        latest=s.iloc[-1]
+        out[col]=dict(Latest=latest,Avg=s.mean(),Med=s.median(),
+                      Min=s.min(),Max=s.max(),
+                      **{"%ctile": _percentile(s,latest) or "—"})
+    return out
+
+# ─── Plotly panel writer ─────────────────────────────────
+def _panel(df,title,ytitle,stats,filepath,y2=None):
+    if df is None or df.empty:
+        open(filepath,"w").write("<p>No data yet.</p>"); return
+    fig=make_subplots(specs=[[{"secondary_y": y2 is not None}]])
+    for col in df.columns:
+        fig.add_trace(go.Scatter(x=df.index,y=df[col],
+                                 mode="lines",name=col),secondary_y=False)
+    if y2 is not None:
+        fig.add_trace(go.Scatter(x=y2.index,y=y2*100,
+                                 mode="lines",line=dict(dash="dash"),
+                                 name="10-yr Yield (%)"),secondary_y=True)
+        fig.update_yaxes(title_text="Yield (%)",secondary_y=True)
+    fig.update_layout(
+        title=title,yaxis_title=ytitle,template="plotly_white",height=500,
+        xaxis=dict(
+            rangeselector=dict(buttons=[
+                dict(count=7, label="1 w", step="day",   stepmode="backward"),
+                dict(count=1, label="1 m", step="month", stepmode="backward"),
+                dict(count=6, label="6 m", step="month", stepmode="backward"),
+                dict(step="year", stepmode="todate", label="YTD"),
+                dict(count=1, label="1 y", step="year",  stepmode="backward"),
+                dict(count=5, label="5 y", step="year",  stepmode="backward"),
+                dict(count=10,label="10 y", step="year", stepmode="backward"),
+                dict(step="all",label="All")]),
+            rangeslider=dict(visible=True),type="date"),
+        legend=dict(orientation="h",yanchor="bottom",y=1.02,
+                    xanchor="right",x=1))
+    chart_html=fig.to_html(include_plotlyjs="cdn",full_html=False)
+    table_html=_build_html(pd.DataFrame(stats).T) if stats else ""
+    with open(filepath,"w",encoding="utf-8") as f:
+        f.write("<html><head>"+SUMMARY_CSS+
+                "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head>"
+                "<body>"+chart_html+table_html+"</body></html>")
+
+# ─── Asset builder ───────────────────────────────────────
+def _build_assets(tk):
+    b=tk.lower()
+
+    # Implied Growth
+    gdf=_pivot(tk,"Index_Growth_History","Growth_Type","Implied_Growth")
+    _panel(gdf,f"{tk} Implied Growth","Implied Growth",
+           _summary(gdf),
+           os.path.join(CHART_DIR,f"{b}_growth.html"))
+
+    # P/E ratio
+    pdf=_pivot(tk,"Index_PE_History","PE_Type","PE_Ratio")
+    _panel(pdf,f"{tk} P/E Ratio","P/E",
+           _summary(pdf),
+           os.path.join(CHART_DIR,f"{b}_pe.html"))
+
+    # EPS vs Yield
+    with sqlite3.connect(DB_PATH) as conn:
+        eps_s=(pd.read_sql_query(
+            "SELECT Date,EPS FROM Index_EPS_History "
+            "WHERE Ticker=? AND EPS_Type='TTM' ORDER BY Date ASC",conn,params=(tk,))
+            .assign(Date=lambda d: pd.to_datetime(d["Date"]))
+            .set_index("Date")["EPS"].dropna())
+    _panel(pd.DataFrame({"EPS":eps_s}),
+           f"{tk} EPS vs 10-yr Yield","EPS (US$)",
+           _summary(pd.DataFrame({"EPS":eps_s})) if not eps_s.empty else {},
+           os.path.join(CHART_DIR,f"{b}_eps_yield.html"),
+           y2=_yield_series())
+
+def _refresh_assets():
+    for tk in IDXES: _build_assets(tk)
+
+# ─── Overview table ──────────────────────────────────────
+def _latest_value(table,tk,col,typ_col):
+    with sqlite3.connect(DB_PATH) as conn:
+        r=conn.execute(
+            f"SELECT {col} FROM {table} WHERE Ticker=? AND {typ_col}='TTM' "
+            "ORDER BY Date DESC LIMIT 1",(tk,)).fetchone()
+    return r[0] if r else None
+
+def _overview():
+    with sqlite3.connect(DB_PATH) as conn:
+        rows=[]
+        for tk in IDXES:
+            pe=_latest_value("Index_PE_History",tk,"PE_Ratio","PE_Type")
+            gr=_latest_value("Index_Growth_History",tk,"Implied_Growth","Growth_Type")
+            pe_hist=_history_series(conn,"Index_PE_History",tk,"PE_Ratio","PE_Type='TTM'")
+            gr_hist=_history_series(conn,"Index_Growth_History",tk,"Implied_Growth","Growth_Type='TTM'")
+            pct=lambda s,v: f"{_percentile(s,v)}<sup>th</sup>" if v is not None else "–"
+            link=f'<a href="{tk.lower()}_growth.html">{tk}</a>'
+            if pe is None or gr is None:
+                rows.append(f"<tr><td>{tk}</td><td colspan='4'>No data yet.</td></tr>")
+            else:
+                rows.append(
+                    "<tr><td>"+link+"</td>"
+                    f"<td>{pe:.1f}</td><td>{gr:.1%}</td>"
+                    f"<td>{pct(pe_hist,pe)}</td><td>{pct(gr_hist,gr)}</td></tr>")
+    return ("<table border='1' style='border-collapse:collapse;'>"
+            "<thead><tr><th>Ticker</th><th>P/E</th><th>Implied Growth</th>"
+            "<th>P/E percentile</th><th>Implied Growth Percentile</th></tr></thead>"
+            "<tbody>"+ "".join(rows)+"</tbody></table>")
+
+# ─── Mini-main ───────────────────────────────────────────
+def index_growth(treasury_yield:float|None=None)->str:
+    y=_norm_yld(treasury_yield)
+    print(f"[index_growth] Using 10-yr yield = {y:.4f}")
+    _log_today(y); _refresh_assets()
+    return _overview()
+
+if __name__=="__main__":
+    html=index_growth()  # uses fallback yield
+    open(os.path.join(CHART_DIR,"spy_qqq_overview.html"),"w").write(html)
+    print("Wrote spy_qqq_overview.html")
