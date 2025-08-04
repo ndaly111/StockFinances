@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-# index_growth_table.py  –  Plotly panels w/ tables  (2025-08-02 rev N)
-# ────────────────────────────────────────────────────────────────────
-# • Logs implied-growth, P/E, EPS and 10-yr yield
-# • Creates three interactive Plotly panels per index
+# index_growth_table.py  –  rev O  (Plotly panels + legacy filenames)
+# -------------------------------------------------------------------
+# • Logs implied-growth, P/E, EPS and 10-yr yield to SQLite
+# • Creates three interactive Plotly panels per index:
 #     1) Implied Growth      2) P/E ratio
 #     3) EPS (left) vs 10-yr yield % (right)
-#   Each panel HTML already contains its blue-framed summary table.
-# • Writes a static overview table for the home page
-# ────────────────────────────────────────────────────────────────────
+#   Each panel HTML already contains the blue-framed summary table.
+# • Keeps legacy filenames (e.g., spy_growth.html, spy_pe.html)
+#   to avoid breaking old links.
+# -------------------------------------------------------------------
 
-import os, sqlite3, numpy as np, pandas as pd
+import os, shutil, sqlite3, numpy as np, pandas as pd
 from datetime import datetime
 import yfinance as yf
 import plotly.graph_objects as go
@@ -50,9 +51,9 @@ def _norm_yld(v):
     try:
         if v is None: return FALLBACK_YIELD
         v = float(v)
-        if v < 0.5:  return v          # already decimal
-        if v < 20:   return v / 100    # quoted as “4.22”
-        return v / 1000                # ^TNX style
+        if v < 0.5:  return v
+        if v < 20:   return v / 100
+        return v / 1000
     except: return FALLBACK_YIELD
 
 # ─── yfinance helpers ────────────────────────────────────
@@ -133,7 +134,6 @@ def _yield_series():
     return df.set_index("Date")["TenYr"]
 
 def _history_series(conn, table, tk, col, where):
-    """Return single-column pandas Series for percentiles in overview."""
     q = f"SELECT {col} FROM {table} WHERE Ticker=? AND {where}"
     return pd.read_sql_query(q, conn, params=(tk,))[col].dropna()
 
@@ -192,19 +192,29 @@ def _panel(df, title, ytitle, stats, filename, y2=None):
                   "<body>"+chart_html+table_html+"</body></html>")
     open(filename, "w", encoding="utf-8").write(panel_html)
 
+# ─── Duplicate for legacy filenames ──────────────────────
+def _dup(src_path: str, legacy_path: str):
+    shutil.copyfile(src_path, legacy_path)
+
 # ─── Build assets per index ──────────────────────────────
 def _build_assets(tk):
-    # 1) Implied Growth
+    base = tk.lower()
+
+    # Implied Growth
     gdf = _pivot(tk, "Index_Growth_History", "Growth_Type", "Implied_Growth")
+    growth_panel = os.path.join(CHART_DIR, f"{base}_growth_panel.html")
     _panel(gdf, f"{tk} Implied Growth", "Implied Growth",
-           _summary(gdf), os.path.join(CHART_DIR, f"{tk.lower()}_growth_panel.html"))
+           _summary(gdf), growth_panel)
+    _dup(growth_panel, os.path.join(CHART_DIR, f"{base}_growth.html"))
 
-    # 2) P/E Ratio
+    # P/E Ratio
     pdf = _pivot(tk, "Index_PE_History", "PE_Type", "PE_Ratio")
+    pe_panel = os.path.join(CHART_DIR, f"{base}_pe_panel.html")
     _panel(pdf, f"{tk} P/E Ratio", "P/E",
-           _summary(pdf), os.path.join(CHART_DIR, f"{tk.lower()}_pe_panel.html"))
+           _summary(pdf), pe_panel)
+    _dup(pe_panel, os.path.join(CHART_DIR, f"{base}_pe.html"))
 
-    # 3) EPS vs Yield
+    # EPS vs Yield
     with sqlite3.connect(DB_PATH) as conn:
         eps_s = (pd.read_sql_query(
             "SELECT Date, EPS FROM Index_EPS_History "
@@ -216,7 +226,7 @@ def _build_assets(tk):
     _panel(pd.DataFrame({"EPS": eps_s}),
            f"{tk} EPS vs 10-yr Yield", "EPS (US$)",
            _summary(pd.DataFrame({"EPS": eps_s})) if not eps_s.empty else {},
-           os.path.join(CHART_DIR, f"{tk.lower()}_eps_yield_panel.html"),
+           os.path.join(CHART_DIR, f"{base}_eps_yield_panel.html"),
            y2=yld)
 
 def _refresh_assets():
@@ -262,6 +272,6 @@ def index_growth(treasury_yield: float | None = None) -> str:
     return _overview()
 
 if __name__ == "__main__":
-    html = index_growth()  # uses fallback yield
+    html = index_growth()
     open(os.path.join(CHART_DIR, "spy_qqq_overview.html"), "w").write(html)
     print("Wrote spy_qqq_overview.html")
