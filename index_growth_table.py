@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-# index_growth_table.py  –  original yield path, updated growth formula
-# --------------------------------------------------------------------
-# • Uses (((PE/10)**0.1) + yield – 1) for implied growth
-# • Yield is taken AS-IS (no decimal/percent conversion)
-# • Falls back to last stored P/E when yfinance returns None
-# • Generates charts + blue-framed tables under the same filenames
-# --------------------------------------------------------------------
+# index_growth_table.py  –  2025-08-05 stable
+# ----------------------------------------------------------
+# • Logs implied growth + P/E for SPY & QQQ
+# • Growth formula: ((PE/10)**0.1) + yield – 1
+# • Uses yield exactly as supplied / stored (no conversion)
+# • Falls back to last stored P/E if yfinance returns None
+# • Generates PNG charts + blue-framed summary tables
+# • Returns SPY-vs-QQQ overview HTML for the home page
+# ----------------------------------------------------------
 
 import os, sqlite3, numpy as np, pandas as pd
 from datetime import datetime
@@ -17,7 +19,7 @@ DB_PATH, CHART_DIR = "Stock Data.db", "charts"
 IDXES = ["SPY", "QQQ"]
 os.makedirs(CHART_DIR, exist_ok=True)
 
-# ─── CSS for summary tables ──────────────────────────────
+# ─── CSS + table helpers ─────────────────────────────────
 SUMMARY_CSS = """
 <style>
 .summary-table{width:100%;border-collapse:collapse;
@@ -30,9 +32,9 @@ SUMMARY_CSS = """
 """
 def _pct_color(v):
     try:
-        v=float(v)
-        if v<=30: return "color:#008800;font-weight:bold"
-        if v>=70: return "color:#CC0000;font-weight:bold"
+        v = float(v)
+        if v <= 30: return "color:#008800;font-weight:bold"
+        if v >= 70: return "color:#CC0000;font-weight:bold"
     except: pass
     return ""
 def _build_html(df):
@@ -41,7 +43,7 @@ def _build_html(df):
                  .set_table_attributes('class="summary-table"')
             ).to_html()
 
-# ─── Ensure DB tables exist ──────────────────────────────
+# ─── DB schema ───────────────────────────────────────────
 def _ensure_tables(conn):
     conn.executescript("""
       CREATE TABLE IF NOT EXISTS Index_Growth_History (
@@ -86,7 +88,7 @@ def _fetch_pe(tk):
     fwd = info.get("forwardPE")  or _latest_pe(tk, "Forward")
     return ttm, fwd
 
-# ─── Growth calculation (your formula) ───────────────────
+# ─── Growth calculation ─────────────────────────────────
 def _growth(pe, y):
     if pe is None or pd.isna(pe): return None
     try:
@@ -94,14 +96,13 @@ def _growth(pe, y):
     except (ValueError, ZeroDivisionError):
         return None
 
-# ─── Log today’s data ────────────────────────────────────
+# ─── Daily logging ──────────────────────────────────────
 def _log_today(y):
-    today=datetime.today().strftime("%Y-%m-%d")
+    today = datetime.today().strftime("%Y-%m-%d")
     with sqlite3.connect(DB_PATH) as conn:
-        _ensure_tables(conn); cur=conn.cursor()
+        _ensure_tables(conn); cur = conn.cursor()
         cur.execute("INSERT OR REPLACE INTO Treasury_Yield_History VALUES (?,?)",
                     (today, y))
-
         for tk in IDXES:
             ttm_pe, fwd_pe = _fetch_pe(tk)
             ttm_g, fwd_g = _growth(ttm_pe, y), _growth(fwd_pe, y)
@@ -121,7 +122,7 @@ def _log_today(y):
                             (today, tk, fwd_pe))
         conn.commit()
 
-# ─── Table helpers ───────────────────────────────────────
+# ─── Summary helpers ────────────────────────────────────
 def _percentile(s, v):
     s = pd.to_numeric(s, errors="coerce").dropna().sort_values()
     if s.empty or v is None or np.isnan(v): return None
@@ -152,7 +153,7 @@ def _write_summary(stats, path):
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
 
-# ─── Chart & pivot helpers ───────────────────────────────
+# ─── Chart + pivot helpers ───────────────────────────────
 def _plot(df, title, formatter, out_file):
     if df is None or df.empty:
         plt.figure(figsize=(0.01, 0.01)); plt.axis("off")
@@ -173,7 +174,7 @@ def _pivot(tk, table, typ_col, val_col):
     df["Date"] = pd.to_datetime(df["Date"])
     return df.pivot(index="Date", columns=typ_col, values="v")
 
-# ─── Build per-ticker files ─────────────────────────────
+# ─── Build per-ticker assets ─────────────────────────────
 def _build_assets(tk):
     slug = tk.lower()
 
@@ -195,13 +196,60 @@ def _refresh_assets():
     for tk in IDXES:
         _build_assets(tk)
 
+# ─── Overview (returns HTML table) ───────────────────────
+def _overview():
+    with sqlite3.connect(DB_PATH) as conn:
+        rows = []
+        for tk in IDXES:
+            pe = conn.execute(
+                "SELECT PE_Ratio FROM Index_PE_History "
+                "WHERE Ticker=? AND PE_Type='TTM' ORDER BY Date DESC LIMIT 1",
+                (tk,)
+            ).fetchone()
+            gr = conn.execute(
+                "SELECT Implied_Growth FROM Index_Growth_History "
+                "WHERE Ticker=? AND Growth_Type='TTM' ORDER BY Date DESC LIMIT 1",
+                (tk,)
+            ).fetchone()
+            pe = pe[0] if pe else None
+            gr = gr[0] if gr else None
+
+            pe_hist = pd.read_sql_query(
+                "SELECT PE_Ratio FROM Index_PE_History "
+                "WHERE Ticker=? AND PE_Type='TTM'", conn, params=(tk,)
+            )["PE_Ratio"]
+            gr_hist = pd.read_sql_query(
+                "SELECT Implied_Growth FROM Index_Growth_History "
+                "WHERE Ticker=? AND Growth_Type='TTM'", conn, params=(tk,)
+            )["Implied_Growth"]
+
+            pct = lambda s, v: f"{_percentile(s, v)}<sup>th</sup>" if v is not None else "–"
+            link = f'<a href="{tk.lower()}_growth.html">{tk}</a>'
+
+            if pe is None or gr is None:
+                rows.append(f"<tr><td>{tk}</td><td colspan='4'>No data yet.</td></tr>")
+            else:
+                rows.append(
+                    "<tr><td>"+link+"</td>"
+                    f"<td>{pe:.1f}</td><td>{gr:.1%}</td>"
+                    f"<td>{pct(pe_hist, pe)}</td><td>{pct(gr_hist, gr)}</td></tr>"
+                )
+
+    return (
+        "<table border='1' style='border-collapse:collapse;width:100%'>"
+        "<thead><tr><th>Ticker</th><th>P/E</th><th>Implied Growth</th>"
+        "<th>P/E percentile</th><th>Implied Growth Percentile</th></tr></thead>"
+        "<tbody>" + "".join(rows) + "</tbody></table>"
+    )
+
 # ─── Public entry point ──────────────────────────────────
 def index_growth(treasury_yield: float | None = None) -> str:
     y = _resolve_yield(treasury_yield)
     print(f"[index_growth] Using 10-yr yield = {y}")
-    _log_today(y); _refresh_assets()
-    return "Assets refreshed."
+    _log_today(y)
+    _refresh_assets()
+    return _overview()          # return HTML table for the template
 
 if __name__ == "__main__":
-    index_growth()     # uses last DB yield if none passed
+    html = index_growth()       # uses last DB yield if none passed
     print("Assets built for:", ", ".join(IDXES))
