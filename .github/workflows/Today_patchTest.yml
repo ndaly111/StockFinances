@@ -1,85 +1,34 @@
-name: Patch-today-growth   # appears in the Actions list
+name: patch-implied-growth-2025-08-05   # appears in Actions list
 
 on:
-  workflow_dispatch:       # manual trigger only
+  workflow_dispatch:                    # manual trigger only
 
 jobs:
-  patch-growth:
+  patch:
     runs-on: ubuntu-latest
 
     steps:
-    # 1 — Check out the repo to get Stock Data.db
-    - uses: actions/checkout@v4
+      - name: Check out repo
+        uses: actions/checkout@v4
 
-    # 2 — Set up Python (same version you normally use)
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    # 3 — Install minimal deps needed by the patch
-    - name: Install dependencies
-      run: pip install pandas yfinance
+      - name: Run one-off patch script
+        run: python patch_2025_08_05_implied_growth_fix.py
 
-    # 4 — Re-compute TODAY’S implied-growth rows
-    - name: Recalculate today’s implied growth
-      run: |
-        python <<'PY'
-        import sqlite3, pandas as pd
-        from datetime import datetime
-
-        DB = "Stock Data.db"
-        IDXES = ["SPY", "QQQ"]
-        today = datetime.today().strftime("%Y-%m-%d")
-
-        def to_decimal(v):
-            return v/100 if 0.5 <= v < 20 else v/1000 if v >= 20 else v
-
-        def latest_pe(conn, tk):
-            row = conn.execute(
-                "SELECT PE_Ratio FROM Index_PE_History "
-                "WHERE Ticker=? AND PE_Type='TTM' ORDER BY Date DESC LIMIT 1",
-                (tk,)
-            ).fetchone()
-            return row[0] if row else None
-
-        with sqlite3.connect(DB) as conn:
-            cur = conn.cursor()
-
-            y_row = cur.execute(
-                "SELECT TenYr FROM Treasury_Yield_History WHERE Date=?", (today,)
-            ).fetchone()
-            if not y_row:
-                raise SystemExit(f"No yield stored for {today}. Run normal job first.")
-            y = to_decimal(float(y_row[0]))
-            print(f"Using yield y = {y:.4f}")
-
-            for tk in IDXES:
-                pe = latest_pe(conn, tk)
-                if pe is None:
-                    print(f"[{tk}] skipped – no P/E"); continue
-                g = (pe / 10) ** 0.1 + y - 1
-                print(f"[{tk}] PE={pe:.2f}  →  g={g:.4%}")
-
-                cur.execute("""
-                  INSERT OR REPLACE INTO Index_Growth_History
-                  VALUES (?,?, 'TTM', ?)
-                """, (today, tk, g))
-
-            conn.commit()
-            print("✓ Updated implied-growth rows for", ", ".join(IDXES))
-        PY
-
-    # 5 — Commit the updated database if it changed
-    - name: Commit & push updated DB
-      run: |
-        git config user.name  "GitHub Action"
-        git config user.email "action@users.noreply.github.com"
-        if git diff --quiet "Stock Data.db"; then
-          echo "No DB changes – nothing to commit."
-        else
-          git add "Stock Data.db"
-          git commit -m "fix: correct today’s implied-growth values"
-          git push
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit & push updated DB
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "GitHub Action"
+          git config user.email "action@users.noreply.github.com"
+          if git diff --quiet "Stock Data.db"; then
+            echo "No DB changes – nothing to commit."
+          else
+            git add "Stock Data.db"
+            git commit -m "patch: correct implied growth for 2025-08-05"
+            git push
+          fi
