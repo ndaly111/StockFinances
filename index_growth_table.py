@@ -137,11 +137,21 @@ def _log_today(y):
             ttm_g, fwd_g   = _growth(ttm_pe, y), _growth(fwd_pe, y)
 
             if ttm_g is not None:
-                cur.execute("INSERT OR REPLACE INTO Index_Growth_History VALUES (?,?, 'TTM', ?)",
-                            (today, tk, ttm_g))
+                implied_growth = ttm_g * 100
+                if abs(implied_growth) > 100:          # 100 % hard ceiling
+                    print(f"[INDEX-GROWTH]  Dropping out-of-range value "
+                          f"{implied_growth:.2f}% for {tk} {today}")
+                else:
+                    cur.execute("INSERT OR REPLACE INTO Index_Growth_History VALUES (?,?, 'TTM', ?)",
+                                (today, tk, ttm_g))
             if fwd_g is not None:
-                cur.execute("INSERT OR REPLACE INTO Index_Growth_History VALUES (?,?, 'Forward', ?)",
-                            (today, tk, fwd_g))
+                implied_growth = fwd_g * 100
+                if abs(implied_growth) > 100:          # 100 % hard ceiling
+                    print(f"[INDEX-GROWTH]  Dropping out-of-range value "
+                          f"{implied_growth:.2f}% for {tk} {today}")
+                else:
+                    cur.execute("INSERT OR REPLACE INTO Index_Growth_History VALUES (?,?, 'Forward', ?)",
+                                (today, tk, fwd_g))
 
             if ttm_pe is not None:
                 cur.execute("INSERT OR REPLACE INTO Index_PE_History VALUES (?,?, 'TTM', ?)",

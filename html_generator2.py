@@ -3,6 +3,8 @@
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
+from pathlib import Path
+from html_generator import get_file_content_or_placeholder
 
 DB_PATH = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
@@ -309,7 +311,13 @@ def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
 def html_generator2(tickers, financial_data, full_dashboard_html,
                     avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
-    econ_html = get_file_or_placeholder("economic_data.html", "Economic data not available")
+    charts_path = Path("charts")
+    econ_html = get_file_content_or_placeholder(
+                charts_path / "economic_data.html",
+                placeholder="<!-- Economic data not available -->"
+            )
+    assert "Economic data not available" not in econ_html[:60], \
+       "[ECON]  placeholder detected – file missing"
     create_home_page(
         tickers, full_dashboard_html, avg_values, spy_qqq_growth_html,
         econ_html,
