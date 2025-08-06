@@ -1,56 +1,64 @@
-- name: Recalculate today’s implied growth
-  env:
-    MANUAL_YIELD: ${{ inputs.yield_decimal }}   # optional textbox in UI
-  run: |
-    python <<'PY'
-    import os, sqlite3
-    from datetime import datetime
+#!/usr/bin/env python3
+"""
+Re-compute Implied-Growth (TTM) for SPY & QQQ only on 2025-08-05.
 
-    DB   = "Stock Data.db"
-    IDX  = ["SPY", "QQQ"]
-    TOD  = datetime.utcnow().strftime("%Y-%m-%d")   # runner’s “today”
+Formula:
+    g = ((PE / 10)**0.1) + y – 1
 
-    def to_dec(v):  # 4.2 → 0.042
-        return v/100 if 0.5 <= v < 20 else v/1000 if v >= 20 else v
+• PE  = latest stored TTM P/E *as of when this script runs*
+• y   = yield already stored for 2025-08-05 in Treasury_Yield_History
+        (auto-converted to decimal if recorded as 4.2 or 42).
+"""
 
-    conn = sqlite3.connect(DB)
-    cur  = conn.cursor()
+import sqlite3
+from datetime import datetime
 
-    # ── 1. get latest yield row (could be 5th even if runner date = 6th)
-    yrow = cur.execute(
-        "SELECT Date,TenYr FROM Treasury_Yield_History "
-        "ORDER BY Date DESC LIMIT 1").fetchone()
+DB_PATH  = "Stock Data.db"
+DATE_FIX = "2025-08-05"
+TICKERS  = ["SPY", "QQQ"]
 
-    if not yrow:
-        raise SystemExit("⚠️  Treasury_Yield_History empty – run main job first.")
+def to_decimal(v: float) -> float:
+    """4.2 → 0.042; 42 → 0.042; 0.042 stays 0.042."""
+    if v < 0.5:  return v
+    if v < 20:   return v / 100
+    return v / 1000
 
-    y_date, y_val = yrow
-    y = to_dec(float(y_val))
+def latest_pe(conn, tk):
+    row = conn.execute(
+        "SELECT PE_Ratio FROM Index_PE_History "
+        "WHERE Ticker=? AND PE_Type='TTM' "
+        "ORDER BY Date DESC LIMIT 1",
+        (tk,)
+    ).fetchone()
+    return row[0] if row else None
 
-    # if manual yield supplied and fresher, override
-    man = os.getenv("MANUAL_YIELD")
-    if man:
-        y = float(man)
-        y_date = f"{TOD} (manual)"
+with sqlite3.connect(DB_PATH) as conn:
+    cur = conn.cursor()
 
-    print(f"Using yield {y:.4f} from row date {y_date}")
+    # ---- fetch yield for 5 Aug 2025 -----------------------
+    y_row = cur.execute(
+        "SELECT TenYr FROM Treasury_Yield_History WHERE Date=?",
+        (DATE_FIX,)
+    ).fetchone()
+    if not y_row:
+        raise SystemExit(f"No yield stored for {DATE_FIX}.")
+    y = to_decimal(float(y_row[0]))
+    print(f"Yield on {DATE_FIX} ≈ {y:.4f}")
 
-    # helper: latest PE
-    def latest_pe(tk):
-        r=cur.execute("SELECT PE_Ratio FROM Index_PE_History "
-                      "WHERE Ticker=? AND PE_Type='TTM' "
-                      "ORDER BY Date DESC LIMIT 1",(tk,)).fetchone()
-        return r[0] if r else None
-
-    for tk in IDX:
-        pe = latest_pe(tk)
+    # ---- recalc & overwrite growth ------------------------
+    for tk in TICKERS:
+        pe = latest_pe(conn, tk)
         if pe is None:
-            print(f"[{tk}] skipped – no PE"); continue
-        g = (pe/10)**0.1 + y - 1
-        print(f"[{tk}] PE={pe:.2f} → g={g:.4%}")
-        cur.execute("INSERT OR REPLACE INTO Index_Growth_History "
-                    "VALUES (?,?, 'TTM', ?)",
-                    (TOD, tk, g))
+            print(f"[{tk}] skipped – no P/E available.")
+            continue
+
+        g = (pe / 10) ** 0.1 + y - 1
+        print(f"[{tk}] PE={pe:.2f}  →  g={g:.4%}")
+
+        cur.execute("""
+            INSERT OR REPLACE INTO Index_Growth_History
+            VALUES (?,?, 'TTM', ?)
+        """, (DATE_FIX, tk, g))
+
     conn.commit()
-    print("✓ Implied-growth rows patched.")
-    PY
+    print("✓ Implied-Growth rows for 2025-08-05 updated.")
