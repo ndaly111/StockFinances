@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
 generate_economic_data.py
-Fetch headline U.S. economic indicators, store them in Stock Data.db,
-render economic_data.html and history charts.
+Fetch headline U.S. economic indicators from FRED,
+store them in Stock Data.db, create history PNG charts,
+and write economic_data.html for the dashboard.
 
 Mini-main: generate_economic_data()
+
+Requires: fredapi, beautifulsoup4, html5lib, pandas, matplotlib
 """
 
 import os, re, sqlite3, datetime as dt
@@ -13,16 +16,16 @@ import requests, pandas as pd, matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 from fredapi import Fred
 
-# ───── config ───────────────────────────────────────────────
+# ────────────────────────── configuration ──────────────────────────
 DB_FILE   = Path("Stock Data.db")
 HTML_OUT  = Path("economic_data.html")
 CHART_DIR = Path("charts")
 
 FRED_KEY  = os.getenv("FRED_API_KEY", "").strip()
 fred      = Fred(api_key=FRED_KEY) if FRED_KEY else None
-# ────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------
 
-# ---------- next-release helpers (↑ moved up) ---------------
+# ---------- next-release helper functions (must come first) --------
 _BLS_ROOT = "https://www.bls.gov/schedule/news_release"
 
 def _next_bls(slug: str) -> str:
@@ -40,39 +43,42 @@ def _next_bea_gdp() -> str:
     m = re.search(r"Next release:\s+([A-Z][a-z]+ \d{1,2}, \d{4})", soup.text)
     return m.group(1) if m else "—"
 
-# ---------- indicator map (now below helpers) ---------------
+# ---------- indicator map (defined after helpers) ------------------
 INDICATORS = {
-    "UNRATE":  {"name": "Unemployment Rate",      "units": "%",     "source": "BLS (Employment Situation)",
+    "UNRATE":  {"name": "Unemployment Rate",      "units": "%",        "source": "BLS (Employment Situation)",
                 "schedule_func": lambda: _next_bls("empsit")},
-    "CPIAUCSL":{"name": "CPI (All-Items, SA)",    "units": "Index", "source": "BLS (CPI)",
+    "CPIAUCSL":{"name": "CPI (All-Items, SA)",    "units": "Index",    "source": "BLS (CPI)",
                 "schedule_func": lambda: _next_bls("cpi")},
-    "FEDFUNDS":{"name": "Fed Funds Target Rate",  "units": "%",     "source": "Federal Reserve",
+    "FEDFUNDS":{"name": "Fed Funds Target Rate",  "units": "%",        "source": "Federal Reserve",
                 "schedule_func": None},
-    "DGS10":   {"name": "10-Year Treasury Yield", "units": "%",     "source": "Federal Reserve",
+    "DGS10":   {"name": "10-Year Treasury Yield", "units": "%",        "source": "Federal Reserve",
                 "schedule_func": None},
     "GDPC1":   {"name": "Real GDP (annual-rate)", "units": "Bn 2017$", "source": "BEA (GDP)",
                 "schedule_func": _next_bea_gdp},
 }
 
-# ---------- DB helpers, HTML writer, main driver ------------
+# ---------- SQLite helpers -----------------------------------------
 def _ensure_tables(conn: sqlite3.Connection):
     conn.execute("""CREATE TABLE IF NOT EXISTS economic_data(
                       indicator TEXT, date TEXT, value REAL,
-                      PRIMARY KEY(indicator,date))""")
+                      PRIMARY KEY(indicator, date))""")
     conn.execute("""CREATE TABLE IF NOT EXISTS economic_meta(
                       indicator TEXT PRIMARY KEY,
                       name TEXT, units TEXT, source TEXT,
                       last_release TEXT, next_release TEXT)""")
 
+# ---------- FRED fetch ---------------------------------------------
 def _fetch_series(sid: str) -> pd.Series:
     start = (dt.date.today() - dt.timedelta(days=15*365)).strftime("%Y-%m-%d")
     return fred.get_series(sid, observation_start=start)
 
+# ---------- HTML summary writer ------------------------------------
 def _render_html(meta_df: pd.DataFrame):
     rows = meta_df.to_dict(orient="records")
     html = ['<h2>Key U.S. Economic Indicators</h2>',
             '<table class="econ-table"><thead>',
-            '<tr><th>Indicator</th><th>Latest Value</th><th>Release Date</th><th>Next Release</th></tr>',
+            '<tr><th>Indicator</th><th>Latest Value</th>'
+            '<th>Release Date</th><th>Next Release</th></tr>',
             '</thead><tbody>']
     for r in rows:
         html.append(f"<tr><td>{r['name']}</td>"
@@ -82,6 +88,7 @@ def _render_html(meta_df: pd.DataFrame):
     html.append("</tbody></table>")
     HTML_OUT.write_text("\n".join(html), encoding="utf-8")
 
+# ---------- main driver --------------------------------------------
 def generate_economic_data():
     if not fred:
         print("⚠️  FRED_API_KEY missing – skipping economic-data update.")
@@ -98,12 +105,16 @@ def generate_economic_data():
             if ser.empty:
                 continue
 
-            df = ser.to_frame("value").reset_index().rename(columns={"index":"date"})
+            df = (ser.to_frame("value")
+                     .reset_index()
+                     .rename(columns={"index": "date"}))
             df["indicator"] = sid
             df.to_sql("economic_data", conn, if_exists="append", index=False)
 
-            last_date, last_val = df.iloc[-1][["date","value"]]
-            next_rel = meta["schedule_func"]() if meta["schedule_func"] else "Daily"
+            last_date, last_val = df.iloc[-1][["date", "value"]]
+            # ensure DATE string for SQLite (fix for ProgrammingError)
+            last_date = pd.to_datetime(last_date).date().isoformat()
+            next_rel  = meta["schedule_func"]() if meta["schedule_func"] else "Daily"
 
             conn.execute("""INSERT INTO economic_meta
                             (indicator,name,units,source,last_release,next_release)
@@ -119,7 +130,7 @@ def generate_economic_data():
                             "last_release": last_date,
                             "next_release": next_rel})
 
-            # chart
+            # history chart
             fig = plt.figure()
             ser.plot(title=meta["name"])
             fig.tight_layout()
@@ -129,5 +140,6 @@ def generate_economic_data():
         _render_html(pd.DataFrame(summary))
     print("✓ Economic data updated and charts generated")
 
+# -------------------------------------------------------------------
 if __name__ == "__main__":
     generate_economic_data()
