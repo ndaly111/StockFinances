@@ -1,56 +1,85 @@
-- name: Recalculate today’s implied growth
-  env:
-    MANUAL_YIELD: ${{ inputs.yield_decimal }}   # optional textbox in UI
-  run: |
-    python <<'PY'
-    import os, sqlite3
-    from datetime import datetime
+name: Patch-today-growth   # appears in the Actions list
 
-    DB   = "Stock Data.db"
-    IDX  = ["SPY", "QQQ"]
-    TOD  = datetime.utcnow().strftime("%Y-%m-%d")   # runner’s “today”
+on:
+  workflow_dispatch:       # manual trigger only
 
-    def to_dec(v):  # 4.2 → 0.042
-        return v/100 if 0.5 <= v < 20 else v/1000 if v >= 20 else v
+jobs:
+  patch-growth:
+    runs-on: ubuntu-latest
 
-    conn = sqlite3.connect(DB)
-    cur  = conn.cursor()
+    steps:
+    # 1 — Check out the repo to get Stock Data.db
+    - uses: actions/checkout@v4
 
-    # ── 1. get latest yield row (could be 5th even if runner date = 6th)
-    yrow = cur.execute(
-        "SELECT Date,TenYr FROM Treasury_Yield_History "
-        "ORDER BY Date DESC LIMIT 1").fetchone()
+    # 2 — Set up Python (same version you normally use)
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
 
-    if not yrow:
-        raise SystemExit("⚠️  Treasury_Yield_History empty – run main job first.")
+    # 3 — Install minimal deps needed by the patch
+    - name: Install dependencies
+      run: pip install pandas yfinance
 
-    y_date, y_val = yrow
-    y = to_dec(float(y_val))
+    # 4 — Re-compute TODAY’S implied-growth rows
+    - name: Recalculate today’s implied growth
+      run: |
+        python <<'PY'
+        import sqlite3, pandas as pd
+        from datetime import datetime
 
-    # if manual yield supplied and fresher, override
-    man = os.getenv("MANUAL_YIELD")
-    if man:
-        y = float(man)
-        y_date = f"{TOD} (manual)"
+        DB = "Stock Data.db"
+        IDXES = ["SPY", "QQQ"]
+        today = datetime.today().strftime("%Y-%m-%d")
 
-    print(f"Using yield {y:.4f} from row date {y_date}")
+        def to_decimal(v):
+            return v/100 if 0.5 <= v < 20 else v/1000 if v >= 20 else v
 
-    # helper: latest PE
-    def latest_pe(tk):
-        r=cur.execute("SELECT PE_Ratio FROM Index_PE_History "
-                      "WHERE Ticker=? AND PE_Type='TTM' "
-                      "ORDER BY Date DESC LIMIT 1",(tk,)).fetchone()
-        return r[0] if r else None
+        def latest_pe(conn, tk):
+            row = conn.execute(
+                "SELECT PE_Ratio FROM Index_PE_History "
+                "WHERE Ticker=? AND PE_Type='TTM' ORDER BY Date DESC LIMIT 1",
+                (tk,)
+            ).fetchone()
+            return row[0] if row else None
 
-    for tk in IDX:
-        pe = latest_pe(tk)
-        if pe is None:
-            print(f"[{tk}] skipped – no PE"); continue
-        g = (pe/10)**0.1 + y - 1
-        print(f"[{tk}] PE={pe:.2f} → g={g:.4%}")
-        cur.execute("INSERT OR REPLACE INTO Index_Growth_History "
-                    "VALUES (?,?, 'TTM', ?)",
-                    (TOD, tk, g))
-    conn.commit()
-    print("✓ Implied-growth rows patched.")
-    PY
+        with sqlite3.connect(DB) as conn:
+            cur = conn.cursor()
+
+            y_row = cur.execute(
+                "SELECT TenYr FROM Treasury_Yield_History WHERE Date=?", (today,)
+            ).fetchone()
+            if not y_row:
+                raise SystemExit(f"No yield stored for {today}. Run normal job first.")
+            y = to_decimal(float(y_row[0]))
+            print(f"Using yield y = {y:.4f}")
+
+            for tk in IDXES:
+                pe = latest_pe(conn, tk)
+                if pe is None:
+                    print(f"[{tk}] skipped – no P/E"); continue
+                g = (pe / 10) ** 0.1 + y - 1
+                print(f"[{tk}] PE={pe:.2f}  →  g={g:.4%}")
+
+                cur.execute("""
+                  INSERT OR REPLACE INTO Index_Growth_History
+                  VALUES (?,?, 'TTM', ?)
+                """, (today, tk, g))
+
+            conn.commit()
+            print("✓ Updated implied-growth rows for", ", ".join(IDXES))
+        PY
+
+    # 5 — Commit the updated database if it changed
+    - name: Commit & push updated DB
+      run: |
+        git config user.name  "GitHub Action"
+        git config user.email "action@users.noreply.github.com"
+        if git diff --quiet "Stock Data.db"; then
+          echo "No DB changes – nothing to commit."
+        else
+          git add "Stock Data.db"
+          git commit -m "fix: correct today’s implied-growth values"
+          git push
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
