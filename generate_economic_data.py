@@ -18,8 +18,8 @@ from fredapi import Fred
 
 # ───────────────────── configuration ───────────────────────
 DB_FILE   = Path("Stock Data.db")
-HTML_OUT  = Path("economic_data.html")
 CHART_DIR = Path("charts")
+HTML_OUT  = CHART_DIR / "economic_data.html"
 
 FRED_KEY  = os.getenv("FRED_API_KEY", "").strip()
 fred      = Fred(api_key=FRED_KEY) if FRED_KEY else None
@@ -112,7 +112,7 @@ def generate_economic_data():
     if not fred:
         print("⚠️  FRED_API_KEY missing – skipping economic-data update.")
         HTML_OUT.write_text("Economic data not available", encoding="utf-8")
-        return
+        return HTML_OUT
 
     CHART_DIR.mkdir(exist_ok=True)
     with sqlite3.connect(DB_FILE) as conn:
@@ -158,7 +158,9 @@ def generate_economic_data():
 
         _render_html(pd.DataFrame(summary_rows))
     print("✓ Economic data updated, HTML and charts generated")
+    return HTML_OUT
 
 # -------------------------------------------------------------------
 if __name__ == "__main__":
-    generate_economic_data()
+    html_path = generate_economic_data()
+    print(f"[ECON]  wrote → {html_path}  exists? {html_path.exists()}")
