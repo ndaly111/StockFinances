@@ -10,5 +10,6 @@ peewee
 lxml
 requests
 isodate
-arelle==2.2
-plotly>=5           # ← NEW – brings in its own deps (tenacity etc.)
+fredapi
+beautifulsoup4
+html5lib
