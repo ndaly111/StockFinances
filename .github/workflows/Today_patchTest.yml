@@ -1,0 +1,50 @@
+# patch_today_growth.py
+import sqlite3, pandas as pd
+from datetime import datetime
+
+DB_PATH = "Stock Data.db"
+IDXES   = ["SPY", "QQQ"]                # extend if you track more
+TODAY   = datetime.today().strftime("%Y-%m-%d")
+
+def to_decimal(v: float) -> float:      # 4.2  → 0.042
+    if v < 0.5:   return v             # already decimal
+    if v < 20:    return v / 100
+    return v / 1000                    # ^TNX quote
+
+def latest_pe(conn, tk):
+    row = conn.execute(
+        "SELECT PE_Ratio FROM Index_PE_History "
+        "WHERE Ticker=? AND PE_Type='TTM' "
+        "ORDER BY Date DESC LIMIT 1", (tk,)
+    ).fetchone()
+    return row[0] if row else None
+
+with sqlite3.connect(DB_PATH) as conn:
+    cur = conn.cursor()
+
+    # pull today's yield
+    row = cur.execute(
+        "SELECT TenYr FROM Treasury_Yield_History WHERE Date=?",
+        (TODAY,)
+    ).fetchone()
+    if not row:
+        raise SystemExit(f"No yield stored for {TODAY}. Run your normal job first.")
+    y = to_decimal(float(row[0]))
+    print(f"Using today’s yield y = {y:.4f}")
+
+    for tk in IDXES:
+        pe = latest_pe(conn, tk)
+        if pe is None:
+            print(f"[{tk}] skipped – no P/E recorded yet.")
+            continue
+
+        g = (pe / 10) ** 0.1 + y - 1
+        print(f"[{tk}] PE={pe:.2f}  →  g={g:.4%}")
+
+        cur.execute("""
+            INSERT OR REPLACE INTO Index_Growth_History
+            VALUES (?,?, 'TTM', ?)""",
+            (TODAY, tk, g))
+
+    conn.commit()
+    print("✓ Today’s implied-growth rows updated.")
