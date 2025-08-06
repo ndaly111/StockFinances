@@ -141,6 +141,7 @@ def mini_main():
     try:
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
+        generate_economic_data()
 
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
@@ -164,7 +165,7 @@ def mini_main():
         spy_qqq_html = index_growth(treasury)
         generate_earnings_tables()
         render_index_growth_charts()
-        generate_economic_data()
+        
 
         html_generator2(
             tickers,
