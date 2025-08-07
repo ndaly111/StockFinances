@@ -2,89 +2,56 @@ name: Run Python Script and Deploy to GitHub Pages
 
 on:
   schedule:
-    - cron: '0 8 * * 1-5'        # 08:00 UTC weekdays
+    - cron: '0 8 * * 1-5'
   workflow_dispatch:
 
 permissions:
-  contents: write                # allow pushes with GITHUB_TOKEN
+  contents: write  # Grants permission to push changes
 
 jobs:
   run-main-script:
     runs-on: ubuntu-latest
-    env:
-      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
     steps:
-    # ────────────── 1. check out main ──────────────
     - name: Check out repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
 
-    # ────────────── 2. python setup ────────────────
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v2
       with:
         python-version: '3.11'
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
-
-    # ────────────── 3. build the site ──────────────
+      run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
+    
     - name: Run main script
-      run: python main_remote.py              # writes HTML & charts
+      run: python main_remote.py  # This will generate the necessary HTML files and charts
 
-    # ────────────── 4. git identity ───────────────
     - name: Set up Git identity
       run: |
-        git config --global user.name  'ndaly111'
+        git config --global user.name 'ndaly111'
         git config --global user.email 'ndaly111@gmail.com'
-
-    # ────────────── 5. commit to main if changed ──
-    - name: Detect file changes on main
-      id: chk_main
-      run: |
-        if git diff --quiet; then
-          echo "changed=false" >> "$GITHUB_OUTPUT"
-        else
-          echo "changed=true"  >> "$GITHUB_OUTPUT"
-        fi
-
-    - name: Commit & push changes to main
-      if: steps.chk_main.outputs.changed == 'true'
+    - name: Commit and push changes to main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git add .
-        git commit -m "Update website content"
-        git push origin main
-
-    # ────────────── 6. prepare gh-pages ────────────
-    - name: Check out gh-pages branch
-      uses: actions/checkout@v4
+        git add .  # This will add all new and modified files to the commit
+        git commit -m "Update website content" --allow-empty  # This commits the changes
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main --force
+    - name: Clone repository
+      uses: actions/checkout@v2
       with:
-        ref: gh-pages
-        path: gh-pages
+        ref: main  # Ensure we are cloning the main branch
+        path: main_repo  # Clone the main branch to a directory named main_repo
 
-    - name: Sync built files into gh-pages
+    - name: Check out gh-pages branch
       run: |
-        rsync -av --delete --exclude='.git' ./ gh-pages/
-
-    # ────────────── 7. commit to gh-pages if changed
-    - name: Detect file changes on gh-pages
-      id: chk_pages
-      run: |
+        git clone --branch=gh-pages https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
         cd gh-pages
-        if git diff --quiet; then
-          echo "changed=false" >> "$GITHUB_OUTPUT"
-        else
-          echo "changed=true"  >> "$GITHUB_OUTPUT"
-        fi
-
-    - name: Commit & push changes to gh-pages
-      if: steps.chk_pages.outputs.changed == 'true'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        cp -r ../main_repo/* .  # Copy all files from the main branch directory to the gh-pages directory
+    - name: Commit and push changes to gh-pages
       run: |
         cd gh-pages
         git add .
-        git commit -m "Deploy to GitHub Pages"
-        git push origin gh-pages
+        git commit -m "Deploy to GitHub Pages" --allow-empty
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages --force
