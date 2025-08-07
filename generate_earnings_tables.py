@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# ────────────────────────────────────────────────────────────────────────────
-#  generate_earnings_tables.py   (fixed 06-Aug-2025)
-# ----------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+#  generate_earnings_tables.py   (fixed 07-Aug-2025)
+# ---------------------------------------------------------------------------
 """
 Build / refresh earnings tables for the dashboard.
 
@@ -18,7 +18,7 @@ Dependencies
 beautifulsoup4, pandas, requests, yfinance
 """
 
-import os, re, sqlite3, time, random, math, logging, requests
+import os, re, sys, sqlite3, time, random, math, logging, requests
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
@@ -26,7 +26,7 @@ import pandas as pd, yfinance as yf
 from bs4 import BeautifulSoup
 
 from ticker_manager import read_tickers, modify_tickers     # unchanged
-# ─── CONFIG ─────────────────────────────────
+# ─── CONFIG ────────────────────────────────────────────────
 DB_PATH        = "Stock Data.db"
 OUTPUT_DIR     = Path("charts")
 OUTPUT_DIR.mkdir(exist_ok=True)
@@ -35,7 +35,7 @@ UPCOMING_HTML  = OUTPUT_DIR / "earnings_upcoming.html"
 
 FINVIZ_DELAY   = float(os.getenv("FINVIZ_DELAY", "1.0"))    # seconds between calls
 FINVIZ_UAS     = [
-    # a small rotating pool of modern desktop UA strings
+    # rotating desktop UA strings
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/605.1.15 "
@@ -47,36 +47,35 @@ CACHE_DIR      = Path(".cache/finviz")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 LOGGER         = logging.getLogger("earnings")
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
-# ────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────
 
 
-# ════════════════════════════════════════════════════════════════════════════
-#  HELPERS — FINVIZ (RATE-LIMIT SAFE)                         ═
-# ════════════════════════════════════════════════════════════════════════════
-
+# ════════════════════════════════════════════════════════════
+#  HELPERS — FINVIZ (rate-limit safe)                         ═
+# ════════════════════════════════════════════════════════════
 def _finviz_cache_path(ticker: str) -> Path:
     return CACHE_DIR / f"{ticker.upper()}.html"
+
 
 def _fetch_finviz_html(ticker: str, max_retries: int = 4) -> str | None:
     """
     Politely download the Finviz quote page with:
         • rotating User-Agent
         • exponential back-off on 429
-        • on-disk caching (24 h) to minimise hits
-    Returns page HTML or None on persistent failure.
+        • on-disk 24 h cache
     """
     cache_f = _finviz_cache_path(ticker)
-    if cache_f.exists() and time.time() - cache_f.stat().st_mtime < 24*3600:
+    if cache_f.exists() and time.time() - cache_f.stat().st_mtime < 24 * 3600:
         return cache_f.read_text(encoding="utf-8")
 
-    url      = f"https://finviz.com/quote.ashx?t={ticker}"
-    session  = requests.Session()
+    url     = f"https://finviz.com/quote.ashx?t={ticker}"
+    session = requests.Session()
 
     for attempt in range(max_retries):
         headers = {
-            "User-Agent"     : random.choice(FINVIZ_UAS),
+            "User-Agent":      random.choice(FINVIZ_UAS),
             "Accept-Language": "en-US,en;q=0.9",
-            "Referer"        : "https://www.google.com/"
+            "Referer":         "https://www.google.com/"
         }
         try:
             resp = session.get(url, headers=headers, timeout=20)
@@ -92,17 +91,13 @@ def _fetch_finviz_html(ticker: str, max_retries: int = 4) -> str | None:
             return resp.text
         except requests.RequestException as exc:
             LOGGER.warning("[Finviz] %s – %s", ticker, exc)
-            wait = 2 ** attempt
-            time.sleep(wait)
+            time.sleep(2 ** attempt)
     return None
 
 
 def _extract_eps_estimate_from_html(html: str) -> float | None:
-    """
-    Parse Finviz HTML for “EPS next Q” (estimate) value.
-    """
-    soup  = BeautifulSoup(html, "html.parser")
-    cell  = soup.find(string=re.compile(r"EPS next Q", re.I))
+    soup = BeautifulSoup(html, "html.parser")
+    cell = soup.find(string=re.compile(r"EPS next Q", re.I))
     if cell:
         val_txt = cell.find_next("td").get_text(strip=True)
         try:
@@ -117,10 +112,9 @@ def _get_eps_estimate_finviz(ticker: str) -> float | None:
     return _extract_eps_estimate_from_html(html) if html else None
 
 
-# ════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════
 #  CORE PIPELINE                                              ═
-# ════════════════════════════════════════════════════════════════════════════
-
+# ════════════════════════════════════════════════════════════
 def _yahoo_calendar_eps(tkr: str) -> tuple[datetime | None, float | None, float | None]:
     """
     Returns (report_date, actual_eps, estimate_eps) using yfinance.
@@ -130,7 +124,7 @@ def _yahoo_calendar_eps(tkr: str) -> tuple[datetime | None, float | None, float 
         if cal is None or cal.empty:
             return None, None, None
 
-        row          = cal.iloc[0]          # most recent / next event
+        row          = cal.iloc[0]
         dt_obj       = row["Earnings Date"]
         eps_actual   = row["Reported EPS"]  if not math.isnan(row["Reported EPS"])  else None
         eps_estimate = row["EPS Estimate"] if not math.isnan(row["EPS Estimate"]) else None
@@ -142,7 +136,7 @@ def _yahoo_calendar_eps(tkr: str) -> tuple[datetime | None, float | None, float 
 
 def _analyst_estimate_yahoo(tkr: str) -> float | None:
     """
-    yfinance’s 'analysis' table as a secondary source for estimate.
+    yfinance 'analysis' table as secondary source for estimate.
     """
     try:
         tbl = yf.Ticker(tkr).analysis
@@ -154,32 +148,32 @@ def _analyst_estimate_yahoo(tkr: str) -> float | None:
     return None
 
 
-# …………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
-#  (All **existing** table-building + SQLite code stays as-is.)
-#  Wherever the old script called `_get_estimate_finviz(tkr)`,
-#  keep the function name; it now points to the rate-limited
-#  version above, so no other lines need to change.
-# …………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+# ───────────────────────── ticker loader ─────────────────────
+def _load_tickers() -> list[str]:
+    """
+    • Locally  → prompt user via modify_tickers().
+    • In CI    → skip the prompt (no stdin) and just read CSV.
+    """
+    lst = read_tickers("tickers.csv")
+    if os.getenv("CI") or os.getenv("GITHUB_ACTIONS") or not sys.stdin.isatty():
+        print("Running in remote mode. Skipping ticker modification.")
+        return lst
+    return modify_tickers(lst)
 
+
+# ───────────────────────── entrypoint ────────────────────────
 def generate_earnings_tables():
     """
-    Mini-main entrypoint (unchanged signature).
-    Only internals have been updated for Finviz throttling.
+    Mini-main entrypoint.
     """
-    tickers = modify_tickers(read_tickers("tickers.csv"))
+    tickers = _load_tickers()
 
     with sqlite3.connect(DB_PATH) as conn:
-        # your existing code for: select missing rows → fetch →
-        # upsert → render HTML lives here. None of that changed.
-        #
-        # The _only_ functional change: when you need an estimate
-        # and Yahoo returns None, call `_get_eps_estimate_finviz`
-        # (now rate-limit-safe) instead of the old scraper.
-        #
-        # Everything else stays exactly as your validated logic.
+        # → your existing fetch / upsert / HTML rendering logic lives here.
+        #   When EPS estimate is missing, call _get_eps_estimate_finviz(tkr).
         pass
 
 
-# ----------------------------------------------------------------------
+# -------------------------------------------------------------------------
 if __name__ == "__main__":
     generate_earnings_tables()
