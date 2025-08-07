@@ -2,53 +2,65 @@ name: Run Python Script and Deploy to GitHub Pages
 
 on:
   schedule:
-    - cron: '0 8 * * 1-5'
+    - cron: '0 8 * * 1-5'        # 08:00 UTC weekdays
   workflow_dispatch:
 
 permissions:
-  contents: write  # Grants permission to push changes
+  contents: write                # allow this Action to push commits
 
 jobs:
   run-main-script:
     runs-on: ubuntu-latest
 
+    # ───── all steps can now see $FRED_API_KEY ─────
+    env:
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+
     steps:
+    # ---------------------------------------------------------------- checkout main
     - name: Check out repository
       uses: actions/checkout@v2
 
+    # ---------------------------------------------------------------- Python setup
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.11'
 
     - name: Install dependencies
-      run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
-    
-    - name: Run main script
-      run: python main_remote.py  # This will generate the necessary HTML files and charts
+      run: pip install -r requirements.txt
 
+    # ---------------------------------------------------------------- build site
+    - name: Run main script
+      run: python main_remote.py
+
+    # ---------------------------------------------------------------- commit to main
     - name: Set up Git identity
       run: |
         git config --global user.name 'ndaly111'
         git config --global user.email 'ndaly111@gmail.com'
+
     - name: Commit and push changes to main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git add .  # This will add all new and modified files to the commit
-        git commit -m "Update website content" --allow-empty  # This commits the changes
+        git add .
+        git commit -m "Update website content" --allow-empty
         git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main --force
-    - name: Clone repository
+
+    # ---------------------------------------------------------------- deploy to gh-pages
+    - name: Clone repository (main)
       uses: actions/checkout@v2
       with:
-        ref: main  # Ensure we are cloning the main branch
-        path: main_repo  # Clone the main branch to a directory named main_repo
+        ref: main
+        path: main_repo
 
     - name: Check out gh-pages branch
       run: |
         git clone --branch=gh-pages https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
         cd gh-pages
-        cp -r ../main_repo/* .  # Copy all files from the main branch directory to the gh-pages directory
+        cp -r ../main_repo/* .
+
     - name: Commit and push changes to gh-pages
       run: |
         cd gh-pages
