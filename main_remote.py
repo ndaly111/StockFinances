@@ -1,33 +1,33 @@
-# main_remote.py – 2025-07-03
+#!/usr/bin/env python3
+# main_remote.py – 2025-08-08  (calls economic-data generator first)
 # ────────────────────────────────────────────────────────────────────
 import os, sqlite3, pandas as pd, yfinance as yf, math
 from datetime import datetime
 
 import ticker_manager
-from annual_and_ttm_update import annual_and_ttm_update
-from html_generator import create_html_for_tickers
+from generate_economic_data    import generate_economic_data        # ⇦ ensure present
+from annual_and_ttm_update     import annual_and_ttm_update
+from html_generator            import create_html_for_tickers
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data, check_missing_balance_sheet_data,
     is_balance_sheet_data_outdated, fetch_balance_sheet_data_from_yahoo,
     store_fetched_balance_sheet_data
 )
-from balancesheet_chart import (
+from balancesheet_chart        import (
     fetch_balance_sheet_data as fetch_bs_for_chart,
     plot_chart, create_and_save_table
 )
-from implied_growth_summary import generate_all_summaries
-from Forward_data import scrape_forward_data
+from implied_growth_summary    import generate_all_summaries
+from Forward_data              import scrape_forward_data
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
-from ticker_info import prepare_data_for_display, generate_html_table
-from expense_reports import generate_expense_reports
-from html_generator2 import html_generator2, generate_dashboard_table
-from valuation_update import valuation_update, process_update_growth_csv
-from index_growth_table import index_growth
-from eps_dividend_generator import eps_dividend_generator
-from index_growth_charts import render_index_growth_charts
-from generate_earnings_tables import generate_earnings_tables
-from generate_economic_data import generate_economic_data
-
+from ticker_info               import prepare_data_for_display, generate_html_table
+from expense_reports           import generate_expense_reports
+from html_generator2           import html_generator2, generate_dashboard_table
+from valuation_update          import valuation_update, process_update_growth_csv
+from index_growth_table        import index_growth
+from eps_dividend_generator    import eps_dividend_generator
+from index_growth_charts       import render_index_growth_charts
+from generate_earnings_tables  import generate_earnings_tables
 
 # ────────────────────────────────────────────────────────────────────
 # Constants
@@ -37,8 +37,6 @@ DB_PATH           = "Stock Data.db"
 UPDATE_GROWTH_CSV = "update_growth.csv"
 CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
-
-
 
 # ────────────────────────────────────────────────────────────────────
 # Helpers
@@ -94,21 +92,17 @@ def balancesheet_chart(ticker):
     data = fetch_bs_for_chart(ticker)
     if data is None:
         return
-
     plot_chart(data, CHARTS_DIR, ticker)
 
     debt   = data.get("Total_Debt")
     equity = data.get("Total_Equity")
-
     def _is_missing(x):
         return x is None or (isinstance(x, (float,int)) and math.isnan(x)) or pd.isna(x)
-
     if _is_missing(debt) or _is_missing(equity) or equity == 0:
         print(f"[INFO] Skipping Debt/Equity ratio for {ticker}")
         data["Debt_to_Equity_Ratio"] = None
     else:
         data["Debt_to_Equity_Ratio"] = debt / equity
-
     create_and_save_table(data, CHARTS_DIR, ticker)
 
 def fetch_and_update_balance_sheet_data(ticker, cursor):
@@ -130,6 +124,9 @@ def fetch_10_year_treasury_yield():
 # Main
 # ────────────────────────────────────────────────────────────────────
 def mini_main():
+    # ─── Build the economic-indicator HTML first
+    generate_economic_data()
+
     financial_data, dashboard_data = {}, []
     treasury = fetch_10_year_treasury_yield()
 
@@ -141,7 +138,6 @@ def mini_main():
     try:
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
-        generate_economic_data()
 
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
@@ -158,14 +154,12 @@ def mini_main():
 
         eps_dividend_generator()
         generate_all_summaries()
-        
 
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
         generate_earnings_tables()
         render_index_growth_charts()
-        
 
         html_generator2(
             tickers,
