@@ -26,6 +26,7 @@ from index_growth_table import index_growth
 from eps_dividend_generator import eps_dividend_generator
 from index_growth_charts import render_index_growth_charts
 from generate_earnings_tables import generate_earnings_tables
+from generate_economic_data import generate_economic_data
 
 
 # ────────────────────────────────────────────────────────────────────
@@ -36,7 +37,6 @@ DB_PATH           = "Stock Data.db"
 UPDATE_GROWTH_CSV = "update_growth.csv"
 CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
-from generate_economic_data import generate_economic_data
 
 
 
