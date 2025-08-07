@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# index_growth_table.py
+# index_growth_table.py  –  FULL FILE  (v2025-08-06 patch)
 # ───────────────────────────────────────────────────────────
 # Mini-main index_growth(treasury_yield)
 #  • Logs SPY & QQQ implied growth + P/E ratios

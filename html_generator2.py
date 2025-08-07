@@ -54,6 +54,7 @@ def inject_retro(html: str) -> str:
 
 # ───────── template creation ───────────────────────────────────
 def ensure_templates_exist():
+    # 1.  retro.css  (late-90s vibes)
     retro_css = r"""/* === retro.css — late-90s / early-2000s style === */
 body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
@@ -68,6 +69,7 @@ td{padding:4px;border:1px solid #8080FF}
 .container{max-width:none;width:100%;}"""
     create_template("static/css/retro.css", retro_css)
 
+    # 2.  Home page template  (unchanged apart from retro.css link)
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
@@ -140,6 +142,29 @@ td{padding:4px;border:1px solid #8080FF}
   <footer><p>Nick's Financial Data Dashboard</p></footer>
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
+
+    # 3.  SPY & QQQ growth-detail pages — **correct, lowercase filenames**
+    spy_tpl = """<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><title>SPY Growth &amp; P/E History</title>
+  <link rel="stylesheet" href="/static/css/retro.css">
+</head><body><div class="container">
+  <h1>SPY — Implied Growth &amp; P/E Ratio</h1>
+
+  <h2>Implied Growth (TTM)</h2>
+  <img src="../charts/spy_growth_chart.png" alt="SPY growth chart" style="max-width:100%;">
+  {{ spy_growth_summary | safe }}
+
+  <h2>P/E Ratio (TTM)</h2>
+  <img src="../charts/spy_pe_chart.png" alt="SPY P/E chart" style="max-width:100%;">
+  {{ spy_pe_summary | safe }}
+
+  <p><a href="../index.html">← Back to Dashboard</a></p>
+</div></body></html>"""
+    create_template("templates/spy_growth_template.html", spy_tpl)
+
+    qqq_tpl = spy_tpl.replace("SPY","QQQ").replace("spy_","qqq_")
+    create_template("templates/qqq_growth_template.html", qqq_tpl)
 
 # ───────── dashboard-builder ─────────────────────────────────
 def generate_dashboard_table(raw_rows):
