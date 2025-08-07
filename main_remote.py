@@ -130,7 +130,6 @@ def fetch_10_year_treasury_yield():
 # Main
 # ────────────────────────────────────────────────────────────────────
 def mini_main():
-    generate_economic_data()
     financial_data, dashboard_data = {}, []
     treasury = fetch_10_year_treasury_yield()
 
@@ -142,6 +141,7 @@ def mini_main():
     try:
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
+        generate_economic_data()
 
         for ticker in tickers:
             print(f"[main] Processing {ticker}")

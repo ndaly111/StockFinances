@@ -114,10 +114,13 @@ def _render_html(rows: list[dict]):
         return hdr + "".join(body) + "</tbody></table>"
 
     html = [
+        '<div class="econ-wrap">',
+        f'<h2>Key U.S. Economic Indicators</h2>',
         f'<p class="stamp">Updated: {TODAY_ISO} &nbsp;|&nbsp; Sources: '
         'BLS · FRED · BEA · U.S. Treasury</p>',
         _block("Labor & Prices", labor, "1-mo Δ", "YoY Δ"),
-        _block("Rates & Growth", rates, "1-wk Δ", "3-mo / QoQ Δ")
+        _block("Rates & Growth", rates, "1-wk Δ", "3-mo / QoQ Δ"),
+        '</div>'
     ]
     HTML_OUT.write_text("\n".join(html), encoding="utf-8")
 
