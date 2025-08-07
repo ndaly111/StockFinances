@@ -26,6 +26,8 @@ from index_growth_table import index_growth
 from eps_dividend_generator import eps_dividend_generator
 from index_growth_charts import render_index_growth_charts
 from generate_earnings_tables import generate_earnings_tables
+from generate_economic_data import generate_economic_data
+
 
 # ────────────────────────────────────────────────────────────────────
 # Constants
@@ -35,6 +37,8 @@ DB_PATH           = "Stock Data.db"
 UPDATE_GROWTH_CSV = "update_growth.csv"
 CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
+
+
 
 # ────────────────────────────────────────────────────────────────────
 # Helpers
@@ -137,6 +141,7 @@ def mini_main():
     try:
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
+        generate_economic_data()
 
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
@@ -153,12 +158,14 @@ def mini_main():
 
         eps_dividend_generator()
         generate_all_summaries()
+        
 
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
         generate_earnings_tables()
         render_index_growth_charts()
+        
 
         html_generator2(
             tickers,
