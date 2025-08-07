@@ -13,3 +13,4 @@ isodate
 fredapi
 beautifulsoup4
 html5lib
+plotly>=5.19
