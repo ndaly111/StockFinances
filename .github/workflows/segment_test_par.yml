@@ -1,21 +1,41 @@
-name: Test Segment Parser
+name: Manual Segment Test
 
 on:
-  workflow_dispatch:  # enables the "Run workflow" button
+  # Standard manual trigger — should show a "Run workflow" button
+  workflow_dispatch:
+
+  # Backup trigger: add a comment "/run-segments" on any issue in this repo
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
 
 jobs:
-  run-segment-test:
+  run:
+    # Only run on:
+    # - manual clicks, OR
+    # - comments that start with "/run-segments" by repo owner
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       startsWith(github.event.comment.body, '/run-segments') &&
+       github.actor == 'ndaly111')
+
     runs-on: ubuntu-latest
     env:
-      # Build a compliant SEC User-Agent using your existing secret: Email
+      # SEC requires a UA with contact; uses your "Email" secret
       SEC_USER_AGENT: StockFinances/1.0 (Contact: ${{ secrets.Email }})
 
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
+
+      - name: Print trigger info
+        run: |
+          echo "Triggered by: ${{ github.event_name }}"
+          echo "Actor:        ${{ github.actor }}"
+          echo "Ref:          ${{ github.ref }}"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,8 +47,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas requests beautifulsoup4 lxml
 
-      # Smoke test your module so you can see output in logs
-      - name: Quick module test (AAPL)
+      - name: Smoke test module (AAPL)
         run: |
           python - <<'PY'
           from sec_segment_data_arelle import get_segment_data
@@ -37,23 +56,20 @@ jobs:
           print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
           PY
 
-      # Generate HTML tables for a few hardcoded tickers
-      - name: Generate segment tables
+      - name: Generate HTML tables
         run: python generate_segment_tables.py
 
-      # Let you download the HTML from the run page
-      - name: Upload charts artifact
+      - name: Upload HTML artifact
         uses: actions/upload-artifact@v4
         with:
           name: segment-charts
           path: charts/*.html
           if-no-files-found: warn
 
-      # Optional: commit the generated HTML back to the repo
       - name: Commit results (optional)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add charts/*.html || true
-          git commit -m "Automated segment test run" || echo "No changes to commit"
+          git commit -m "Automated segment charts" || echo "No changes to commit"
           git push || true
