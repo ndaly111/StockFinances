@@ -1,7 +1,7 @@
-name: Test Segment Data
+name: Test Segment Parser
 
 on:
-  workflow_dispatch:   # run manually from Actions tab
+  workflow_dispatch:  # ← enables the manual "Run workflow" button
 
 permissions:
   contents: write
@@ -9,22 +9,26 @@ permissions:
 jobs:
   run-segment-test:
     runs-on: ubuntu-latest
+
+    # Pass a valid SEC User-Agent built from your existing secret: Email
     env:
-      # Build a compliant SEC UA string from your existing secret called "Email"
       SEC_USER_AGENT: StockFinances/1.0 (Contact: ${{ secrets.Email }})
 
     steps:
       - name: Check out repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pandas requests beautifulsoup4 lxml
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas requests beautifulsoup4 lxml
 
+      # Quick smoke test: import module and fetch AAPL once (prints DataFrame)
       - name: Quick module test (AAPL)
         run: |
           python - <<'PY'
@@ -34,10 +38,20 @@ jobs:
           print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
           PY
 
-      - name: Generate segment tables (AAPL/MSFT/AMZN)
+      # Generate HTML tables for a few hardcoded tickers (AAPL/MSFT/AMZN)
+      - name: Generate segment tables
         run: python generate_segment_tables.py
 
-      - name: Commit generated HTML (optional)
+      # Upload the generated HTML as a build artifact so you can download/view
+      - name: Upload charts artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: segment-charts
+          path: charts/*.html
+          if-no-files-found: warn
+
+      # Optional: commit charts back to repo (handy if you serve from Pages)
+      - name: Commit results (optional)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
