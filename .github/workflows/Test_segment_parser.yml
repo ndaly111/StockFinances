@@ -1,59 +1,71 @@
-name: Test Segment Parser
+name: Segment Tables
 
 on:
-  workflow_dispatch:  # enables the "Run workflow" button
+  schedule:
+    - cron: '0 8 1 * *'   # Runs at 8:00 AM on the 1st day of every month
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write  # allow committing generated HTML
 
 jobs:
-  run-segment-test:
+  run-segment-scripts:
     runs-on: ubuntu-latest
     env:
-      # Build a compliant SEC User-Agent using your existing secret: Email
+      # Build a compliant SEC User-Agent using your existing secret "Email"
       SEC_USER_AGENT: StockFinances/1.0 (Contact: ${{ secrets.Email }})
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
+    - name: Check out repository
+      uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas requests beautifulsoup4 lxml
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
+        fi
+        # ensure our parser deps are present even if not in requirements.txt
+        pip install pandas requests beautifulsoup4 lxml
 
-      # Smoke test your module so you can see output in logs
-      - name: Quick module test (AAPL)
-        run: |
-          python - <<'PY'
-          from sec_segment_data_arelle import get_segment_data
-          df = get_segment_data("AAPL")
-          print(df)
-          print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
-          PY
+    # Quick smoke test so you see output in logs
+    - name: Run quick module test (AAPL)
+      shell: bash
+      run: |
+        python - <<'PY'
+        from sec_segment_data_arelle import get_segment_data
+        df = get_segment_data("AAPL")
+        print(df)
+        print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
+        PY
 
-      # Generate HTML tables for a few hardcoded tickers
-      - name: Generate segment tables
-        run: python generate_segment_tables.py
+    # Generate HTML snippet pages into charts/
+    - name: Run segment table generator
+      run: python generate_segment_tables.py
 
-      # Let you download the HTML from the run page
-      - name: Upload charts artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: segment-charts
-          path: charts/*.html
-          if-no-files-found: warn
+    # Upload artifacts so you can download from the run page
+    - name: Upload charts artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: segment-charts
+        path: charts/*.html
+        if-no-files-found: warn
 
-      # Optional: commit the generated HTML back to the repo
-      - name: Commit results (optional)
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add charts/*.html || true
-          git commit -m "Automated segment test run" || echo "No changes to commit"
-          git push || true
+    # Commit generated HTML back to repo (optional but handy)
+    - name: Set up Git identity
+      run: |
+        git config --global user.name 'ndaly111'
+        git config --global user.email 'ndaly111@gmail.com'
+
+    - name: Commit results
+      shell: bash
+      run: |
+        git add charts/*.html 2>/dev/null || true
+        git commit -m "Automated segment charts" || echo "No changes to commit"
+        git push || true
