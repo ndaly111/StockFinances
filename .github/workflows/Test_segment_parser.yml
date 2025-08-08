@@ -9,36 +9,38 @@ permissions:
 jobs:
   run-segment-test:
     runs-on: ubuntu-latest
+    env:
+      # Build a compliant SEC UA string from your existing secret called "Email"
+      SEC_USER_AGENT: StockFinances/1.0 (Contact: ${{ secrets.Email }})
 
     steps:
-    - name: Check out repo
-      uses: actions/checkout@v3
+      - name: Check out repo
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Install dependencies
-      run: pip install pandas requests beautifulsoup4 lxml
+      - name: Install dependencies
+        run: pip install pandas requests beautifulsoup4 lxml
 
-    # First: run the segment data module directly just to make sure it works for one ticker
-    - name: Quick module test
-      run: |
-        python - <<'PY'
-        from sec_segment_data_arelle import get_segment_data
-        print(get_segment_data("AAPL"))
-        PY
+      - name: Quick module test (AAPL)
+        run: |
+          python - <<'PY'
+          from sec_segment_data_arelle import get_segment_data
+          df = get_segment_data("AAPL")
+          print(df)
+          print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
+          PY
 
-    # Second: run the table generator
-    - name: Generate segment tables
-      run: python generate_segment_tables.py
+      - name: Generate segment tables (AAPL/MSFT/AMZN)
+        run: python generate_segment_tables.py
 
-    # Optional: commit the generated HTML back to the repo so you can view from GitHub Pages
-    - name: Commit results
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add charts/*.html
-        git commit -m "Automated segment test run" || echo "No changes to commit"
-        git push
+      - name: Commit generated HTML (optional)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add charts/*.html || true
+          git commit -m "Automated segment test run" || echo "No changes to commit"
+          git push || true
