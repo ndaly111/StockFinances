@@ -1,7 +1,7 @@
 name: Test Segment Parser
 
 on:
-  workflow_dispatch:  # ← enables the manual "Run workflow" button
+  workflow_dispatch:  # enables the "Run workflow" button
 
 permissions:
   contents: write
@@ -9,9 +9,8 @@ permissions:
 jobs:
   run-segment-test:
     runs-on: ubuntu-latest
-
-    # Pass a valid SEC User-Agent built from your existing secret: Email
     env:
+      # Build a compliant SEC User-Agent using your existing secret: Email
       SEC_USER_AGENT: StockFinances/1.0 (Contact: ${{ secrets.Email }})
 
     steps:
@@ -28,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas requests beautifulsoup4 lxml
 
-      # Quick smoke test: import module and fetch AAPL once (prints DataFrame)
+      # Smoke test your module so you can see output in logs
       - name: Quick module test (AAPL)
         run: |
           python - <<'PY'
@@ -38,11 +37,11 @@ jobs:
           print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
           PY
 
-      # Generate HTML tables for a few hardcoded tickers (AAPL/MSFT/AMZN)
+      # Generate HTML tables for a few hardcoded tickers
       - name: Generate segment tables
         run: python generate_segment_tables.py
 
-      # Upload the generated HTML as a build artifact so you can download/view
+      # Let you download the HTML from the run page
       - name: Upload charts artifact
         uses: actions/upload-artifact@v4
         with:
@@ -50,7 +49,7 @@ jobs:
           path: charts/*.html
           if-no-files-found: warn
 
-      # Optional: commit charts back to repo (handy if you serve from Pages)
+      # Optional: commit the generated HTML back to the repo
       - name: Commit results (optional)
         run: |
           git config user.name "github-actions[bot]"
