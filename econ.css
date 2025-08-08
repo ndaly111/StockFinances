@@ -1,0 +1,7 @@
+body{font-family:system-ui,Arial;margin:0 20px 40px;max-width:960px}
+h1  {margin:20px 0}
+nav {margin:0 0 20px}
+nav a{margin-right:14px;text-decoration:none;color:#0645AD}
+.sec{margin-top:80px}
+.stats{font-size:.9em;color:#555;margin:6px 0 0}
+.plotly-graph-div{width:100%;max-width:720px;height:350px}
