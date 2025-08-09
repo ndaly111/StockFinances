@@ -1,0 +1,53 @@
+name: Segment Charts
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 1 * *' # Runs at 8:00 AM on the 1st day of every month
+
+permissions:
+  contents: write
+
+jobs:
+  run-segment-charts:
+    runs-on: ubuntu-latest
+    env:
+      SEC_USER_AGENT: "StockFinances/1.0 (Contact: ${{ secrets.Email }})"
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
+        fi
+        pip install pandas matplotlib requests beautifulsoup4 lxml
+
+    - name: Generate segment charts
+      run: |
+        python generate_segment_charts.py --tickers_csv tickers.csv --output_dir charts
+
+    - name: Upload charts artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: segment-charts
+        path: charts/
+        if-no-files-found: warn
+
+    - name: Set up Git identity
+      run: |
+        git config --global user.name 'ndaly111'
+        git config --global user.email 'ndaly111@gmail.com'
+
+    - name: Commit results
+      run: |
+        git add charts || true
+        git commit -m "Automated segment charts" || echo "No changes to commit"
+        git push || true
