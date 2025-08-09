@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# html_generator2.py – retro fix + SEGMENT CAROUSEL + Dividend placement
+# html_generator2.py – retro fix + SEGMENT CAROUSEL + layout polish
 # ---------------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
@@ -56,51 +56,59 @@ def inject_retro(html: str) -> str:
 # ───────── segment helpers ─────────────────────────────────────
 def build_segment_carousel_html(ticker: str, charts_dir: str, rel_prefix: str = "../") -> str:
     """
-    Build an HTML carousel snippet for all PNG charts under charts_dir/{ticker}.
+    Build an HTML carousel for all PNG charts under charts_dir/{ticker}.
     Ticker pages live in /pages, so default rel_prefix is '../'.
     """
     seg_dir = os.path.join(charts_dir, ticker)
     if not os.path.isdir(seg_dir):
         return ""
-
     pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
     if not pngs:
         return ""
-
     items = []
     for f in pngs:
         src = f"{rel_prefix}{charts_dir}/{ticker}/{f}"
         items.append(
             f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>'
         )
-
-    return '<div class="carousel-container">\n' + "\n".join(items) + "\n</div>"
+    return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
 # ───────── template creation ───────────────────────────────────
 def ensure_templates_exist():
-    # 1) retro.css (extend with simple carousel + table polish)
-    retro_css = r"""/* === retro.css — late-90s / early-2000s style + light polish === */
+    # 1) retro.css (carousel + table polish + section spacing)
+    retro_css = r"""/* === retro.css — late-90s / early-2000s style + layout polish === */
 body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
 h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
 .navbar{background:#C0C0C0;border:2px outset #FFF;padding:6px;text-align:center}
 .button,.navbar a{display:inline-block;border:2px outset #C0C0C0;background:#E0E0E0;padding:3px 8px;font-weight:bold;margin:2px}
-table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.85rem}
-th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}
-td{padding:4px;border:1px solid #8080FF}
-.marquee-wrapper{background:#000080;color:#FFFF00;padding:4px;font-weight:bold}
-.blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
 .container{max-width:none;width:100%;}
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
-/* simple, touch-friendly horizontal scroller */
-.carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px;border:2px inset #C0C0C0;background:#FAFAFF}
-.carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:6px;background:#FFFFFF}
-.segment-table-wrapper{margin-top:8px}
-.segment-table-wrapper table{font-size:.9rem}
+
+/* Section spacing so charts don't collide vertically */
+.section{margin-top:22px}
+.section h2{margin:10px 0 8px 0}
+.chart-block{margin-top:14px} /* extra space before a block of charts */
+
+/* Generic table polish */
+table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.92rem}
+th{background:#C0C0FF;padding:6px;border:1px solid #8080FF;position:sticky;top:0;z-index:1}
+td{padding:6px;border:1px solid #8080FF}
+tbody tr:nth-child(even){background:#F7F7FF}
+.table-wrap{overflow-x:auto;border:1px solid #8080FF}
+
+/* Segment table: align year center, numbers right */
+.segment-table-wrapper .table-wrap table td:nth-child(2){text-align:center}
+.segment-table-wrapper .table-wrap table td:nth-child(3),
+.segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
+
+/* simple, touch-friendly horizontal scroller for charts */
+.carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
+.carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
 """
     create_template("static/css/retro.css", retro_css)
 
-    # 2) Home page template (unchanged aside from retro/css link)
+    # 2) Home page template
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
@@ -137,7 +145,7 @@ td{padding:4px;border:1px solid #8080FF}
 </head><body>
 <div class="container">
 
-  <div class="marquee-wrapper">
+  <div class="marquee-wrapper" style="background:#000080;color:#FFFF00;padding:4px;font-weight:bold">
     <marquee behavior="scroll" direction="left" scrollamount="6">
       Nick's Stock Financials — Surfacing Under-Priced Stocks Since 2025
     </marquee>
@@ -149,111 +157,137 @@ td{padding:4px;border:1px solid #8080FF}
     {% endfor %}
   </nav>
 
-  <header><h1>Financial Overview</h1></header>
+  <header class="section"><h1>Financial Overview</h1></header>
 
-  <div id="spy-qqq-growth" class="center-table">
+  <div id="spy-qqq-growth" class="center-table section">
     <h2>SPY vs QQQ Overview</h2>
     {{ spy_qqq_growth | safe }}
   </div>
 
-  <div class="center-table">
+  <div class="center-table section">
     <h2>Key U.S. Economic Indicators</h2>
     {{ econ_table | safe }}
   </div>
 
-  <div class="center-table">
+  <div class="center-table section">
     <h2>Past Earnings (Last 7 Days)</h2>
     {{ earnings_past | safe }}
     <h2>Upcoming Earnings</h2>
     {{ earnings_upcoming | safe }}
   </div>
 
-  <div>{{ dashboard_table | safe }}</div>
+  <div class="section">{{ dashboard_table | safe }}</div>
 
-  <footer><p>Nick's Financial Data Dashboard</p></footer>
+  <footer class="section"><p>Nick's Financial Data Dashboard</p></footer>
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # 3) SPY/QQQ growth pages (live at site root → use 'charts/...', not '../charts/...')
+    # 3) SPY/QQQ growth pages (at site root → use 'charts/...').
     spy_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>SPY Growth &amp; P/E History</title>
   <link rel="stylesheet" href="/static/css/retro.css">
-</head><body><div class="container">
+</head><body><div class="container section">
   <h1>SPY — Implied Growth &amp; P/E Ratio</h1>
 
-  <h2>Implied Growth (TTM)</h2>
-  <img src="charts/spy_growth_chart.png" alt="SPY growth chart" class="chart-img">
-  {{ spy_growth_summary | safe }}
+  <div class="section">
+    <h2>Implied Growth (TTM)</h2>
+    <img src="charts/spy_growth_chart.png" alt="SPY growth chart" class="chart-img chart-block">
+    {{ spy_growth_summary | safe }}
+  </div>
 
-  <h2>P/E Ratio (TTM)</h2>
-  <img src="charts/spy_pe_chart.png" alt="SPY P/E chart" class="chart-img">
-  {{ spy_pe_summary | safe }}
+  <div class="section">
+    <h2>P/E Ratio (TTM)</h2>
+    <img src="charts/spy_pe_chart.png" alt="SPY P/E chart" class="chart-img chart-block">
+    {{ spy_pe_summary | safe }}
+  </div>
 
-  <p><a href="index.html">← Back to Dashboard</a></p>
+  <p class="section"><a href="index.html">← Back to Dashboard</a></p>
 </div></body></html>"""
     create_template("templates/spy_growth_template.html", spy_tpl)
     qqq_tpl = spy_tpl.replace("SPY","QQQ").replace("spy_","qqq_")
     create_template("templates/qqq_growth_template.html", qqq_tpl)
 
-    # 4) Ticker page template (segment carousel below Y/Y, above Balance Sheet; EPS/Dividend below BS)
+    # 4) Ticker page template (segment carousel below Y/Y, above Balance Sheet)
     ticker_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
 </head><body><div class="container">
 
-  <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
+  <h1 class="section">{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
 
-  <h2>Overview</h2>
-  <div>{{ ticker_data.ticker_info | safe }}</div>
+  <div class="section">
+    <h2>Overview</h2>
+    <div class="table-wrap">{{ ticker_data.ticker_info | safe }}</div>
+  </div>
 
-  <h2>Revenue &amp; Net Income</h2>
-  <img class="chart-img" src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue & Net Income">
-  <img class="chart-img" src="{{ ticker_data.eps_chart_path }}" alt="EPS">
-  <div>{{ ticker_data.financial_table | safe }}</div>
+  <div class="section">
+    <h2>Revenue &amp; Net Income</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue & Net Income">
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_chart_path }}" alt="EPS">
+    <div class="table-wrap">{{ ticker_data.financial_table | safe }}</div>
+  </div>
 
-  <h2>Forecasts</h2>
-  <img class="chart-img" src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue/Net Income Forecast">
-  <img class="chart-img" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
+  <div class="section">
+    <h2>Forecasts</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue/Net Income Forecast">
+    <img class="chart-img chart-block" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
+  </div>
 
-  <h2>Y/Y % Change</h2>
-  <img class="chart-img" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
-  <img class="chart-img" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
-  <div>{{ ticker_data.yoy_growth_table_html | safe }}</div>
+  <div class="section">
+    <h2>Y/Y % Change</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
+    <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
+  </div>
 
   {% if ticker_data.segment_carousel_html %}
-  <h2>Segment Performance</h2>
-  {{ ticker_data.segment_carousel_html | safe }}
-  <div class="segment-table-wrapper">
-    {{ ticker_data.segment_table_html | safe }}
+  <div class="section">
+    <h2>Segment Performance</h2>
+    {{ ticker_data.segment_carousel_html | safe }}
+    <div class="segment-table-wrapper">
+      <div class="table-wrap">
+        {{ ticker_data.segment_table_html | safe }}
+      </div>
+    </div>
   </div>
   {% endif %}
 
-  <h2>Balance Sheet</h2>
-  <img class="chart-img" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
-  <div>{{ ticker_data.balance_sheet_table_html | safe }}</div>
+  <div class="section">
+    <h2>Balance Sheet</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
+    <div class="table-wrap">{{ ticker_data.balance_sheet_table_html | safe }}</div>
+  </div>
 
-  <h2>EPS &amp; Dividend</h2>
-  <img class="chart-img" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
+  <div class="section">
+    <h2>EPS &amp; Dividend</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
+  </div>
 
-  <h2>Expenses</h2>
-  <img class="chart-img" src="{{ ticker_data.expense_chart_path }}" alt="Expenses">
-  <img class="chart-img" src="{{ ticker_data.expense_percent_chart_path }}" alt="Expenses %">
-  <div>{{ ticker_data.expense_abs_html | safe }}</div>
-  <div>{{ ticker_data.expense_yoy_html | safe }}</div>
-  <div>{{ ticker_data.unmapped_expense_html | safe }}</div>
+  <div class="section">
+    <h2>Expenses</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.expense_chart_path }}" alt="Expenses">
+    <img class="chart-img chart-block" src="{{ ticker_data.expense_percent_chart_path }}" alt="Expenses %">
+    <div class="table-wrap">{{ ticker_data.expense_abs_html | safe }}</div>
+    <div class="table-wrap">{{ ticker_data.expense_yoy_html | safe }}</div>
+    <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
+  </div>
 
-  <h2>Valuation</h2>
-  <img class="chart-img" src="{{ ticker_data.valuation_chart }}" alt="Valuation">
-  <div>{{ ticker_data.valuation_info_table | safe }}</div>
-  <div>{{ ticker_data.valuation_data_table | safe }}</div>
+  <div class="section">
+    <h2>Valuation</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.valuation_chart }}" alt="Valuation">
+    <div class="table-wrap">{{ ticker_data.valuation_info_table | safe }}</div>
+    <div class="table-wrap">{{ ticker_data.valuation_data_table | safe }}</div>
+  </div>
 
-  <h2>Implied Growth</h2>
-  <img class="chart-img" src="{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth">
-  <div>{{ ticker_data.implied_growth_table_html | safe }}</div>
+  <div class="section">
+    <h2>Implied Growth</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth">
+    <div class="table-wrap">{{ ticker_data.implied_growth_table_html | safe }}</div>
+  </div>
 
-  <p><a href="../index.html">← Back to Dashboard</a></p>
+  <p class="section"><a href="../index.html">← Back to Dashboard</a></p>
 </div></body></html>"""
     create_template("templates/ticker_template.html", ticker_tpl)
 
