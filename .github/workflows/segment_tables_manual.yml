@@ -1,0 +1,59 @@
+name: Segment Tables
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 1 * *'   # 8:00 AM on the 1st day of every month
+
+permissions:
+  contents: write
+
+jobs:
+  run-segment-scripts:
+    runs-on: ubuntu-latest
+    env:
+      SEC_USER_AGENT: "StockFinances/1.0 (Contact: ${{ secrets.Email }})"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+          pip install pandas requests beautifulsoup4 lxml
+
+      - name: Smoke test module (AAPL)
+        run: |
+          python - <<'PY'
+          from sec_segment_data_arelle import get_segment_data
+          df = get_segment_data("AAPL")
+          print(df)
+          print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
+          PY
+
+      - name: Generate segment tables
+        run: python generate_segment_tables.py
+
+      - name: Upload charts artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: segment-charts
+          path: charts/*.html
+          if-no-files-found: warn
+
+      - name: Commit results
+        run: |
+          git config user.name 'ndaly111'
+          git config user.email 'ndaly111@gmail.com'
+          git add charts/*.html 2>/dev/null || true
+          git commit -m "Automated segment charts" || echo "No changes to commit"
+          git push || true
