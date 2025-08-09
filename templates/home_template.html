@@ -34,7 +34,7 @@
 </head><body>
 <div class="container">
 
-  <div class="marquee-wrapper">
+  <div class="marquee-wrapper" style="background:#000080;color:#FFFF00;padding:4px;font-weight:bold">
     <marquee behavior="scroll" direction="left" scrollamount="6">
       Nick's Stock Financials — Surfacing Under-Priced Stocks Since 2025
     </marquee>
@@ -46,26 +46,26 @@
     {% endfor %}
   </nav>
 
-  <header><h1>Financial Overview</h1></header>
+  <header class="section"><h1>Financial Overview</h1></header>
 
-  <div id="spy-qqq-growth" class="center-table">
+  <div id="spy-qqq-growth" class="center-table section">
     <h2>SPY vs QQQ Overview</h2>
     {{ spy_qqq_growth | safe }}
   </div>
 
-  <div class="center-table">
+  <div class="center-table section">
     <h2>Key U.S. Economic Indicators</h2>
     {{ econ_table | safe }}
   </div>
 
-  <div class="center-table">
+  <div class="center-table section">
     <h2>Past Earnings (Last 7 Days)</h2>
     {{ earnings_past | safe }}
     <h2>Upcoming Earnings</h2>
     {{ earnings_upcoming | safe }}
   </div>
 
-  <div>{{ dashboard_table | safe }}</div>
+  <div class="section">{{ dashboard_table | safe }}</div>
 
-  <footer><p>Nick's Financial Data Dashboard</p></footer>
+  <footer class="section"><p>Nick's Financial Data Dashboard</p></footer>
 </div></body></html>
