@@ -1,20 +1,24 @@
-/* retro.css — spacing + readable tables + carousel */
-body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF;color:#000080;margin:0}
+/* === retro.css — late-90s / early-2000s style === */
+body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
+a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
+h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
+.navbar{background:#C0C0C0;border:2px outset #FFF;padding:6px;text-align:center}
+.button,.navbar a{display:inline-block;border:2px outset #C0C0C0;background:#E0E0E0;padding:3px 8px;font-weight:bold;margin:2px}
+table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.85rem}
+th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}
+td{padding:4px;border:1px solid #8080FF}
+.marquee-wrapper{background:#000080;color:#FFFF00;padding:4px;font-weight:bold}
+.blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
 .container{max-width:none;width:100%;}
+
+/* --- minimal additions for spacing & segment UI --- */
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
-.section{margin-top:22px}
 .chart-block{margin-top:14px}
-
-/* tables */
-table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.92rem}
-th{background:#C0C0FF;padding:6px;border:1px solid #8080FF;position:sticky;top:0;z-index:1;text-align:center}
-td{padding:6px;border:1px solid #8080FF}
-tbody tr:nth-child(even){background:#F7F7FF}
 .table-wrap{overflow-x:auto;border:1px solid #8080FF}
-.segment-flat td:nth-child(2){text-align:center}       /* Year centered */
-.segment-flat td:nth-child(3),.segment-flat td:nth-child(4){text-align:right} /* numbers right */
-.table-note{font-size:.85rem;color:#333;margin:4px 0 8px 0}
+.segment-table-wrapper .table-wrap table td:nth-child(2){text-align:center}
+.segment-table-wrapper .table-wrap table td:nth-child(3),
+.segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
 
-/* carousel */
+/* simple, touch-friendly horizontal scroller for segment charts */
 .carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
 .carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
