@@ -2,16 +2,20 @@
 <html lang="en"><head>
   <meta charset="UTF-8"><title>QQQ Growth &amp; P/E History</title>
   <link rel="stylesheet" href="/static/css/retro.css">
-</head><body><div class="container">
+</head><body><div class="container section">
   <h1>QQQ — Implied Growth &amp; P/E Ratio</h1>
 
-  <h2>Implied Growth (TTM)</h2>
-  <img src="charts/qqq_growth_chart.png" alt="QQQ growth chart" class="chart-img">
-  {{ qqq_growth_summary | safe }}
+  <div class="section">
+    <h2>Implied Growth (TTM)</h2>
+    <img src="charts/qqq_growth_chart.png" alt="QQQ growth chart" class="chart-img chart-block">
+    {{ qqq_growth_summary | safe }}
+  </div>
 
-  <h2>P/E Ratio (TTM)</h2>
-  <img src="charts/qqq_pe_chart.png" alt="QQQ P/E chart" class="chart-img">
-  {{ qqq_pe_summary | safe }}
+  <div class="section">
+    <h2>P/E Ratio (TTM)</h2>
+    <img src="charts/qqq_pe_chart.png" alt="QQQ P/E chart" class="chart-img chart-block">
+    {{ qqq_pe_summary | safe }}
+  </div>
 
-  <p><a href="index.html">← Back to Dashboard</a></p>
+  <p class="section"><a href="index.html">← Back to Dashboard</a></p>
 </div></body></html>
