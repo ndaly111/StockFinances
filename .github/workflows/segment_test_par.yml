@@ -1,21 +1,20 @@
-name: Manual Segment Test
+name: Segment Tables
 
 on:
-  # Standard manual trigger — should show a "Run workflow" button
-  workflow_dispatch:
-
-  # Backup trigger: add a comment "/run-segments" on any issue in this repo
-  issue_comment:
+  workflow_dispatch:           # normal manual button (desktop)
+  issue_comment:               # backup: comment trigger
     types: [created]
+  schedule:
+    - cron: '0 8 1 * *'        # 8:00 AM on the 1st of every month
 
 permissions:
   contents: write
 
 jobs:
   run:
-    # Only run on:
-    # - manual clicks, OR
-    # - comments that start with "/run-segments" by repo owner
+    # Only run when:
+    # - launched manually, OR
+    # - you (repo owner) comment "/run-segments" on any issue
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
@@ -24,52 +23,48 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      # SEC requires a UA with contact; uses your "Email" secret
       SEC_USER_AGENT: StockFinances/1.0 (Contact: ${{ secrets.Email }})
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
+    - name: Check out repository
+      uses: actions/checkout@v4
 
-      - name: Print trigger info
-        run: |
-          echo "Triggered by: ${{ github.event_name }}"
-          echo "Actor:        ${{ github.actor }}"
-          echo "Ref:          ${{ github.ref }}"
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
+        fi
+        pip install pandas requests beautifulsoup4 lxml
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas requests beautifulsoup4 lxml
+    - name: Smoke test (AAPL)
+      run: |
+        python - <<'PY'
+        from sec_segment_data_arelle import get_segment_data
+        df = get_segment_data("AAPL")
+        print(df)
+        print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
+        PY
 
-      - name: Smoke test module (AAPL)
-        run: |
-          python - <<'PY'
-          from sec_segment_data_arelle import get_segment_data
-          df = get_segment_data("AAPL")
-          print(df)
-          print("Concepts:", df.attrs.get("revenue_concept"), df.attrs.get("op_income_concept"))
-          PY
+    - name: Generate segment tables
+      run: python generate_segment_tables.py
 
-      - name: Generate HTML tables
-        run: python generate_segment_tables.py
+    - name: Upload charts artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: segment-charts
+        path: charts/*.html
+        if-no-files-found: warn
 
-      - name: Upload HTML artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: segment-charts
-          path: charts/*.html
-          if-no-files-found: warn
-
-      - name: Commit results (optional)
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add charts/*.html || true
-          git commit -m "Automated segment charts" || echo "No changes to commit"
-          git push || true
+    - name: Commit results back to repo (optional)
+      run: |
+        git config user.name 'ndaly111'
+        git config user.email 'ndaly111@gmail.com'
+        git add charts/*.html 2>/dev/null || true
+        git commit -m "Automated segment charts" || echo "No changes to commit"
+        git push || true
