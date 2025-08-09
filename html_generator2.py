@@ -54,11 +54,10 @@ def inject_retro(html: str) -> str:
     return html
 
 # ───────── segment helpers ─────────────────────────────────────
-def build_segment_carousel_html(ticker: str, charts_dir: str) -> str:
+def build_segment_carousel_html(ticker: str, charts_dir: str, rel_prefix: str = "../") -> str:
     """
     Build an HTML carousel snippet for all PNG charts under charts_dir/{ticker}.
-    We assume generate_segment_charts.py saved per-segment PNGs there.
-    If none exist, return empty string (template will hide the section).
+    Ticker pages live in /pages, so default rel_prefix is '../'.
     """
     seg_dir = os.path.join(charts_dir, ticker)
     if not os.path.isdir(seg_dir):
@@ -70,7 +69,7 @@ def build_segment_carousel_html(ticker: str, charts_dir: str) -> str:
 
     items = []
     for f in pngs:
-        src = f"{charts_dir}/{ticker}/{f}"
+        src = f"{rel_prefix}{charts_dir}/{ticker}/{f}"
         items.append(
             f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>'
         )
@@ -101,7 +100,7 @@ td{padding:4px;border:1px solid #8080FF}
 """
     create_template("static/css/retro.css", retro_css)
 
-    # 2) Home page template
+    # 2) Home page template (unchanged aside from retro/css link)
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
@@ -175,7 +174,7 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # 3) SPY/QQQ growth pages
+    # 3) SPY/QQQ growth pages (live at site root → use 'charts/...', not '../charts/...')
     spy_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>SPY Growth &amp; P/E History</title>
@@ -184,20 +183,20 @@ td{padding:4px;border:1px solid #8080FF}
   <h1>SPY — Implied Growth &amp; P/E Ratio</h1>
 
   <h2>Implied Growth (TTM)</h2>
-  <img src="../charts/spy_growth_chart.png" alt="SPY growth chart" class="chart-img">
+  <img src="charts/spy_growth_chart.png" alt="SPY growth chart" class="chart-img">
   {{ spy_growth_summary | safe }}
 
   <h2>P/E Ratio (TTM)</h2>
-  <img src="../charts/spy_pe_chart.png" alt="SPY P/E chart" class="chart-img">
+  <img src="charts/spy_pe_chart.png" alt="SPY P/E chart" class="chart-img">
   {{ spy_pe_summary | safe }}
 
-  <p><a href="../index.html">← Back to Dashboard</a></p>
+  <p><a href="index.html">← Back to Dashboard</a></p>
 </div></body></html>"""
     create_template("templates/spy_growth_template.html", spy_tpl)
     qqq_tpl = spy_tpl.replace("SPY","QQQ").replace("spy_","qqq_")
     create_template("templates/qqq_growth_template.html", qqq_tpl)
 
-    # 4) Ticker page template (adds SEGMENT carousel + table and Dividend placement)
+    # 4) Ticker page template (segment carousel below Y/Y, above Balance Sheet; EPS/Dividend below BS)
     ticker_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
@@ -372,6 +371,11 @@ def render_spy_qqq_growth_pages():
             f.write(inject_retro(rendered))
 
 def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
+    """
+    Ticker pages are written into /pages, so all image src paths must be prefixed
+    with '../' to reach /charts.
+    """
+    rel = "../"
     ensure_directory_exists("pages")
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
@@ -380,37 +384,35 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
                 "ticker":                       tk,
                 "company_name":                 get_company_short_name(tk, cur),
                 "ticker_info":                  get_file_or_placeholder(f"{charts_dir}/{tk}_ticker_info.html"),
-                "revenue_net_income_chart_path":f"{charts_dir}/{tk}_revenue_net_income_chart.png",
-                "eps_chart_path":               f"{charts_dir}/{tk}_eps_chart.png",
+                "revenue_net_income_chart_path":f"{rel}{charts_dir}/{tk}_revenue_net_income_chart.png",
+                "eps_chart_path":               f"{rel}{charts_dir}/{tk}_eps_chart.png",
                 "financial_table":              get_file_or_placeholder(f"{charts_dir}/{tk}_rev_net_table.html"),
-                "forecast_rev_net_chart_path":  f"{charts_dir}/{tk}_Revenue_Net_Income_Forecast.png",
-                "forecast_eps_chart_path":      f"{charts_dir}/{tk}_EPS_Forecast.png",
+                "forecast_rev_net_chart_path":  f"{rel}{charts_dir}/{tk}_Revenue_Net_Income_Forecast.png",
+                "forecast_eps_chart_path":      f"{rel}{charts_dir}/{tk}_EPS_Forecast.png",
                 "yoy_growth_table_html":        get_file_or_placeholder(f"{charts_dir}/{tk}_yoy_growth_tbl.html"),
-                "expense_chart_path":           f"{charts_dir}/{tk}_rev_expense_chart.png",
-                "expense_percent_chart_path":   f"{charts_dir}/{tk}_expense_percent_chart.png",
+                "expense_chart_path":           f"{rel}{charts_dir}/{tk}_rev_expense_chart.png",
+                "expense_percent_chart_path":   f"{rel}{charts_dir}/{tk}_expense_percent_chart.png",
                 "expense_abs_html":             get_file_or_placeholder(f"{charts_dir}/{tk}_expense_absolute.html"),
                 "expense_yoy_html":             get_file_or_placeholder(f"{charts_dir}/{tk}_yoy_expense_change.html"),
-                "balance_sheet_chart_path":     f"{charts_dir}/{tk}_balance_sheet_chart.png",
+                "balance_sheet_chart_path":     f"{rel}{charts_dir}/{tk}_balance_sheet_chart.png",
                 "balance_sheet_table_html":     get_file_or_placeholder(f"{charts_dir}/{tk}_balance_sheet_table.html"),
-                "revenue_yoy_change_chart_path":f"{charts_dir}/{tk}_revenue_yoy_change.png",
-                "eps_yoy_change_chart_path":    f"{charts_dir}/{tk}_eps_yoy_change.png",
-                "valuation_chart":              f"{charts_dir}/{tk}_valuation_chart.png",
+                "revenue_yoy_change_chart_path":f"{rel}{charts_dir}/{tk}_revenue_yoy_change.png",
+                "eps_yoy_change_chart_path":    f"{rel}{charts_dir}/{tk}_eps_yoy_change.png",
+                "valuation_chart":              f"{rel}{charts_dir}/{tk}_valuation_chart.png",
                 "valuation_info_table":         get_file_or_placeholder(f"{charts_dir}/{tk}_valuation_info.html"),
                 "valuation_data_table":         get_file_or_placeholder(f"{charts_dir}/{tk}_valuation_table.html"),
                 "unmapped_expense_html":        get_file_or_placeholder(
                                                     f"{charts_dir}/{tk}_unmapped_fields.html",
                                                     "No unmapped expenses."
                                                 ),
-                # EPS/Dividend chart (explicitly included – template places it below balance sheet)
-                "eps_dividend_chart_path":      f"{charts_dir}/{tk}_eps_dividend_forecast.png",
-                # Implied growth
-                "implied_growth_chart_path":    f"{charts_dir}/{tk}_implied_growth_plot.png",
+                "eps_dividend_chart_path":      f"{rel}{charts_dir}/{tk}_eps_dividend_forecast.png",
+                "implied_growth_chart_path":    f"{rel}{charts_dir}/{tk}_implied_growth_plot.png",
                 "implied_growth_table_html":    get_file_or_placeholder(
                                                     f"{charts_dir}/{tk}_implied_growth_summary.html",
                                                     "No implied growth data available."
                                                 ),
-                # NEW: segment carousel + table
-                "segment_carousel_html":        build_segment_carousel_html(tk, charts_dir),
+                # Segment content
+                "segment_carousel_html":        build_segment_carousel_html(tk, charts_dir, rel_prefix=rel),
                 "segment_table_html":           get_file_or_placeholder(
                                                     f"{charts_dir}/{tk}/{tk}_segments_table.html",
                                                     "No segment data available."
