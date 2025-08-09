@@ -86,8 +86,8 @@ def apply_stock_split(ticker, split_ratio, db_path):
 
 
 # Enter the ticker and split ratio here
-ticker = "NVDA"  # Replace with the actual ticker
-split_ratio = 10  # Replace with the actual split ratio (e.g., 2 for a 2-for-1 split)
+ticker = "CMG"  # Replace with the actual ticker
+split_ratio = 50  # Replace with the actual split ratio (e.g., 2 for a 2-for-1 split)
 
 # Run the function to apply the stock split
 apply_stock_split(ticker, split_ratio, DB_PATH)
