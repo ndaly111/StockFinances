@@ -13,7 +13,7 @@ Reads tickers from tickers.csv and for each ticker:
 
    - One row per segment
    - Columns: last 3 fiscal years + TTM, each with Rev & OI side-by-side
-   - Single, consistent unit across the whole table ($K/$M/$B/$T)
+   - Single, consistent unit across the whole table ($K/$M/$B/$T or $)
    - TTM columns bold
    - “% of Total (TTM)” mix column
    - Sorted by TTM Revenue descending
@@ -93,9 +93,13 @@ def _to_float(x):
     try: return float(s)
     except: return pd.NA
 
+# ── NEW: one-unit chooser for $ / $K / $M / $B / $T ─────────────
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
-    """Choose one unit for the whole table."""
-    if max_abs_value is None or (isinstance(max_abs_value, float) and math.isnan(max_abs_value)) or max_abs_value == 0:
+    """
+    Pick a single divisor + unit label for the *whole* table.
+    Returns (divisor, unit_label).
+    """
+    if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
         return (1.0, "$")
     v = abs(max_abs_value)
     if v >= 1e12: return (1e12, "$T")
@@ -104,9 +108,29 @@ def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     if v >= 1e3:  return (1e3,  "$K")
     return (1.0, "$")
 
+# ── NEW: smart formatter (adaptive decimals; negatives; commas for $) ─────
 def _fmt_scaled(x, div, unit) -> str:
-    if pd.isna(x): return "–"
-    return f"{unit}{(x/div):.1f}"
+    if pd.isna(x): 
+        return "–"
+    try:
+        val = float(x) / float(div)
+    except Exception:
+        return "–"
+
+    # Adaptive decimals: ≥100 → 0 dp; ≥10 → 1 dp; else → 2 dp
+    if abs(val) >= 100:
+        fmt = "{:,.0f}" if unit == "$" else "{:.0f}"
+    elif abs(val) >= 10:
+        fmt = "{:,.1f}" if unit == "$" else "{:.1f}"
+    else:
+        fmt = "{:,.2f}" if unit == "$" else "{:.2f}"
+
+    # Prefix the currency symbol; for non-$ units, keep like "$B"
+    s = fmt.format(val)
+    if unit == "$":
+        return f"${s}"
+    else:
+        return f"{s}{unit[-1]}"  # unit labels are "$K","$M","$B","$T" → keep K/M/B/T
 
 def _last3_plus_ttm(years: List[str]) -> List[str]:
     nums = sorted({int(y) for y in years if str(y).isdigit()})
@@ -156,7 +180,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         min_y, max_y = float(all_vals.min()), float(all_vals.max())
         if min_y > 0: min_y = 0.0
         if max_y < 0: max_y = 0.0
-    margin = (max_y - min_y) * 0.1
+    margin = (max_y - min_y) * 0.1 if (max_y - min_y) else 1.0
     min_y_plot, max_y_plot = min_y - margin, max_y + margin
 
     # Years for charts (keep them all, ordered), and years for the table (last3 + TTM)
@@ -169,7 +193,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     # ── Charts per segment (y in $B) ──
     for seg in segments:
         seg_df = df[df["Segment"] == seg]
-        # Build value lists in the order of years_all
         revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
 
@@ -199,10 +222,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         plt.savefig(fig_path)
         plt.close(fig)
 
-    # ── Compact pivot table (Wireframe A) ──
-    # Keep only last 3 numeric years + TTM for the table columns
+    # ── Compact pivot table ──
     use_years = years_tbl
-    # Build pivots
+
     def pv(col):
         p = df[df["Year"].isin(use_years)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
         return p.reindex(columns=[y for y in use_years if y in p.columns])
@@ -237,7 +259,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     out = pd.DataFrame(index=rev_p.index)
     for (y, kind) in cols:
         src = rev_p.get(y) if kind == "Rev" else oi_p.get(y)
-        label = f"{y} {'Rev' if kind=='Rev' else 'OI'}"
+        # Label shows the scale once per column pair
+        label = f"{y} {'Rev' if kind=='Rev' else 'OI'} ({unit})"
         out[label] = src
 
     if pct_series is not None:
@@ -246,7 +269,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     # Format values using the chosen unit; bold TTM columns
     for c in out.columns:
         if c == "% of Total (TTM)":
-            out[c] = out[c].map(lambda x: f"{x:.1f}%" if pd.notnull(x) else "–")
+            out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
         else:
             out[c] = out[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
 
@@ -256,13 +279,27 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     out.index.name = "Segment"
     out_disp = out.reset_index()
 
+    # Inline CSS → compact + readable (right-aligned numbers, sticky header, zebra)
+    css = """
+<style>
+.table-wrap{overflow:auto; max-width:100%;}
+.segment-pivot { width:100%; border-collapse:collapse; font-family: Arial, sans-serif; font-size:14px; }
+.segment-pivot thead th { position:sticky; top:0; background:#fff; z-index:1; border-bottom:1px solid #ddd; }
+.segment-pivot th, .segment-pivot td { padding:6px 8px; border-bottom:1px solid #f0f0f0; }
+.segment-pivot tbody tr:nth-child(even){ background:#fafafa; }
+.segment-pivot td, .segment-pivot th { white-space:nowrap; }
+.segment-pivot td { font-variant-numeric: tabular-nums; text-align:right; }
+.segment-pivot td:first-child, .segment-pivot th:first-child { text-align:left; }
+.table-note { font-size:12px; color:#666; margin:6px 0 8px; }
+</style>
+""".strip()
+
     caption = (
-        '<div class="table-note">Values scaled to '
-        f'<b>{unit}</b> for the entire table. TTM values are <b>bold</b>. '
-        '“% of Total (TTM)” shows revenue mix.</div>'
+        '<div class="table-note">Values are shown in a single scale for this table: '
+        f'<b>{unit}</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>'
     )
-    html = out_disp.to_html(index=False, escape=False, classes="segment-pivot compact", border=0)
-    table_content = caption + f"\n<div class='table-wrap'>{html}</div>"
+    html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
+    table_content = css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
 
     (out_dir / f"{ticker}_segments_table.html").write_text(table_content, encoding="utf-8")
 
