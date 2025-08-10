@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# html_generator2.py – retro fix: inject CSS + show economic data + (minimal) segment carousel + table
+# html_generator2.py – retro fix: inject CSS + show economic data + segment carousel & table (minimal)
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
-from pathlib import Path
 from html_generator import get_file_content_or_placeholder
 
 DB_PATH = "Stock Data.db"
@@ -20,23 +19,23 @@ def create_template(path: str, content: str):
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
 
-def get_company_short_name(ticker: str, cur) -> str:
-    cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker=?", (ticker,))
+def get_company_short_name(tk: str, cur) -> str:
+    cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker=?", (tk,))
     row = cur.fetchone()
     if row and row[0]:
         return row[0]
-    name = (yf.Ticker(ticker).info or {}).get("shortName", "").strip() or ticker
-    cur.execute("UPDATE Tickers_Info SET short_name=? WHERE ticker=?", (name, ticker))
+    name = (yf.Ticker(tk).info or {}).get("shortName", "").strip() or tk
+    cur.execute("UPDATE Tickers_Info SET short_name=? WHERE ticker=?", (name, tk))
     cur.connection.commit()
     return name
 
-def get_file_or_placeholder(path: str, placeholder: str = "No data available") -> str:
+def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
     try:
         return open(path, encoding="utf-8").read()
     except FileNotFoundError:
-        return placeholder
+        return ph
 
-# Inject retro CSS + override container width
+# Inject retro CSS + container override
 def inject_retro(html: str) -> str:
     if '/static/css/retro.css' not in html:
         html = html.replace(
@@ -52,11 +51,11 @@ def inject_retro(html: str) -> str:
         )
     return html
 
-# ───────── segment helpers (NEW – minimal) ─────────────────────
-def build_segment_carousel_html(ticker: str, charts_dir: str, rel_prefix: str = "") -> str:
+# ───────── segment helpers (NEW, minimal) ─────────────────────
+def build_segment_carousel_html(ticker: str, charts_dir: str) -> str:
     """
     Build an HTML carousel for all PNG charts under charts_dir/{ticker}.
-    Minimal helper; keeps existing relative path behavior unchanged.
+    Paths stay the same style you used elsewhere (no '../' added).
     """
     seg_dir = os.path.join(charts_dir, ticker)
     if not os.path.isdir(seg_dir):
@@ -66,16 +65,15 @@ def build_segment_carousel_html(ticker: str, charts_dir: str, rel_prefix: str = 
         return ""
     items = []
     for f in pngs:
-        src = f"{rel_prefix}{charts_dir}/{ticker}/{f}"
+        src = f"{charts_dir}/{ticker}/{f}"  # keep your existing relative style
         items.append(
             f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>'
         )
     return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
-# ───────── template creation ───────────────────────────────────
+# ───────── template creation ───────────────────────────────
 def ensure_templates_exist():
-    # 1.  retro.css  (late-90s vibes) + minimal additions for carousel/table
-    retro_css = r"""/* === retro.css — late-90s / early-2000s style === */
+    retro_css = r"""/* === retro.css — late-90s / early-2000s vibe === */
 body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
 h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
@@ -88,7 +86,7 @@ td{padding:4px;border:1px solid #8080FF}
 .blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
 .container{max-width:none;width:100%;}
 
-/* --- minimal additions for spacing & segment UI --- */
+/* minimal additions for spacing & segment UI */
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
 .chart-block{margin-top:14px}
 .table-wrap{overflow-x:auto;border:1px solid #8080FF}
@@ -102,7 +100,6 @@ td{padding:4px;border:1px solid #8080FF}
 """
     create_template("static/css/retro.css", retro_css)
 
-    # 2.  Home page template  (unchanged apart from retro.css link)
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
@@ -127,7 +124,7 @@ td{padding:4px;border:1px solid #8080FF}
         createdRow:function(row){
           $('td',row).each(function(){
             if(!$(this).attr('data-order')) return;
-            var n=parseFloat($(this).data-order'));if(isNaN(n)) return;
+            var n=parseFloat($(this).data('order'));if(isNaN(n)) return;
             var col=$(this).index();
             if(col===6){$(this).addClass(n<50?'negative':'positive');}
             else if(col>=2&&col<=5){$(this).addClass(n<0?'negative':'positive');}
@@ -159,11 +156,6 @@ td{padding:4px;border:1px solid #8080FF}
   </div>
 
   <div class="center-table">
-    <h2>Key U.S. Economic Indicators</h2>
-    {{ econ_table | safe }}
-  </div>
-
-  <div class="center-table">
     <h2>Past Earnings (Last 7 Days)</h2>
     {{ earnings_past | safe }}
     <h2>Upcoming Earnings</h2>
@@ -176,30 +168,49 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # 3.  SPY & QQQ growth-detail pages — **correct, lowercase filenames**
-    spy_tpl = """<!DOCTYPE html>
-<html lang="en"><head>
-  <meta charset="UTF-8"><title>SPY Growth &amp; P/E History</title>
+    # NEW: ensure the ticker page template has a Segment block + Dividend image
+    ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
 </head><body><div class="container">
-  <h1>SPY — Implied Growth &amp; P/E Ratio</h1>
+  <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
 
-  <h2>Implied Growth (TTM)</h2>
-  <img src="../charts/spy_growth_chart.png" alt="SPY growth chart" style="max-width:100%;">
-  {{ spy_growth_summary | safe }}
+  <div class="chart-block">
+    <h2>Y/Y % Change</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
+    <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
+  </div>
 
-  <h2>P/E Ratio (TTM)</h2>
-  <img src="../charts/spy_pe_chart.png" alt="SPY P/E chart" style="max-width:100%;">
-  {{ spy_pe_summary | safe }}
+  {% if ticker_data.segment_carousel_html %}
+  <div class="chart-block">
+    <h2>Segment Performance</h2>
+    {{ ticker_data.segment_carousel_html | safe }}
+    <div class="segment-table-wrapper">
+      <div class="table-wrap">
+        {{ ticker_data.segment_table_html | safe }}
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
-  <p><a href="../index.html">← Back to Dashboard</a></p>
+  <div class="chart-block">
+    <h2>Balance Sheet</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
+    <div class="table-wrap">{{ ticker_data.balance_sheet_table_html | safe }}</div>
+  </div>
+
+  <div class="chart-block">
+    <h2>EPS &amp; Dividend</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
+  </div>
+
+  <p class="chart-block"><a href="../index.html">← Back</a></p>
 </div></body></html>"""
-    create_template("templates/spy_growth_template.html", spy_tpl)
+    # Only write if missing or different (idempotent)
+    create_template("templates/ticker_template.html", ticker_tpl)
 
-    qqq_tpl = spy_tpl.replace("SPY","QQQ").replace("spy_","qqq_")
-    create_template("templates/qqq_growth_template.html", qqq_tpl)
-
-# ───────── dashboard-builder ─────────────────────────────────
+# ───────── dashboard builder  (exported to main_remote.py) ─
 def generate_dashboard_table(raw_rows):
     base_cols = [
         "Ticker", "Share Price",
@@ -219,7 +230,7 @@ def generate_dashboard_table(raw_rows):
 
     df = df.merge(pct, how="left", on="Ticker")
 
-    # numeric / display cols
+    # numeric / display columns
     sp_num = pd.to_numeric(df["Share Price"], errors="coerce")
     df["Share Price_num"]  = sp_num
     df["Share Price_disp"] = sp_num.map(lambda x: f"{x:.2f}" if pd.notnull(x) else "–")
@@ -236,17 +247,17 @@ def generate_dashboard_table(raw_rows):
     )
     df.drop(columns="Percentile", inplace=True)
 
-    def link(tk):
-        if tk == "SPY":
+    def link(t):
+        if t == "SPY":
             return '<a href="spy_growth.html">SPY</a>'
-        if tk == "QQQ":
+        if t == "QQQ":
             return '<a href="qqq_growth.html">QQQ</a>'
-        return f'<a href="pages/{tk}_page.html">{tk}</a>'
+        return f'<a href="pages/{t}_page.html">{t}</a>'
 
     df["Ticker"] = df["Ticker"].apply(link)
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
 
-    # table rows
+    # Build table rows
     body = []
     for _, r in df.iterrows():
         cells = [
@@ -272,7 +283,7 @@ def generate_dashboard_table(raw_rows):
         thead + "<tbody>" + "".join(body) + "</tbody></table>"
     )
 
-    # summary stats
+    # Summary stats
     pc = lambda s: f"{s:.1f}" if pd.notnull(s) else "–"
     ttm, fwd = df["Nick's TTM Value_num"].dropna(), df["Nick's Forward Value_num"].dropna()
     fttm, ffwd = df["Finviz TTM Value_num"].dropna(), df["Finviz Forward Value_num"].dropna()
@@ -298,15 +309,15 @@ def generate_dashboard_table(raw_rows):
         "Finviz_Forward_Value_Median":   ffwd.median() if not ffwd.empty else None
     }
 
-# ───────── ancillary page-builders ───────────────────────────
+# ───────── ancillary page builders (retro-injected) ───────
 def render_spy_qqq_growth_pages():
     chart_dir, out_dir = "charts", "."
     for key in ("spy", "qqq"):
         tpl = Template(get_file_content_or_placeholder(f"templates/{key}_growth_template.html"))
         rendered = tpl.render(
             **{
-                f"{key}_growth_summary": get_file_content_or_placeholder(f"{chart_dir}/{key}_growth_summary.html", ""),
-                f"{key}_pe_summary":     get_file_content_or_placeholder(f"{chart_dir}/{key}_pe_summary.html", ""),
+                f"{key}_growth_summary": get_file_content_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
+                f"{key}_pe_summary":     get_file_content_or_placeholder(f"{chart_dir}/{key}_pe_summary.html"),
             }
         )
         with open(f"{out_dir}/{key}_growth.html", "w", encoding="utf-8") as f:
@@ -316,113 +327,63 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
     ensure_directory_exists("pages")
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
-        for tk in tickers:
-            data = {
-                "ticker":                       tk,
-                "company_name":                 get_company_short_name(tk, cur),
-                "ticker_info":                  get_file_or_placeholder(f"{charts_dir}/{tk}_ticker_info.html"),
-                "revenue_net_income_chart_path":f"{charts_dir}/{tk}_revenue_net_income_chart.png",
-                "eps_chart_path":               f"{charts_dir}/{tk}_eps_chart.png",
-                "financial_table":              get_file_or_placeholder(f"{charts_dir}/{tk}_rev_net_table.html"),
-                "forecast_rev_net_chart_path":  f"{charts_dir}/{tk}_Revenue_Net_Income_Forecast.png",
-                "forecast_eps_chart_path":      f"{charts_dir}/{tk}_EPS_Forecast.png",
-                "yoy_growth_table_html":        get_file_or_placeholder(f"{charts_dir}/{tk}_yoy_growth_tbl.html"),
-                "expense_chart_path":           f"{charts_dir}/{tk}_rev_expense_chart.png",
-                "expense_percent_chart_path":   f"{charts_dir}/{tk}_expense_percent_chart.png",
-                "expense_abs_html":             get_file_or_placeholder(f"{charts_dir}/{tk}_expense_absolute.html"),
-                "expense_yoy_html":             get_file_or_placeholder(f"{charts_dir}/{tk}_yoy_expense_change.html"),
-                "balance_sheet_chart_path":     f"{charts_dir}/{tk}_balance_sheet_chart.png",
-                "balance_sheet_table_html":     get_file_or_placeholder(f"{charts_dir}/{tk}_balance_sheet_table.html"),
-                "revenue_yoy_change_chart_path":f"{charts_dir}/{tk}_revenue_yoy_change.png",
-                "eps_yoy_change_chart_path":    f"{charts_dir}/{tk}_eps_yoy_change.png",
-                "valuation_chart":              f"{charts_dir}/{tk}_valuation_chart.png",
-                "valuation_info_table":         get_file_or_placeholder(f"{charts_dir}/{tk}_valuation_info.html"),
-                "valuation_data_table":         get_file_or_placeholder(f"{charts_dir}/{tk}_valuation_table.html"),
-                "unmapped_expense_html":        get_file_or_placeholder(f"{charts_dir}/{tk}_unmapped_fields.html",
+        for t in tickers:
+            d = {
+                "ticker":                      t,
+                "company_name":                get_company_short_name(t, cur),
+                "ticker_info":                 get_file_or_placeholder(f"{charts_dir}/{t}_ticker_info.html"),
+                "revenue_net_income_chart_path": f"{charts_dir}/{t}_revenue_net_income_chart.png",
+                "eps_chart_path":              f"{charts_dir}/{t}_eps_chart.png",
+                "financial_table":             get_file_or_placeholder(f"{charts_dir}/{t}_rev_net_table.html"),
+                "forecast_rev_net_chart_path": f"{charts_dir}/{t}_Revenue_Net_Income_Forecast.png",
+                "forecast_eps_chart_path":     f"{charts_dir}/{t}_EPS_Forecast.png",
+                "yoy_growth_table_html":       get_file_or_placeholder(f"{charts_dir}/{t}_yoy_growth_tbl.html"),
+                "expense_chart_path":          f"{charts_dir}/{t}_rev_expense_chart.png",
+                "expense_percent_chart_path":  f"{charts_dir}/{t}_expense_percent_chart.png",
+                "expense_abs_html":            get_file_or_placeholder(f"{charts_dir}/{t}_expense_absolute.html"),
+                "expense_yoy_html":            get_file_or_placeholder(f"{charts_dir}/{t}_yoy_expense_change.html"),
+                "balance_sheet_chart_path":    f"{charts_dir}/{t}_balance_sheet_chart.png",
+                "balance_sheet_table_html":    get_file_or_placeholder(f"{charts_dir}/{t}_balance_sheet_table.html"),
+                "revenue_yoy_change_chart_path": f"{charts_dir}/{t}_revenue_yoy_change.png",
+                "eps_yoy_change_chart_path":   f"{charts_dir}/{t}_eps_yoy_change.png",
+                "valuation_chart":             f"{charts_dir}/{t}_valuation_chart.png",
+                "valuation_info_table":        get_file_or_placeholder(f"{charts_dir}/{t}_valuation_info.html"),
+                "valuation_data_table":        get_file_or_placeholder(f"{charts_dir}/{t}_valuation_table.html"),
+                "unmapped_expense_html":       get_file_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html",
                                                                        "No unmapped expenses."),
-                "eps_dividend_chart_path":      f"{charts_dir}/{tk}_eps_dividend_forecast.png",
-                "implied_growth_chart_path":    f"{charts_dir}/{tk}_implied_growth_plot.png",
-                "implied_growth_table_html":    get_file_or_placeholder(f"{charts_dir}/{tk}_implied_growth_summary.html",
+                "eps_dividend_chart_path":     f"{charts_dir}/{t}_eps_dividend_forecast.png",
+                "implied_growth_chart_path":   f"{charts_dir}/{t}_implied_growth_plot.png",
+                "implied_growth_table_html":   get_file_or_placeholder(f"{charts_dir}/{t}_implied_growth_summary.html",
                                                                        "No implied growth data available."),
-                # NEW (minimal): Segment carousel + table below it
-                "segment_carousel_html":        build_segment_carousel_html(tk, charts_dir, rel_prefix=""),
-                "segment_table_html":           get_file_or_placeholder(f"{charts_dir}/{tk}/{tk}_segments_table.html",
-                                                                        "No segment data available."),
+                # NEW: segment carousel + table (paths unchanged)
+                "segment_carousel_html":       build_segment_carousel_html(t, charts_dir),
+                "segment_table_html":          get_file_or_placeholder(f"{charts_dir}/{t}/{t}_segments_table.html",
+                                                                       "No segment data available.")
             }
-            # Minimal template: add a 'Segment Performance' block under Y/Y if content exists
-            ticker_tpl = """<!DOCTYPE html>
-<html lang="en"><head>
-  <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
-  <link rel="stylesheet" href="/static/css/retro.css">
-</head><body><div class="container">
-  <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
-
-  <div>
-    <h2>Y/Y % Change</h2>
-    <img src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change" class="chart-img chart-block">
-    <img src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change" class="chart-img chart-block">
-    <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
-  </div>
-
-  {% if ticker_data.segment_carousel_html %}
-  <div class="chart-block">
-    <h2>Segment Performance</h2>
-    {{ ticker_data.segment_carousel_html | safe }}
-    <div class="segment-table-wrapper">
-      <div class="table-wrap">
-        {{ ticker_data.segment_table_html | safe }}
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-  <div class="chart-block">
-    <h2>Balance Sheet</h2>
-    <img src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet" class="chart-img chart-block">
-    <div class="table-wrap">{{ ticker_data.balance_sheet_table_html | safe }}</div>
-  </div>
-
-  <div class="chart-block">
-    <h2>EPS &amp; Dividend</h2>
-    <img src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend" class="chart-img chart-block">
-  </div>
-
-  <p class="chart-block"><a href="../index.html">← Back</a></p>
-</div></body></html>"""
-            rendered = Template(ticker_tpl).render(ticker_data=data)
-            with open(f"pages/{tk}_page.html", "w", encoding="utf-8") as f:
+            rendered = env.get_template("ticker_template.html").render(ticker_data=d)
+            with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
                 f.write(inject_retro(rendered))
 
-# ───────── home-page builder ────────────────────────────────
 def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
-                     econ_table="", earnings_past="", earnings_upcoming=""):
+                     earnings_past="", earnings_upcoming=""):
     tpl = env.get_template("home_template.html")
     rendered = tpl.render(
         tickers=tickers,
         dashboard_table=dashboard_html,
         dashboard_data=avg_vals,
         spy_qqq_growth=spy_qqq_html,
-        econ_table=econ_table,
         earnings_past=earnings_past,
         earnings_upcoming=earnings_upcoming
     )
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
 
-# ───────── orchestrator (exported) ──────────────────────────
+# ───────── orchestrator ────────────────────────────────────
 def html_generator2(tickers, financial_data, full_dashboard_html,
                     avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
-    charts_path = Path("charts")
-    econ_html = get_file_content_or_placeholder(
-                charts_path / "economic_data.html",
-                placeholder="<!-- Economic data not available -->"
-            )
-    assert "Economic data not available" not in econ_html[:60], \
-       "[ECON]  placeholder detected – file missing"
     create_home_page(
         tickers, full_dashboard_html, avg_values, spy_qqq_growth_html,
-        econ_html,
         get_file_or_placeholder("charts/earnings_past.html"),
         get_file_or_placeholder("charts/earnings_upcoming.html")
     )

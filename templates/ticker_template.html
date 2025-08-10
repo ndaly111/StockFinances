@@ -1,33 +1,38 @@
 <!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
-<link rel="stylesheet" href="/static/css/retro.css"></head><body><div class="container">
-  <h1 class="section">{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
+  <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
+  <link rel="stylesheet" href="/static/css/retro.css">
+</head><body><div class="container">
+  <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
 
-  <div class="section">
+  <div class="chart-block">
     <h2>Y/Y % Change</h2>
-    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY">
-    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY">
+    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
     <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
   </div>
 
   {% if ticker_data.segment_carousel_html %}
-  <div class="section">
+  <div class="chart-block">
     <h2>Segment Performance</h2>
     {{ ticker_data.segment_carousel_html | safe }}
-    {{ ticker_data.segment_table_pretty | safe }}
+    <div class="segment-table-wrapper">
+      <div class="table-wrap">
+        {{ ticker_data.segment_table_html | safe }}
+      </div>
+    </div>
   </div>
   {% endif %}
 
-  <div class="section">
+  <div class="chart-block">
     <h2>Balance Sheet</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
     <div class="table-wrap">{{ ticker_data.balance_sheet_table_html | safe }}</div>
   </div>
 
-  <div class="section">
+  <div class="chart-block">
     <h2>EPS &amp; Dividend</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
   </div>
 
-  <p class="section"><a href="../index.html">← Back</a></p>
+  <p class="chart-block"><a href="../index.html">← Back</a></p>
 </div></body></html>
