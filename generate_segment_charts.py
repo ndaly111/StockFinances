@@ -24,18 +24,19 @@ Expected columns: Segment, Year, Revenue, OpIncome
 
 from __future__ import annotations
 
-import os
 import argparse
 import math
 import re
+from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
 
+VERSION = "SEGMENTS v2025-08-10b"
 
 # ─────────────────────────── utilities ───────────────────────────
 
@@ -93,12 +94,8 @@ def _to_float(x):
     try: return float(s)
     except: return pd.NA
 
-# ── NEW: one-unit chooser for $ / $K / $M / $B / $T ─────────────
+# Pick a single divisor + unit label for the *whole* table.
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
-    """
-    Pick a single divisor + unit label for the *whole* table.
-    Returns (divisor, unit_label).
-    """
     if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
         return (1.0, "$")
     v = abs(max_abs_value)
@@ -108,9 +105,9 @@ def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     if v >= 1e3:  return (1e3,  "$K")
     return (1.0, "$")
 
-# ── NEW: smart formatter (adaptive decimals; negatives; commas for $) ─────
+# Smart formatter (adaptive decimals; negatives; commas for $)
 def _fmt_scaled(x, div, unit) -> str:
-    if pd.isna(x): 
+    if pd.isna(x):
         return "–"
     try:
         val = float(x) / float(div)
@@ -125,12 +122,12 @@ def _fmt_scaled(x, div, unit) -> str:
     else:
         fmt = "{:,.2f}" if unit == "$" else "{:.2f}"
 
-    # Prefix the currency symbol; for non-$ units, keep like "$B"
     s = fmt.format(val)
     if unit == "$":
         return f"${s}"
     else:
-        return f"{s}{unit[-1]}"  # unit labels are "$K","$M","$B","$T" → keep K/M/B/T
+        # "$K","$M","$B","$T" → keep just the suffix letter
+        return f"{s}{unit[-1]}"
 
 def _last3_plus_ttm(years: List[str]) -> List[str]:
     nums = sorted({int(y) for y in years if str(y).isdigit()})
@@ -140,7 +137,6 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
         out.append("TTM")
     return out
 
-
 # ───────────────────── main per-ticker routine ────────────────────
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
@@ -149,7 +145,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     try:
         df = get_segment_data(ticker)
     except Exception as fetch_err:
-        print(f"Error fetching segment data for {ticker}: {fetch_err}")
+        print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
         ensure_dir(out_dir)
         (out_dir / f"{ticker}_segments_table.html").write_text(
             f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>",
@@ -172,15 +168,16 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     df["Revenue"] = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-    # Compute y-axis range for charts
+    # Compute shared y-axis range across ALL segments (handles negatives)
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
         min_y, max_y = 0.0, 0.0
     else:
         min_y, max_y = float(all_vals.min()), float(all_vals.max())
-        if min_y > 0: min_y = 0.0
-        if max_y < 0: max_y = 0.0
-    margin = (max_y - min_y) * 0.1 if (max_y - min_y) else 1.0
+        if min_y > 0: min_y = 0.0   # include zero if all positive
+        if max_y < 0: max_y = 0.0   # include zero if all negative
+    spread = (max_y - min_y)
+    margin = spread * 0.1 if spread else 1.0
     min_y_plot, max_y_plot = min_y - margin, max_y + margin
 
     # Years for charts (keep them all, ordered), and years for the table (last3 + TTM)
@@ -259,7 +256,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     out = pd.DataFrame(index=rev_p.index)
     for (y, kind) in cols:
         src = rev_p.get(y) if kind == "Rev" else oi_p.get(y)
-        # Label shows the scale once per column pair
         label = f"{y} {'Rev' if kind=='Rev' else 'OI'} ({unit})"
         out[label] = src
 
@@ -294,15 +290,25 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 </style>
 """.strip()
 
+    stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     caption = (
-        '<div class="table-note">Values are shown in a single scale for this table: '
+        f'<div class="table-note">{VERSION} · {stamp} — Values are shown in a single scale for this table: '
         f'<b>{unit}</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>'
     )
     html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
     table_content = css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
 
-    (out_dir / f"{ticker}_segments_table.html").write_text(table_content, encoding="utf-8")
-
+    out_path = out_dir / f"{ticker}_segments_table.html"
+    try:
+        out_path.unlink(missing_ok=True)  # force overwrite
+    except Exception:
+        pass
+    out_path.write_text(table_content, encoding="utf-8")
+    print(f"[{VERSION}] writing table → {out_path}")
+    try:
+        print(f"[{VERSION}] wrote {out_path.stat().st_size} bytes")
+    except Exception:
+        pass
 
 # ─────────────────────────── CLI wrapper ───────────────────────────
 
@@ -322,10 +328,13 @@ def main():
     )
     args = parser.parse_args()
 
+    print(f"{VERSION} starting…")
+
     csv_path = Path(args.tickers_csv)
     tickers = read_tickers(csv_path)
     if not tickers:
-        tickers = ["AAPL", "MSFT", "AMZN"]
+        print(f"Error: No tickers found in '{csv_path}'. Please provide a valid CSV file with a 'Ticker' column.")
+        return  # (per your request: do not exit non-zero)
 
     output_dir = Path(args.output_dir)
     ensure_dir(output_dir)
@@ -336,7 +345,6 @@ def main():
         generate_segment_charts_for_ticker(ticker, ticker_dir)
 
     print("Done.")
-
 
 if __name__ == "__main__":
     main()
