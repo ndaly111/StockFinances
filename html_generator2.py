@@ -50,13 +50,13 @@ def inject_retro(html: str) -> str:
         )
     return html
 
-# ───────── segment helpers (ONLY segments live under charts/<TICKER>/) ─────
-def build_segment_carousel_html(ticker: str, charts_dir: str) -> str:
+# ───────── segment helpers ──────────────────────────────────────
+def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
     """
-    Build an HTML carousel for all PNG charts under charts_dir/<ticker>.
-    (All other assets remain at charts/<file> — do not change.)
+    Carousel shows ALL PNGs in charts/<ticker>/*.png
+    File-system read from charts_dir_fs; web <img src> uses charts_dir_web.
     """
-    seg_dir = os.path.join(charts_dir, ticker)
+    seg_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(seg_dir):
         return ""
     pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
@@ -64,13 +64,11 @@ def build_segment_carousel_html(ticker: str, charts_dir: str) -> str:
         return ""
     items = []
     for f in pngs:
-        src = f"{charts_dir}/{ticker}/{f}"  # segment charts ONLY
-        items.append(
-            f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>'
-        )
+        src = f"{charts_dir_web}/{ticker}/{f}"      # web path for the page in /pages
+        items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
     return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
-# ───────── template creation ───────────────────────────────
+# ───────── template creation ────────────────────────────────────
 def ensure_templates_exist():
     retro_css = r"""/* === retro.css — late-90s / early-2000s vibe === */
 body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
@@ -167,7 +165,6 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # Ticker page: includes YoY, Segments, Balance Sheet, EPS+Dividend
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
@@ -260,18 +257,13 @@ def generate_dashboard_table(raw_rows):
     for _, r in df.iterrows():
         cells = [
             f"<td>{r['Ticker']}</td>",
-            f'<td data-order="{r["Share Price_num"] if pd.notnull(r["Share Price_num"]) else -999}">'
-            f'{r["Share Price_disp"]}</td>'
+            f'<td data-order="{r["Share Price_num"] if pd.notnull(r["Share Price_num"]) else -999}">{r["Share Price_disp"]}</td>'
         ]
         for col in pct_cols:
             num, disp = r[col + "_num"], r[col + "_disp"]
-            cells.append(
-                f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>'
-            )
+            cells.append(f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>')
         num, disp = r["Implied-Growth Pctile_num"], r["Implied-Growth Pctile_disp"]
-        cells.append(
-            f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>'
-        )
+        cells.append(f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>')
         body.append("<tr>" + "".join(cells) + "</tr>")
 
     headers = base_cols + ["Implied-Growth Pctile"]
@@ -321,45 +313,48 @@ def render_spy_qqq_growth_pages():
         with open(f"{out_dir}/{key}_growth.html", "w", encoding="utf-8") as f:
             f.write(inject_retro(rendered))
 
-def prepare_and_generate_ticker_pages(tickers, charts_dir="charts"):
+def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
+    """
+    Filesystem read base: charts_dir_fs (e.g., 'charts')
+    Web paths on /pages/* must go up one level: '../charts/...'
+    """
+    charts_dir_web = "../" + charts_dir_fs
     ensure_directory_exists("pages")
+
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         for t in tickers:
             d = {
-                "ticker":                           t,
-                "company_name":                     get_company_short_name(t, cur),
+                "ticker":                        t,
+                "company_name":                  get_company_short_name(t, cur),
 
-                # ── ALL the following live directly under charts/<file> (NO ticker subfolder)
-                "ticker_info":                      f"{charts_dir}/{t}_ticker_info.html",
-                "revenue_net_income_chart_path":    f"{charts_dir}/{t}_revenue_net_income_chart.png",
-                "eps_chart_path":                   f"{charts_dir}/{t}_eps_chart.png",
-                "financial_table":                  f"{charts_dir}/{t}_rev_net_table.html",
-                "forecast_rev_net_chart_path":      f"{charts_dir}/{t}_Revenue_Net_Income_Forecast.png",
-                "forecast_eps_chart_path":          f"{charts_dir}/{t}_EPS_Forecast.png",
-                "yoy_growth_table_html":            f"{charts_dir}/{t}_yoy_growth_tbl.html",
-                "expense_chart_path":               f"{charts_dir}/{t}_rev_expense_chart.png",
-                "expense_percent_chart_path":       f"{charts_dir}/{t}_expense_percent_chart.png",
-                "expense_abs_html":                 f"{charts_dir}/{t}_expense_absolute.html",
-                "expense_yoy_html":                 f"{charts_dir}/{t}_yoy_expense_change.html",
-                "balance_sheet_chart_path":         f"{charts_dir}/{t}_balance_sheet_chart.png",
-                "balance_sheet_table_html":         f"{charts_dir}/{t}_balance_sheet_table.html",
-                "revenue_yoy_change_chart_path":    f"{charts_dir}/{t}_revenue_yoy_change.png",
-                "eps_yoy_change_chart_path":        f"{charts_dir}/{t}_eps_yoy_change.png",
-                "valuation_chart":                  f"{charts_dir}/{t}_valuation_chart.png",
-                "valuation_info_table":             f"{charts_dir}/{t}_valuation_info.html",
-                "valuation_data_table":             f"{charts_dir}/{t}_valuation_table.html",
-                "unmapped_expense_html":            get_file_or_placeholder(f"{charts_dir}/{t}_unmapped_fields.html",
-                                                                           "No unmapped expenses."),
-                "eps_dividend_chart_path":          f"{charts_dir}/{t}_eps_dividend_forecast.png",
-                "implied_growth_chart_path":        f"{charts_dir}/{t}_implied_growth_plot.png",
-                "implied_growth_table_html":        get_file_or_placeholder(f"{charts_dir}/{t}_implied_growth_summary.html",
-                                                                           "No implied growth data available."),
+                # HTML fragments: read from disk (FS paths)
+                "ticker_info":                   get_file_or_placeholder(f"{charts_dir_fs}/{t}_ticker_info.html"),
+                "financial_table":               get_file_or_placeholder(f"{charts_dir_fs}/{t}_rev_net_table.html"),
+                "yoy_growth_table_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_growth_tbl.html"),
+                "balance_sheet_table_html":      get_file_or_placeholder(f"{charts_dir_fs}/{t}_balance_sheet_table.html"),
+                "valuation_info_table":          get_file_or_placeholder(f"{charts_dir_fs}/{t}_valuation_info.html"),
+                "valuation_data_table":          get_file_or_placeholder(f"{charts_dir_fs}/{t}_valuation_table.html"),
+                "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
+                "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
 
-                # ── ONLY segments are under charts/<TICKER>/*
-                "segment_carousel_html":            build_segment_carousel_html(t, charts_dir),
-                "segment_table_html":               get_file_or_placeholder(f"{charts_dir}/{t}/{t}_segments_table.html",
-                                                                           "No segment data available.")
+                # Images: use WEB paths relative to /pages
+                "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
+                "eps_chart_path":                f"{charts_dir_web}/{t}_eps_chart.png",
+                "forecast_rev_net_chart_path":   f"{charts_dir_web}/{t}_Revenue_Net_Income_Forecast.png",
+                "forecast_eps_chart_path":       f"{charts_dir_web}/{t}_EPS_Forecast.png",
+                "expense_chart_path":            f"{charts_dir_web}/{t}_rev_expense_chart.png",
+                "expense_percent_chart_path":    f"{charts_dir_web}/{t}_expense_percent_chart.png",
+                "balance_sheet_chart_path":      f"{charts_dir_web}/{t}_balance_sheet_chart.png",
+                "revenue_yoy_change_chart_path": f"{charts_dir_web}/{t}_revenue_yoy_change.png",
+                "eps_yoy_change_chart_path":     f"{charts_dir_web}/{t}_eps_yoy_change.png",
+                "valuation_chart":               f"{charts_dir_web}/{t}_valuation_chart.png",
+                "eps_dividend_chart_path":       f"{charts_dir_web}/{t}_eps_dividend_forecast.png",
+                "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
+
+                # Segments: table is HTML file under charts/<TICKER>, carousel PNGs too
+                "segment_carousel_html":         build_segment_carousel_html(t, charts_dir_fs, charts_dir_web),
+                "segment_table_html":            get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table.html", "No segment data available.")
             }
             rendered = env.get_template("ticker_template.html").render(ticker_data=d)
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
