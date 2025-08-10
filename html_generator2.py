@@ -3,7 +3,6 @@
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
-from html_generator import get_file_content_or_placeholder
 
 DB_PATH = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
@@ -207,7 +206,6 @@ td{padding:4px;border:1px solid #8080FF}
 
   <p class="chart-block"><a href="../index.html">← Back</a></p>
 </div></body></html>"""
-    # Only write if missing or different (idempotent)
     create_template("templates/ticker_template.html", ticker_tpl)
 
 # ───────── dashboard builder  (exported to main_remote.py) ─
@@ -306,18 +304,18 @@ def generate_dashboard_table(raw_rows):
         "Finviz_TTM_Value_Average":      fttm.mean() if not fttm.empty else None,
         "Finviz_TTM_Value_Median":       fttm.median() if not fttm.empty else None,
         "Finviz_Forward_Value_Average":  ffwd.mean() if not ffwd.empty else None,
-        "Finviz_Forward_Value_Median":   ffwd.median() if not ffwd.empty else None
+        "Finviz_Forward_Value_Median":   ffwd.median() if not fwd.empty else None
     }
 
 # ───────── ancillary page builders (retro-injected) ───────
 def render_spy_qqq_growth_pages():
     chart_dir, out_dir = "charts", "."
     for key in ("spy", "qqq"):
-        tpl = Template(get_file_content_or_placeholder(f"templates/{key}_growth_template.html"))
+        tpl = Template(get_file_or_placeholder(f"templates/{key}_growth_template.html"))
         rendered = tpl.render(
             **{
-                f"{key}_growth_summary": get_file_content_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
-                f"{key}_pe_summary":     get_file_content_or_placeholder(f"{chart_dir}/{key}_pe_summary.html"),
+                f"{key}_growth_summary": get_file_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
+                f"{key}_pe_summary":     get_file_or_placeholder(f"{chart_dir}/{key}_pe_summary.html"),
             }
         )
         with open(f"{out_dir}/{key}_growth.html", "w", encoding="utf-8") as f:
