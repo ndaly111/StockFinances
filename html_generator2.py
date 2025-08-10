@@ -54,7 +54,6 @@ def inject_retro(html: str) -> str:
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
     """
     Carousel shows ALL PNGs in charts/<ticker>/*.png
-    File-system read from charts_dir_fs; web <img src> uses charts_dir_web.
     """
     seg_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(seg_dir):
@@ -64,7 +63,7 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
         return ""
     items = []
     for f in pngs:
-        src = f"{charts_dir_web}/{ticker}/{f}"      # web path for the page in /pages
+        src = f"{charts_dir_web}/{ticker}/{f}"      # web path for pages/*
         items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
     return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
@@ -165,12 +164,38 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
+    # Ticker page — restores ALL legacy sections + adds Segments + Dividend
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
 </head><body><div class="container">
   <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
 
+  <!-- Quick company/ticker info -->
+  <div class="chart-block">
+    {{ ticker_data.ticker_info | safe }}
+  </div>
+
+  <!-- Core historical charts -->
+  <div class="chart-block">
+    <h2>Revenue &amp; Net Income</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue & Net Income">
+    <div class="table-wrap">{{ ticker_data.financial_table | safe }}</div>
+  </div>
+
+  <div class="chart-block">
+    <h2>EPS</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_chart_path }}" alt="EPS">
+  </div>
+
+  <!-- Forecasts -->
+  <div class="chart-block">
+    <h2>Forecasts</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue/Net Income Forecast">
+    <img class="chart-img chart-block" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
+  </div>
+
+  <!-- YoY changes -->
   <div class="chart-block">
     <h2>Y/Y % Change</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
@@ -178,6 +203,17 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
   </div>
 
+  <!-- Expenses -->
+  <div class="chart-block">
+    <h2>Expenses</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expenses">
+    <img class="chart-img chart-block" src="{{ ticker_data.expense_percent_chart_path }}" alt="Expenses % of Revenue">
+    <div class="table-wrap">{{ ticker_data.expense_abs_html | safe }}</div>
+    <div class="table-wrap">{{ ticker_data.expense_yoy_html | safe }}</div>
+    <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
+  </div>
+
+  <!-- Segments (NEW) -->
   {% if ticker_data.segment_carousel_html %}
   <div class="chart-block">
     <h2>Segment Performance</h2>
@@ -190,12 +226,29 @@ td{padding:4px;border:1px solid #8080FF}
   </div>
   {% endif %}
 
+  <!-- Balance sheet -->
   <div class="chart-block">
     <h2>Balance Sheet</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
     <div class="table-wrap">{{ ticker_data.balance_sheet_table_html | safe }}</div>
   </div>
 
+  <!-- Valuation -->
+  <div class="chart-block">
+    <h2>Valuation</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.valuation_chart }}" alt="Valuation">
+    <div class="table-wrap">{{ ticker_data.valuation_info_table | safe }}</div>
+    <div class="table-wrap">{{ ticker_data.valuation_data_table | safe }}</div>
+  </div>
+
+  <!-- Implied growth -->
+  <div class="chart-block">
+    <h2>Implied Growth</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth">
+    <div class="table-wrap">{{ ticker_data.implied_growth_table_html | safe }}</div>
+  </div>
+
+  <!-- EPS & Dividend (NEW) -->
   <div class="chart-block">
     <h2>EPS &amp; Dividend</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
@@ -315,8 +368,8 @@ def render_spy_qqq_growth_pages():
 
 def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
     """
-    Filesystem read base: charts_dir_fs (e.g., 'charts')
-    Web paths on /pages/* must go up one level: '../charts/...'
+    Filesystem reads: charts_dir_fs (e.g., 'charts')
+    Web <img src> from /pages/*: '../charts/...'
     """
     charts_dir_web = "../" + charts_dir_fs
     ensure_directory_exists("pages")
@@ -328,33 +381,35 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "ticker":                        t,
                 "company_name":                  get_company_short_name(t, cur),
 
-                # HTML fragments: read from disk (FS paths)
+                # HTML fragments (read contents)
                 "ticker_info":                   get_file_or_placeholder(f"{charts_dir_fs}/{t}_ticker_info.html"),
                 "financial_table":               get_file_or_placeholder(f"{charts_dir_fs}/{t}_rev_net_table.html"),
                 "yoy_growth_table_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_growth_tbl.html"),
                 "balance_sheet_table_html":      get_file_or_placeholder(f"{charts_dir_fs}/{t}_balance_sheet_table.html"),
                 "valuation_info_table":          get_file_or_placeholder(f"{charts_dir_fs}/{t}_valuation_info.html"),
                 "valuation_data_table":          get_file_or_placeholder(f"{charts_dir_fs}/{t}_valuation_table.html"),
+                "expense_abs_html":              get_file_or_placeholder(f"{charts_dir_fs}/{t}_expense_absolute.html"),
+                "expense_yoy_html":              get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_expense_change.html"),
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
+                "segment_table_html":            get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table.html", "No segment data available."),
 
-                # Images: use WEB paths relative to /pages
+                # Images (web paths)
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
                 "eps_chart_path":                f"{charts_dir_web}/{t}_eps_chart.png",
                 "forecast_rev_net_chart_path":   f"{charts_dir_web}/{t}_Revenue_Net_Income_Forecast.png",
                 "forecast_eps_chart_path":       f"{charts_dir_web}/{t}_EPS_Forecast.png",
+                "revenue_yoy_change_chart_path": f"{charts_dir_web}/{t}_revenue_yoy_change.png",
+                "eps_yoy_change_chart_path":     f"{charts_dir_web}/{t}_eps_yoy_change.png",
                 "expense_chart_path":            f"{charts_dir_web}/{t}_rev_expense_chart.png",
                 "expense_percent_chart_path":    f"{charts_dir_web}/{t}_expense_percent_chart.png",
                 "balance_sheet_chart_path":      f"{charts_dir_web}/{t}_balance_sheet_chart.png",
-                "revenue_yoy_change_chart_path": f"{charts_dir_web}/{t}_revenue_yoy_change.png",
-                "eps_yoy_change_chart_path":     f"{charts_dir_web}/{t}_eps_yoy_change.png",
                 "valuation_chart":               f"{charts_dir_web}/{t}_valuation_chart.png",
                 "eps_dividend_chart_path":       f"{charts_dir_web}/{t}_eps_dividend_forecast.png",
                 "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
 
-                # Segments: table is HTML file under charts/<TICKER>, carousel PNGs too
+                # Segment carousel (web paths)
                 "segment_carousel_html":         build_segment_carousel_html(t, charts_dir_fs, charts_dir_web),
-                "segment_table_html":            get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table.html", "No segment data available.")
             }
             rendered = env.get_template("ticker_template.html").render(ticker_data=d)
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
