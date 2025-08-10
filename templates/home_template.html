@@ -22,7 +22,7 @@
         createdRow:function(row){
           $('td',row).each(function(){
             if(!$(this).attr('data-order')) return;
-            var n=parseFloat($(this).data-order'));if(isNaN(n)) return;
+            var n=parseFloat($(this).data('order'));if(isNaN(n)) return;
             var col=$(this).index();
             if(col===6){$(this).addClass(n<50?'negative':'positive');}
             else if(col>=2&&col<=5){$(this).addClass(n<0?'negative':'positive');}
@@ -51,11 +51,6 @@
   <div id="spy-qqq-growth" class="center-table">
     <h2>SPY vs QQQ Overview</h2>
     {{ spy_qqq_growth | safe }}
-  </div>
-
-  <div class="center-table">
-    <h2>Key U.S. Economic Indicators</h2>
-    {{ econ_table | safe }}
   </div>
 
   <div class="center-table">

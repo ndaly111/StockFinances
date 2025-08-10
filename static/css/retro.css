@@ -1,4 +1,4 @@
-/* === retro.css — late-90s / early-2000s style === */
+/* === retro.css — late-90s / early-2000s vibe === */
 body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
 h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
@@ -11,7 +11,7 @@ td{padding:4px;border:1px solid #8080FF}
 .blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
 .container{max-width:none;width:100%;}
 
-/* --- minimal additions for spacing & segment UI --- */
+/* minimal additions for spacing & segment UI */
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
 .chart-block{margin-top:14px}
 .table-wrap{overflow-x:auto;border:1px solid #8080FF}
