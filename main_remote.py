@@ -28,6 +28,8 @@ from index_growth_table        import index_growth
 from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
+from generate_segment_charts import generate_segment_charts_for_ticker
+from pathlib import Path
 
 # ────────────────────────────────────────────────────────────────────
 # Constants
@@ -151,6 +153,10 @@ def mini_main():
             generate_html_table(prepared, ticker)
             valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
             generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
+
+            # ── build/refresh segment charts + formatted table ──
+        seg_out_dir = Path(CHARTS_DIR) / ticker          # -> charts/<TICKER>/
+        generate_segment_charts_for_ticker(ticker, seg_out_dir)
 
         eps_dividend_generator()
         generate_all_summaries()
