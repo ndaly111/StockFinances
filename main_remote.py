@@ -4,9 +4,10 @@
 import os, sqlite3, pandas as pd, yfinance as yf, math
 from datetime import datetime, timezone
 from pathlib import Path
+import time  # ← added for optional polite delay
 
 import ticker_manager
-from generate_economic_data    import generate_economic_data        # ⇦ ensure present
+from generate_economic_data    import generate_economic_data
 from annual_and_ttm_update     import annual_and_ttm_update
 from html_generator            import create_html_for_tickers
 from balance_sheet_data_fetcher import (
@@ -154,6 +155,8 @@ def mini_main():
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
+        missing_segments = []  # ← collect any tickers that didn't produce a table
+
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
@@ -168,9 +171,21 @@ def mini_main():
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
 
-                # ── build/refresh segment charts + formatted table ──
-                seg_out_dir = Path(CHARTS_DIR) / ticker      # -> charts/<TICKER>/
+                # ── Business Segments (idempotent, per-ticker) ─────────────────────
+                seg_out_dir = Path(CHARTS_DIR) / ticker                 # charts/<TICKER>/
+                seg_out_dir.mkdir(parents=True, exist_ok=True)          # ensure folder
+                segments_table = seg_out_dir / f"{ticker}_segments_table.html"
+
+                # Always (re)build; or switch to 'if not segments_table.exists()' to skip existing
                 generate_segment_charts_for_ticker(ticker, seg_out_dir)
+
+                if not segments_table.exists():
+                    print(f"[segments] WARN: {segments_table} not created")
+                    missing_segments.append(ticker)
+
+                # Optional: be polite to external sources (SEC, etc.)
+                time.sleep(1)
+                # ───────────────────────────────────────────────────────────────────
 
             except Exception as e:
                 # Prevent one ticker failure (e.g., yfinance timeout) from killing the run
@@ -196,7 +211,13 @@ def mini_main():
             spy_qqq_html
         )
 
-        # ── Generate a one-page freshness report under charts/ (optional but recommended) ──
+        # Quick visibility: which tickers are missing segment tables?
+        if missing_segments:
+            head = ", ".join(missing_segments[:30])
+            tail = " …" if len(missing_segments) > 30 else ""
+            print(f"[segments] Missing tables for {len(missing_segments)} tickers: {head}{tail}")
+
+        # ── Generate a one-page freshness report under charts/ (optional) ──
         try:
             from freshness_check import read_stamp, scan_charts, write_report
             stamp = read_stamp()
