@@ -50,6 +50,13 @@ def manage_tickers(tickers_file, is_remote=False):
     ticker_manager.write_tickers(tickers, tickers_file)
     return tickers
 
+def write_build_stamp(stamp_path="charts/_build_stamp.txt"):
+    Path("charts").mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc).isoformat()
+    Path(stamp_path).write_text(ts, encoding="utf-8")
+    print(f"[build-stamp] {stamp_path} = {ts}")
+    return stamp_path
+
 def establish_database_connection(db_path):
     if not os.path.exists(db_path):
         print(f"[ERROR] Database not found at {db_path}")
@@ -140,6 +147,9 @@ def mini_main():
     try:
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
+        write_build_stamp()  # creates charts/_build_stamp.txt with this run’s UTC time
+    # ─── Build the economic-indicator HTML first
+    generate_economic_data()
 
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
