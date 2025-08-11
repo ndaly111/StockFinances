@@ -6,7 +6,7 @@ import os
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Database path - use the absolute path to ensure accuracy
-DB_PATH = '/Users/nicholasdaly/PycharmProjects/Stock Finances/Stock Data.db'
+DB_PATH = '/Users/nicholasdaly/PycharmProjects/StockFinances/Stock Data.db'
 
 
 def establish_database_connection(db_path):
