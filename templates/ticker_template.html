@@ -4,12 +4,10 @@
 </head><body><div class="container">
   <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
 
-  <!-- Quick company/ticker info -->
   <div class="chart-block">
     {{ ticker_data.ticker_info | safe }}
   </div>
 
-  <!-- Core historical charts -->
   <div class="chart-block">
     <h2>Revenue &amp; Net Income</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue & Net Income">
@@ -21,14 +19,12 @@
     <img class="chart-img chart-block" src="{{ ticker_data.eps_chart_path }}" alt="EPS">
   </div>
 
-  <!-- Forecasts -->
   <div class="chart-block">
     <h2>Forecasts</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue/Net Income Forecast">
     <img class="chart-img chart-block" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
   </div>
 
-  <!-- YoY changes -->
   <div class="chart-block">
     <h2>Y/Y % Change</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
@@ -36,7 +32,6 @@
     <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
   </div>
 
-  <!-- Expenses -->
   <div class="chart-block">
     <h2>Expenses</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expenses">
@@ -46,7 +41,6 @@
     <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
   </div>
 
-  <!-- Segments (NEW) -->
   {% if ticker_data.segment_carousel_html %}
   <div class="chart-block">
     <h2>Segment Performance</h2>
@@ -59,14 +53,12 @@
   </div>
   {% endif %}
 
-  <!-- Balance sheet -->
   <div class="chart-block">
     <h2>Balance Sheet</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
     <div class="table-wrap">{{ ticker_data.balance_sheet_table_html | safe }}</div>
   </div>
 
-  <!-- Valuation -->
   <div class="chart-block">
     <h2>Valuation</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.valuation_chart }}" alt="Valuation">
@@ -74,14 +66,12 @@
     <div class="table-wrap">{{ ticker_data.valuation_data_table | safe }}</div>
   </div>
 
-  <!-- Implied growth -->
   <div class="chart-block">
     <h2>Implied Growth</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth">
     <div class="table-wrap">{{ ticker_data.implied_growth_table_html | safe }}</div>
   </div>
 
-  <!-- EPS & Dividend (NEW) -->
   <div class="chart-block">
     <h2>EPS &amp; Dividend</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
