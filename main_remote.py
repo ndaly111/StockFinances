@@ -170,15 +170,6 @@ def mini_main():
                 generate_html_table(prepared, ticker)
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
-
-                # ── Business Segments (idempotent, per-ticker) ─────────────────────
-                seg_out_dir = Path(CHARTS_DIR) / ticker                 # charts/<TICKER>/
-                seg_out_dir.mkdir(parents=True, exist_ok=True)          # ensure folder
-                segments_table = seg_out_dir / f"{ticker}_segments_table.html"
-
-                # Always (re)build; or switch to 'if not segments_table.exists()' to skip existing
-                generate_segment_charts_for_ticker(ticker, seg_out_dir)
-
                 if not segments_table.exists():
                     print(f"[segments] WARN: {segments_table} not created")
                     missing_segments.append(ticker)
