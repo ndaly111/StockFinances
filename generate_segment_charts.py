@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """
-generate_segment_charts.py  — SEGMENTS v2025-08-10c
+generate_segment_charts.py  — SEGMENTS v2025-08-10d (dedupe-safe)
 
-What this does (safe, minimal impact):
-• Keeps one shared y-axis across all segment charts (handles negatives/losses).
-• Builds a compact, scaled HTML pivot table (last 3 fiscal years + TTM).
-• Auto-picks a single unit ($, $K, $M, $B, $T) for the whole table and formats numbers.
+What this does:
+• One shared y-axis across all segment charts (handles negatives).
+• Compact, scaled HTML pivot table (last 3 fiscal years + TTM).
+• Picks a single unit ($, $K, $M, $B, $T) for the whole table.
 • Bold TTM, add “% of Total (TTM)”.
-• Writes to the canonical path:
+• Writes table to:
       charts/{TICKER}/{TICKER}_segments_table.html
-  AND ALSO writes alias copies (so legacy includes still work):
+  And also alias copies:
       charts/{TICKER}/segments_table.html
       charts/{TICKER}/segment_performance.html
       charts/{TICKER}/{TICKER}_segment_performance.html
+• NEW: Cleans up duplicate/legacy PNGs in charts/{TICKER}/ so only
+  one PNG per segment remains (e.g., removes *SegmentMember*.png).
 
-NO changes to other code are required. If your template points to any of the above,
-it will now show the formatted table.
+No other files need edits.
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
 
-VERSION = "SEGMENTS v2025-08-10c"
+VERSION = "SEGMENTS v2025-08-10d"
 
 # ─────────────────────────── utilities ───────────────────────────
 
@@ -45,7 +46,6 @@ def read_tickers(csv_path: Path) -> List[str]:
     return [str(t).upper().strip() for t in df[cols[0]].dropna().tolist()]
 
 def sort_years(years: List[str]) -> List[str]:
-    """Numeric years ascending; 'TTM' last; others after numeric."""
     def key(y: str) -> Tuple[int, int | str]:
         if y == "TTM": return (2, 0)
         try: return (0, int(y))
@@ -84,7 +84,6 @@ def _to_float(x):
     except: return pd.NA
 
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
-    """Pick a single divisor + unit label for the *whole* table."""
     if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
         return (1.0, "$")
     v = abs(max_abs_value)
@@ -95,7 +94,6 @@ def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     return (1.0, "$")
 
 def _fmt_scaled(x, div, unit) -> str:
-    """Format number with adaptive decimals and unit. Handles negatives/NaN."""
     if pd.isna(x): return "–"
     try:
         val = float(x) / float(div)
@@ -114,6 +112,34 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
     if "TTM" in set(years):
         out.append("TTM")
     return out
+
+def _safe_seg_filename(seg: str) -> str:
+    return seg.replace("/", "_").replace(" ", "_")
+
+# ───────────────────── NEW: cleanup helper ───────────────────────
+
+def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> None:
+    """
+    Remove legacy/duplicate PNGs after we write the canonical set.
+    We ONLY touch:
+      - files named exactly 'segment_performance.png'
+      - files starting with '<TICKER>_'  (we keep only those in keep_files)
+    This avoids deleting anything unrelated.
+    """
+    try:
+        # Drop generic summaries if present
+        for generic in ("segment_performance.png", f"{ticker}_segment_performance.png"):
+            p = out_dir / generic
+            if p.exists():
+                p.unlink()
+
+        # Remove old SegmentMember variants and any other <TICKER>_*.png not in keep set
+        keep = set(keep_files)
+        for p in out_dir.glob(f"{ticker}_*.png"):
+            if p.name not in keep:
+                p.unlink()
+    except Exception as e:
+        print(f"[{VERSION}] WARN: cleanup in {out_dir} hit an issue: {e}")
 
 # ───────────────────── main per-ticker routine ────────────────────
 
@@ -150,18 +176,18 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         min_y, max_y = 0.0, 0.0
     else:
         min_y, max_y = float(all_vals.min()), float(all_vals.max())
-        if min_y > 0: min_y = 0.0   # include zero if all positive
-        if max_y < 0: max_y = 0.0   # include zero if all negative
+        if min_y > 0: min_y = 0.0
+        if max_y < 0: max_y = 0.0
     spread = (max_y - min_y)
     margin = spread * 0.1 if spread else 1.0
     min_y_plot, max_y_plot = min_y - margin, max_y + margin
 
-    # Years and segments
     years_all = sort_years(sorted(set(df["Year"].tolist())))
     years_tbl = _last3_plus_ttm(df["Year"].tolist())
     segments = sorted(set(df["Segment"].tolist()))
 
     # ── Charts per segment (y in $B) ──
+    written_pngs: List[str] = []
     for seg in segments:
         seg_df = df[df["Segment"] == seg]
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
@@ -181,14 +207,19 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         ax.set_ylim(min_y_plot_b, max_y_plot_b)
         ax.set_ylabel("Value ($B)")
         ax.set_title(seg)
-        ax.axhline(0, linewidth=0.8)  # zero line for losses
+        ax.axhline(0, linewidth=0.8)
         ax.yaxis.grid(True, linestyle="--", alpha=0.5)
         ax.legend(loc="upper left")
         plt.tight_layout()
 
-        safe_seg = seg.replace("/", "_").replace(" ", "_")
-        plt.savefig(out_dir / f"{ticker}_{safe_seg}.png")
+        safe_seg = _safe_seg_filename(seg)
+        out_name = f"{ticker}_{safe_seg}.png"
+        plt.savefig(out_dir / out_name)
         plt.close(fig)
+        written_pngs.append(out_name)
+
+    # NEW: remove duplicates/legacy after writing canonical set
+    _cleanup_segment_pngs(out_dir, ticker, written_pngs)
 
     # ── Compact pivot table ──
     def pv(col):
@@ -198,24 +229,20 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     rev_p = pv("Revenue")
     oi_p  = pv("OpIncome")
 
-    # Sort rows by latest (TTM if present)
     sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
     if sort_col:
         rev_p = rev_p.sort_values(by=sort_col, ascending=False)
         oi_p  = oi_p.reindex(index=rev_p.index)
 
-    # % of Total (TTM)
     pct_series = None
     if "TTM" in rev_p.columns:
         total_ttm = rev_p["TTM"].sum(skipna=True)
         if total_ttm:
             pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
-    # Single scale for entire table
     max_val = pd.concat([rev_p, oi_p]).abs().max().max()
     div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
-    # Build interleaved columns: y Rev, y OI, ... , TTM Rev, TTM OI
     cols: List[Tuple[str, str]] = []
     for y in [c for c in years_tbl if c != "TTM"]:
         cols += [(y, "Rev"), (y, "OI")]
@@ -230,7 +257,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     if pct_series is not None:
         out["% of Total (TTM)"] = pct_series
 
-    # Format values; bold TTM columns
     for c in out.columns:
         if c == "% of Total (TTM)":
             out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
@@ -242,7 +268,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     out.index.name = "Segment"
     out_disp = out.reset_index()
 
-    # Inline CSS (compact, sticky header, zebra, right-aligned numbers)
     css = """
 <style>
 .table-wrap{overflow:auto; max-width:100%;}
@@ -259,16 +284,12 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     caption = (
-        f'<div class="table-note">{VERSION} · {stamp} — Values are shown in a single scale: '
+        f'<div class="table-note">{VERSION} · {stamp} — Values use a single scale: '
         f'<b>{unit}</b>. TTM is <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>'
     )
     html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
-    table_content = (
-        f"<!-- {VERSION} | unit={unit} -->\n" +
-        css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
-    )
+    table_content = f"<!-- {VERSION} | unit={unit} -->\n" + css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
 
-    # Canonical path + safe aliases
     canonical = out_dir / f"{ticker}_segments_table.html"
     aliases = [
         out_dir / "segments_table.html",
@@ -304,7 +325,7 @@ def main():
     tickers = read_tickers(csv_path)
     if not tickers:
         print(f"Error: No tickers found in '{csv_path}'. Provide a CSV with a 'Ticker' column.")
-        return  # per your request, don’t exit non-zero
+        return
 
     output_dir = Path(args.output_dir)
     ensure_dir(output_dir)
