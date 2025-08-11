@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# html_generator2.py – retro fix: inject CSS + show economic data + segment carousel & table (minimal)
+# html_generator2.py – retro fix: economic data + segment carousel/table + dividend
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
@@ -38,15 +38,11 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
 def inject_retro(html: str) -> str:
     if '/static/css/retro.css' not in html:
         html = html.replace(
-            "<head>",
-            "<head>\n  <link rel=\"stylesheet\" href=\"/static/css/retro.css\">",
-            1
+            "<head>", "<head>\n  <link rel=\"stylesheet\" href=\"/static/css/retro.css\">", 1
         )
     if ".container{max-width:none" not in html:
         html = html.replace(
-            "</head>",
-            "  <style>.container{max-width:none;width:100%;}</style>\n</head>",
-            1
+            "</head>", "  <style>.container{max-width:none;width:100%;}</style>\n</head>", 1
         )
     return html
 
@@ -63,7 +59,7 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
         return ""
     items = []
     for f in pngs:
-        src = f"{charts_dir_web}/{ticker}/{f}"      # web path for pages/*
+        src = f"{charts_dir_web}/{ticker}/{f}"  # web path for /pages/*
         items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
     return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
@@ -81,30 +77,23 @@ td{padding:4px;border:1px solid #8080FF}
 .marquee-wrapper{background:#000080;color:#FFFF00;padding:4px;font-weight:bold}
 .blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
 .container{max-width:none;width:100%;}
-
-/* minimal additions for spacing & segment UI */
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
 .chart-block{margin-top:14px}
 .table-wrap{overflow-x:auto;border:1px solid #8080FF}
 .segment-table-wrapper .table-wrap table td:nth-child(2){text-align:center}
 .segment-table-wrapper .table-wrap table td:nth-child(3),
 .segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
-
-/* simple, touch-friendly horizontal scroller for segment charts */
 .carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
 .carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
 """
     create_template("static/css/retro.css", retro_css)
 
+    # Home page now includes Economic Data section
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
-
-  <!-- retro + existing -->
   <link rel="stylesheet" href="/static/css/retro.css">
   <link rel="stylesheet" href="/style.css">
-
-  <!-- DataTables -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
   <style>
     td.positive{color:green;} td.negative{color:red;}
@@ -151,6 +140,11 @@ td{padding:4px;border:1px solid #8080FF}
     {{ spy_qqq_growth | safe }}
   </div>
 
+  <div id="economic-data" class="center-table">
+    <h2>Economic Data</h2>
+    {{ economic_data | safe }}
+  </div>
+
   <div class="center-table">
     <h2>Past Earnings (Last 7 Days)</h2>
     {{ earnings_past | safe }}
@@ -164,19 +158,17 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # Ticker page — restores ALL legacy sections + adds Segments + Dividend
+    # Ticker page (all legacy sections + segments + dividend)
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
 </head><body><div class="container">
   <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
 
-  <!-- Quick company/ticker info -->
   <div class="chart-block">
     {{ ticker_data.ticker_info | safe }}
   </div>
 
-  <!-- Core historical charts -->
   <div class="chart-block">
     <h2>Revenue &amp; Net Income</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.revenue_net_income_chart_path }}" alt="Revenue & Net Income">
@@ -188,14 +180,12 @@ td{padding:4px;border:1px solid #8080FF}
     <img class="chart-img chart-block" src="{{ ticker_data.eps_chart_path }}" alt="EPS">
   </div>
 
-  <!-- Forecasts -->
   <div class="chart-block">
     <h2>Forecasts</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.forecast_rev_net_chart_path }}" alt="Revenue/Net Income Forecast">
     <img class="chart-img chart-block" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
   </div>
 
-  <!-- YoY changes -->
   <div class="chart-block">
     <h2>Y/Y % Change</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
@@ -203,7 +193,6 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
   </div>
 
-  <!-- Expenses -->
   <div class="chart-block">
     <h2>Expenses</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expenses">
@@ -213,7 +202,6 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
   </div>
 
-  <!-- Segments (NEW) -->
   {% if ticker_data.segment_carousel_html %}
   <div class="chart-block">
     <h2>Segment Performance</h2>
@@ -226,14 +214,12 @@ td{padding:4px;border:1px solid #8080FF}
   </div>
   {% endif %}
 
-  <!-- Balance sheet -->
   <div class="chart-block">
     <h2>Balance Sheet</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
     <div class="table-wrap">{{ ticker_data.balance_sheet_table_html | safe }}</div>
   </div>
 
-  <!-- Valuation -->
   <div class="chart-block">
     <h2>Valuation</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.valuation_chart }}" alt="Valuation">
@@ -241,14 +227,12 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.valuation_data_table | safe }}</div>
   </div>
 
-  <!-- Implied growth -->
   <div class="chart-block">
     <h2>Implied Growth</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth">
     <div class="table-wrap">{{ ticker_data.implied_growth_table_html | safe }}</div>
   </div>
 
-  <!-- EPS & Dividend (NEW) -->
   <div class="chart-block">
     <h2>EPS &amp; Dividend</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
@@ -408,7 +392,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "eps_dividend_chart_path":       f"{charts_dir_web}/{t}_eps_dividend_forecast.png",
                 "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
 
-                # Segment carousel (web paths)
+                # Segment carousel
                 "segment_carousel_html":         build_segment_carousel_html(t, charts_dir_fs, charts_dir_web),
             }
             rendered = env.get_template("ticker_template.html").render(ticker_data=d)
@@ -416,7 +400,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 f.write(inject_retro(rendered))
 
 def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
-                     earnings_past="", earnings_upcoming=""):
+                     earnings_past="", earnings_upcoming="", economic_html=""):
     tpl = env.get_template("home_template.html")
     rendered = tpl.render(
         tickers=tickers,
@@ -424,7 +408,8 @@ def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
         dashboard_data=avg_vals,
         spy_qqq_growth=spy_qqq_html,
         earnings_past=earnings_past,
-        earnings_upcoming=earnings_upcoming
+        earnings_upcoming=earnings_upcoming,
+        economic_data=economic_html
     )
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
@@ -434,9 +419,13 @@ def html_generator2(tickers, financial_data, full_dashboard_html,
                     avg_values, spy_qqq_growth_html=""):
     ensure_templates_exist()
     create_home_page(
-        tickers, full_dashboard_html, avg_values, spy_qqq_growth_html,
+        tickers,
+        full_dashboard_html,
+        avg_values,
+        spy_qqq_growth_html,
         get_file_or_placeholder("charts/earnings_past.html"),
-        get_file_or_placeholder("charts/earnings_upcoming.html")
+        get_file_or_placeholder("charts/earnings_upcoming.html"),
+        get_file_or_placeholder("charts/economic_data.html", "No economic data available.")
     )
     prepare_and_generate_ticker_pages(tickers)
     render_spy_qqq_growth_pages()
