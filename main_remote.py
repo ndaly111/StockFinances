@@ -2,8 +2,8 @@
 # main_remote.py – 2025-08-08  (calls economic-data generator first)
 # ────────────────────────────────────────────────────────────────────
 import os, sqlite3, pandas as pd, yfinance as yf, math
-from datetime import datetime
-from pathlib import Path  # ← ADDED
+from datetime import datetime, timezone
+from pathlib import Path
 
 import ticker_manager
 from generate_economic_data    import generate_economic_data        # ⇦ ensure present
@@ -29,7 +29,7 @@ from index_growth_table        import index_growth
 from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
-from generate_segment_charts   import generate_segment_charts_for_ticker  # ← ADDED
+from generate_segment_charts   import generate_segment_charts_for_ticker
 
 # ────────────────────────────────────────────────────────────────────
 # Constants
@@ -41,6 +41,16 @@ CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
 
 # ────────────────────────────────────────────────────────────────────
+# Build-stamp helper (for run-wide freshness checks)
+# ────────────────────────────────────────────────────────────────────
+def write_build_stamp(stamp_path="charts/_build_stamp.txt") -> str:
+    Path("charts").mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc).isoformat()
+    Path(stamp_path).write_text(ts, encoding="utf-8")
+    print(f"[build-stamp] {stamp_path} = {ts}")
+    return ts
+
+# ────────────────────────────────────────────────────────────────────
 # Helpers
 # ────────────────────────────────────────────────────────────────────
 def manage_tickers(tickers_file, is_remote=False):
@@ -49,13 +59,6 @@ def manage_tickers(tickers_file, is_remote=False):
     tickers = sorted(tickers)
     ticker_manager.write_tickers(tickers, tickers_file)
     return tickers
-
-def write_build_stamp(stamp_path="charts/_build_stamp.txt"):
-    Path("charts").mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat()
-    Path(stamp_path).write_text(ts, encoding="utf-8")
-    print(f"[build-stamp] {stamp_path} = {ts}")
-    return stamp_path
 
 def establish_database_connection(db_path):
     if not os.path.exists(db_path):
@@ -133,6 +136,9 @@ def fetch_10_year_treasury_yield():
 # Main
 # ────────────────────────────────────────────────────────────────────
 def mini_main():
+    # Build stamp first so we can verify freshness of artifacts created in this run
+    write_build_stamp()
+
     # ─── Build the economic-indicator HTML first
     generate_economic_data()
 
@@ -147,27 +153,31 @@ def mini_main():
     try:
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
-        write_build_stamp()  # creates charts/_build_stamp.txt with this run’s UTC time
-    # ─── Build the economic-indicator HTML first
-    generate_economic_data()
 
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
-            annual_and_ttm_update(ticker, DB_PATH)
-            fetch_and_update_balance_sheet_data(ticker, cursor)
-            balancesheet_chart(ticker)
-            scrape_forward_data(ticker)
-            generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
+            try:
+                annual_and_ttm_update(ticker, DB_PATH)
+                fetch_and_update_balance_sheet_data(ticker, cursor)
+                balancesheet_chart(ticker)
+                scrape_forward_data(ticker)
+                generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
 
-            prepared, mktcap = prepare_data_for_display(ticker, treasury)
-            generate_html_table(prepared, ticker)
-            valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
-            generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
+                prepared, mktcap = prepare_data_for_display(ticker, treasury)
+                generate_html_table(prepared, ticker)
+                valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
+                generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
 
-            # ── build/refresh segment charts + formatted table ──  ← ADDED
-            seg_out_dir = Path(CHARTS_DIR) / ticker      # -> charts/<TICKER>/
-            generate_segment_charts_for_ticker(ticker, seg_out_dir)
+                # ── build/refresh segment charts + formatted table ──
+                seg_out_dir = Path(CHARTS_DIR) / ticker      # -> charts/<TICKER>/
+                generate_segment_charts_for_ticker(ticker, seg_out_dir)
 
+            except Exception as e:
+                # Prevent one ticker failure (e.g., yfinance timeout) from killing the run
+                print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
+                continue
+
+        # Post-run generators
         eps_dividend_generator()
         generate_all_summaries()
 
@@ -177,6 +187,7 @@ def mini_main():
         generate_earnings_tables()
         render_index_growth_charts()
 
+        # Pages (includes segment table read-in)
         html_generator2(
             tickers,
             financial_data,
@@ -184,6 +195,16 @@ def mini_main():
             avg_vals,
             spy_qqq_html
         )
+
+        # ── Generate a one-page freshness report under charts/ (optional but recommended) ──
+        try:
+            from freshness_check import read_stamp, scan_charts, write_report
+            stamp = read_stamp()
+            stale = scan_charts(stamp)
+            write_report(stale)  # writes charts/freshness_report.html
+        except Exception as e:
+            print(f"[freshness] WARN: could not write freshness report: {e}")
+
     finally:
         conn.close()
 
