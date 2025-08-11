@@ -94,8 +94,8 @@ def _to_float(x):
     try: return float(s)
     except: return pd.NA
 
-# Pick a single divisor + unit label for the *whole* table.
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
+    """Pick a single divisor + unit label for the *whole* table."""
     if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
         return (1.0, "$")
     v = abs(max_abs_value)
@@ -105,28 +105,24 @@ def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     if v >= 1e3:  return (1e3,  "$K")
     return (1.0, "$")
 
-# Smart formatter (adaptive decimals; negatives; commas for $)
 def _fmt_scaled(x, div, unit) -> str:
+    """Format number based on scale and unit."""
     if pd.isna(x):
         return "–"
     try:
         val = float(x) / float(div)
     except Exception:
         return "–"
-
-    # Adaptive decimals: ≥100 → 0 dp; ≥10 → 1 dp; else → 2 dp
     if abs(val) >= 100:
         fmt = "{:,.0f}" if unit == "$" else "{:.0f}"
     elif abs(val) >= 10:
         fmt = "{:,.1f}" if unit == "$" else "{:.1f}"
     else:
         fmt = "{:,.2f}" if unit == "$" else "{:.2f}"
-
     s = fmt.format(val)
     if unit == "$":
         return f"${s}"
     else:
-        # "$K","$M","$B","$T" → keep just the suffix letter
         return f"{s}{unit[-1]}"
 
 def _last3_plus_ttm(years: List[str]) -> List[str]:
@@ -141,7 +137,6 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     """Generate charts and a compact pivot HTML table for a single ticker."""
-    # Fetch
     try:
         df = get_segment_data(ticker)
     except Exception as fetch_err:
@@ -161,96 +156,79 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         )
         return
 
-    # Clean + normalize
     df = df.copy()
     df["Segment"] = df["Segment"].astype(str).map(_humanize_segment_name)
     df["Year"] = df["Year"].astype(str)
     df["Revenue"] = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-    # Compute shared y-axis range across ALL segments (handles negatives)
+    # Shared y-axis scale
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
         min_y, max_y = 0.0, 0.0
     else:
         min_y, max_y = float(all_vals.min()), float(all_vals.max())
-        if min_y > 0: min_y = 0.0   # include zero if all positive
-        if max_y < 0: max_y = 0.0   # include zero if all negative
-    spread = (max_y - min_y)
+        if min_y > 0: min_y = 0.0
+        if max_y < 0: max_y = 0.0
+    spread = max_y - min_y
     margin = spread * 0.1 if spread else 1.0
     min_y_plot, max_y_plot = min_y - margin, max_y + margin
 
-    # Years for charts (keep them all, ordered), and years for the table (last3 + TTM)
     years_all = sort_years(sorted(set(df["Year"].tolist())))
     years_tbl = _last3_plus_ttm(df["Year"].tolist())
-
-    # Segment list
     segments = sorted(set(df["Segment"].tolist()))
 
-    # ── Charts per segment (y in $B) ──
+    # Charts
     for seg in segments:
         seg_df = df[df["Segment"] == seg]
         revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-
         revenues_b = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
         op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
-        min_y_plot_b = min_y_plot / 1e9
-        max_y_plot_b = max_y_plot / 1e9
 
         fig, ax = plt.subplots(figsize=(8, 5))
         x_indices = list(range(len(years_all)))
         bar_width = 0.35
-
         ax.bar([x - bar_width / 2 for x in x_indices], revenues_b, width=bar_width, label="Revenue")
         ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
-
         ax.set_xticks(x_indices)
         ax.set_xticklabels(years_all)
-        ax.set_ylim(min_y_plot_b, max_y_plot_b)
+        ax.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
         ax.set_ylabel("Value ($B)")
         ax.set_title(seg)
         ax.yaxis.grid(True, linestyle="--", alpha=0.5)
         ax.legend(loc="upper left")
         plt.tight_layout()
-
-        safe_seg_name = seg.replace("/", "_").replace(" ", "_")
-        fig_path = out_dir / f"{ticker}_{safe_seg_name}.png"
+        fig_path = out_dir / f"{ticker}_{seg.replace('/', '_').replace(' ', '_')}.png"
         plt.savefig(fig_path)
         plt.close(fig)
 
-    # ── Compact pivot table ──
-    use_years = years_tbl
-
+    # Table
     def pv(col):
-        p = df[df["Year"].isin(use_years)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
-        return p.reindex(columns=[y for y in use_years if y in p.columns])
+        p = df[df["Year"].isin(years_tbl)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
+        return p.reindex(columns=[y for y in years_tbl if y in p.columns])
 
     rev_p = pv("Revenue")
     oi_p  = pv("OpIncome")
 
-    # Sort rows by TTM Rev if available
     sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
     if sort_col:
         rev_p = rev_p.sort_values(by=sort_col, ascending=False)
         oi_p = oi_p.reindex(index=rev_p.index)
 
-    # % of Total (TTM)
     pct_series = None
     if "TTM" in rev_p.columns:
         total_ttm = rev_p["TTM"].sum(skipna=True)
         if total_ttm and total_ttm != 0:
             pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
-    # Determine single scale for the whole table
     max_val = pd.concat([rev_p, oi_p]).abs().max().max()
     div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
-    # Assemble interleaved columns: 20xx Rev, 20xx OI, ..., TTM Rev, TTM OI
     cols: List[Tuple[str, str]] = []
-    for y in [c for c in use_years if c != "TTM"]:
+    for y in [c for c in years_tbl if c != "TTM"]:
         cols += [(y, "Rev"), (y, "OI")]
-    if "TTM" in use_years:
+    if "TTM" in years_tbl:
         cols += [("TTM", "Rev"), ("TTM", "OI")]
 
     out = pd.DataFrame(index=rev_p.index)
@@ -262,7 +240,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     if pct_series is not None:
         out["% of Total (TTM)"] = pct_series
 
-    # Format values using the chosen unit; bold TTM columns
     for c in out.columns:
         if c == "% of Total (TTM)":
             out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
@@ -275,7 +252,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     out.index.name = "Segment"
     out_disp = out.reset_index()
 
-    # Inline CSS → compact + readable (right-aligned numbers, sticky header, zebra)
     css = """
 <style>
 .table-wrap{overflow:auto; max-width:100%;}
@@ -300,7 +276,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     out_path = out_dir / f"{ticker}_segments_table.html"
     try:
-        out_path.unlink(missing_ok=True)  # force overwrite
+        out_path.unlink(missing_ok=True)
     except Exception:
         pass
     out_path.write_text(table_content, encoding="utf-8")
@@ -314,18 +290,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate segment charts and tables for a list of tickers.")
-    parser.add_argument(
-        "--tickers_csv",
-        type=str,
-        default="tickers.csv",
-        help="Path to the CSV file containing tickers. Defaults to 'tickers.csv' in the current directory."
-    )
-    parser.add_argument(
-        "--output_dir",
-        type=str,
-        default="charts",
-        help="Directory where charts and tables will be saved. Defaults to 'charts'."
-    )
+    parser.add_argument("--tickers_csv", type=str, default="tickers.csv")
+    parser.add_argument("--output_dir", type=str, default="charts")
     args = parser.parse_args()
 
     print(f"{VERSION} starting…")
@@ -334,7 +300,7 @@ def main():
     tickers = read_tickers(csv_path)
     if not tickers:
         print(f"Error: No tickers found in '{csv_path}'. Please provide a valid CSV file with a 'Ticker' column.")
-        return  # (per your request: do not exit non-zero)
+        return
 
     output_dir = Path(args.output_dir)
     ensure_dir(output_dir)
