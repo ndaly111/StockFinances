@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# generate_economic_data.py  – rev 08-Aug-2025 (Fed Funds = RANGE)
+# generate_economic_data.py  – rev 12-Aug-2025 (CPI=YoY %, pp deltas, 3Y selector support)
 # -------------------------------------------------------------------
 """
 • Pull indicator series from FRED
@@ -42,7 +42,7 @@ def _next_bea_gdp():
     return m.group(1) if m else "—"
 
 # ───────── indicator spec ─────────
-# Note: We fetch DFEDTARL/U for the range, but keep the dashboard anchor id as 'FEDFUNDS'
+# NOTE: CPIAUCSL will be stored as YoY % in the DB (not the raw index).
 INDICATORS = {
     "UNRATE":   {"name":"Unemployment Rate","units":"%","group":"labor",
                  "schedule":lambda:_next_bls("empsit")},
@@ -103,7 +103,9 @@ def _render_dashboard(rows):
 
     html = [
         f'<p class="stamp">Updated: {STAMP} | Sources: BLS · FRED · BEA · U.S. Treasury</p>',
-        block("Labor & Prices", lab, "1-mo Δ", "YoY Δ"),
+        # Labor block shows deltas in percentage points (pp)
+        block("Labor & Prices", lab, "1-mo Δ (pp)", "YoY Δ (pp)"),
+        # Rates block keeps original mixed units (bp / % / QoQ)
         block("Rates & Growth", rat, "1-wk Δ", "3-mo / QoQ Δ"),
     ]
     HTML_OUT.write_text("\n".join(html), encoding="utf-8")
@@ -124,28 +126,19 @@ def generate_economic_data():
         # ---- fetch core series ----
         start = (dt.date.today() - dt.timedelta(days=15 * 365)).strftime("%Y-%m-%d")
 
-        # UNRATE
-        unrate = fred.get_series("UNRATE", observation_start=start)
+        unrate = fred.get_series("UNRATE",   observation_start=start)
+        cpi    = fred.get_series("CPIAUCSL", observation_start=start)  # raw index; we will convert to YoY %
+        dgs10  = fred.get_series("DGS10",    observation_start=start)
+        gdp    = fred.get_series("GDPC1",    observation_start=start)
+        tarL   = fred.get_series("DFEDTARL", observation_start=start)
+        tarU   = fred.get_series("DFEDTARU", observation_start=start)
 
-        # CPI index (we'll compute YoY %)
-        cpi = fred.get_series("CPIAUCSL", observation_start=start)
-
-        # 10yr
-        dgs10 = fred.get_series("DGS10", observation_start=start)
-
-        # GDP
-        gdp = fred.get_series("GDPC1", observation_start=start)
-
-        # Fed funds TARGET RANGE (lower/upper)
-        tarL = fred.get_series("DFEDTARL", observation_start=start)
-        tarU = fred.get_series("DFEDTARU", observation_start=start)
-
-        # ---- upsert all raw series into DB ----
+        # ---- upsert raw series into DB (EXCEPT CPIAUCSL) ----
         for sid, ser in {
-            "UNRATE": unrate, "CPIAUCSL": cpi, "DGS10": dgs10, "GDPC1": gdp,
-            "DFEDTARL": tarL, "DFEDTARU": tarU,
+            "UNRATE": unrate, "DGS10": dgs10, "GDPC1": gdp, "DFEDTARL": tarL, "DFEDTARU": tarU
         }.items():
-            if ser is None or ser.empty: continue
+            if ser is None or ser.empty: 
+                continue
             df = (ser.to_frame("value").reset_index().rename(columns={"index": "date"}))
             df["indicator"] = sid
             df["date"] = pd.to_datetime(df["date"]).dt.date.astype(str)
@@ -155,8 +148,8 @@ def generate_economic_data():
         if not unrate.empty:
             last = float(unrate.iloc[-1])
             last_disp = _fmt(last, "%")
-            d1 = _fmt(last - float(unrate.iloc[-2]), "pp") if len(unrate) >= 2 else "—"
-            d2 = _fmt(last - float(unrate.iloc[-13]), "pp") if len(unrate) >= 13 else "—"
+            d1 = f"{(last - float(unrate.iloc[-2])):+.2f} pp" if len(unrate) >= 2 else "—"
+            d2 = f"{(last - float(unrate.iloc[-13])):+.2f} pp" if len(unrate) >= 13 else "—"
             rows.append(dict(sid="UNRATE", group="labor", name=INDICATORS["UNRATE"]["name"],
                              latest=last_disp, d1=d1, d2=d2, next=_next_bls("empsit")))
             plt.figure(); unrate.plot(title=INDICATORS["UNRATE"]["name"]); plt.tight_layout()
@@ -164,19 +157,37 @@ def generate_economic_data():
 
         # ───── CPI row (YoY %) ─────
         if not cpi.empty:
-            yoy = _pct(float(cpi.iloc[-1]), float(cpi.iloc[-13])) if len(cpi) >= 13 else None
-            last_disp = _fmt(yoy, "%")
+            # Build a YoY percent change series for all dates
+            cpi_yoy = (cpi.pct_change(periods=12) * 100).dropna()
+
+            # Upsert YoY % into DB under CPIAUCSL (overwriting index; we skipped raw upsert above)
+            df = cpi_yoy.to_frame("value").reset_index().rename(columns={"index": "date"})
+            df["indicator"] = "CPIAUCSL"
+            df["date"] = pd.to_datetime(df["date"]).dt.date.astype(str)
+            _upsert(conn, df)
+
+            # Latest stats (pp deltas)
+            last_yoy = float(cpi_yoy.iloc[-1]) if not cpi_yoy.empty else None
+            last_disp = _fmt(last_yoy, "%")
+            mchg = f"{last_yoy - float(cpi_yoy.iloc[-2]):+.2f} pp" if len(cpi_yoy) >= 2 else "—"
+            ychg = f"{last_yoy - float(cpi_yoy.iloc[-13]):+.2f} pp" if len(cpi_yoy) >= 13 else "—"
+
             rows.append(dict(sid="CPIAUCSL", group="labor", name=INDICATORS["CPIAUCSL"]["name"],
-                             latest=last_disp, d1="—", d2=_fmt(yoy, "%"), next=_next_bls("cpi")))
-            plt.figure(); cpi.plot(title="CPI (All Items, Index)"); plt.tight_layout()
-            plt.savefig(CHART_DIR / "CPIAUCSL_history.png", dpi=110); plt.close()
+                             latest=last_disp, d1=mchg, d2=ychg, next=_next_bls("cpi")))
+
+            # Chart YoY %
+            plt.figure()
+            cpi_yoy.plot(title="CPI (All Items, YoY %)")
+            plt.tight_layout()
+            plt.savefig(CHART_DIR / "CPIAUCSL_history.png", dpi=110)
+            plt.close()
 
         # ───── 10-Year row (bp deltas) ─────
         if not dgs10.empty:
             v = float(dgs10.iloc[-1])
             last_disp = _fmt(v, "%")
-            d1 = _fmt((v - float(dgs10.iloc[-6])) * 100, "bp") if len(dgs10) >= 6 else "—"
-            d2 = _fmt((v - float(dgs10.iloc[-66])) * 100, "bp") if len(dgs10) >= 66 else "—"
+            d1 = f"{(v - float(dgs10.iloc[-6])) * 100:+.0f} bp" if len(dgs10) >= 6 else "—"
+            d2 = f"{(v - float(dgs10.iloc[-66])) * 100:+.0f} bp" if len(dgs10) >= 66 else "—"
             rows.append(dict(sid="DGS10", group="rates", name=INDICATORS["DGS10"]["name"],
                              latest=last_disp, d1=d1, d2=d2, next="Daily"))
             plt.figure(); dgs10.plot(title=INDICATORS["DGS10"]["name"]); plt.tight_layout()
