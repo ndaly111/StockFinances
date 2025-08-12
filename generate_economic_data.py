@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
-# generate_economic_data.py  – rev 12-Aug-2025 (CPI=YoY %, pp deltas, 3Y selector support)
+# generate_economic_data.py  – rev 12-Aug-2025
+# Fixes: CPI stored as YoY %, purge old index rows, normalize dates, pp deltas, 3Y selector support
 # -------------------------------------------------------------------
-"""
-• Pull indicator series from FRED
-• Upsert into Stock Data.db
-• Render charts/*.png
-• Render charts/economic_data.html (dashboard snippet)
-• Build the full charts page via economic_data_page.render_single_page()
-"""
-
 import os, re, sqlite3, datetime as dt
 from pathlib import Path
 import requests, pandas as pd, matplotlib.pyplot as plt
@@ -42,7 +35,7 @@ def _next_bea_gdp():
     return m.group(1) if m else "—"
 
 # ───────── indicator spec ─────────
-# NOTE: CPIAUCSL will be stored as YoY % in the DB (not the raw index).
+# NOTE: CPIAUCSL is stored as YoY % (not the raw index).
 INDICATORS = {
     "UNRATE":   {"name":"Unemployment Rate","units":"%","group":"labor",
                  "schedule":lambda:_next_bls("empsit")},
@@ -74,6 +67,13 @@ def _upsert(c, df):
     rows = df[['indicator','date','value']].itertuples(False, None)
     c.executemany("INSERT OR REPLACE INTO economic_data VALUES (?,?,?)", rows)
 
+def _normalize_dates(conn):
+    """Trim any ' YYYY-MM-DD HH:MM:SS' to 'YYYY-MM-DD' across the table."""
+    cur = conn.cursor()
+    # This may collide if duplicates exist; handle by removing the time-suffixed CPI rows first.
+    cur.execute("UPDATE economic_data SET date = substr(date,1,10) WHERE length(date) > 10")
+    conn.commit()
+
 # ───────── utilities ─────────
 def _pct(a, b):
     """percent change (e.g., 2.7 for +2.7%)."""
@@ -103,9 +103,7 @@ def _render_dashboard(rows):
 
     html = [
         f'<p class="stamp">Updated: {STAMP} | Sources: BLS · FRED · BEA · U.S. Treasury</p>',
-        # Labor block shows deltas in percentage points (pp)
         block("Labor & Prices", lab, "1-mo Δ (pp)", "YoY Δ (pp)"),
-        # Rates block keeps original mixed units (bp / % / QoQ)
         block("Rates & Growth", rat, "1-wk Δ", "3-mo / QoQ Δ"),
     ]
     HTML_OUT.write_text("\n".join(html), encoding="utf-8")
@@ -125,26 +123,25 @@ def generate_economic_data():
 
         # ---- fetch core series ----
         start = (dt.date.today() - dt.timedelta(days=15 * 365)).strftime("%Y-%m-%d")
-
         unrate = fred.get_series("UNRATE",   observation_start=start)
-        cpi    = fred.get_series("CPIAUCSL", observation_start=start)  # raw index; we will convert to YoY %
+        cpi_ix = fred.get_series("CPIAUCSL", observation_start=start)  # raw index; we will convert to YoY %
         dgs10  = fred.get_series("DGS10",    observation_start=start)
         gdp    = fred.get_series("GDPC1",    observation_start=start)
         tarL   = fred.get_series("DFEDTARL", observation_start=start)
         tarU   = fred.get_series("DFEDTARU", observation_start=start)
 
-        # ---- upsert raw series into DB (EXCEPT CPIAUCSL) ----
+        # ---- upsert raw series EXCEPT CPI (we store CPI as YoY %) ----
         for sid, ser in {
             "UNRATE": unrate, "DGS10": dgs10, "GDPC1": gdp, "DFEDTARL": tarL, "DFEDTARU": tarU
         }.items():
-            if ser is None or ser.empty: 
+            if ser is None or ser.empty:
                 continue
             df = (ser.to_frame("value").reset_index().rename(columns={"index": "date"}))
             df["indicator"] = sid
             df["date"] = pd.to_datetime(df["date"]).dt.date.astype(str)
             _upsert(conn, df)
 
-        # ───── UNRATE row ─────
+        # ───── UNRATE row (pp deltas) ─────
         if not unrate.empty:
             last = float(unrate.iloc[-1])
             last_disp = _fmt(last, "%")
@@ -155,19 +152,24 @@ def generate_economic_data():
             plt.figure(); unrate.plot(title=INDICATORS["UNRATE"]["name"]); plt.tight_layout()
             plt.savefig(CHART_DIR / "UNRATE_history.png", dpi=110); plt.close()
 
-        # ───── CPI row (YoY %) ─────
-        if not cpi.empty:
-            # Build a YoY percent change series for all dates
-            cpi_yoy = (cpi.pct_change(periods=12) * 100).dropna()
+        # ───── CPI row (purge old + store YoY %) ─────
+        if not cpi_ix.empty:
+            # 1) Remove any existing CPI rows (index or prior attempts)
+            conn.execute("DELETE FROM economic_data WHERE indicator='CPIAUCSL'")
+            conn.commit()
 
-            # Upsert YoY % into DB under CPIAUCSL (overwriting index; we skipped raw upsert above)
+            # 2) Build YoY % and upsert with normalized dates
+            cpi_yoy = (cpi_ix.pct_change(12) * 100).dropna()
             df = cpi_yoy.to_frame("value").reset_index().rename(columns={"index": "date"})
             df["indicator"] = "CPIAUCSL"
             df["date"] = pd.to_datetime(df["date"]).dt.date.astype(str)
             _upsert(conn, df)
 
+            # 3) Normalize any leftover time-stamped dates across the table
+            _normalize_dates(conn)
+
             # Latest stats (pp deltas)
-            last_yoy = float(cpi_yoy.iloc[-1]) if not cpi_yoy.empty else None
+            last_yoy = float(cpi_yoy.iloc[-1])
             last_disp = _fmt(last_yoy, "%")
             mchg = f"{last_yoy - float(cpi_yoy.iloc[-2]):+.2f} pp" if len(cpi_yoy) >= 2 else "—"
             ychg = f"{last_yoy - float(cpi_yoy.iloc[-13]):+.2f} pp" if len(cpi_yoy) >= 13 else "—"
@@ -207,14 +209,11 @@ def generate_economic_data():
 
         # ───── Fed Funds TARGET RANGE row (uses DFEDTARL/U) ─────
         if not tarL.empty and not tarU.empty:
-            # align and compute midpoint for chart/deltas (if you later want them)
             comb = pd.concat([tarL.rename("L"), tarU.rename("U")], axis=1).dropna()
             low  = float(comb["L"].iloc[-1]); up = float(comb["U"].iloc[-1])
             last_disp = f"{low:.2f} – {up:.2f} %"
-            # wireframe showed dashes; leave deltas blank for now
             rows.append(dict(sid="FEDFUNDS", group="rates", name=INDICATORS["FEDFUNDS"]["name"],
                              latest=last_disp, d1="—", d2="—", next="Daily"))
-            # chart the midpoint so the line is meaningful
             comb["MID"] = (comb["L"] + comb["U"]) / 2.0
             plt.figure(); comb["MID"].plot(title="Fed Funds Target (Midpoint)"); plt.tight_layout()
             plt.savefig(CHART_DIR / "FEDFUNDS_history.png", dpi=110); plt.close()
