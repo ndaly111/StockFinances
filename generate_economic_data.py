@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # generate_economic_data.py  – rev 12-Aug-2025
-# Fixes: CPI stored as YoY %, purge old index rows, normalize dates, pp deltas, 3Y selector support
+# CPI stored as YoY %, pp deltas, safe date normalization, 3Y selector support
 # -------------------------------------------------------------------
 import os, re, sqlite3, datetime as dt
 from pathlib import Path
@@ -68,10 +68,46 @@ def _upsert(c, df):
     c.executemany("INSERT OR REPLACE INTO economic_data VALUES (?,?,?)", rows)
 
 def _normalize_dates(conn):
-    """Trim any ' YYYY-MM-DD HH:MM:SS' to 'YYYY-MM-DD' across the table."""
+    """Safely normalize dates to 'YYYY-MM-DD' without breaking the PK.
+       1) Delete long-date rows that already have a matching short-date row.
+       2) If multiple long-date rows collapse to the same day, keep the latest.
+       3) Truncate remaining long dates.
+    """
     cur = conn.cursor()
-    # This may collide if duplicates exist; handle by removing the time-suffixed CPI rows first.
-    cur.execute("UPDATE economic_data SET date = substr(date,1,10) WHERE length(date) > 10")
+
+    # 1) If a short 'YYYY-MM-DD' already exists for that indicator/day, drop the long one
+    cur.execute("""
+        DELETE FROM economic_data
+        WHERE length(date) > 10
+          AND EXISTS (
+                SELECT 1
+                FROM economic_data e2
+                WHERE e2.indicator = economic_data.indicator
+                  AND length(e2.date) = 10
+                  AND e2.date = substr(economic_data.date,1,10)
+          )
+    """)
+    conn.commit()
+
+    # 2) Among remaining long dates that collapse to the same day, keep only the latest timestamp
+    cur.execute("""
+        DELETE FROM economic_data
+        WHERE length(date) > 10
+          AND date NOT IN (
+                SELECT MAX(e2.date)
+                FROM economic_data e2
+                WHERE e2.indicator = economic_data.indicator
+                  AND substr(e2.date,1,10) = substr(economic_data.date,1,10)
+          )
+    """)
+    conn.commit()
+
+    # 3) Now it's safe to truncate
+    cur.execute("""
+        UPDATE economic_data
+        SET date = substr(date,1,10)
+        WHERE length(date) > 10
+    """)
     conn.commit()
 
 # ───────── utilities ─────────
@@ -103,7 +139,9 @@ def _render_dashboard(rows):
 
     html = [
         f'<p class="stamp">Updated: {STAMP} | Sources: BLS · FRED · BEA · U.S. Treasury</p>',
+        # Labor block shows deltas in percentage points (pp)
         block("Labor & Prices", lab, "1-mo Δ (pp)", "YoY Δ (pp)"),
+        # Rates block keeps original mixed units (bp / % / QoQ)
         block("Rates & Growth", rat, "1-wk Δ", "3-mo / QoQ Δ"),
     ]
     HTML_OUT.write_text("\n".join(html), encoding="utf-8")
@@ -123,8 +161,9 @@ def generate_economic_data():
 
         # ---- fetch core series ----
         start = (dt.date.today() - dt.timedelta(days=15 * 365)).strftime("%Y-%m-%d")
+
         unrate = fred.get_series("UNRATE",   observation_start=start)
-        cpi_ix = fred.get_series("CPIAUCSL", observation_start=start)  # raw index; we will convert to YoY %
+        cpi_ix = fred.get_series("CPIAUCSL", observation_start=start)  # raw index; convert to YoY %
         dgs10  = fred.get_series("DGS10",    observation_start=start)
         gdp    = fred.get_series("GDPC1",    observation_start=start)
         tarL   = fred.get_series("DFEDTARL", observation_start=start)
