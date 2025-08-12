@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# economic_data_page.py – vertical layout + external CSS
+# economic_data_page.py – vertical layout + external CSS + 3Y button + CPI pp deltas
 # ------------------------------------------------------
 import sqlite3, pandas as pd, plotly.graph_objects as go, textwrap
 from pathlib import Path
@@ -7,7 +7,7 @@ from datetime import datetime
 
 DB_PATH      = "Stock Data.db"
 HTML_OUT     = Path("economic_charts.html")
-CSS_OUT      = Path("econ.css")           # <— new file
+CSS_OUT      = Path("econ.css")           # separate CSS file
 
 # ───────────── CSS content (written once) ─────────────
 CSS_TXT = textwrap.dedent("""
@@ -27,18 +27,60 @@ def _ensure_css():
 
 # ───────────── helper functions ─────────────
 def _get_series(conn, sid):
-    return pd.read_sql("SELECT date,value FROM economic_data WHERE indicator=? ORDER BY date",
-                       conn, params=(sid,))
+    return pd.read_sql(
+        "SELECT date,value FROM economic_data WHERE indicator=? ORDER BY date",
+        conn, params=(sid,)
+    )
 
-def _stats(df):
+def _stats(df, sid=None):
     last   = df.iloc[-1]
-    prev   = df.iloc[-2]  if len(df)>1   else last
-    yr_ago = df.iloc[-13] if len(df)>13  else last
+    prev   = df.iloc[-2]  if len(df) > 1   else last
+    yr_ago = df.iloc[-13] if len(df) > 13  else last
+
+    latest_val = float(last['value'])
+    mchg_val   = float(last['value']) - float(prev['value'])
+    ychg_val   = float(last['value']) - float(yr_ago['value'])
+
+    # Special cases by indicator
+    if sid == "CPIAUCSL":
+        # CPI series in DB is YoY %; show deltas in percentage points
+        return dict(
+            latest=f"{latest_val:,.2f} %",
+            date=str(last['date']),
+            mchg=f"{mchg_val:+.2f} pp",
+            ychg=f"{ychg_val:+.2f} pp"
+        )
+    if sid == "UNRATE":
+        # Unemployment rate is a % level; deltas are percentage points
+        return dict(
+            latest=f"{latest_val:,.2f} %",
+            date=str(last['date']),
+            mchg=f"{mchg_val:+.2f} pp",
+            ychg=f"{ychg_val:+.2f} pp"
+        )
+    if sid == "DGS10":
+        # 10Y yield: show % latest, keep raw delta numbers here (dashboard shows bp)
+        return dict(
+            latest=f"{latest_val:,.2f} %",
+            date=str(last['date']),
+            mchg=f"{mchg_val:+.2f}",
+            ychg=f"{ychg_val:+.2f}"
+        )
+    if sid == "GDPC1":
+        # Real GDP stored in billions; full page just shows raw values (chart label clarifies)
+        return dict(
+            latest=f"{latest_val:,.2f}",
+            date=str(last['date']),
+            mchg=f"{mchg_val:+.2f}",
+            ychg=f"{ychg_val:+.2f}"
+        )
+
+    # Fallback
     return dict(
-        latest=f"{last['value']:,.2f}",
+        latest=f"{latest_val:,.2f}",
         date=str(last['date']),
-        mchg=f"{last['value']-prev['value']:+.2f}",
-        ychg=f"{last['value']-yr_ago['value']:+.2f}"
+        mchg=f"{mchg_val:+.2f}",
+        ychg=f"{ychg_val:+.2f}"
     )
 
 def _plot_div(df):
@@ -51,6 +93,7 @@ def _plot_div(df):
             rangeselector=dict(buttons=[
                 dict(count=6,  label="6 M", step="month", stepmode="backward"),
                 dict(count=1,  label="1 Y", step="year",  stepmode="backward"),
+                dict(count=3,  label="3 Y", step="year",  stepmode="backward"),  # NEW
                 dict(count=5,  label="5 Y", step="year",  stepmode="backward"),
                 dict(count=10, label="10 Y",step="year",  stepmode="backward"),
                 dict(step="all", label="All")
@@ -71,7 +114,7 @@ def render_single_page(timestamp: str, indicators: dict):
             df = _get_series(conn, sid)
             if df.empty:
                 continue
-            s   = _stats(df)
+            s   = _stats(df, sid)
             div = _plot_div(df)
 
             toc.append(f'<a href="#{sid}">{meta["name"]}</a>')
