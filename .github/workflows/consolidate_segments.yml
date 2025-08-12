@@ -1,0 +1,26 @@
+name: Consolidate Segment Tables
+
+on:
+  workflow_dispatch:
+
+jobs:
+  consolidate-segments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas beautifulsoup4
+      - name: Run consolidation script
+        run: python consolidate_segment_tables.py
+      - name: Upload combined CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-segment-tables
+          path: combined_segment_tables.csv
