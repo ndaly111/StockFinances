@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate_segment_charts.py  — SEGMENTS v2025-08-10d (dedupe-safe)
+generate_segment_charts.py  — SEGMENTS v2025-08-10d (dedupe-safe, +norm/filters)
 
 What this does:
 • One shared y-axis across all segment charts (handles negatives).
@@ -15,6 +15,9 @@ What this does:
       charts/{TICKER}/{TICKER}_segment_performance.html
 • NEW: Cleans up duplicate/legacy PNGs in charts/{TICKER}/ so only
   one PNG per segment remains (e.g., removes *SegmentMember*.png).
+• NEW: Normalize segment labels (strip “Member/Segment”, join spaced initials),
+  treat all-zero OpIncome as missing, drop eliminations/negatives, sort by latest revenue,
+  and optionally hide OI columns when OI is entirely missing.
 
 No other files need edits.
 """
@@ -29,7 +32,7 @@ import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
 
-VERSION = "SEGMENTS v2025-08-10d"
+VERSION = "SEGMENTS v2025-08-10d+norm"
 
 # ─────────────────────────── utilities ───────────────────────────
 
@@ -58,7 +61,9 @@ def ensure_dir(path: Path) -> None:
 def _humanize_segment_name(raw: str) -> str:
     if not isinstance(raw, str) or not raw:
         return raw
+    # remove common XBRL-style token
     name = raw.replace("SegmentMember", "")
+    # split CamelCase for readability
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
     fixes = {
         "Greater China": "Greater China",
@@ -170,6 +175,16 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     df["Revenue"] = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
+    # ── INSERT 1: extra label normalization + OpIncome all-missing handling ──
+    # Remove trailing 'Member'/'Segment' and join spaced initials like "U S" → "US"
+    df["Segment"] = df["Segment"].str.replace(r"\s*(Member|Segment)$", "", regex=True)\
+                                 .str.replace(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", regex=True)
+
+    # If OpIncome is totally missing or effectively all zeros, mark as missing so it renders “–”
+    _op_all_missing = df["OpIncome"].isna().all() or (df["OpIncome"].fillna(0) == 0).all()
+    if _op_all_missing:
+        df["OpIncome"] = pd.NA
+
     # Shared y-axis range across ALL segments (handles negatives)
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
@@ -230,9 +245,28 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     oi_p  = pv("OpIncome")
 
     sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
+
+    # ── INSERT 2: drop stale/elimination/negative rows & sort by latest revenue ──
     if sort_col:
+        # keep only rows with non-missing latest revenue (usually TTM)
+        if sort_col in rev_p.columns:
+            rev_p = rev_p[rev_p[sort_col].notna()]
+        # realign OpIncome pivot
+        oi_p = oi_p.reindex(index=rev_p.index)
+
+        # drop elimination/reconciliation/intersegment rows
+        hide_mask = rev_p.index.to_series().str.contains(r"(Elimination|Reconcil|Intersegment)", case=False, na=False)
+        rev_p = rev_p[~hide_mask]
+        oi_p = oi_p.reindex(index=rev_p.index)
+
+        # drop negative-revenue segments
+        neg_mask = rev_p[sort_col] < 0
+        rev_p = rev_p[~neg_mask]
+        oi_p = oi_p.reindex(index=rev_p.index)
+
+        # sort by latest revenue, largest → smallest
         rev_p = rev_p.sort_values(by=sort_col, ascending=False)
-        oi_p  = oi_p.reindex(index=rev_p.index)
+        oi_p  = oi_p.loc[rev_p.index]
 
     pct_series = None
     if "TTM" in rev_p.columns:
@@ -240,6 +274,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         if total_ttm:
             pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
+    # determine scaling off combined (post-filter) pivots
     max_val = pd.concat([rev_p, oi_p]).abs().max().max()
     div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
@@ -257,6 +292,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     if pct_series is not None:
         out["% of Total (TTM)"] = pct_series
 
+    # ── INSERT 3 (optional): drop OI columns if OpIncome is entirely missing ──
+    if df["OpIncome"].isna().all():
+        out = out.drop(columns=[c for c in out.columns if " OI " in c], errors="ignore")
+
+    # format cells
     for c in out.columns:
         if c == "% of Total (TTM)":
             out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
