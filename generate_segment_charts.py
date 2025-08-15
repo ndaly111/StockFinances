@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """
-generate_segment_charts.py — SEGMENTS v2025-08-12b (multi‑view: product + geo)
+generate_segment_charts.py — SEGMENTS v2025-08-12d (multi-view: product + geo + more)
 
 Key features:
 • One shared y-axis across all segment charts (handles negatives).
 • Compact, scaled HTML pivot tables (last 3 fiscal years + TTM).
 • Picks a single unit ($, $K, $M, $B, $T) for each table.
 • Bold TTM, add “% of Total (TTM)”.
-• Writes a single HTML that can show BOTH views if they exist:
+• Writes a single HTML that can show ALL views present (Products, Geography, Operating, Channels, Customers, Other):
     charts/{TICKER}/{TICKER}_segments_table.html
   (and alias copies as before)
 • Cleans up duplicate/legacy PNGs.
 
-NEW (generalizes across tickers):
-• Classifies each row into SegType (geo / product / operating / channel / customer / other).
-• Auto detection + optional per‑ticker overrides via segment_typing.csv.
-• If both product & geo exist, renders both tables in one page (Products first).
+Generalization:
+• Maps XBRL axes → SegType when available (product / geo / operating / channel / customer / other);
+  falls back to name heuristics; then applies optional per-ticker overrides via segment_typing.csv.
+• Renders every present segment type in a fixed order on one page.
 """
 
 from __future__ import annotations
@@ -31,7 +31,49 @@ import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
 
-VERSION = "SEGMENTS v2025-08-12b"
+VERSION = "SEGMENTS v2025-08-12d"
+
+# ─────────────────────────── XBRL axis → segment-type mapping ───────────────────────────
+AXIS_TO_SEGTYPE = {
+    # geography
+    "GeographicalAreasAxis": "geo",
+    "StatementGeographicalAxis": "geo",
+    "GeographicalRegionsAxis": "geo",
+    "GeographicalRegionAxis": "geo",
+    "DomesticAndForeignAxis": "geo",
+    "CountryAxis": "geo",
+
+    # products/services
+    "ProductOrServiceAxis": "product",
+    "ProductsAndServicesAxis": "product",
+    "ProductLineAxis": "product",
+    "ProductAxis": "product",
+    "ProductCategoryAxis": "product",
+    "ProductCategoriesAxis": "product",
+
+    # operating/reportable segments
+    "OperatingSegmentsAxis": "operating",
+    "BusinessSegmentsAxis": "operating",
+    "ReportableSegmentsAxis": "operating",
+    "SegmentsAxis": "operating",
+
+    # channels/customers
+    "SalesChannelsAxis": "channel",
+    "DistributionChannelsAxis": "channel",
+    "MajorCustomersAxis": "customer",
+    "SignificantCustomersAxis": "customer",
+}
+
+# Which section types to render, and in what order/title
+SECTION_ORDER  = ["product", "geo", "operating", "channel", "customer", "other"]
+SECTION_TITLES = {
+    "product":   "Products / Categories",
+    "geo":       "Geography",
+    "operating": "Operating Segments",
+    "channel":   "Sales Channels",
+    "customer":  "Customers",
+    "other":     "Other / Unclassified",
+}
 
 # ─────────────────────────── utilities ───────────────────────────
 
@@ -148,10 +190,10 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
 def _safe_seg_filename(seg: str) -> str:
     return seg.replace("/", "_").replace(" ", "_")
 
-# ───────────────────── optional per‑ticker overrides ─────────────────────
+# ───────────────────── optional per-ticker overrides ─────────────────────
 
 def _load_segment_typing(path: Path = Path("segment_typing.csv")) -> pd.DataFrame:
-    """Load a per‑ticker segment typing override file."""
+    """Load a per-ticker segment typing override file."""
     if not path.is_file():
         return pd.DataFrame(columns=["Ticker", "Segment", "SegType"])
     try:
@@ -199,6 +241,23 @@ def _infer_segtype_by_label(seg: str) -> str:
         return "operating"
     return "other"
 
+def _infer_segtype_by_axis(row: pd.Series) -> Optional[str]:
+    """
+    Map XBRL axis/dimension names → SegType using AXIS_TO_SEGTYPE when available.
+    Looks across common columns if present: Axis, AxisName, Dimension, DimensionName, XBRLAxis.
+    """
+    axis_cols = [c for c in row.index if str(c).lower() in {
+        "axis", "axisname", "dimension", "dimensionname", "xbrlaxis", "xbrldimension"
+    }]
+    for c in axis_cols:
+        val = str(row[c]).strip()
+        # some datasets include full QName like us-gaap:GeographicalAreasAxis
+        if ":" in val:
+            val = val.split(":", 1)[1]
+        if val in AXIS_TO_SEGTYPE:
+            return AXIS_TO_SEGTYPE[val]
+    return None
+
 # ───────────────────── cleanup helper & filters ───────────────────────
 
 def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> None:
@@ -222,10 +281,10 @@ HIDE_RE = re.compile(
     re.IGNORECASE,
 )
 
-# ───────────────────── main per‑ticker routine ────────────────────
+# ───────────────────── main per-ticker routine ────────────────────
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
-    """Generate charts and a combined HTML that can include Product and Geo tables."""
+    """Generate charts and a combined HTML that can include multiple segment tables."""
     try:
         df = get_segment_data(ticker)
     except Exception as fetch_err:
@@ -257,8 +316,17 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     if _op_all_missing:
         df["OpIncome"] = pd.NA
 
-    # Add SegType (auto) + optional overrides
-    df["SegType"] = df["Segment"].apply(_infer_segtype_by_label)
+    # Add SegType: prefer XBRL axis mapping if available, else label heuristic; then apply overrides
+    has_axis_cols = any(str(c).lower() in {
+        "axis","axisname","dimension","dimensionname","xbrlaxis","xbrldimension"
+    } for c in df.columns)
+    if has_axis_cols:
+        df["_axis_segtype"] = df.apply(_infer_segtype_by_axis, axis=1)
+    else:
+        df["_axis_segtype"] = None
+
+    df["SegType"] = df["_axis_segtype"].fillna(df["Segment"].apply(_infer_segtype_by_label))
+
     overrides = _load_segment_typing()
     if not overrides.empty:
         temp = df.copy()
@@ -396,30 +464,16 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         sec_title = f"<h3 style='margin:10px 0 6px'>{title_text}</h3>"
         return sec_title + f"\n<div class='table-wrap'>{html}</div>\n"
 
-    # Build views
-    geo_df = df[df["SegType"] == "geo"].copy()
-    prod_df = df[df["SegType"] == "product"].copy()
-    oper_df = df[df["SegType"] == "operating"].copy()
-    channel_df = df[df["SegType"] == "channel"].copy()
-    customer_df = df[df["SegType"] == "customer"].copy()
-
+    # ── Build sections dynamically for any segment type present ──
     sections: List[str] = []
-
-    prod_html = build_table(prod_df, "Products / Categories")
-    if prod_html:
-        sections.append(prod_html)
-
-    geo_html = build_table(geo_df, "Geography")
-    if geo_html:
-        sections.append(geo_html)
-
-    # Optionally include other views here if desired
-    # op_html = build_table(oper_df, "Operating Segments")
-    # if op_html: sections.append(op_html)
-    # ch_html = build_table(channel_df, "Sales Channels")
-    # if ch_html: sections.append(ch_html)
-    # cu_html = build_table(customer_df, "Customers")
-    # if cu_html: sections.append(cu_html)
+    for segtype in SECTION_ORDER:
+        sub = df[df["SegType"] == segtype].copy()
+        if sub.empty:
+            continue
+        title = SECTION_TITLES.get(segtype, segtype.title())
+        html = build_table(sub, title)
+        if html:
+            sections.append(html)
 
     if not sections:
         sections.append("<p>No usable segment pivots after filtering.</p>")
