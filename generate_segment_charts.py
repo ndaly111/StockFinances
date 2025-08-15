@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate_segment_charts.py — SEGMENTS v2025-08-12c (multi-view: product + geo + more)
+generate_segment_charts.py — SEGMENTS v2025-08-12d (multi-view: product + geo + more)
 
 Key features:
 • One shared y-axis across all segment charts (handles negatives).
@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
 
-VERSION = "SEGMENTS v2025-08-12c"
+VERSION = "SEGMENTS v2025-08-12d"
 
 # ─────────────────────────── XBRL axis → segment-type mapping ───────────────────────────
 AXIS_TO_SEGTYPE = {
@@ -317,8 +317,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         df["OpIncome"] = pd.NA
 
     # Add SegType: prefer XBRL axis mapping if available, else label heuristic; then apply overrides
-    # Prepare an axis-derived type if any axis columns exist
-    has_axis_cols = any(str(c).lower() in {"axis","axisname","dimension","dimensionname","xbrlaxis","xbrldimension"} for c in df.columns)
+    has_axis_cols = any(str(c).lower() in {
+        "axis","axisname","dimension","dimensionname","xbrlaxis","xbrldimension"
+    } for c in df.columns)
     if has_axis_cols:
         df["_axis_segtype"] = df.apply(_infer_segtype_by_axis, axis=1)
     else:
@@ -499,7 +500,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     table_content = f"<!-- {VERSION} -->\n" + css + "\n" + caption + "\n" + "\n<hr/>\n".join(sections)
 
-    canonical = out_dir / f"{ticker}_segments_table.html"}
+    canonical = out_dir / f"{ticker}_segments_table.html"
     aliases = [
         out_dir / "segments_table.html",
         out_dir / "segment_performance.html",
