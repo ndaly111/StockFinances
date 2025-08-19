@@ -3,33 +3,24 @@
 generate_index_growth_pages.py — Create interactive SPY/QQQ valuation pages
 
 This module reads historical implied growth and P/E data from your SQLite
-database and produces self‑contained HTML pages for SPY and QQQ that
-feature interactive Plotly charts.  The pages are written to the
+database and produces self-contained HTML pages for SPY and QQQ that
+feature interactive Plotly charts. The pages are written to the
 filenames specified in OUTPUT_FILES, preserving your existing URL
 structure (e.g., `qqq_growth.html` and `spy_growth.html`).
 
 Key features:
-
   • Plots both TTM and Forward implied growth on a single chart.
     Users can toggle between daily, weekly, and monthly sampling.
   • Displays horizontal average and ±1σ lines for both series based on
     the full daily history.
-  • Includes a 1, 3, 5, and 10‑year statistics table, showing
+  • Includes a 1, 3, 5, and 10-year statistics table, showing
     average, median, standard deviation, current value, and percentile
     for TTM and Forward implied growth.
-  • Supports optional P/E and 10‑year yield columns if you choose to
-    extend the script later, though they are not plotted by default.
+  • Supports optional P/E and 10-year yield columns.
 
-To integrate this generator, call `generate_index_growth_pages()` from
-your build pipeline after your database has been updated (including
-running backfill_index_growth).  For example:
-
+Integrate by calling:
     from generate_index_growth_pages import generate_index_growth_pages
     generate_index_growth_pages()
-
-This will write `qqq_growth.html` and `spy_growth.html` into your
-OUTPUT_DIR.  You can adjust OUTPUT_DIR to place the files under a
-specific web root.
 """
 
 import os
@@ -41,7 +32,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.io import to_html
 
-
 # ========= CONFIG =========
 DB_PATH = "Stock Data.db"
 OUTPUT_FILES = {"SPY": "spy_growth.html", "QQQ": "qqq_growth.html"}
@@ -49,23 +39,22 @@ PAGE_TITLES = {
     "SPY": "SPY — Implied Growth (TTM & Forward)",
     "QQQ": "QQQ — Implied Growth (TTM & Forward)",
 }
-OUTPUT_DIR = "."  # write pages to current directory; adjust as needed
+OUTPUT_DIR = "."  # write pages to current directory
 
 # Column name synonyms recognized by the loader
-DATE_COLS    = ["date", "as_of", "dt"]
-TICKER_COLS  = ["ticker", "symbol"]
-IG_TTM_COLS  = [
+DATE_COLS   = ["date", "as_of", "dt"]
+TICKER_COLS = ["ticker", "symbol"]
+IG_TTM_COLS = [
     "implied_growth_ttm", "implied_growth_pct", "implied_growth", "ig_ttm",
     "implied_growth_percent",
 ]
-IG_FWD_COLS  = [
+IG_FWD_COLS = [
     "implied_growth_forward", "implied_growth_fwd", "forward_implied_growth",
     "ig_forward", "forward_growth", "implied_growth_forward_pct", "forward_growth_pct",
 ]
-PE_TTM_COLS  = ["pe_ttm", "pe_ratio_ttm", "pe", "pe_ratio"]  # optional
-PE_FWD_COLS  = ["pe_forward", "pe_fwd", "forward_pe", "pe_ntm", "pe_next12m", "pe_fy1"]  # optional
-TENY_COLS    = ["tnx_yield", "us10y", "ust10y", "ten_year_yield", "ten_year", "10y"]  # optional
-
+PE_TTM_COLS = ["pe_ttm", "pe_ratio_ttm", "pe", "pe_ratio"]  # optional
+PE_FWD_COLS = ["pe_forward", "pe_fwd", "forward_pe", "pe_ntm", "pe_next12m", "pe_fy1"]  # optional
+TENY_COLS   = ["tnx_yield", "us10y", "ust10y", "ten_year_yield", "ten_year", "10y"]  # optional
 
 # ========= UTILITIES =========
 def _list_tables(conn: sqlite3.Connection) -> List[str]:
@@ -73,33 +62,24 @@ def _list_tables(conn: sqlite3.Connection) -> List[str]:
     cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
     return [r[0] for r in cur.fetchall()]
 
-
 def _table_cols(conn: sqlite3.Connection, table: str) -> List[str]:
     cur = conn.cursor()
     cur.execute(f"PRAGMA table_info('{table}')")
     return [r[1] for r in cur.fetchall()]
 
-
 def _first_hit(cols: List[str], candidates: List[str]) -> Optional[str]:
-    """Return the first column from `cols` that matches any candidate case‑insensitively."""
+    """Return the first column from `cols` that matches any candidate case-insensitively."""
     look = {c.lower(): c for c in cols}
     for cand in candidates:
         if cand in look:
             return look[cand]
     return None
 
-
 def _choose_source_table(conn: sqlite3.Connection, ticker: str) -> Optional[Tuple[str, Dict[str, str]]]:
     """
-    Select the best table containing implied growth data for a given ticker.
-
-    The table must have a date column and at least one of the TTM or Forward
-    implied growth columns.  Among eligible tables, the one with the
-    greatest number of rows for the ticker is chosen.
-
-    Returns (table_name, column_mapping) where column_mapping maps keys:
-      'date', 'ticker' (optional), 'ig' (optional), 'ig_fwd' (optional),
-      'pe' (optional), 'pe_fwd' (optional), 'tnx' (optional)
+    Pick the best table containing implied growth for `ticker`.
+    Must have a date column + at least one of TTM/Forward IG.
+    Returns (table_name, column_mapping).
     """
     best: Optional[Tuple[str, Dict[str, str]]] = None
     best_rows: int = -1
@@ -112,7 +92,6 @@ def _choose_source_table(conn: sqlite3.Connection, ticker: str) -> Optional[Tupl
         pe_c    = _first_hit(cols, PE_TTM_COLS)
         pef_c   = _first_hit(cols, PE_FWD_COLS)
         tnx_c   = _first_hit(cols, TENY_COLS)
-        # need date and at least one implied growth column
         if not date_c or not (ig_c or igf_c):
             continue
         cur = conn.cursor()
@@ -124,20 +103,18 @@ def _choose_source_table(conn: sqlite3.Connection, ticker: str) -> Optional[Tupl
         if n > best_rows:
             best_rows = n
             best = (t, {
-                "date": date_c,
+                "date":   date_c,
                 "ticker": tick_c,
-                "ig": ig_c,
+                "ig":     ig_c,
                 "ig_fwd": igf_c,
-                "pe": pe_c,
+                "pe":     pe_c,
                 "pe_fwd": pef_c,
-                "tnx": tnx_c,
+                "tnx":    tnx_c,
             })
     return best
 
-
-
 def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
-    """Load implied growth and P/E series for a given ticker."""
+    """Load implied growth (and optional PE, 10y) for `ticker`."""
     pick = _choose_source_table(conn, ticker)
     if not pick:
         raise RuntimeError(
@@ -175,8 +152,6 @@ def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
     keep = [c for c in ["ig", "ig_fwd", "pe", "pe_fwd", "tnx"] if c in df.columns]
     return df[keep]
 
-
-
 def _resample_frames(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Return (daily, weekly, monthly) frames using last observation for each period."""
     d = df.copy()
@@ -184,25 +159,17 @@ def _resample_frames(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.D
     m = df.resample("M").last()
     return (d, w, m)
 
-
-
 def _percentile(series: pd.Series, value: float) -> float:
     s = series.dropna().values
     if len(s) == 0:
         return float("nan")
     return 100.0 * (np.sum(s <= value) / len(s))
 
-
-
 def _fmt_pct(x: Optional[float]) -> str:
     return "—" if (x is None or pd.isna(x)) else f"{x:.2f}%"
 
-
-
 def _fmt_num(x: Optional[float]) -> str:
     return "—" if (x is None or pd.isna(x)) else f"{x:.2f}"
-
-
 
 def _timeframe_slice(s: pd.Series, years: int) -> pd.Series:
     if s.dropna().empty:
@@ -210,8 +177,6 @@ def _timeframe_slice(s: pd.Series, years: int) -> pd.Series:
     end = s.index.max()
     start = end - pd.Timedelta(days=int(round(365.25 * years)))
     return s.loc[start:end]
-
-
 
 def _stats(s: pd.Series) -> Dict[str, float]:
     s = s.dropna()
@@ -226,10 +191,8 @@ def _stats(s: pd.Series) -> Dict[str, float]:
         pct=_percentile(s, latest),
     )
 
-
-
 def _timeframe_table_html(df_daily: pd.DataFrame) -> str:
-    """Build the 1/3/5/10‑year stats table as HTML."""
+    """Build the 1/3/5/10-year stats table as HTML."""
     timeframes = [1, 3, 5, 10]
     ttm = df_daily["ig"] if "ig" in df_daily.columns else pd.Series(dtype=float)
     fwd = df_daily["ig_fwd"] if "ig_fwd" in df_daily.columns else pd.Series(dtype=float)
@@ -278,8 +241,6 @@ def _timeframe_table_html(df_daily: pd.DataFrame) -> str:
     </div>
     """
 
-
-
 def _stat_lines(df_daily: pd.DataFrame) -> List[go.Scatter]:
     """Return horizontal avg and ±1σ lines for TTM and Forward implied growth."""
     traces: List[go.Scatter] = []
@@ -288,7 +249,7 @@ def _stat_lines(df_daily: pd.DataFrame) -> List[go.Scatter]:
         std = df_daily["ig"].std()
         x = df_daily.index
         traces += [
-            go.Scatter(x=x, y=[avg] * len(x), name="TTM Avg", mode="lines", line=dict(dash="dash")),
+            go.Scatter(x=x, y=[avg] * len(x), name="TTM Avg",  mode="lines", line=dict(dash="dash")),
             go.Scatter(x=x, y=[avg + std] * len(x), name="TTM +1σ", mode="lines", line=dict(dash="dot")),
             go.Scatter(x=x, y=[avg - std] * len(x), name="TTM -1σ", mode="lines", line=dict(dash="dot")),
         ]
@@ -297,13 +258,11 @@ def _stat_lines(df_daily: pd.DataFrame) -> List[go.Scatter]:
         std = df_daily["ig_fwd"].std()
         x = df_daily.index
         traces += [
-            go.Scatter(x=x, y=[avg] * len(x), name="Forward Avg", mode="lines", line=dict(dash="dash")),
+            go.Scatter(x=x, y=[avg] * len(x), name="Forward Avg",  mode="lines", line=dict(dash="dash")),
             go.Scatter(x=x, y=[avg + std] * len(x), name="Forward +1σ", mode="lines", line=dict(dash="dot")),
-            go.Scatter(x=x, y=[avg - std] * len(x), name="Forward -1σ", mode="lines", line=dict(dash"],"dot")),
+            go.Scatter(x=x, y=[avg - std] * len(x), name="Forward -1σ", mode="lines", line=dict(dash="dot")),
         ]
     return traces
-
-
 
 def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
     """Build the Plotly figure for implied growth."""
@@ -320,18 +279,22 @@ def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: 
                 hovertemplate="%{y:.2f}%<extra></extra>",
             ))
         return traces
+
     traces_d = mk_traces(df_d, "Daily")
     traces_w = mk_traces(df_w, "Weekly")
     traces_m = mk_traces(df_m, "Monthly")
     stat_lines = _stat_lines(df_d)
+
     fig = go.Figure(data=traces_d + traces_w + traces_m + stat_lines)
     n_d, n_w, n_m, n_s = len(traces_d), len(traces_w), len(traces_m), len(stat_lines)
-    # Visibility masks: default to weekly sampling with stat lines visible
+
+    # default visibility: Weekly + stat lines
     vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_s
     vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_s
     vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_s
     for i, v in enumerate(vis_weekly):
         fig.data[i].visible = v
+
     fig.update_layout(
         title=f"{ticker} — Implied Growth (TTM & Forward) — avg and ±1σ shown",
         margin=dict(l=50, r=50, t=60, b=40),
@@ -351,9 +314,6 @@ def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: 
         ),
         yaxis=dict(title="Implied Growth (%)", side="left"),
         template=None,
-    )
-    # Add toggle buttons for Daily/Weekly/Monthly
-    fig.update_layout(
         updatemenus=[
             dict(
                 type="buttons",
@@ -369,8 +329,6 @@ def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: 
         ]
     )
     return fig
-
-
 
 def _page_html(title: str, chart_html: str, timeframe_table_html: str) -> str:
     """Assemble the full HTML page with chart and stats table."""
@@ -405,26 +363,19 @@ def _page_html(title: str, chart_html: str, timeframe_table_html: str) -> str:
 </body>
 </html>"""
 
-
-
 def _write_page(out_path: str, html: str) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
-
-
 
 def _build_one(ticker: str, df: pd.DataFrame) -> None:
     """Build a single valuation page for a ticker."""
     df_d, df_w, df_m = _resample_frames(df)
     fig = _figure(df_d, df_w, df_m, ticker)
-    chart_html = to_html(fig, include_plotlyjs="cdn", f
-ull_html=False, default_height="600px")
+    chart_html = to_html(fig, include_plotlyjs="cdn", full_html=False, default_height="600px")
     tf_table = _timeframe_table_html(df_d)
     page = _page_html(PAGE_TITLES[ticker], chart_html, tf_table)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
-
-
 
 def generate_index_growth_pages(db_path: str = DB_PATH) -> None:
     """Entry point to generate pages for SPY and QQQ."""
@@ -439,7 +390,5 @@ def generate_index_growth_pages(db_path: str = DB_PATH) -> None:
     finally:
         conn.close()
 
-
-# Allow running this file directly as a script
 if __name__ == "__main__":
     generate_index_growth_pages()
