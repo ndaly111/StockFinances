@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# minor commit update to trigger commit
+
 """
 generate_segment_charts.py — SEGMENTS v2025-08-19 (axis-first, issuer-agnostic)
 
