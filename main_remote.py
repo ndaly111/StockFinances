@@ -30,9 +30,11 @@ from index_growth_table        import index_growth
 from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
-from generate_segment_charts   import generate_segment_charts_for_ticker
+from backfill_index_growth import backfill_index_growth
+from generate_index_growth_pages import generate_index_growth_pages
 
-# ────────────────────────────────────────────────────────────────────
+
+from generate_segment_charts import generate_segment_charts_for_ticker
 # Constants
 # ────────────────────────────────────────────────────────────────────
 TICKERS_FILE_PATH = "tickers.csv"
@@ -194,6 +196,10 @@ def mini_main():
         render_index_growth_charts()
 
         # Pages (includes segment table read-in)
+        backfill_index_growth()
+        generate_index_growth_pages()
+
+
         html_generator2(
             tickers,
             financial_data,

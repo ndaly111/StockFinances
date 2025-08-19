@@ -45,11 +45,84 @@
   <div class="chart-block">
     <h2>Segment Performance</h2>
     {{ ticker_data.segment_carousel_html | safe }}
+
     <div class="segment-table-wrapper">
-      <div class="table-wrap">
+      <!-- Injected multi-section HTML (contains multiple <h3> + tables) -->
+      <div id="segment-sections" class="table-wrap">
         {{ ticker_data.segment_table_html | safe }}
       </div>
+
+      <!-- Tabs + panes -->
+      <div id="seg-tabs" class="seg-tabs" aria-label="Segment sections"></div>
+      <div id="seg-panes"></div>
+
+      <div class="seg-note">Tip: Click a tab to switch between Products, Geography, Operating segments, and more. If tabs don’t appear, the full combined table is shown as a fallback.</div>
     </div>
+
+    <!-- Lightweight, inline tab builder -->
+    <script>
+      (function(){
+        const host = document.getElementById('segment-sections');
+        if(!host) return;
+
+        const h3s = Array.from(host.querySelectorAll('h3'));
+        if(h3s.length === 0) return; // nothing to tabify
+
+        const tabs = document.getElementById('seg-tabs');
+        const panes = document.getElementById('seg-panes');
+
+        const slug = s => (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+        const sections = [];
+        for (let i=0; i<h3s.length; i++) {
+          const titleEl = h3s[i];
+          const titleText = titleEl.textContent.trim() || `Section ${i+1}`;
+          const id = 'seg-' + (slug(titleText) || ('section-'+(i+1)));
+
+          // Collect nodes until next <h3> or end
+          const nodes = [];
+          let n = titleEl.nextSibling;
+          while (n && !(n.nodeType === 1 && n.tagName === 'H3')) {
+            nodes.push(n);
+            n = n.nextSibling;
+          }
+          sections.push({ id, titleText, nodes });
+        }
+
+        // Clear combined content
+        host.innerHTML = '';
+
+        // Build tabs + panes
+        sections.forEach((sec, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'seg-tab' + (idx===0 ? ' active' : '');
+          btn.type = 'button';
+          btn.textContent = sec.titleText;
+          btn.dataset.target = sec.id;
+          tabs.appendChild(btn);
+
+          const pane = document.createElement('div');
+          pane.className = 'seg-pane' + (idx===0 ? ' active' : '');
+          pane.id = sec.id;
+
+          const wrap = document.createElement('div');
+          wrap.className = 'table-wrap';
+          sec.nodes.forEach(n => wrap.appendChild(n));
+          pane.appendChild(wrap);
+
+          panes.appendChild(pane);
+        });
+
+        tabs.addEventListener('click', (e) => {
+          const btn = e.target.closest('.seg-tab');
+          if(!btn) return;
+          const target = btn.dataset.target;
+
+          tabs.querySelectorAll('.seg-tab').forEach(b => b.classList.toggle('active', b===btn));
+          panes.querySelectorAll('.seg-pane').forEach(p => p.classList.toggle('active', p.id === target));
+        });
+      })();
+    </script>
   </div>
   {% endif %}
 
