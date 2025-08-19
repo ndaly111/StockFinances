@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# html_generator2.py – retro fix: economic data + segment carousel/table + dividend
+# html_generator2.py – retro fix: economic data + segment carousel/table + dividend (with segment tabs)
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf
@@ -33,6 +33,17 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
         return open(path, encoding="utf-8").read()
     except FileNotFoundError:
         return ph
+
+def get_first_file(paths, placeholder="No data available") -> str:
+    """
+    Return the contents of the first existing file in `paths`; otherwise placeholder.
+    """
+    for p in paths:
+        try:
+            return open(p, encoding="utf-8").read()
+        except FileNotFoundError:
+            continue
+    return placeholder
 
 # Inject retro CSS + container override
 def inject_retro(html: str) -> str:
@@ -85,10 +96,18 @@ td{padding:4px;border:1px solid #8080FF}
 .segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
 .carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
 .carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
+
+/* === segment tabs === */
+.seg-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px}
+.seg-tab{cursor:pointer;padding:6px 10px;border:2px outset #C0C0C0;background:#EAEAFF;font-weight:bold;color:#000080}
+.seg-tab.active{background:#C0C0FF;border:2px inset #C0C0C0}
+.seg-pane{display:none}
+.seg-pane.active{display:block}
+.seg-note{font-size:12px;color:#444;margin:6px 0 8px}
 """
     create_template("static/css/retro.css", retro_css)
 
-    # Home page now includes Economic Data section
+    # Home page includes Economic Data section
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
@@ -158,7 +177,7 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # Ticker page (all legacy sections + segments + dividend)
+    # Ticker page (all legacy sections + segments tabs + dividend)
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
@@ -206,11 +225,84 @@ td{padding:4px;border:1px solid #8080FF}
   <div class="chart-block">
     <h2>Segment Performance</h2>
     {{ ticker_data.segment_carousel_html | safe }}
+
     <div class="segment-table-wrapper">
-      <div class="table-wrap">
+      <!-- Injected multi-section HTML (contains multiple <h3> + tables) -->
+      <div id="segment-sections" class="table-wrap">
         {{ ticker_data.segment_table_html | safe }}
       </div>
+
+      <!-- Tabs + panes -->
+      <div id="seg-tabs" class="seg-tabs" aria-label="Segment sections"></div>
+      <div id="seg-panes"></div>
+
+      <div class="seg-note">Tip: Click a tab to switch between Products, Geography, Operating segments, and more. If tabs don’t appear, the full combined table is shown as a fallback.</div>
     </div>
+
+    <!-- Lightweight, inline tab builder -->
+    <script>
+      (function(){
+        const host = document.getElementById('segment-sections');
+        if(!host) return;
+
+        const h3s = Array.from(host.querySelectorAll('h3'));
+        if(h3s.length === 0) return; // nothing to tabify
+
+        const tabs = document.getElementById('seg-tabs');
+        const panes = document.getElementById('seg-panes');
+
+        const slug = s => (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+        const sections = [];
+        for (let i=0; i<h3s.length; i++) {
+          const titleEl = h3s[i];
+          const titleText = titleEl.textContent.trim() || `Section ${i+1}`;
+          const id = 'seg-' + (slug(titleText) || ('section-'+(i+1)));
+
+          // Collect nodes until next <h3> or end
+          const nodes = [];
+          let n = titleEl.nextSibling;
+          while (n && !(n.nodeType === 1 && n.tagName === 'H3')) {
+            nodes.push(n);
+            n = n.nextSibling;
+          }
+          sections.push({ id, titleText, nodes });
+        }
+
+        // Clear combined content
+        host.innerHTML = '';
+
+        // Build tabs + panes
+        sections.forEach((sec, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'seg-tab' + (idx===0 ? ' active' : '');
+          btn.type = 'button';
+          btn.textContent = sec.titleText;
+          btn.dataset.target = sec.id;
+          tabs.appendChild(btn);
+
+          const pane = document.createElement('div');
+          pane.className = 'seg-pane' + (idx===0 ? ' active' : '');
+          pane.id = sec.id;
+
+          const wrap = document.createElement('div');
+          wrap.className = 'table-wrap';
+          sec.nodes.forEach(n => wrap.appendChild(n));
+          pane.appendChild(wrap);
+
+          panes.appendChild(pane);
+        });
+
+        tabs.addEventListener('click', (e) => {
+          const btn = e.target.closest('.seg-tab');
+          if(!btn) return;
+          const target = btn.dataset.target;
+
+          tabs.querySelectorAll('.seg-tab').forEach(b => b.classList.toggle('active', b===btn));
+          panes.querySelectorAll('.seg-pane').forEach(p => p.classList.toggle('active', p.id === target));
+        });
+      })();
+    </script>
   </div>
   {% endif %}
 
@@ -376,7 +468,14 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "expense_yoy_html":              get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_expense_change.html"),
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
-                "segment_table_html":            get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table.html", "No segment data available."),
+                "segment_table_html":            get_first_file(
+                                                    [
+                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",  # canonical
+                                                        f"{charts_dir_fs}/{t}/segments_table.html",      # alias
+                                                        f"{charts_dir_fs}/{t}/segment_performance.html", # alias
+                                                    ],
+                                                    "No segment data available."
+                                                ),
 
                 # Images (web paths)
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
