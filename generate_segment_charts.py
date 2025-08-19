@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate_segment_charts.py — SEGMENTS v2025-08-12d (multi‑view + AxisType, dynamic sections)
+generate_segment_charts.py — SEGMENTS v2025-08-12e (multi-view + AxisType, dynamic sections)
 
 Key features:
 • One shared y-axis across all segment charts (handles negatives).
@@ -13,12 +13,13 @@ Key features:
 • Cleans up duplicate/legacy PNGs.
 
 NEW vs prior:
-• Uses extractor-provided AxisType (XBRL axes) when available.
-• Falls back to robust label heuristics when AxisType is absent.
-• Optional per‑ticker overrides via `segment_typing.csv`.
+• Uses extractor-provided AxisType (XBRL axes) when available; falls back to heuristics otherwise.
+• Optional per-ticker overrides via `segment_typing.csv`.
 • Stable schema (keeps OpIncome columns; shows “–” when missing).
 • Wider elimination/corporate/other filtering; drop negative latest revenue.
 • Dynamic section rendering (Products, Geography, Operating, Channels, Customers, Other).
+• Debug banner lists which sections were actually generated.
+• If product data is missing, shows an explanatory note inside the Products section.
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
 
-VERSION = "SEGMENTS v2025-08-12d"
+VERSION = "SEGMENTS v2025-08-12e"
 
 # ─────────────────────────── utilities ───────────────────────────
 
@@ -126,7 +127,7 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
 def _safe_seg_filename(seg: str) -> str:
     return seg.replace("/", "_").replace(" ", "_")
 
-# ───────────────────── optional per‑ticker overrides ─────────────────────
+# ───────────────────── optional per-ticker overrides ─────────────────────
 
 def _load_segment_typing(path: Path = Path("segment_typing.csv")) -> pd.DataFrame:
     if not path.is_file():
@@ -147,7 +148,6 @@ def _load_segment_typing(path: Path = Path("segment_typing.csv")) -> pd.DataFram
 
 # ───────────────────── detection: geography vs product vs other ──────────
 
-# Expanded AxisType → SegType mapping (covers Apple, Tesla, and many others)
 AXIS_TO_SEGTYPE = {
     # geography
     "GeographicalAreasAxis": "geo",
@@ -178,7 +178,6 @@ AXIS_TO_SEGTYPE = {
     "SignificantCustomersAxis": "customer",
 }
 
-# Heuristics when AxisType is absent
 _GEO_WORDS = re.compile(
     r"(americas|north america|latin america|south america|europe|emea|middle east|"
     r"africa|apac|asia pacific|greater china|china|japan|india|australia|canada|uk|korea|taiwan|"
@@ -198,7 +197,6 @@ def _infer_segtype_by_label(seg: str) -> str:
         return "operating"
     return "other"
 
-# Section order & titles (dynamic rendering)
 SECTION_ORDER  = ["product", "geo", "operating", "channel", "customer", "other"]
 SECTION_TITLES = {
     "product":   "Products / Categories",
@@ -224,17 +222,16 @@ def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> 
     except Exception as e:
         print(f"[{VERSION}] WARN: cleanup in {out_dir} hit an issue: {e}")
 
-# hide rows like Eliminations / Intersegment / Unallocated / Corporate & Other
 HIDE_RE = re.compile(
     r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
     r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
     re.IGNORECASE,
 )
 
-# ───────────────────── main per‑ticker routine ────────────────────
+# ───────────────────── main per-ticker routine ────────────────────
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
-    """Generate charts and a combined HTML that can include multiple segment tables."""
+    """Generate charts + combined HTML with multiple segment tables."""
     try:
         df = get_segment_data(ticker)
     except Exception as fetch_err:
@@ -266,12 +263,13 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     if _op_all_missing:
         df["OpIncome"] = pd.NA
 
-    # SegType: prefer AxisType from extractor; fall back to label heuristics; then apply overrides
+    # SegType: prefer AxisType; fall back to label; then apply overrides
     if "AxisType" in df.columns:
-        axis_norm = df["AxisType"].astype(str).str.replace(r".*:(?=.+$)", "", regex=True)  # strip ns prefixes
+        axis_norm = df["AxisType"].astype(str).str.replace(r".*:(?=.+$)", "", regex=True)
         df["SegType"] = axis_norm.map(AXIS_TO_SEGTYPE)
     df["SegType"] = df.get("SegType").fillna(df["Segment"].apply(_infer_segtype_by_label))
 
+    # Optional overrides
     overrides = _load_segment_typing()
     if not overrides.empty:
         temp = df.copy()
@@ -279,7 +277,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         temp = temp.merge(overrides, on=["Ticker","Segment"], how="left", suffixes=("","_ovr"))
         df["SegType"] = temp["SegType_ovr"].fillna(df["SegType"])
 
-    # Shared y-range across ALL segments for charts (handles negatives)
+    # Shared y-range across ALL segments (handles negatives)
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
         min_y, max_y = 0.0, 0.0
@@ -295,7 +293,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     years_tbl = _last3_plus_ttm(df["Year"].tolist())
     segments = sorted(set(df["Segment"].tolist()))
 
-    # ── Charts per segment (y in $B) ──
+    # Charts per segment (y in $B)
     written_pngs: List[str] = []
     for seg in segments:
         seg_df = df[df["Segment"] == seg]
@@ -329,13 +327,14 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     _cleanup_segment_pngs(out_dir, ticker, written_pngs)
 
-    # ── Generic pivot builder for a subset ──
+    # Pivot helper limited to the table years
     def pv(col, sub_df):
         p = sub_df[sub_df["Year"].isin(years_tbl)].pivot_table(
             index="Segment", columns="Year", values=col, aggfunc="sum"
         )
         return p.reindex(columns=[y for y in years_tbl if y in p.columns])
 
+    # Single-table builder
     def build_table(sub_df, title_text: str) -> Optional[str]:
         if sub_df.empty:
             return None
@@ -349,26 +348,32 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 rev_p = rev_p[rev_p[sort_col].notna()]
             oi_p = oi_p.reindex(index=rev_p.index)
 
+            # drop elimination / reconciliation / intersegment / unallocated / corporate other
             hide_mask = rev_p.index.to_series().apply(lambda s: bool(HIDE_RE.search(str(s))))
             rev_p = rev_p[~hide_mask]
             oi_p  = oi_p.reindex(index=rev_p.index)
 
+            # drop negative latest revenue
             neg_mask = rev_p[sort_col] < 0
             rev_p = rev_p[~neg_mask]
             oi_p  = oi_p.reindex(index=rev_p.index)
 
+            # sort by latest revenue
             rev_p = rev_p.sort_values(by=sort_col, ascending=False)
             oi_p  = oi_p.loc[rev_p.index]
 
+        # % mix on filtered data
         pct_series = None
         if "TTM" in rev_p.columns:
             total_ttm = rev_p["TTM"].sum(skipna=True)
             if total_ttm:
                 pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
+        # scale
         max_val = pd.concat([rev_p, oi_p]).abs().max().max()
         div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
+        # columns (stable)
         cols: List[Tuple[str, str]] = []
         for y in [c for c in years_tbl if c != "TTM"]:
             cols += [(y, "Rev"), (y, "OI")]
@@ -383,6 +388,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         if pct_series is not None:
             out["% of Total (TTM)"] = pct_series
 
+        # format
         for c in out.columns:
             if c == "% of Total (TTM)":
                 out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
@@ -397,20 +403,33 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         sec_title = f"<h3 style='margin:10px 0 6px'>{title_text}</h3>"
         return sec_title + f"\n<div class='table-wrap'>{html}</div>\n"
 
-    # ── Build sections dynamically for any segment type present ──
+    # Build sections dynamically
     sections: List[str] = []
+    # Track which segments actually produced content (for debug banner)
+    present_flags = {k: False for k in SECTION_ORDER}
+
     for segtype in SECTION_ORDER:
         sub = df[df["SegType"] == segtype].copy()
-        if sub.empty:
-            continue
         title = SECTION_TITLES.get(segtype, segtype.title())
-        html = build_table(sub, title)
+
+        html = build_table(sub, title) if not sub.empty else None
         if html:
             sections.append(html)
+            present_flags[segtype] = True
+        elif segtype == "product":
+            # Friendly note if no product breakdown is tagged in XBRL
+            sections.append(
+                "<h3>Products / Categories</h3>"
+                "<div class='table-wrap'><p style='font-size:14px;margin:8px 0'>"
+                "No product breakdown was available from the company’s XBRL facts. "
+                "Some filers report product/category only in narrative tables, not as tagged XBRL facts."
+                "</p></div>"
+            )
 
     if not sections:
         sections.append("<p>No usable segment pivots after filtering.</p>")
 
+    # CSS (once) + caption
     css = """
 <style>
 .table-wrap{overflow:auto; max-width:100%;}
@@ -430,7 +449,20 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         f'<div class="table-note">{VERSION} · {stamp} — Each section uses a single scale. '
         f'TTM is <b>bold</b>. “% of Total (TTM)” uses the visible rows in that section.</div>'
     )
-    table_content = f"<!-- {VERSION} -->\n{css}\n{caption}\n" + "\n<hr/>\n".join(sections)
+
+    # Debug banner listing which sections were generated
+    built_labels = [SECTION_TITLES[k] for k, v in present_flags.items() if v]
+    debug_note = (
+        "<div style='font-size:12px;color:#666;margin:8px 0'>"
+        f"Sections generated: {', '.join(built_labels) if built_labels else 'None'}."
+        " If products are missing, they may not be available in XBRL for this filer.</div>"
+    )
+
+    table_content = (
+        f"<!-- {VERSION} -->\n{css}\n{caption}\n"
+        + "\n<hr/>\n".join(sections)
+        + "\n" + debug_note
+    )
 
     canonical = out_dir / f"{ticker}_segments_table.html"
     aliases = [
