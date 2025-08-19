@@ -195,8 +195,8 @@ def mini_main():
         generate_earnings_tables()
         render_index_growth_charts()
 
-            # Pages (includes segment table read-in)
-            backfill_index_growth()
+        # Pages (includes segment table read-in)
+        backfill_index_growth()
         generate_index_growth_pages()
 
 
