@@ -36,13 +36,15 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
 
 def get_first_file(paths, placeholder="No data available") -> str:
     """
-    Return the contents of the first existing file in `paths`; otherwise placeholder.
+    Return contents of the first existing file in `paths`. Each entry may be a literal path or a glob pattern.
     """
+    import glob
     for p in paths:
-        try:
-            return open(p, encoding="utf-8").read()
-        except FileNotFoundError:
-            continue
+        for m in glob.glob(p):
+            try:
+                return open(m, encoding="utf-8").read()
+            except FileNotFoundError:
+                continue
     return placeholder
 
 # Inject retro CSS + container override
@@ -227,7 +229,7 @@ td{padding:4px;border:1px solid #8080FF}
     {{ ticker_data.segment_carousel_html | safe }}
 
     <div class="segment-table-wrapper">
-      <!-- Injected multi-section HTML from generator (may contain caption + multiple <h3> + tables) -->
+      <!-- Injected multi-section HTML (may include caption + multiple <h3> + tables) -->
       <div id="segment-sections">
         {{ ticker_data.segment_table_html | safe }}
       </div>
@@ -251,11 +253,10 @@ td{padding:4px;border:1px solid #8080FF}
 
         if(h3s.length === 0) return; // no <h3> → leave combined content as-is
 
-        // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/note)
+        // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/unit note)
         const firstH3Index = allKids.indexOf(h3s[0]);
         const prefaceNodes = firstH3Index > 0 ? allKids.slice(0, firstH3Index) : [];
 
-        // Helper
         const slug = s => (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
         // Build sections: for each <h3>, collect subsequent siblings until the next <h3> or end
@@ -277,7 +278,7 @@ td{padding:4px;border:1px solid #8080FF}
         // Clear original combined content
         host.innerHTML = '';
 
-        // Re-append preface nodes at the top (so the caption/unit note remains visible)
+        // Re-append preface nodes at the top
         if(prefaceNodes.length) {
           const pre = document.createElement('div');
           pre.className = 'table-wrap';
@@ -303,7 +304,7 @@ td{padding:4px;border:1px solid #8080FF}
           pane.className = 'seg-pane' + (idx===0 ? ' active' : '');
           pane.id = sec.id;
 
-          // If generator already wrapped the table in .table-wrap, reuse it (avoid double nesting)
+          // If generator already wrapped the table in .table-wrap, reuse it
           const existingWrap = sec.nodes.find(n => n.nodeType === 1 && n.classList && n.classList.contains('table-wrap'));
           if (existingWrap) {
             pane.appendChild(existingWrap);
@@ -389,9 +390,7 @@ def generate_dashboard_table(raw_rows):
         df[col + "_disp"] = num.map(lambda x: f"{x:.1f}" if pd.notnull(x) else "–")
 
     df["Implied-Growth Pctile_num"]  = df["Percentile"]
-    df["Implied-Growth Pctile_disp"] = df["Percentile"].map(
-        lambda x: f"{x:.0f}" if pd.notnull(x) else "–"
-    )
+    df["Implied-Growth Pctile_disp"] = df["Percentile"].map(lambda x: f"{x:.0f}" if pd.notnull(x) else "–")
     df.drop(columns="Percentile", inplace=True)
 
     def link(t):
@@ -445,10 +444,10 @@ def generate_dashboard_table(raw_rows):
         "Nicks_TTM_Value_Median":        ttm.median(),
         "Nicks_Forward_Value_Average":   fwd.mean(),
         "Nicks_Forward_Value_Median":    fwd.median(),
-        "Finviz_TTM_Value_Average":      fttm.mean() if not fttm.empty else None,
-        "Finviz_TTM_Value_Median":       fttm.median() if not fttm.empty else None,
-        "Finviz_Forward_Value_Average":  ffwd.mean() if not ffwd.empty else None,
-        "Finviz_Forward_Value_Median":   ffwd.median() if not ffwd.empty else None
+        "Finviz_TTM Value_Average":      fttm.mean() if not fttm.empty else None,
+        "Finviz_TTM Value_Median":       fttm.median() if not fttm.empty else None,
+        "Finviz_Forward Value_Average":  ffwd.mean() if not fttm.empty else None,
+        "Finviz_Forward Value_Median":   ffwd.median() if not fttm.empty else None
     }
 
 # ───────── ancillary page builders (retro-injected) ───────
@@ -467,8 +466,7 @@ def render_spy_qqq_growth_pages():
 
 def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
     """
-    Filesystem reads: charts_dir_fs (e.g., 'charts')
-    Web <img src> from /pages/*: '../charts/...'
+    Filesystem reads: charts_dir_fs (e.g., 'charts'); web <img src> from /pages/*: '../charts/...'
     """
     charts_dir_web = "../" + charts_dir_fs
     ensure_directory_exists("pages")
@@ -493,11 +491,13 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
                 "segment_table_html":            get_first_file(
                                                     [
-                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",  # canonical
-                                                        f"{charts_dir_fs}/{t}/segments_table.html",      # alias
-                                                        f"{charts_dir_fs}/{t}/segment_performance.html", # alias
+                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",   # canonical
+                                                        f"{charts_dir_fs}/{t}/segments_table.html",       # alias
+                                                        f"{charts_dir_fs}/{t}/segment_performance.html",  # alias
+                                                        f"{charts_dir_fs}/{t}/*segments_table.html",      # variant glob
+                                                        f"{charts_dir_fs}/*{t}*_segments_table.html",     # root stray fallback
                                                     ],
-                                                    "No segment data available."
+                                                    f"No segment data available for {t}."
                                                 ),
 
                 # Images (web paths)
