@@ -36,13 +36,15 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
 
 def get_first_file(paths, placeholder="No data available") -> str:
     """
-    Return the contents of the first existing file in `paths`; otherwise placeholder.
+    Return the contents of the first existing file in `paths`; supports glob patterns.
     """
+    import glob
     for p in paths:
-        try:
-            return open(p, encoding="utf-8").read()
-        except FileNotFoundError:
-            continue
+        for m in glob.glob(p):
+            try:
+                return open(m, encoding="utf-8").read()
+            except FileNotFoundError:
+                continue
     return placeholder
 
 # Inject retro CSS + container override
@@ -212,15 +214,6 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
   </div>
 
-  <div class="chart-block">
-    <h2>Expenses</h2>
-    <img class="chart-img chart-block" src="{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expenses">
-    <img class="chart-img chart-block" src="{{ ticker_data.expense_percent_chart_path }}" alt="Expenses % of Revenue">
-    <div class="table-wrap">{{ ticker_data.expense_abs_html | safe }}</div>
-    <div class="table-wrap">{{ ticker_data.expense_yoy_html | safe }}</div>
-    <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
-  </div>
-
   {% if ticker_data.segment_carousel_html or ticker_data.segment_table_html %}
   <div class="chart-block">
     <h2>Segment Performance</h2>
@@ -245,20 +238,16 @@ td{padding:4px;border:1px solid #8080FF}
         const host = document.getElementById('segment-sections');
         if(!host) return;
 
-        // Capture children before mutation
-        const allKids = Array.from(host.childNodes);
-        const h3s = allKids.filter(n => n.nodeType === 1 && n.tagName === 'H3');
+        // Snapshot of original children (to preserve caption/preface before first <h3>)
+        const kids = Array.from(host.childNodes);
+        const h3s  = kids.filter(n => n.nodeType === 1 && n.tagName === 'H3');
+        if(h3s.length === 0) return; // nothing to tabify
 
-        if(h3s.length === 0) return; // no <h3> → leave combined content as-is
+        const firstH3Index = kids.indexOf(h3s[0]);
+        const prefaceNodes = firstH3Index > 0 ? kids.slice(0, firstH3Index) : [];
 
-        // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/note)
-        const firstH3Index = allKids.indexOf(h3s[0]);
-        const prefaceNodes = firstH3Index > 0 ? allKids.slice(0, firstH3Index) : [];
-
-        // Helper
         const slug = s => (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
-        // Build sections: for each <h3>, collect subsequent siblings until the next <h3> or end
         const sections = [];
         for (let i=0; i<h3s.length; i++) {
           const titleEl = h3s[i];
@@ -274,10 +263,9 @@ td{padding:4px;border:1px solid #8080FF}
           sections.push({ id, titleText, nodes });
         }
 
-        // Clear original combined content
+        // Clear and rebuild: preface + tabs + panes
         host.innerHTML = '';
 
-        // Re-append preface nodes at the top (so the caption/unit note remains visible)
         if(prefaceNodes.length) {
           const pre = document.createElement('div');
           pre.className = 'table-wrap';
@@ -288,7 +276,6 @@ td{padding:4px;border:1px solid #8080FF}
         const tabs = document.getElementById('seg-tabs');
         const panes = document.getElementById('seg-panes');
 
-        // Construct tabs + panes
         sections.forEach((sec, idx) => {
           // tab
           const btn = document.createElement('button');
@@ -303,7 +290,7 @@ td{padding:4px;border:1px solid #8080FF}
           pane.className = 'seg-pane' + (idx===0 ? ' active' : '');
           pane.id = sec.id;
 
-          // If generator already wrapped the table in .table-wrap, reuse it (avoid double nesting)
+          // Reuse existing .table-wrap if present; otherwise wrap nodes
           const existingWrap = sec.nodes.find(n => n.nodeType === 1 && n.classList && n.classList.contains('table-wrap'));
           if (existingWrap) {
             pane.appendChild(existingWrap);
@@ -316,11 +303,11 @@ td{padding:4px;border:1px solid #8080FF}
           panes.appendChild(pane);
         });
 
-        // Toggle behavior
         tabs.addEventListener('click', (e) => {
           const btn = e.target.closest('.seg-tab');
           if(!btn) return;
           const target = btn.dataset.target;
+
           tabs.querySelectorAll('.seg-tab').forEach(b => b.classList.toggle('active', b===btn));
           panes.querySelectorAll('.seg-pane').forEach(p => p.classList.toggle('active', p.id === target));
         });
@@ -447,8 +434,8 @@ def generate_dashboard_table(raw_rows):
         "Nicks_Forward_Value_Median":    fwd.median(),
         "Finviz_TTM_Value_Average":      fttm.mean() if not fttm.empty else None,
         "Finviz_TTM_Value_Median":       fttm.median() if not fttm.empty else None,
-        "Finviz_Forward_Value_Average":  ffwd.mean() if not ffwd.empty else None,
-        "Finviz_Forward_Value_Median":   ffwd.median() if not ffwd.empty else None
+        "Finviz_Forward_Value_Average":  ffwd.mean() if not fttm.empty else None,
+        "Finviz_Forward_Value_Median":   ffwd.median() if not fttm.empty else None
     }
 
 # ───────── ancillary page builders (retro-injected) ───────
@@ -493,11 +480,13 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
                 "segment_table_html":            get_first_file(
                                                     [
-                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",  # canonical
-                                                        f"{charts_dir_fs}/{t}/segments_table.html",      # alias
-                                                        f"{charts_dir_fs}/{t}/segment_performance.html", # alias
+                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",   # canonical
+                                                        f"{charts_dir_fs}/{t}/segments_table.html",       # alias
+                                                        f"{charts_dir_fs}/{t}/segment_performance.html",  # alias
+                                                        f"{charts_dir_fs}/{t}/*segments_table.html",      # future variants
+                                                        f"{charts_dir_fs}/*{t}*_segments_table.html",     # root stray
                                                     ],
-                                                    "No segment data available."
+                                                    f"No segment data available for {t}."
                                                 ),
 
                 # Images (web paths)
