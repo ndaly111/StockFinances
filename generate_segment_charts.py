@@ -56,11 +56,9 @@ def _humanize_segment_name(raw: str) -> str:
     """Clean noisy XBRL labels to human readable."""
     if not isinstance(raw, str) or not raw:
         return str(raw)
-    # Remove trailing Member/Segment and join spaced initials (e.g., "U S" -> "US")
     name = str(raw)
     name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)  # join spaced initials
-    # Split CamelCase → words
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
     title = " ".join(w if w.isupper() else w.capitalize() for w in name.split())
     return title
@@ -158,17 +156,25 @@ HIDE_RE = re.compile(
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     """Generate per-axis sections (generic), charts, and compact pivot HTML."""
+    # Safety: normalize output dir to charts/<TICKER>
+    out_dir = Path(out_dir)
+    charts_root = Path("charts")
+    canonical = charts_root / ticker
+    try:
+        if out_dir.resolve().name.upper() != ticker.upper():
+            out_dir = canonical
+    except Exception:
+        out_dir = canonical
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     try:
         df = get_segment_data(ticker)
     except Exception as fetch_err:
         print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
-        ensure_dir(out_dir)
         (out_dir / f"{ticker}_segments_table.html").write_text(
             f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>", encoding="utf-8"
         )
         return
-
-    ensure_dir(out_dir)
 
     if df is None or df.empty:
         (out_dir / f"{ticker}_segments_table.html").write_text(
@@ -296,7 +302,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
         # Build columns: Year Rev, Year OI … TTM Rev, TTM OI
         cols: List[Tuple[str, str]] = []
-        for y in [c for c in _last3_plus_ttm(list(rev_p.columns)) if c != "TTM"]:
+        order_cols = [c for c in _last3_plus_ttm(list(rev_p.columns)) if c != "TTM"]
+        for y in order_cols:
             cols += [(y, "Rev"), (y, "OI")]
         if "TTM" in rev_p.columns:
             cols += [("TTM", "Rev"), ("TTM", "OI")]
