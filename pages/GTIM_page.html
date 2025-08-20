@@ -21,7 +21,7 @@
         }
     </style>
     <table>
-    <tr><th>Close Price</th><th>Market Cap</th><th>P/E Ratio</th><th>Forward P/E Ratio</th><th>Implied Growth*</th><th>Implied Forward Growth*</th><th>P/B Ratio</th></tr><tr><td>$1.73</td><td>$18.25M</td><td>14.4</td><td>86.5</td><td>8.0%</td><td>28.4%</td><td>0.6</td></tr></table>
+    <tr><th>Close Price</th><th>Market Cap</th><th>P/E Ratio</th><th>Forward P/E Ratio</th><th>Implied Growth*</th><th>Implied Forward Growth*</th><th>P/B Ratio</th></tr><tr><td>$1.69</td><td>$17.83M</td><td>14.1</td><td>84.5</td><td>7.8%</td><td>28.1%</td><td>0.5</td></tr></table>
   </div>
 
   <div class="chart-block">
@@ -269,7 +269,7 @@
 </div>
 
     <div class="segment-table-wrapper">
-      <!-- Injected multi-section HTML from generator (may contain caption + multiple <h3> + tables) -->
+      <!-- Injected multi-section HTML (may include caption + multiple <h3> + tables) -->
       <div id="segment-sections">
         <p>No segment data available for GTIM.</p>
       </div>
@@ -293,11 +293,10 @@
 
         if(h3s.length === 0) return; // no <h3> → leave combined content as-is
 
-        // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/note)
+        // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/unit note)
         const firstH3Index = allKids.indexOf(h3s[0]);
         const prefaceNodes = firstH3Index > 0 ? allKids.slice(0, firstH3Index) : [];
 
-        // Helper
         const slug = s => (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
         // Build sections: for each <h3>, collect subsequent siblings until the next <h3> or end
@@ -319,7 +318,7 @@
         // Clear original combined content
         host.innerHTML = '';
 
-        // Re-append preface nodes at the top (so the caption/unit note remains visible)
+        // Re-append preface nodes at the top
         if(prefaceNodes.length) {
           const pre = document.createElement('div');
           pre.className = 'table-wrap';
@@ -345,7 +344,7 @@
           pane.className = 'seg-pane' + (idx===0 ? ' active' : '');
           pane.id = sec.id;
 
-          // If generator already wrapped the table in .table-wrap, reuse it (avoid double nesting)
+          // If generator already wrapped the table in .table-wrap, reuse it
           const existingWrap = sec.nodes.find(n => n.nodeType === 1 && n.classList && n.classList.contains('table-wrap'));
           if (existingWrap) {
             pane.appendChild(existingWrap);
@@ -375,48 +374,48 @@
     <h2>Balance Sheet</h2>
     <img class="chart-img chart-block" src="../charts/GTIM_balance_sheet_chart.png" alt="Balance Sheet">
     <div class="table-wrap"><style type="text/css">
-#T_b9eca_row5_col1 {
+#T_8d2ff_row5_col1 {
   color: red;
 }
 </style>
-<table id="T_b9eca">
+<table id="T_8d2ff">
   <thead>
     <tr>
       <th class="blank level0" >&nbsp;</th>
-      <th id="T_b9eca_level0_col0" class="col_heading level0 col0" >Metric</th>
-      <th id="T_b9eca_level0_col1" class="col_heading level0 col1" >Value</th>
+      <th id="T_8d2ff_level0_col0" class="col_heading level0 col0" >Metric</th>
+      <th id="T_8d2ff_level0_col1" class="col_heading level0 col1" >Value</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th id="T_b9eca_level0_row0" class="row_heading level0 row0" >0</th>
-      <td id="T_b9eca_row0_col0" class="data row0 col0" >Total Assets</td>
-      <td id="T_b9eca_row0_col1" class="data row0 col1" >$87M</td>
+      <th id="T_8d2ff_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_8d2ff_row0_col0" class="data row0 col0" >Total Assets</td>
+      <td id="T_8d2ff_row0_col1" class="data row0 col1" >$87M</td>
     </tr>
     <tr>
-      <th id="T_b9eca_level0_row1" class="row_heading level0 row1" >1</th>
-      <td id="T_b9eca_row1_col0" class="data row1 col0" >Cash</td>
-      <td id="T_b9eca_row1_col1" class="data row1 col1" >$3M</td>
+      <th id="T_8d2ff_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_8d2ff_row1_col0" class="data row1 col0" >Cash</td>
+      <td id="T_8d2ff_row1_col1" class="data row1 col1" >$3M</td>
     </tr>
     <tr>
-      <th id="T_b9eca_level0_row2" class="row_heading level0 row2" >2</th>
-      <td id="T_b9eca_row2_col0" class="data row2 col0" >Total Liabilities</td>
-      <td id="T_b9eca_row2_col1" class="data row2 col1" >$55M</td>
+      <th id="T_8d2ff_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_8d2ff_row2_col0" class="data row2 col0" >Total Liabilities</td>
+      <td id="T_8d2ff_row2_col1" class="data row2 col1" >$55M</td>
     </tr>
     <tr>
-      <th id="T_b9eca_level0_row3" class="row_heading level0 row3" >3</th>
-      <td id="T_b9eca_row3_col0" class="data row3 col0" >Total Debt</td>
-      <td id="T_b9eca_row3_col1" class="data row3 col1" >$45M</td>
+      <th id="T_8d2ff_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_8d2ff_row3_col0" class="data row3 col0" >Total Debt</td>
+      <td id="T_8d2ff_row3_col1" class="data row3 col1" >$45M</td>
     </tr>
     <tr>
-      <th id="T_b9eca_level0_row4" class="row_heading level0 row4" >4</th>
-      <td id="T_b9eca_row4_col0" class="data row4 col0" >Total Equity</td>
-      <td id="T_b9eca_row4_col1" class="data row4 col1" >$32M</td>
+      <th id="T_8d2ff_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_8d2ff_row4_col0" class="data row4 col0" >Total Equity</td>
+      <td id="T_8d2ff_row4_col1" class="data row4 col1" >$32M</td>
     </tr>
     <tr>
-      <th id="T_b9eca_level0_row5" class="row_heading level0 row5" >5</th>
-      <td id="T_b9eca_row5_col0" class="data row5 col0" >Debt to Equity Ratio</td>
-      <td id="T_b9eca_row5_col1" class="data row5 col1" >1.43</td>
+      <th id="T_8d2ff_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_8d2ff_row5_col0" class="data row5 col0" >Debt to Equity Ratio</td>
+      <td id="T_8d2ff_row5_col1" class="data row5 col1" >1.43</td>
     </tr>
   </tbody>
 </table>
