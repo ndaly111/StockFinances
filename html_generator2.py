@@ -221,14 +221,14 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
   </div>
 
-  {% if ticker_data.segment_carousel_html %}
+  {% if ticker_data.segment_carousel_html or ticker_data.segment_table_html %}
   <div class="chart-block">
     <h2>Segment Performance</h2>
     {{ ticker_data.segment_carousel_html | safe }}
 
     <div class="segment-table-wrapper">
-      <!-- Injected multi-section HTML (contains multiple <h3> + tables) -->
-      <div id="segment-sections" class="table-wrap">
+      <!-- Injected multi-section HTML from generator (may contain caption + multiple <h3> + tables) -->
+      <div id="segment-sections">
         {{ ticker_data.segment_table_html | safe }}
       </div>
 
@@ -236,7 +236,7 @@ td{padding:4px;border:1px solid #8080FF}
       <div id="seg-tabs" class="seg-tabs" aria-label="Segment sections"></div>
       <div id="seg-panes"></div>
 
-      <div class="seg-note">Tip: Click a tab to switch between Products, Geography, Operating segments, and more. If tabs don’t appear, the full combined table is shown as a fallback.</div>
+      <div class="seg-note">Tip: Click a tab to switch between Products / Services, Regions, Operating Segments, etc. If tabs don’t appear, the full combined table is shown.</div>
     </div>
 
     <!-- Lightweight, inline tab builder -->
@@ -245,21 +245,26 @@ td{padding:4px;border:1px solid #8080FF}
         const host = document.getElementById('segment-sections');
         if(!host) return;
 
-        const h3s = Array.from(host.querySelectorAll('h3'));
-        if(h3s.length === 0) return; // nothing to tabify
+        // Capture children before mutation
+        const allKids = Array.from(host.childNodes);
+        const h3s = allKids.filter(n => n.nodeType === 1 && n.tagName === 'H3');
 
-        const tabs = document.getElementById('seg-tabs');
-        const panes = document.getElementById('seg-panes');
+        if(h3s.length === 0) return; // no <h3> → leave combined content as-is
 
+        // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/note)
+        const firstH3Index = allKids.indexOf(h3s[0]);
+        const prefaceNodes = firstH3Index > 0 ? allKids.slice(0, firstH3Index) : [];
+
+        // Helper
         const slug = s => (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
+        // Build sections: for each <h3>, collect subsequent siblings until the next <h3> or end
         const sections = [];
         for (let i=0; i<h3s.length; i++) {
           const titleEl = h3s[i];
-          const titleText = titleEl.textContent.trim() || `Section ${i+1}`;
+          const titleText = (titleEl.textContent || '').trim() || `Section ${i+1}`;
           const id = 'seg-' + (slug(titleText) || ('section-'+(i+1)));
 
-          // Collect nodes until next <h3> or end
           const nodes = [];
           let n = titleEl.nextSibling;
           while (n && !(n.nodeType === 1 && n.tagName === 'H3')) {
@@ -269,11 +274,23 @@ td{padding:4px;border:1px solid #8080FF}
           sections.push({ id, titleText, nodes });
         }
 
-        // Clear combined content
+        // Clear original combined content
         host.innerHTML = '';
 
-        // Build tabs + panes
+        // Re-append preface nodes at the top (so the caption/unit note remains visible)
+        if(prefaceNodes.length) {
+          const pre = document.createElement('div');
+          pre.className = 'table-wrap';
+          prefaceNodes.forEach(n => pre.appendChild(n));
+          host.appendChild(pre);
+        }
+
+        const tabs = document.getElementById('seg-tabs');
+        const panes = document.getElementById('seg-panes');
+
+        // Construct tabs + panes
         sections.forEach((sec, idx) => {
+          // tab
           const btn = document.createElement('button');
           btn.className = 'seg-tab' + (idx===0 ? ' active' : '');
           btn.type = 'button';
@@ -281,23 +298,29 @@ td{padding:4px;border:1px solid #8080FF}
           btn.dataset.target = sec.id;
           tabs.appendChild(btn);
 
+          // pane
           const pane = document.createElement('div');
           pane.className = 'seg-pane' + (idx===0 ? ' active' : '');
           pane.id = sec.id;
 
-          const wrap = document.createElement('div');
-          wrap.className = 'table-wrap';
-          sec.nodes.forEach(n => wrap.appendChild(n));
-          pane.appendChild(wrap);
-
+          // If generator already wrapped the table in .table-wrap, reuse it (avoid double nesting)
+          const existingWrap = sec.nodes.find(n => n.nodeType === 1 && n.classList && n.classList.contains('table-wrap'));
+          if (existingWrap) {
+            pane.appendChild(existingWrap);
+          } else {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            sec.nodes.forEach(n => wrap.appendChild(n));
+            pane.appendChild(wrap);
+          }
           panes.appendChild(pane);
         });
 
+        // Toggle behavior
         tabs.addEventListener('click', (e) => {
           const btn = e.target.closest('.seg-tab');
           if(!btn) return;
           const target = btn.dataset.target;
-
           tabs.querySelectorAll('.seg-tab').forEach(b => b.classList.toggle('active', b===btn));
           panes.querySelectorAll('.seg-pane').forEach(p => p.classList.toggle('active', p.id === target));
         });
