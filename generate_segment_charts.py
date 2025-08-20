@@ -9,6 +9,7 @@ What this does:
 • Single unit per section ($, $K, $M, $B, $T). Drops OI columns if fully missing for the section.
 • Filters: elimination/reconciliation/unallocated buckets removed; negative latest-revenue rows removed.
 • Writes to charts/{TICKER}/{TICKER}_segments_table.html + alias copies; cleans legacy PNGs.
+• Enforces canonical output folder charts/<TICKER> even if caller passes something else.
 
 Extractor contract:
     from sec_segment_data_arelle import get_segment_data
@@ -56,22 +57,21 @@ def _humanize_segment_name(raw: str) -> str:
     """Clean noisy XBRL labels to human readable."""
     if not isinstance(raw, str) or not raw:
         return str(raw)
+    # Remove trailing Member/Segment and join spaced initials (e.g., "U S" -> "US")
     name = str(raw)
     name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)  # join spaced initials
+    # Split CamelCase → words
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
     title = " ".join(w if w.isupper() else w.capitalize() for w in name.split())
     return title
 
 def _norm_axis_label(axis: Optional[str]) -> str:
-    """
-    Convert raw AxisType (possibly namespaced) to a neat section title.
-    Works for arbitrary axes (issuer-agnostic).
-    """
+    """Convert raw AxisType (possibly namespaced) to a neat section title."""
     s = (axis or "").strip()
-    s = re.sub(r".*:", "", s)                # strip ns prefix
+    s = re.sub(r".*:", "", s)     # strip ns prefix
     s = s.replace("Axis", "")
-    s = re.sub(r"([a-z])([A-Z])", r"\1 \2", s)   # camel → words
+    s = re.sub(r"([a-z])([A-Z])", r"\1 \2", s)  # camel → words
     s = s.replace("_", " ").strip()
     if not s:
         return "Unlabeled Axis"
@@ -128,9 +128,6 @@ def _safe_seg_filename(seg: str) -> str:
 def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> None:
     """
     Remove legacy/duplicate PNGs after we write the canonical set.
-    Only touch:
-      - 'segment_performance.png' and '{ticker}_segment_performance.png'
-      - files starting with '<TICKER>_'  not in keep set
     """
     try:
         for generic in ("segment_performance.png", f"{ticker}_segment_performance.png"):
@@ -156,15 +153,15 @@ HIDE_RE = re.compile(
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     """Generate per-axis sections (generic), charts, and compact pivot HTML."""
-    # Safety: normalize output dir to charts/<TICKER>
-    out_dir = Path(out_dir)
+    # SAFETY: normalize output folder to charts/<TICKER> (prevents “charts/TEST/...” drift)
     charts_root = Path("charts")
-    canonical = charts_root / ticker
+    canonical_dir = charts_root / ticker
     try:
-        if out_dir.resolve().name.upper() != ticker.upper():
-            out_dir = canonical
+        out_dir = Path(out_dir)
     except Exception:
-        out_dir = canonical
+        out_dir = canonical_dir
+    if out_dir.resolve().name.upper() != ticker.upper():
+        out_dir = canonical_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
     try:
@@ -302,8 +299,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
         # Build columns: Year Rev, Year OI … TTM Rev, TTM OI
         cols: List[Tuple[str, str]] = []
-        order_cols = [c for c in _last3_plus_ttm(list(rev_p.columns)) if c != "TTM"]
-        for y in order_cols:
+        cols_years = [c for c in _last3_plus_ttm(list(rev_p.columns)) if c != "TTM"]
+        for y in cols_years:
             cols += [(y, "Rev"), (y, "OI")]
         if "TTM" in rev_p.columns:
             cols += [("TTM", "Rev"), ("TTM", "OI")]
@@ -363,7 +360,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     content = f"<!-- {VERSION} -->\n{css}\n{caption}\n" + "\n<hr/>\n".join(sections_html) + "\n" + debug
 
-    # Write canonical + aliases
+    # Write canonical + aliases (all under charts/<TICKER>/)
     canonical = out_dir / f"{ticker}_segments_table.html"
     aliases = [
         out_dir / "segments_table.html",
