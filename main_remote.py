@@ -39,7 +39,7 @@ from generate_segment_charts   import generate_segment_charts_for_ticker
 TICKERS_FILE_PATH = "tickers.csv"
 DB_PATH           = "Stock Data.db"
 UPDATE_GROWTH_CSV = "update_growth.csv"
-CHARTS_DIR        = "charts"  # no trailing slash to simplify Path ops
+CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
 
 # ────────────────────────────────────────────────────────────────────
