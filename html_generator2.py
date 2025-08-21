@@ -251,7 +251,7 @@ td{padding:4px;border:1px solid #8080FF}
         const allKids = Array.from(host.childNodes);
         const h3s = allKids.filter(n => n.nodeType === 1 && n.tagName === 'H3');
 
-        if(h3s.length === 0) return; // no <h3> → leave combined content as-is
+        if(h3s.length <= 1) return; // 0 or 1 <h3> → leave combined content as-is
 
         // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/unit note)
         const firstH3Index = allKids.indexOf(h3s[0]);
