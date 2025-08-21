@@ -214,6 +214,12 @@ def mini_main():
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
 
+        # Fail fast if any ticker lacked a segment table
+        if missing_segments:
+            raise RuntimeError(
+                "Missing segment tables for: " + ", ".join(missing_segments)
+            )
+
         # 3) Post-run generators
         eps_dividend_generator()
         generate_all_summaries()
@@ -236,12 +242,6 @@ def mini_main():
             avg_vals,
             spy_qqq_html
         )
-
-        # Quick visibility: which tickers are missing segment tables?
-        if missing_segments:
-            head = ", ".join(missing_segments[:30])
-            tail = " …" if len(missing_segments) > 30 else ""
-            print(f"[segments] Missing tables for {len(missing_segments)} tickers: {head}{tail}")
 
         # 5) Optional: Generate a one-page freshness report under charts/
         try:
