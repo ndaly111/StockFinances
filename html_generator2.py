@@ -34,18 +34,22 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
     except FileNotFoundError:
         return ph
 
-def get_first_file(paths, placeholder="No data available") -> str:
-    """
-    Return contents of the first existing file in `paths`. Each entry may be a literal path or a glob pattern.
-    """
-    import glob
-    for p in paths:
-        for m in glob.glob(p):
-            try:
-                return open(m, encoding="utf-8").read()
-            except FileNotFoundError:
-                continue
-    return placeholder
+def get_first_file(patterns, placeholder_text):
+    """Try multiple explicit paths or glob patterns; return the first file's content.
+    If found, prepend a tiny HTML comment with the resolved path for debug."""
+    import glob, io, os
+    for patt in patterns:
+        for path in glob.glob(patt):
+            if os.path.isfile(path):
+                try:
+                    with io.open(path, "r", encoding="utf-8") as f:
+                        content = f.read()
+                    # Debug breadcrumb; harmless in output
+                    return f"<!-- segment_html_from: {path} -->\n" + content
+                except Exception:
+                    # try next candidate
+                    pass
+    return placeholder_text
 
 # Inject retro CSS + container override
 def inject_retro(html: str) -> str:
@@ -549,7 +553,7 @@ def html_generator2(tickers, financial_data, full_dashboard_html,
         get_file_or_placeholder("charts/earnings_upcoming.html"),
         get_file_or_placeholder("charts/economic_data.html", "No economic data available.")
     )
-    prepare_and_generate_ticker_pages(tickers)
+    prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts")
     render_spy_qqq_growth_pages()
 
 if __name__ == "__main__":
