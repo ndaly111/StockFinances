@@ -21,7 +21,7 @@
         }
     </style>
     <table>
-    <tr><th>Close Price</th><th>Market Cap</th><th>P/E Ratio</th><th>Forward P/E Ratio</th><th>Implied Growth*</th><th>Implied Forward Growth*</th><th>P/B Ratio</th></tr><tr><td>$5.80</td><td>$468.92M</td><td>-</td><td>-</td><td>N/A</td><td>-</td><td>0.9</td></tr></table>
+    <tr><th>Close Price</th><th>Market Cap</th><th>P/E Ratio</th><th>Forward P/E Ratio</th><th>Implied Growth*</th><th>Implied Forward Growth*</th><th>P/B Ratio</th></tr><tr><td>$5.87</td><td>$474.17M</td><td>-</td><td>-</td><td>N/A</td><td>-</td><td>0.9</td></tr></table>
   </div>
 
   <div class="chart-block">
@@ -285,7 +285,7 @@
         const allKids = Array.from(host.childNodes);
         const h3s = allKids.filter(n => n.nodeType === 1 && n.tagName === 'H3');
 
-        if(h3s.length === 0) return; // no <h3> → leave combined content as-is
+        if(h3s.length <= 1) return; // 0 or 1 <h3> → leave combined content as-is
 
         // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/unit note)
         const firstH3Index = allKids.indexOf(h3s[0]);
@@ -368,48 +368,48 @@
     <h2>Balance Sheet</h2>
     <img class="chart-img chart-block" src="../charts/KODK_balance_sheet_chart.png" alt="Balance Sheet">
     <div class="table-wrap"><style type="text/css">
-#T_50711_row5_col1 {
+#T_f231e_row5_col1 {
   color: green;
 }
 </style>
-<table id="T_50711">
+<table id="T_f231e">
   <thead>
     <tr>
       <th class="blank level0" >&nbsp;</th>
-      <th id="T_50711_level0_col0" class="col_heading level0 col0" >Metric</th>
-      <th id="T_50711_level0_col1" class="col_heading level0 col1" >Value</th>
+      <th id="T_f231e_level0_col0" class="col_heading level0 col0" >Metric</th>
+      <th id="T_f231e_level0_col1" class="col_heading level0 col1" >Value</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th id="T_50711_level0_row0" class="row_heading level0 row0" >0</th>
-      <td id="T_50711_row0_col0" class="data row0 col0" >Total Assets</td>
-      <td id="T_50711_row0_col1" class="data row0 col1" >$1,937M</td>
+      <th id="T_f231e_level0_row0" class="row_heading level0 row0" >0</th>
+      <td id="T_f231e_row0_col0" class="data row0 col0" >Total Assets</td>
+      <td id="T_f231e_row0_col1" class="data row0 col1" >$1,937M</td>
     </tr>
     <tr>
-      <th id="T_50711_level0_row1" class="row_heading level0 row1" >1</th>
-      <td id="T_50711_row1_col0" class="data row1 col0" >Cash</td>
-      <td id="T_50711_row1_col1" class="data row1 col1" >$158M</td>
+      <th id="T_f231e_level0_row1" class="row_heading level0 row1" >1</th>
+      <td id="T_f231e_row1_col0" class="data row1 col0" >Cash</td>
+      <td id="T_f231e_row1_col1" class="data row1 col1" >$158M</td>
     </tr>
     <tr>
-      <th id="T_50711_level0_row2" class="row_heading level0 row2" >2</th>
-      <td id="T_50711_row2_col0" class="data row2 col0" >Total Liabilities</td>
-      <td id="T_50711_row2_col1" class="data row2 col1" >$1,154M</td>
+      <th id="T_f231e_level0_row2" class="row_heading level0 row2" >2</th>
+      <td id="T_f231e_row2_col0" class="data row2 col0" >Total Liabilities</td>
+      <td id="T_f231e_row2_col1" class="data row2 col1" >$1,154M</td>
     </tr>
     <tr>
-      <th id="T_50711_level0_row3" class="row_heading level0 row3" >3</th>
-      <td id="T_50711_row3_col0" class="data row3 col0" >Total Debt</td>
-      <td id="T_50711_row3_col1" class="data row3 col1" >$509M</td>
+      <th id="T_f231e_level0_row3" class="row_heading level0 row3" >3</th>
+      <td id="T_f231e_row3_col0" class="data row3 col0" >Total Debt</td>
+      <td id="T_f231e_row3_col1" class="data row3 col1" >$509M</td>
     </tr>
     <tr>
-      <th id="T_50711_level0_row4" class="row_heading level0 row4" >4</th>
-      <td id="T_50711_row4_col0" class="data row4 col0" >Total Equity</td>
-      <td id="T_50711_row4_col1" class="data row4 col1" >$783M</td>
+      <th id="T_f231e_level0_row4" class="row_heading level0 row4" >4</th>
+      <td id="T_f231e_row4_col0" class="data row4 col0" >Total Equity</td>
+      <td id="T_f231e_row4_col1" class="data row4 col1" >$783M</td>
     </tr>
     <tr>
-      <th id="T_50711_level0_row5" class="row_heading level0 row5" >5</th>
-      <td id="T_50711_row5_col0" class="data row5 col0" >Debt to Equity Ratio</td>
-      <td id="T_50711_row5_col1" class="data row5 col1" >0.65</td>
+      <th id="T_f231e_level0_row5" class="row_heading level0 row5" >5</th>
+      <td id="T_f231e_row5_col0" class="data row5 col0" >Debt to Equity Ratio</td>
+      <td id="T_f231e_row5_col1" class="data row5 col1" >0.65</td>
     </tr>
   </tbody>
 </table>
