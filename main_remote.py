@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-# main_remote.py – 2025-08-08  (calls economic-data generator first)
+# main_remote.py – 2025-08-20  (robust build: segments first for each ticker)
 # ────────────────────────────────────────────────────────────────────
-import os, sqlite3, pandas as pd, yfinance as yf, math
+import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time
 from datetime import datetime, timezone
 from pathlib import Path
-import time  # ← added for optional polite delay
 
 import ticker_manager
 from generate_economic_data    import generate_economic_data
@@ -30,24 +29,24 @@ from index_growth_table        import index_growth
 from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
-from backfill_index_growth import backfill_index_growth
+from backfill_index_growth     import backfill_index_growth
 from generate_index_growth_pages import generate_index_growth_pages
 
+from generate_segment_charts   import generate_segment_charts_for_ticker
 
-from generate_segment_charts import generate_segment_charts_for_ticker
 # Constants
 # ────────────────────────────────────────────────────────────────────
 TICKERS_FILE_PATH = "tickers.csv"
 DB_PATH           = "Stock Data.db"
 UPDATE_GROWTH_CSV = "update_growth.csv"
-CHARTS_DIR        = "charts/"
+CHARTS_DIR        = "charts"  # no trailing slash to simplify Path ops
 TABLE_NAME        = "ForwardFinancialData"
 
 # ────────────────────────────────────────────────────────────────────
 # Build-stamp helper (for run-wide freshness checks)
 # ────────────────────────────────────────────────────────────────────
-def write_build_stamp(stamp_path="charts/_build_stamp.txt") -> str:
-    Path("charts").mkdir(parents=True, exist_ok=True)
+def write_build_stamp(stamp_path=Path(CHARTS_DIR) / "_build_stamp.txt") -> str:
+    Path(CHARTS_DIR).mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).isoformat()
     Path(stamp_path).write_text(ts, encoding="utf-8")
     print(f"[build-stamp] {stamp_path} = {ts}")
@@ -111,8 +110,10 @@ def balancesheet_chart(ticker):
 
     debt   = data.get("Total_Debt")
     equity = data.get("Total_Equity")
+
     def _is_missing(x):
-        return x is None or (isinstance(x, (float,int)) and math.isnan(x)) or pd.isna(x)
+        return x is None or (isinstance(x, (float, int)) and math.isnan(x)) or pd.isna(x)
+
     if _is_missing(debt) or _is_missing(equity) or equity == 0:
         print(f"[INFO] Skipping Debt/Equity ratio for {ticker}")
         data["Debt_to_Equity_Ratio"] = None
@@ -136,13 +137,38 @@ def fetch_10_year_treasury_yield():
         return None
 
 # ────────────────────────────────────────────────────────────────────
+# Segment helpers
+# ────────────────────────────────────────────────────────────────────
+def build_segments_for_ticker(ticker: str) -> bool:
+    """
+    Generate segment charts + table for `ticker` into charts/<TICKER>/...
+    Returns True if a table file exists afterwards (canonical or alias/glob fallback).
+    """
+    out_dir = Path(CHARTS_DIR) / ticker
+    out_dir.mkdir(parents=True, exist_ok=True)
+    generate_segment_charts_for_ticker(ticker, out_dir)
+
+    # Check for canonical + aliases + tolerant globs
+    patterns = [
+        out_dir / f"{ticker}_segments_table.html",
+        out_dir / "segments_table.html",
+        out_dir / "segment_performance.html",
+        out_dir / "*segments_table.html",
+    ]
+    # include root-stray fallback if a prior run wrote incorrectly
+    patterns += [Path(CHARTS_DIR) / f"*{ticker}*_segments_table.html"]
+
+    found = any(glob.glob(str(p)) for p in patterns)
+    return bool(found)
+
+# ────────────────────────────────────────────────────────────────────
 # Main
 # ────────────────────────────────────────────────────────────────────
 def mini_main():
     # Build stamp first so we can verify freshness of artifacts created in this run
     write_build_stamp()
 
-    # ─── Build the economic-indicator HTML first
+    # 1) Economic data first
     generate_economic_data()
 
     financial_data, dashboard_data = {}, []
@@ -157,11 +183,18 @@ def mini_main():
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
-        missing_segments = []  # ← collect any tickers that didn't produce a table
+        missing_segments = []  # collect any tickers that didn't produce a table
 
+        # 2) Per-ticker pipeline (generate segments early for each ticker)
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
+                # Ensure segments exist up front so pages can include them later
+                ok = build_segments_for_ticker(ticker)
+                if not ok:
+                    missing_segments.append(ticker)
+
+                # Financial pipelines
                 annual_and_ttm_update(ticker, DB_PATH)
                 fetch_and_update_balance_sheet_data(ticker, cursor)
                 balancesheet_chart(ticker)
@@ -172,20 +205,16 @@ def mini_main():
                 generate_html_table(prepared, ticker)
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
-                if not segments_table.exists():
-                    print(f"[segments] WARN: {segments_table} not created")
-                    missing_segments.append(ticker)
 
                 # Optional: be polite to external sources (SEC, etc.)
-                time.sleep(1)
-                # ───────────────────────────────────────────────────────────────────
+                time.sleep(0.5)
 
             except Exception as e:
                 # Prevent one ticker failure (e.g., yfinance timeout) from killing the run
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
 
-        # Post-run generators
+        # 3) Post-run generators
         eps_dividend_generator()
         generate_all_summaries()
 
@@ -195,11 +224,11 @@ def mini_main():
         generate_earnings_tables()
         render_index_growth_charts()
 
-        # Pages (includes segment table read-in)
+        # These generate standalone index growth pages + backfill artifacts
         backfill_index_growth()
         generate_index_growth_pages()
 
-
+        # 4) Pages (includes segment table read-in)
         html_generator2(
             tickers,
             financial_data,
@@ -214,7 +243,7 @@ def mini_main():
             tail = " …" if len(missing_segments) > 30 else ""
             print(f"[segments] Missing tables for {len(missing_segments)} tickers: {head}{tail}")
 
-        # ── Generate a one-page freshness report under charts/ (optional) ──
+        # 5) Optional: Generate a one-page freshness report under charts/
         try:
             from freshness_check import read_stamp, scan_charts, write_report
             stamp = read_stamp()
