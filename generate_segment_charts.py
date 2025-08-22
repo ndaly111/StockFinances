@@ -22,8 +22,6 @@ from sec_segment_data_arelle import get_segment_data
 
 VERSION = "SEGMENTS v2025-08-22"
 
-# ───────── utilities ─────────
-
 def read_tickers(csv_path: Path) -> List[str]:
     if not csv_path.is_file():
         return []
@@ -51,14 +49,14 @@ def _humanize_segment_name(raw: str) -> str:
         return str(raw)
     name = str(raw)
     name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
-    name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)  # join spaced initials
-    name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()    # CamelCase → words
+    name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)
+    name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
     title = " ".join(w if w.isupper() else w.capitalize() for w in name.split())
     return title
 
 def _norm_axis_label(axis: Optional[str]) -> str:
     s = (axis or "").strip()
-    s = re.sub(r".*:", "", s)     # strip ns prefix
+    s = re.sub(r".*:", "", s)
     s = s.replace("Axis", "")
     s = re.sub(r"([a-z])([A-Z])", r"\1 \2", s)
     s = s.replace("_", " ").strip()
@@ -116,8 +114,6 @@ def _slug(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     return re.sub(r"(^-|-$)", "", s)
 
-# ───────── cleanup helper ─────────
-
 def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> None:
     try:
         for generic in ("segment_performance.png", f"{ticker}_segment_performance.png"):
@@ -131,15 +127,11 @@ def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> 
     except Exception as e:
         print(f"[{VERSION}] WARN: cleanup in {out_dir} hit an issue: {e}")
 
-# ───────── filters ─────────
-
 HIDE_RE = re.compile(
     r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
     r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
     re.IGNORECASE,
 )
-
-# ───────── main per-ticker routine ─────────
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     charts_root = Path("charts")
@@ -155,7 +147,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     error_html_path = out_dir / f"{ticker}_segments_table.html"
 
     try:
-        # Fetch + prepare
         try:
             df = get_segment_data(ticker)
         except Exception as fetch_err:
@@ -174,12 +165,10 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         df["Revenue"] = df["Revenue"].map(_to_float)
         df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-        # If OpIncome completely missing or zeros, set NA so it displays "–"
         _op_all_missing = df["OpIncome"].isna().all() or (df["OpIncome"].fillna(0) == 0).all()
         if _op_all_missing:
             df["OpIncome"] = pd.NA
 
-        # Shared y-axis across ALL charts
         all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
         if all_vals.empty:
             min_y, max_y = 0.0, 0.0
@@ -194,7 +183,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         years_all = sort_years(sorted(set(df["Year"].tolist())))
         years_tbl = _last3_plus_ttm(df["Year"].tolist())
 
-        # ── Charts per (AxisType, Segment) ──
         written_pngs: List[str] = []
         for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
             revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
@@ -227,7 +215,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
         _cleanup_segment_pngs(out_dir, ticker, written_pngs)
 
-        # ── Compact pivot helper ──
         def pv(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
             p = sub_df[sub_df["Year"].isin(years_tbl)].pivot_table(
                 index="Segment", columns="Year", values=col, aggfunc="sum"
@@ -333,7 +320,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
         content = f"<!-- {VERSION} -->\n{css}\n{caption}\n" + "\n<hr/>\n".join(sections_html) + "\n" + debug
 
-        # Write canonical + aliases (all under charts/<TICKER>/)
+        # Write canonical + aliases (subfolder)
         canonical = out_dir / f"{ticker}_segments_table.html"
         aliases = [
             out_dir / "segments_table.html",
@@ -349,12 +336,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             p.write_text(text, encoding="utf-8")
             print(f"[{VERSION}] wrote {p} ({p.stat().st_size} bytes)")
 
-        # Primary + aliases in charts/<TICKER>/
         write_file(canonical, content)
         for a in aliases:
             write_file(a, content)
 
-        # EXTRA: compatibility copy at charts/<TICKER>_segments_table.html (root)
+        # Root compatibility copy (some readers/globs expect this)
         root_copy = Path("charts") / f"{ticker}_segments_table.html"
         write_file(root_copy, content)
 
@@ -363,8 +349,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         html = f"<p>Error generating segment table for {ticker}: {e}</p><pre style='font-size:11px;color:#666'>{tb}</pre>"
         error_html_path.write_text(html, encoding="utf-8")
         print(f"[{VERSION}] ERROR for {ticker}: {e}")
-
-# ───────── CLI ─────────
 
 def main():
     parser = argparse.ArgumentParser(description="Generate axis-first segment charts and tables for tickers.")
