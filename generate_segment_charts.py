@@ -2,19 +2,12 @@
 """
 generate_segment_charts.py — SEGMENTS v2025-08-22 (axis-first, issuer-agnostic)
 
-What this does:
-• Builds one HTML section PER UNIQUE AxisType (Products/Services, Regions, Operating Segments, Customers, Channels, etc.).
-• Shared y-axis across all per-(AxisType, Segment) charts (handles negatives).
-• Compact, scaled HTML pivot tables (last 3 FY + TTM if present). TTM bolded; “% of Total (TTM)” per section.
-• Single unit per section ($, $K, $M, $B, $T). Drops OI columns if fully missing for the section.
-• Filters: elimination/reconciliation/unallocated buckets removed; negative latest-revenue rows removed.
-• Writes to charts/{TICKER}/{TICKER}_segments_table.html + alias copies; cleans legacy PNGs.
-• NEW: one PNG per (AxisType, Segment), filename embeds axis slug so pages can group charts by axis.
-
-Extractor contract:
-    from sec_segment_data_arelle import get_segment_data
-    -> returns DataFrame with columns at least:
-        Segment(str), Year(str), Revenue(float), OpIncome(float|NaN), AxisType(str|NaN)
+• One HTML section PER AxisType (Products/Services, Regions, Operating Segments, etc.).
+• Charts are written per (AxisType, Segment) with a shared y-axis across all.
+• PNG naming includes the axis slug:  <TICKER>_<axis-slug>_<segment>.png
+• Compact pivot tables: last 3 FY (+ TTM if present). “% of Total (TTM)” per section.
+• Filters out elimination/recon/unallocated rows and rows with negative latest revenue.
+• Always writes a table file (or an explicit error), and also writes a root copy at charts/<TICKER>_segments_table.html.
 """
 
 from __future__ import annotations
@@ -29,7 +22,7 @@ from sec_segment_data_arelle import get_segment_data
 
 VERSION = "SEGMENTS v2025-08-22"
 
-# ─────────────────────────── utilities ───────────────────────────
+# ───────── utilities ─────────
 
 def read_tickers(csv_path: Path) -> List[str]:
     if not csv_path.is_file():
@@ -54,7 +47,6 @@ def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 def _humanize_segment_name(raw: str) -> str:
-    """Clean noisy XBRL labels to human readable."""
     if not isinstance(raw, str) or not raw:
         return str(raw)
     name = str(raw)
@@ -65,11 +57,10 @@ def _humanize_segment_name(raw: str) -> str:
     return title
 
 def _norm_axis_label(axis: Optional[str]) -> str:
-    """Convert raw AxisType (possibly namespaced) to a neat section title."""
     s = (axis or "").strip()
     s = re.sub(r".*:", "", s)     # strip ns prefix
     s = s.replace("Axis", "")
-    s = re.sub(r"([a-z])([A-Z])", r"\1 \2", s)  # camel → words
+    s = re.sub(r"([a-z])([A-Z])", r"\1 \2", s)
     s = s.replace("_", " ").strip()
     if not s:
         return "Unlabeled Axis"
@@ -125,12 +116,9 @@ def _slug(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     return re.sub(r"(^-|-$)", "", s)
 
-# ───────────────────── cleanup helper ───────────────────────
+# ───────── cleanup helper ─────────
 
 def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> None:
-    """
-    Remove legacy/duplicate PNGs after we write the canonical set.
-    """
     try:
         for generic in ("segment_performance.png", f"{ticker}_segment_performance.png"):
             p = out_dir / generic
@@ -143,7 +131,7 @@ def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> 
     except Exception as e:
         print(f"[{VERSION}] WARN: cleanup in {out_dir} hit an issue: {e}")
 
-# ───────────────────── filters ──────────────────────────────
+# ───────── filters ─────────
 
 HIDE_RE = re.compile(
     r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
@@ -151,10 +139,9 @@ HIDE_RE = re.compile(
     re.IGNORECASE,
 )
 
-# ───────────────────── main per-ticker routine ────────────────────
+# ───────── main per-ticker routine ─────────
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
-    """Generate per-axis sections (generic), charts, and compact pivot HTML."""
     charts_root = Path("charts")
     canonical_dir = charts_root / ticker
     try:
@@ -165,7 +152,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         out_dir = canonical_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Wrap the entire generator so we always write a table file (even on error)
     error_html_path = out_dir / f"{ticker}_segments_table.html"
 
     try:
@@ -193,7 +179,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         if _op_all_missing:
             df["OpIncome"] = pd.NA
 
-        # Shared y-axis across ALL (AxisType, Segment) charts
+        # Shared y-axis across ALL charts
         all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
         if all_vals.empty:
             min_y, max_y = 0.0, 0.0
@@ -248,11 +234,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             )
             return p.reindex(columns=[y for y in years_tbl if y in p.columns])
 
-        # Ensure AxisType exists
         if "AxisType" not in df.columns or df["AxisType"].isna().all():
             df["AxisType"] = "UnlabeledAxis"
 
-        # Build sections by AxisType
         sections_html: List[str] = []
         axes_found: List[str] = []
 
@@ -263,22 +247,18 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             rev_p = pv("Revenue", group)
             oi_p  = pv("OpIncome", group)
 
-            # Choose sort col (TTM if present else latest year)
             sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
             if sort_col:
                 if sort_col in rev_p.columns:
                     rev_p = rev_p[rev_p[sort_col].notna()]
                 oi_p = oi_p.reindex(index=rev_p.index)
 
-                # Remove elimination/reconciliation/unallocated/aggregation buckets
                 hide_mask = rev_p.index.to_series().apply(lambda s: bool(HIDE_RE.search(str(s))))
                 rev_p = rev_p[~hide_mask];  oi_p = oi_p.reindex(index=rev_p.index)
 
-                # Remove negative latest revenue rows
                 neg_mask = rev_p[sort_col] < 0
                 rev_p = rev_p[~neg_mask];   oi_p = oi_p.reindex(index=rev_p.index)
 
-                # Sort by latest revenue desc and align OI
                 rev_p = rev_p.sort_values(by=sort_col, ascending=False)
                 oi_p  = oi_p.loc[rev_p.index]
 
@@ -286,18 +266,15 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 sections_html.append(f"<h3>{label}</h3><div class='table-wrap'><p>No data for this axis.</p></div>")
                 continue
 
-            # % mix on visible rows
             pct_series = None
             if "TTM" in rev_p.columns:
                 total_ttm = rev_p["TTM"].sum(skipna=True)
                 if total_ttm:
                     pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
-            # Single unit per section
             max_val = pd.concat([rev_p, oi_p]).abs().max().max()
             div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
-            # Build columns: Year Rev, Year OI … TTM Rev, TTM OI
             cols: List[Tuple[str, str]] = []
             cols_years = [c for c in _last3_plus_ttm(list(rev_p.columns)) if c != "TTM"]
             for y in cols_years:
@@ -310,7 +287,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 series = rev_p.get(y) if kind == "Rev" else oi_p.get(y)
                 out[f"{y} {'Rev' if kind=='Rev' else 'OI'} ({unit})"] = series
 
-            # Hide OpIncome columns entirely for this section if fully missing
             hide_oi = (group["OpIncome"].isna().all()) or ((group["OpIncome"].fillna(0) == 0).all())
             if hide_oi:
                 out = out[[c for c in out.columns if " OI " not in c]]
@@ -318,7 +294,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             if pct_series is not None:
                 out["% of Total (TTM)"] = pct_series
 
-            # Format cells
             for c in out.columns:
                 if c == "% of Total (TTM)":
                     out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
@@ -331,7 +306,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             html_table = out.reset_index().to_html(index=False, escape=False, classes="segment-pivot", border=0)
             sections_html.append(f"<h3>{label}</h3>\n<div class='table-wrap'>{html_table}</div>")
 
-        # CSS + caption + debug footer
         css = """
 <style>
 .table-wrap{overflow:auto; max-width:100%;}
@@ -375,18 +349,22 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             p.write_text(text, encoding="utf-8")
             print(f"[{VERSION}] wrote {p} ({p.stat().st_size} bytes)")
 
+        # Primary + aliases in charts/<TICKER>/
         write_file(canonical, content)
         for a in aliases:
             write_file(a, content)
 
+        # EXTRA: compatibility copy at charts/<TICKER>_segments_table.html (root)
+        root_copy = Path("charts") / f"{ticker}_segments_table.html"
+        write_file(root_copy, content)
+
     except Exception as e:
-        # Last-resort: write an explicit error file so the page never shows a missing table
         tb = traceback.format_exc(limit=5)
         html = f"<p>Error generating segment table for {ticker}: {e}</p><pre style='font-size:11px;color:#666'>{tb}</pre>"
         error_html_path.write_text(html, encoding="utf-8")
         print(f"[{VERSION}] ERROR for {ticker}: {e}")
 
-# ─────────────────────────── CLI wrapper ───────────────────────────
+# ───────── CLI ─────────
 
 def main():
     parser = argparse.ArgumentParser(description="Generate axis-first segment charts and tables for tickers.")
