@@ -1,4 +1,4 @@
-# sec_segment_data_arelle.py — extractor returning AxisType
+# sec_segment_data_arelle.py — extractor returning AxisType (multi-axis, issuer-agnostic)
 from __future__ import annotations
 import json, os, re, time
 from pathlib import Path
@@ -21,7 +21,9 @@ OPINC_TAGS = [
     "us-gaap:OperatingIncomeLoss",
 ]
 
+# Normalize common axis names to a canonical form
 AXIS_NORMALIZER = {
+    # Geography
     "StatementGeographicalAxis": "GeographicalAreasAxis",
     "GeographicalAreasAxis": "GeographicalAreasAxis",
     "GeographicalRegionsAxis": "GeographicalRegionsAxis",
@@ -29,6 +31,7 @@ AXIS_NORMALIZER = {
     "DomesticAndForeignAxis": "DomesticAndForeignAxis",
     "CountryAxis": "CountryAxis",
 
+    # Product/Service
     "ProductOrServiceAxis": "ProductsAndServicesAxis",
     "ProductsAndServicesAxis": "ProductsAndServicesAxis",
     "ProductLineAxis": "ProductLineAxis",
@@ -36,17 +39,20 @@ AXIS_NORMALIZER = {
     "ProductCategoryAxis": "ProductCategoryAxis",
     "ProductCategoriesAxis": "ProductCategoryAxis",
 
+    # Operating/reportable segments
     "OperatingSegmentsAxis": "OperatingSegmentsAxis",
     "BusinessSegmentsAxis": "OperatingSegmentsAxis",
     "ReportableSegmentsAxis": "OperatingSegmentsAxis",
     "SegmentsAxis": "OperatingSegmentsAxis",
 
+    # Customers / Channels
     "MajorCustomersAxis": "MajorCustomersAxis",
     "SignificantCustomersAxis": "MajorCustomersAxis",
-
     "SalesChannelsAxis": "SalesChannelsAxis",
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
+
+AXIS_WHITELIST = set(AXIS_NORMALIZER.values())
 
 def _user_agent_headers() -> Dict[str, str]:
     email = None
@@ -55,7 +61,7 @@ def _user_agent_headers() -> Dict[str, str]:
         if v:
             email = v.strip()
             break
-    ua = f"ndaly-segments/1.0 ({email or 'email@domain.com'})"
+    ua = f"ndaly-segments/1.1 ({email or 'email@domain.com'})"
     return {"User-Agent": ua, "Accept-Encoding": "gzip, deflate"}
 
 def _load_cik_map() -> Dict[str, int]:
@@ -92,6 +98,7 @@ def _strip_ns(name: Optional[str]) -> str:
 
 def _clean_member_label(lbl: Optional[str], member: Optional[str]) -> str:
     cand = lbl or _strip_ns(member) or ""
+    # drop trailing Member/Segment, join spaced initials (e.g., "U S")
     cand = re.sub(r"\s*(Member|Segment)$", "", cand, flags=re.IGNORECASE)
     cand = re.sub(r"\b(?:[A-Z]\s+){1,}[A-Z]\b", lambda m: m.group(0).replace(" ", ""), cand)
     cand = re.sub(r"(?<!^)(?=[A-Z])", " ", cand).strip()
@@ -104,7 +111,7 @@ def _axis_to_type(axis: str) -> Optional[str]:
 def _iter_fact_items(fact: dict) -> List[dict]:
     out: List[dict] = []
     for unit, arr in (fact.get("units") or {}).items():
-        if not str(unit).upper().startswith("USD"):
+        if not str(unit).upper().startswith("USD"):  # USD or USD/shares variations
             continue
         for it in arr or []:
             out.append(it)
@@ -118,83 +125,83 @@ def _year_from_item(it: dict) -> Optional[str]:
         return end[:4]
     return None
 
-def _best_seg_axis(segments: List[dict]) -> Optional[Tuple[str, str, str]]:
+def _coerce_segments_list(segments) -> List[dict]:
+    """SEC returns segments as list, dict, or nested dicts; normalize to a flat list of dicts."""
+    if not segments:
+        return []
+    if isinstance(segments, list):
+        out = []
+        for seg in segments:
+            if isinstance(seg, dict) and ("dim" in seg or "axis" in seg or "member" in seg):
+                out.append(seg)
+        return out
+    if isinstance(segments, dict):
+        out = []
+        for k, v in segments.items():
+            if isinstance(v, dict):
+                out.append({"dim": v.get("dim") or k, "member": v.get("member"), "memberLabel": v.get("memberLabel")})
+            else:
+                out.append({"dim": k, "member": v, "memberLabel": ""})
+        return out
+    return []
+
+def _extract_axes_members(segments_raw) -> List[Tuple[str, str]]:
     """
-    Pick a 'best' axis/member from the item's segments.
-    Prefer product/service > geography > operating > others.
-    Returns (AxisType, memberLabel, member)
+    Return list of (AxisType, SegmentLabel) for all recognized axes present on the fact.
+    If a fact contains multiple axes (e.g., Region + Product), we return both.
     """
-    rank = {
-        "ProductsAndServicesAxis": 0,
-        "ProductLineAxis": 0,
-        "ProductAxis": 0,
-        "ProductCategoryAxis": 0,
-        "GeographicalAreasAxis": 1,
-        "GeographicalRegionsAxis": 1,
-        "DomesticAndForeignAxis": 1,
-        "CountryAxis": 1,
-        "OperatingSegmentsAxis": 2,
-        "MajorCustomersAxis": 3,
-        "SalesChannelsAxis": 3,
-    }
-    best = None
-    best_rank = 999
-    for seg in segments or []:
+    out: List[Tuple[str, str]] = []
+    for seg in _coerce_segments_list(segments_raw):
         axis_raw = seg.get("dim") or seg.get("axis") or ""
         axis = _axis_to_type(axis_raw)
-        if not axis:
+        if not axis or axis not in AXIS_WHITELIST:
             continue
-        r = rank.get(axis, 9)
-        if r < best_rank:
-            best_rank = r
-            best = (axis, seg.get("memberLabel") or "", seg.get("member") or "")
-    return best
+        label = _clean_member_label(seg.get("memberLabel"), seg.get("member"))
+        if not label:
+            continue
+        out.append((axis, label))
+    return out
 
-def _harvest_tag(all_items: List[dict]) -> Dict[Tuple[str, str, str], float]:
+def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], float]:
     """
-    Aggregate numeric values by (AxisType, SegmentLabel, Year).
+    Aggregate numeric values by **each** axis present, i.e., (AxisType, SegmentLabel, Year).
+    If a single fact is dimensioned by multiple axes, its numeric value is contributed to each axis section
+    (that’s OK because we display axes in separate sections and never sum across axes).
     """
     agg: Dict[Tuple[str, str, str], float] = {}
     for it in all_items:
-        segments = it.get("segments") or it.get("segment") or []
-        if isinstance(segments, dict):
-            tmp = []
-            for k, v in segments.items():
-                if isinstance(v, dict):
-                    tmp.append({"dim": v.get("dim") or k, "member": v.get("member"), "memberLabel": v.get("memberLabel")})
-                else:
-                    tmp.append({"dim": k, "member": v, "memberLabel": ""})
-            segments = tmp
-        choose = _best_seg_axis(segments)
-        if not choose:
+        segs = it.get("segments") or it.get("segment")
+        axes = _extract_axes_members(segs)
+        if not axes:
             continue
-        axis, memberLabel, member = choose
         year = _year_from_item(it)
         if not year:
             continue
-        seg_label = _clean_member_label(memberLabel, member)
         try:
             val = float(it.get("val"))
         except Exception:
             continue
-        key = (axis, seg_label, str(year))
-        agg[key] = agg.get(key, 0.0) + val
+        for axis, label in axes:
+            key = (axis, label, str(year))
+            agg[key] = agg.get(key, 0.0) + val
     return agg
 
 def get_segment_data(ticker: str) -> pd.DataFrame:
     """
     Returns a DataFrame with columns: Segment, Year, Revenue, OpIncome, AxisType.
-    Aggregates by AxisType & Segment for each fiscal year present in companyfacts.
+    Aggregates by **all** AxisType & Segment for each fiscal year present in companyfacts.
     """
     cik = _cik_from_ticker(ticker)
     facts = _fetch_companyfacts(cik)
     all_facts = facts.get("facts") or {}
+
     rev_items: List[dict] = []
     for tag in REVENUE_TAGS:
         f = all_facts.get(tag)
-        if not f: 
+        if not f:
             continue
         rev_items.extend(_iter_fact_items(f))
+
     op_items: List[dict] = []
     for tag in OPINC_TAGS:
         f = all_facts.get(tag)
@@ -202,10 +209,13 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
             continue
         op_items.extend(_iter_fact_items(f))
 
-    rev_agg = _harvest_tag(rev_items)
-    op_agg  = _harvest_tag(op_items)
+    rev_agg = _harvest_tag_multi(rev_items)
+    op_agg  = _harvest_tag_multi(op_items)
 
     keys = set(rev_agg.keys()) | set(op_agg.keys())
+    if not keys:
+        return pd.DataFrame(columns=["Segment","Year","Revenue","OpIncome","AxisType"])
+
     rows = []
     for axis, seg, year in keys:
         rows.append({
@@ -215,8 +225,7 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
             "Revenue": rev_agg.get((axis, seg, year), float("nan")),
             "OpIncome": op_agg.get((axis, seg, year), float("nan")),
         })
-    if not rows:
-        return pd.DataFrame(columns=["Segment","Year","Revenue","OpIncome","AxisType"])
+
     df = pd.DataFrame(rows)
     df["Revenue"] = pd.to_numeric(df["Revenue"], errors="coerce")
     df["OpIncome"] = pd.to_numeric(df["OpIncome"], errors="coerce")
