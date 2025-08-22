@@ -62,19 +62,67 @@ def inject_retro(html: str) -> str:
 # ───────── segment helpers ──────────────────────────────────────
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
     """
-    Carousel shows ALL PNGs in charts/<ticker>/*.png
+    Build one horizontal carousel PER AXIS using the new filename scheme:
+        charts/<ticker>/<ticker>_<axis-slug>_<segment>.png
+    Falls back to the old behavior (single mixed carousel) if no axis-slugged files are found.
     """
+    import re
     seg_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(seg_dir):
         return ""
+
     pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
     if not pngs:
         return ""
+
+    # Group files by axis slug if present
+    pat = re.compile(rf"^{re.escape(ticker)}_(?P<axis>[a-z0-9-]+)_.+\.png$", re.IGNORECASE)
+    grouped = {}
+    for f in pngs:
+        m = pat.match(f)
+        if not m:
+            continue
+        slug = m.group("axis").lower()
+        grouped.setdefault(slug, []).append(f)
+
+    # Friendly label for a slug
+    def friendly_axis(slug: str) -> str:
+        known = {
+            "products-services": "Products / Services",
+            "product-line": "Products / Services",
+            "product": "Products / Services",
+            "product-category": "Products / Services",
+            "regions": "Regions",
+            "geographical-areas": "Regions",
+            "geographical-regions": "Regions",
+            "domestic-vs-foreign": "Domestic vs Foreign",
+            "country": "Country",
+            "operating-segments": "Operating Segments",
+            "major-customers": "Major Customers",
+            "sales-channels": "Sales Channels",
+            "unlabeled-axis": "Unlabeled Axis",
+        }
+        return known.get(slug, slug.replace("-", " ").title())
+
+    # If we found axis-slugged files, build one carousel per axis
+    if grouped:
+        parts = []
+        for slug in sorted(grouped.keys()):
+            title = friendly_axis(slug)
+            items = []
+            for f in grouped[slug]:
+                src = f"{charts_dir_web}/{ticker}/{f}"
+                items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
+            parts.append(f'<h3>{title}</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
+        return "\n".join(parts)
+
+    # Fallback: pre-existing mixed carousel
     items = []
     for f in pngs:
-        src = f"{charts_dir_web}/{ticker}/{f}"  # web path for /pages/*
+        src = f"{charts_dir_web}/{ticker}/{f}"
         items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
     return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
+
 
 # ───────── template creation ────────────────────────────────────
 def ensure_templates_exist():
