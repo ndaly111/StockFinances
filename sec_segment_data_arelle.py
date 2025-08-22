@@ -98,7 +98,6 @@ def _strip_ns(name: Optional[str]) -> str:
 
 def _clean_member_label(lbl: Optional[str], member: Optional[str]) -> str:
     cand = lbl or _strip_ns(member) or ""
-    # drop trailing Member/Segment, join spaced initials (e.g., "U S")
     cand = re.sub(r"\s*(Member|Segment)$", "", cand, flags=re.IGNORECASE)
     cand = re.sub(r"\b(?:[A-Z]\s+){1,}[A-Z]\b", lambda m: m.group(0).replace(" ", ""), cand)
     cand = re.sub(r"(?<!^)(?=[A-Z])", " ", cand).strip()
@@ -111,7 +110,7 @@ def _axis_to_type(axis: str) -> Optional[str]:
 def _iter_fact_items(fact: dict) -> List[dict]:
     out: List[dict] = []
     for unit, arr in (fact.get("units") or {}).items():
-        if not str(unit).upper().startswith("USD"):  # USD or USD/shares variations
+        if not str(unit).upper().startswith("USD"):
             continue
         for it in arr or []:
             out.append(it)
@@ -126,7 +125,6 @@ def _year_from_item(it: dict) -> Optional[str]:
     return None
 
 def _coerce_segments_list(segments) -> List[dict]:
-    """SEC returns segments as list, dict, or nested dicts; normalize to a flat list of dicts."""
     if not segments:
         return []
     if isinstance(segments, list):
@@ -146,10 +144,6 @@ def _coerce_segments_list(segments) -> List[dict]:
     return []
 
 def _extract_axes_members(segments_raw) -> List[Tuple[str, str]]:
-    """
-    Return list of (AxisType, SegmentLabel) for all recognized axes present on the fact.
-    If a fact contains multiple axes (e.g., Region + Product), we return both.
-    """
     out: List[Tuple[str, str]] = []
     for seg in _coerce_segments_list(segments_raw):
         axis_raw = seg.get("dim") or seg.get("axis") or ""
@@ -165,8 +159,7 @@ def _extract_axes_members(segments_raw) -> List[Tuple[str, str]]:
 def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], float]:
     """
     Aggregate numeric values by **each** axis present, i.e., (AxisType, SegmentLabel, Year).
-    If a single fact is dimensioned by multiple axes, its numeric value is contributed to each axis section
-    (that’s OK because we display axes in separate sections and never sum across axes).
+    If a single fact has multiple axes, it contributes to each axis section.
     """
     agg: Dict[Tuple[str, str, str], float] = {}
     for it in all_items:
@@ -189,7 +182,7 @@ def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], floa
 def get_segment_data(ticker: str) -> pd.DataFrame:
     """
     Returns a DataFrame with columns: Segment, Year, Revenue, OpIncome, AxisType.
-    Aggregates by **all** AxisType & Segment for each fiscal year present in companyfacts.
+    Aggregates by **all** AxisType & Segment for each fiscal year.
     """
     cik = _cik_from_ticker(ticker)
     facts = _fetch_companyfacts(cik)
