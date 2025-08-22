@@ -1,4 +1,4 @@
-# sec_segment_data_arelle.py — extractor returning AxisType (multi-axis, issuer-agnostic)
+# sec_segment_data_arelle.py — extractor returning AxisType (multi-axis; broad revenue tag coverage)
 from __future__ import annotations
 import json, os, re, time
 from pathlib import Path
@@ -12,14 +12,22 @@ SEC_HEADERS_EMAIL_ENV = ("SEC_EMAIL", "EMAIL_FOR_SEC")  # pick one if set
 REQUEST_TIMEOUT = 20
 PAUSE_SEC = 0.2  # polite delay between requests
 
-REVENUE_TAGS = [
-    "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
-    "us-gaap:SalesRevenueNet",
-    "us-gaap:Revenues",
-]
-OPINC_TAGS = [
-    "us-gaap:OperatingIncomeLoss",
-]
+# Canonical revenue/operating-income tags seen across filers
+REVENUE_BASE_TAGS = {
+    # Very common
+    "RevenueFromContractWithCustomerExcludingAssessedTax",
+    "RevenueFromContractWithCustomerIncludingAssessedTax",
+    "SalesRevenueNet",
+    "SalesRevenueGoodsNet",
+    "SalesRevenueServicesNet",
+    "Revenues",
+    "NetSales",
+    # Occasional variants we want to pick up
+    "ProductRevenue",
+    "ServiceRevenue",
+    "OperatingRevenue",
+}
+OPINC_BASE_TAGS = {"OperatingIncomeLoss"}
 
 # Normalize common axis names to a canonical form
 AXIS_NORMALIZER = {
@@ -30,7 +38,6 @@ AXIS_NORMALIZER = {
     "GeographicalRegionAxis": "GeographicalRegionsAxis",
     "DomesticAndForeignAxis": "DomesticAndForeignAxis",
     "CountryAxis": "CountryAxis",
-
     # Product/Service
     "ProductOrServiceAxis": "ProductsAndServicesAxis",
     "ProductsAndServicesAxis": "ProductsAndServicesAxis",
@@ -38,20 +45,17 @@ AXIS_NORMALIZER = {
     "ProductAxis": "ProductAxis",
     "ProductCategoryAxis": "ProductCategoryAxis",
     "ProductCategoriesAxis": "ProductCategoryAxis",
-
     # Operating/reportable segments
     "OperatingSegmentsAxis": "OperatingSegmentsAxis",
     "BusinessSegmentsAxis": "OperatingSegmentsAxis",
     "ReportableSegmentsAxis": "OperatingSegmentsAxis",
     "SegmentsAxis": "OperatingSegmentsAxis",
-
     # Customers / Channels
     "MajorCustomersAxis": "MajorCustomersAxis",
     "SignificantCustomersAxis": "MajorCustomersAxis",
     "SalesChannelsAxis": "SalesChannelsAxis",
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
-
 AXIS_WHITELIST = set(AXIS_NORMALIZER.values())
 
 def _user_agent_headers() -> Dict[str, str]:
@@ -61,7 +65,7 @@ def _user_agent_headers() -> Dict[str, str]:
         if v:
             email = v.strip()
             break
-    ua = f"ndaly-segments/1.1 ({email or 'email@domain.com'})"
+    ua = f"ndaly-segments/1.2 ({email or 'email@domain.com'})"
     return {"User-Agent": ua, "Accept-Encoding": "gzip, deflate"}
 
 def _load_cik_map() -> Dict[str, int]:
@@ -98,6 +102,7 @@ def _strip_ns(name: Optional[str]) -> str:
 
 def _clean_member_label(lbl: Optional[str], member: Optional[str]) -> str:
     cand = lbl or _strip_ns(member) or ""
+    # drop trailing Member/Segment, join spaced initials (e.g., "U S"), split camel case
     cand = re.sub(r"\s*(Member|Segment)$", "", cand, flags=re.IGNORECASE)
     cand = re.sub(r"\b(?:[A-Z]\s+){1,}[A-Z]\b", lambda m: m.group(0).replace(" ", ""), cand)
     cand = re.sub(r"(?<!^)(?=[A-Z])", " ", cand).strip()
@@ -110,7 +115,7 @@ def _axis_to_type(axis: str) -> Optional[str]:
 def _iter_fact_items(fact: dict) -> List[dict]:
     out: List[dict] = []
     for unit, arr in (fact.get("units") or {}).items():
-        if not str(unit).upper().startswith("USD"):
+        if not str(unit).upper().startswith("USD"):  # USD/… variations
             continue
         for it in arr or []:
             out.append(it)
@@ -156,6 +161,38 @@ def _extract_axes_members(segments_raw) -> List[Tuple[str, str]]:
         out.append((axis, label))
     return out
 
+# ---------- revenue concept selection (broad but safe) ----------
+_NEG_TOKENS = ("cost", "cogs", "expense", "gain", "loss", "grossprofit", "tax", "deferred", "impair", "interest")
+def _is_revenue_like(base_tag: str) -> bool:
+    """Accept common revenue/sales concepts; avoid CostOfSales, etc."""
+    t = base_tag.lower()
+    if any(tok in t for tok in _NEG_TOKENS):
+        return False
+    return (
+        t in {s.lower() for s in REVENUE_BASE_TAGS}
+        or t.endswith("revenuenet")
+        or t.endswith("revenues")
+        or t.endswith("revenue")
+        or t == "netsales"
+        or "salesrevenue" in t
+    )
+
+def _collect_items(kind: str, all_facts: dict) -> List[dict]:
+    """
+    kind: 'rev' or 'op'
+    """
+    items: List[dict] = []
+    for tag, fact in (all_facts or {}).items():
+        base = _strip_ns(tag)
+        if kind == "rev":
+            if not _is_revenue_like(base):
+                continue
+        else:  # op inc
+            if base not in OPINC_BASE_TAGS:
+                continue
+        items.extend(_iter_fact_items(fact))
+    return items
+
 def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], float]:
     """
     Aggregate numeric values by **each** axis present, i.e., (AxisType, SegmentLabel, Year).
@@ -188,19 +225,8 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
     facts = _fetch_companyfacts(cik)
     all_facts = facts.get("facts") or {}
 
-    rev_items: List[dict] = []
-    for tag in REVENUE_TAGS:
-        f = all_facts.get(tag)
-        if not f:
-            continue
-        rev_items.extend(_iter_fact_items(f))
-
-    op_items: List[dict] = []
-    for tag in OPINC_TAGS:
-        f = all_facts.get(tag)
-        if not f:
-            continue
-        op_items.extend(_iter_fact_items(f))
+    rev_items = _collect_items("rev", all_facts)
+    op_items  = _collect_items("op",  all_facts)
 
     rev_agg = _harvest_tag_multi(rev_items)
     op_agg  = _harvest_tag_multi(op_items)
