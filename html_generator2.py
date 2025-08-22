@@ -62,11 +62,17 @@ def inject_retro(html: str) -> str:
 # ───────── segment helpers ──────────────────────────────────────
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
     """
-    Build one horizontal carousel PER AXIS using the new filename scheme:
+    Build horizontal carousels for segment charts.
+
+    • If files use the new scheme:
         charts/<ticker>/<ticker>_<axis-slug>_<segment>.png
-    Falls back to the old behavior (single mixed carousel) if no axis-slugged files are found.
+      group them by <axis-slug> and show one carousel per axis.
+
+    • If files are legacy (e.g., <ticker>_<segment>.png), DO NOT try to
+      infer an axis. Show them together in a single 'Segments' carousel.
     """
     import re
+
     seg_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(seg_dir):
         return ""
@@ -75,54 +81,57 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
     if not pngs:
         return ""
 
-    # Group files by axis slug if present
+    # Only these slugs indicate a *real* axis grouping
+    KNOWN = {
+        "products-services": "Products / Services",
+        "product-line": "Products / Services",
+        "product": "Products / Services",
+        "product-category": "Products / Services",
+        "regions": "Regions",
+        "geographical-areas": "Regions",
+        "geographical-regions": "Regions",
+        "domestic-vs-foreign": "Domestic vs Foreign",
+        "country": "Country",
+        "operating-segments": "Operating Segments",
+        "major-customers": "Major Customers",
+        "sales-channels": "Sales Channels",
+        "unlabeled-axis": "Unlabeled Axis",
+    }
+
     pat = re.compile(rf"^{re.escape(ticker)}_(?P<axis>[a-z0-9-]+)_.+\.png$", re.IGNORECASE)
-    grouped = {}
+    grouped, legacy = {}, []
+
     for f in pngs:
         m = pat.match(f)
-        if not m:
-            continue
-        slug = m.group("axis").lower()
-        grouped.setdefault(slug, []).append(f)
+        if m:
+            slug = m.group("axis").lower()
+            if slug in KNOWN:
+                grouped.setdefault(slug, []).append(f)
+            else:
+                legacy.append(f)  # first token isn't a known axis → treat as legacy
+        else:
+            legacy.append(f)    # legacy naming: no axis part
 
-    # Friendly label for a slug
-    def friendly_axis(slug: str) -> str:
-        known = {
-            "products-services": "Products / Services",
-            "product-line": "Products / Services",
-            "product": "Products / Services",
-            "product-category": "Products / Services",
-            "regions": "Regions",
-            "geographical-areas": "Regions",
-            "geographical-regions": "Regions",
-            "domestic-vs-foreign": "Domestic vs Foreign",
-            "country": "Country",
-            "operating-segments": "Operating Segments",
-            "major-customers": "Major Customers",
-            "sales-channels": "Sales Channels",
-            "unlabeled-axis": "Unlabeled Axis",
-        }
-        return known.get(slug, slug.replace("-", " ").title())
+    parts = []
 
-    # If we found axis-slugged files, build one carousel per axis
-    if grouped:
-        parts = []
-        for slug in sorted(grouped.keys()):
-            title = friendly_axis(slug)
-            items = []
-            for f in grouped[slug]:
-                src = f"{charts_dir_web}/{ticker}/{f}"
-                items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
-            parts.append(f'<h3>{title}</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
-        return "\n".join(parts)
+    # New-style: one carousel per axis
+    for slug in sorted(grouped.keys()):
+        title = KNOWN[slug]
+        items = []
+        for f in grouped[slug]:
+            src = f"{charts_dir_web}/{ticker}/{f}"
+            items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
+        parts.append(f'<h3>{title}</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
 
-    # Fallback: pre-existing mixed carousel
-    items = []
-    for f in pngs:
-        src = f"{charts_dir_web}/{ticker}/{f}"
-        items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
-    return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
+    # Legacy: show together (only if present)
+    if legacy:
+        items = []
+        for f in legacy:
+            src = f"{charts_dir_web}/{ticker}/{f}"
+            items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
+        parts.append('<h3>Segments</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
 
+    return "\n".join(parts)
 
 # ───────── template creation ────────────────────────────────────
 def ensure_templates_exist():
@@ -227,7 +236,7 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # Ticker page (all legacy sections + segments tabs + dividend)
+    # Ticker page (legacy sections + segments tabs + dividend)
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
@@ -295,19 +304,16 @@ td{padding:4px;border:1px solid #8080FF}
         const host = document.getElementById('segment-sections');
         if(!host) return;
 
-        // Capture children before mutation
         const allKids = Array.from(host.childNodes);
         const h3s = allKids.filter(n => n.nodeType === 1 && n.tagName === 'H3');
 
         if(h3s.length <= 1) return; // 0 or 1 <h3> → leave combined content as-is
 
-        // Preserve any preface nodes BEFORE the first <h3> (e.g., caption/unit note)
         const firstH3Index = allKids.indexOf(h3s[0]);
         const prefaceNodes = firstH3Index > 0 ? allKids.slice(0, firstH3Index) : [];
 
         const slug = s => (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
-        // Build sections: for each <h3>, collect subsequent siblings until the next <h3> or end
         const sections = [];
         for (let i=0; i<h3s.length; i++) {
           const titleEl = h3s[i];
@@ -323,10 +329,8 @@ td{padding:4px;border:1px solid #8080FF}
           sections.push({ id, titleText, nodes });
         }
 
-        // Clear original combined content
         host.innerHTML = '';
 
-        // Re-append preface nodes at the top
         if(prefaceNodes.length) {
           const pre = document.createElement('div');
           pre.className = 'table-wrap';
@@ -337,9 +341,7 @@ td{padding:4px;border:1px solid #8080FF}
         const tabs = document.getElementById('seg-tabs');
         const panes = document.getElementById('seg-panes');
 
-        // Construct tabs + panes
         sections.forEach((sec, idx) => {
-          // tab
           const btn = document.createElement('button');
           btn.className = 'seg-tab' + (idx===0 ? ' active' : '');
           btn.type = 'button';
@@ -347,12 +349,10 @@ td{padding:4px;border:1px solid #8080FF}
           btn.dataset.target = sec.id;
           tabs.appendChild(btn);
 
-          // pane
           const pane = document.createElement('div');
           pane.className = 'seg-pane' + (idx===0 ? ' active' : '');
           pane.id = sec.id;
 
-          // If generator already wrapped the table in .table-wrap, reuse it
           const existingWrap = sec.nodes.find(n => n.nodeType === 1 && n.classList && n.classList.contains('table-wrap'));
           if (existingWrap) {
             pane.appendChild(existingWrap);
@@ -365,7 +365,6 @@ td{padding:4px;border:1px solid #8080FF}
           panes.appendChild(pane);
         });
 
-        // Toggle behavior
         tabs.addEventListener('click', (e) => {
           const btn = e.target.closest('.seg-tab');
           if(!btn) return;
@@ -539,11 +538,15 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
                 "segment_table_html":            get_first_file(
                                                     [
-                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",   # canonical
-                                                        f"{charts_dir_fs}/{t}/segments_table.html",       # alias
-                                                        f"{charts_dir_fs}/{t}/segment_performance.html",  # alias
-                                                        f"{charts_dir_fs}/{t}/*segments_table.html",      # variant glob
-                                                        f"{charts_dir_fs}/*{t}*_segments_table.html",     # root stray fallback
+                                                        # canonical (subfolder)
+                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",
+                                                        f"{charts_dir_fs}/{t}/segments_table.html",
+                                                        f"{charts_dir_fs}/{t}/segment_performance.html",
+                                                        f"{charts_dir_fs}/{t}/*segments_table.html",
+                                                        # root compatibility copies
+                                                        f"{charts_dir_fs}/{t}_segments_table.html",
+                                                        f"{charts_dir_fs}/{t}_segment_performance.html",
+                                                        f"{charts_dir_fs}/*{t}*_segments_table.html",
                                                     ],
                                                     f"No segment data available for {t}."
                                                 ),
