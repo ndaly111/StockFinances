@@ -190,8 +190,10 @@ def mini_main():
             print(f"[main] Processing {ticker}")
             try:
                 # Ensure segments exist up front so pages can include them later
+                expected = Path(CHARTS_DIR) / ticker / f"{ticker}_segments_table.html"
                 ok = build_segments_for_ticker(ticker)
                 if not ok:
+                    print(f"[segments:WARN] Expected not found: {expected}")
                     missing_segments.append(ticker)
 
                 # Financial pipelines
