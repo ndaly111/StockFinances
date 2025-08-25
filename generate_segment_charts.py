@@ -140,6 +140,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         out_dir = Path(out_dir)
     except Exception:
         out_dir = canonical_dir
+    # Guard against callers passing a non canonical directory (e.g., charts/TEST)
     if out_dir.resolve().name.upper() != ticker.upper():
         out_dir = canonical_dir
     out_dir.mkdir(parents=True, exist_ok=True)

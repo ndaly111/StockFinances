@@ -491,10 +491,10 @@ def generate_dashboard_table(raw_rows):
         "Nicks_TTM_Value_Median":        ttm.median(),
         "Nicks_Forward_Value_Average":   fwd.mean(),
         "Nicks_Forward_Value_Median":    fwd.median(),
-        "Finviz_TTM Value_Average":      fttm.mean() if not fttm.empty else None,
-        "Finviz_TTM Value_Median":       fttm.median() if not fttm.empty else None,
-        "Finviz_Forward Value_Average":  ffwd.mean() if not fttm.empty else None,
-        "Finviz_Forward Value_Median":   ffwd.median() if not fttm.empty else None
+        "Finviz_TTM_Value_Average":      fttm.mean() if not fttm.empty else None,
+        "Finviz_TTM_Value_Median":       fttm.median() if not fttm.empty else None,
+        "Finviz_Forward_Value_Average":  ffwd.mean() if not fttm.empty else None,
+        "Finviz_Forward_Value_Median":   ffwd.median() if not fttm.empty else None
     }
 
 # ───────── ancillary page builders (retro-injected) ───────
@@ -538,17 +538,13 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
                 "segment_table_html":            get_first_file(
                                                     [
-                                                        # canonical (subfolder)
-                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",
-                                                        f"{charts_dir_fs}/{t}/segments_table.html",
-                                                        f"{charts_dir_fs}/{t}/segment_performance.html",
-                                                        f"{charts_dir_fs}/{t}/*segments_table.html",
-                                                        # root compatibility copies
-                                                        f"{charts_dir_fs}/{t}_segments_table.html",
-                                                        f"{charts_dir_fs}/{t}_segment_performance.html",
-                                                        f"{charts_dir_fs}/*{t}*_segments_table.html",
+                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",   # canonical
+                                                        f"{charts_dir_fs}/{t}/segments_table.html",       # alias
+                                                        f"{charts_dir_fs}/{t}/segment_performance.html",  # alias
+                                                        f"{charts_dir_fs}/{t}/*segments_table.html",      # future variants
+                                                        f"{charts_dir_fs}/*{t}*_segments_table.html",     # root stray fallback
                                                     ],
-                                                    f"No segment data available for {t}."
+                                                    f"No segment data available for {t}.",
                                                 ),
 
                 # Images (web paths)

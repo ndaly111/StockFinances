@@ -137,31 +137,6 @@ def fetch_10_year_treasury_yield():
         return None
 
 # ────────────────────────────────────────────────────────────────────
-# Segment helpers
-# ────────────────────────────────────────────────────────────────────
-def build_segments_for_ticker(ticker: str) -> bool:
-    """
-    Generate segment charts + table for `ticker` into charts/<TICKER>/...
-    Returns True if a table file exists afterwards (canonical or alias/glob fallback).
-    """
-    out_dir = Path(CHARTS_DIR) / ticker
-    out_dir.mkdir(parents=True, exist_ok=True)
-    generate_segment_charts_for_ticker(ticker, out_dir)
-
-    # Check for canonical + aliases + tolerant globs
-    patterns = [
-        out_dir / f"{ticker}_segments_table.html",
-        out_dir / "segments_table.html",
-        out_dir / "segment_performance.html",
-        out_dir / "*segments_table.html",
-    ]
-    # include root-stray fallback if a prior run wrote incorrectly
-    patterns += [Path(CHARTS_DIR) / f"*{ticker}*_segments_table.html"]
-
-    found = any(glob.glob(str(p)) for p in patterns)
-    return bool(found)
-
-# ────────────────────────────────────────────────────────────────────
 # Main
 # ────────────────────────────────────────────────────────────────────
 def mini_main():
@@ -175,6 +150,29 @@ def mini_main():
     treasury = fetch_10_year_treasury_yield()
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
+
+    # === MUST RUN FIRST: build segment tables so pages can find them ===
+    for tk in tickers:
+        out_dir = Path(CHARTS_DIR) / tk
+        out_dir.mkdir(parents=True, exist_ok=True)
+        generate_segment_charts_for_ticker(tk, out_dir)
+
+    # Cheap sanity test – hard fail if any ticker lacks a segment table
+    import glob
+    missing = []
+    for tk in tickers:
+        patterns = [
+            f"{CHARTS_DIR}{tk}/{tk}_segments_table.html",
+            f"{CHARTS_DIR}{tk}/segments_table.html",
+            f"{CHARTS_DIR}{tk}/segment_performance.html",
+            f"{CHARTS_DIR}{tk}/*segments_table.html",
+            f"{CHARTS_DIR}*{tk}*_segments_table.html",
+        ]
+        if not any(glob.glob(p) for p in patterns):
+            missing.append(tk)
+    if missing:
+        raise RuntimeError("Missing segment tables for: " + ", ".join(missing))
+
     conn = establish_database_connection(DB_PATH)
     if not conn:
         return
@@ -183,18 +181,10 @@ def mini_main():
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
-        missing_segments = []  # collect any tickers that didn't produce a table
-
-        # 2) Per-ticker pipeline (generate segments early for each ticker)
+        # Per-ticker pipeline
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
-                # Ensure segments exist up front so pages can include them later
-                ok = build_segments_for_ticker(ticker)
-                if not ok:
-                    missing_segments.append(ticker)
-
-                # Financial pipelines
                 annual_and_ttm_update(ticker, DB_PATH)
                 fetch_and_update_balance_sheet_data(ticker, cursor)
                 balancesheet_chart(ticker)
@@ -214,13 +204,7 @@ def mini_main():
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
 
-        # Fail fast if any ticker lacked a segment table
-        if missing_segments:
-            raise RuntimeError(
-                "Missing segment tables for: " + ", ".join(missing_segments)
-            )
-
-        # 3) Post-run generators
+        # Post-run generators
         eps_dividend_generator()
         generate_all_summaries()
 
