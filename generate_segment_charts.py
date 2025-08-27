@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
-generate_segment_charts.py — write charts and a single canonical table per ticker.
+generate_segment_charts.py — write charts (PNG) and a canonical table per ticker.
 
-• Writes PNGs into charts/<T>/<T>_<axis-slug>_<segment>.png
-• Writes one combined table into charts/<T>/<T>_segments_table.html
-• Cleans up old alias files so only the canonical table remains.
+• PNGs: charts/<T>/<T>_<axis-slug>_<segment>.png
+• Table: charts/<T>/<T>_segments_table.html  (will be overwritten by generate_segment_tables.py)
 """
 from __future__ import annotations
 import argparse, math, re
@@ -18,7 +17,6 @@ from sec_segment_data_arelle import get_segment_data
 
 VERSION = "SEGMENTS v2025-08-27"
 
-# Regex to hide recon/elimination/unallocated lines
 HIDE_RE = re.compile(
     r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
     r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
@@ -82,10 +80,12 @@ def _fmt_scaled(x, div, unit) -> str:
     return f"${s}" if unit == "$" else f"{s}{unit[-1]}"
 
 def _last3_plus_ttm(cols: List[str]) -> List[str]:
-    # Keep only the last 3 fiscal years; TTM handled separately upstream
     nums = sorted({int(y) for y in cols if str(y).isdigit()})
     keep = nums[-3:] if len(nums) > 3 else nums
-    return [str(y) for y in keep]
+    out = [str(y) for y in keep]
+    if "TTM" in set(cols):
+        out.append("TTM")
+    return out
 
 def _safe_seg_filename(seg: str) -> str:
     return seg.replace("/", "_").replace(" ", "_")
@@ -95,27 +95,7 @@ def _slug(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     return re.sub(r"(^-|-$)", "", s)
 
-def _cleanup_legacy_tables(out_dir: Path, ticker: str) -> None:
-    # Remove older alias files so only the canonical table remains
-    for p in [
-        out_dir / "segments_table.html",
-        out_dir / "segment_performance.html",
-        out_dir / f"{ticker}_segment_performance.html",
-        Path("charts") / f"{ticker}_segments_table.html",  # old root copy
-    ]:
-        try:
-            if p.exists():
-                p.unlink()
-        except Exception:
-            pass
-
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
-    """
-    Given a ticker and output directory, produce:
-    • charts/<ticker>/<ticker>_<axis-slug>_<segment>.png images
-    • charts/<ticker>/<ticker>_segments_table.html (combined table)
-    Remove any old alias files.
-    """
     charts_root = Path("charts")
     canonical_dir = charts_root / ticker
     try:
@@ -131,16 +111,15 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     df = get_segment_data(ticker)
     if df is None or df.empty:
         table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
-        _cleanup_legacy_tables(out_dir, ticker)
         return
 
     df = df.copy()
-    df["Segment"] = df["Segment"].astype(str).map(_humanize_segment_name)
-    df["Year"] = df["Year"].astype(str)
-    df["Revenue"] = df["Revenue"].map(_to_float)
+    df["Segment"]  = df["Segment"].astype(str).map(_humanize_segment_name)
+    df["Year"]     = df["Year"].astype(str)
+    df["Revenue"]  = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-    # Compute global y-limits across all charts for consistent scaling
+    # global y-axis
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
         min_y, max_y = 0.0, 0.0
@@ -155,7 +134,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     years_all = sorted(set(df["Year"].tolist()), key=lambda s: (not s.isdigit(), s))
     years_tbl = _last3_plus_ttm(list(df["Year"].unique()))
 
-    # Generate charts
     written_pngs: List[str] = []
     for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
@@ -187,8 +165,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         plt.close(fig)
         written_pngs.append(out_name)
 
-    # Helper for pivot & table assembly
-    def pivot_agg(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
+    # Simple, readable combined table (will be overwritten by generate_segment_tables.py)
+    def pv(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
         p = sub_df[sub_df["Year"].isin(years_tbl)].pivot_table(
             index="Segment", columns="Year", values=col, aggfunc="sum"
         )
@@ -198,70 +176,45 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         df["AxisType"] = "UnlabeledAxis"
 
     sections_html: List[str] = []
-    axes_found: List[str] = []
-
     for axis_value, group in df.groupby("AxisType", dropna=False):
         label = _norm_axis_label(axis_value)
-        axes_found.append(label)
-
-        rev_p = pivot_agg("Revenue", group)
-        oi_p  = pivot_agg("OpIncome", group)
-
-        sort_col = rev_p.columns[-1] if len(rev_p.columns) else None
-        if sort_col:
-            if sort_col in rev_p.columns:
-                rev_p = rev_p[rev_p[sort_col].notna()]
+        rev_p = pv("Revenue", group)
+        oi_p  = pv("OpIncome", group)
+        last  = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
+        if last:
+            if last in rev_p.columns:
+                rev_p = rev_p[rev_p[last].notna()]
             oi_p = oi_p.reindex(index=rev_p.index)
-
-            hide_mask = rev_p.index.to_series().apply(lambda s: bool(HIDE_RE.search(str(s))))
-            rev_p = rev_p[~hide_mask]
-            oi_p  = oi_p.reindex(index=rev_p.index)
-
-            neg_mask = rev_p[sort_col] < 0
-            rev_p = rev_p[~neg_mask]
-            oi_p  = oi_p.reindex(index=rev_p.index)
-
-            rev_p = rev_p.sort_values(by=sort_col, ascending=False)
+            mask_hide = rev_p.index.to_series().apply(lambda s: bool(HIDE_RE.search(str(s))))
+            rev_p = rev_p[~mask_hide]; oi_p = oi_p.reindex(index=rev_p.index)
+            if last in rev_p.columns:
+                mask_neg = rev_p[last] < 0
+                rev_p = rev_p[~mask_neg]; oi_p = oi_p.reindex(index=rev_p.index)
+            rev_p = rev_p.sort_values(by=last, ascending=False)
             oi_p  = oi_p.loc[rev_p.index]
 
-        if rev_p.empty and oi_p.empty:
-            sections_html.append(f"<h3>{label}</h3><div class='table-wrap'><p>No data for this axis.</p></div>")
-            continue
-
-        pct_series = None
-        if "TTM" in rev_p.columns:
-            total_ttm = rev_p["TTM"].sum(skipna=True)
-            if total_ttm:
-                pct_series = (rev_p["TTM"] / total_ttm) * 100.0
-
         max_val = pd.concat([rev_p, oi_p]).abs().max().max()
-        div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
-
-        cols: List[Tuple[str, str]] = []
-        for y in [c for c in rev_p.columns if c != "TTM"]:
-            cols += [(y, "Rev"), (y, "OI")]
-        if "TTM" in rev_p.columns:
-            cols += [("TTM", "Rev"), ("TTM", "OI")]
+        div, unit = (1.0, "$")
+        if pd.notna(max_val):
+            div, unit = _choose_scale(float(max_val))
 
         out = pd.DataFrame(index=rev_p.index)
-        for (y, kind) in cols:
-            series = rev_p.get(y) if kind == "Rev" else oi_p.get(y)
-            out[f"{y} {'Rev' if kind=='Rev' else 'OI'} ({unit})"] = series
-
-        hide_oi = (group["OpIncome"].isna().all()) or ((group["OpIncome"].fillna(0) == 0).all())
-        if hide_oi:
-            out = out[[c for c in out.columns if " OI " not in c]]
-
-        if pct_series is not None:
-            out["% of Total (TTM)"] = pct_series
+        for y in rev_p.columns:
+            out[f"{y} Rev ({unit})"] = rev_p.get(y)
+            if y in oi_p.columns and not oi_p[y].isna().all():
+                out[f"{y} OI ({unit})"] = oi_p.get(y)
+        if "TTM" in rev_p.columns:
+            tot = rev_p["TTM"].sum(skipna=True)
+            if tot:
+                out["% of Total (TTM)"] = (rev_p["TTM"] / tot) * 100.0
 
         for c in out.columns:
             if c == "% of Total (TTM)":
                 out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
             else:
                 out[c] = out[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
-        for ttm_col in [c for c in out.columns if c.startswith("TTM ")]:
-            out[ttm_col] = out[ttm_col].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
+        for c in [c for c in out.columns if c.startswith("TTM ")]:
+            out[c] = out[c].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
 
         out.index.name = "Segment"
         html_table = out.reset_index().to_html(index=False, escape=False, classes="segment-pivot", border=0)
@@ -275,7 +228,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 .segment-pivot thead th{position:sticky;top:0;background:#fff;z-index:1;border-bottom:1px solid #ddd}
 </style>
 """.strip()
-
     stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     caption = (
         f'<div style="font-size:12px;color:#666;margin:6px 0 8px;">'
@@ -286,9 +238,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     content = css + "\n" + caption + "\n" + "\n<hr/>\n".join(sections_html)
     table_path.write_text(content, encoding="utf-8")
     print(f"[{VERSION}] wrote {table_path} ({table_path.stat().st_size} bytes)")
-
-    # Remove old duplicate tables
-    _cleanup_legacy_tables(out_dir, ticker)
 
 def main():
     ap = argparse.ArgumentParser()
