@@ -1,28 +1,41 @@
 #!/usr/bin/env python3
-# html_generator2.py — layout-safe sequential segments (NO tabs), single-path table
+# html_generator2.py — sequential segments (NO tabs), single-path table, retains generate_dashboard_table
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader
-import os, sqlite3, pandas as pd, re
+import os, sqlite3, pandas as pd, yfinance as yf, re
 
 DB_PATH = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
 
-# ───────── helpers (layout-safe) ───────────────────────────────
+# ───────── helpers ──────────────────────────────────────────────
 def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
     try:
         return open(path, encoding="utf-8").read()
     except FileNotFoundError:
         return ph
 
+def get_company_short_name(tk: str, cur) -> str:
+    cur.execute("SELECT short_name FROM Tickers_Info WHERE ticker=?", (tk,))
+    row = cur.fetchone()
+    if row and row[0]:
+        return row[0]
+    name = (yf.Ticker(tk).info or {}).get("shortName", "").strip() or tk
+    cur.execute("UPDATE Tickers_Info SET short_name=? WHERE ticker=?", (name, tk))
+    cur.connection.commit()
+    return name
+
 def get_segment_table_html(ticker: str, charts_dir_fs: str) -> str:
-    """Single canonical read path: {charts_dir_fs}/{T}/{T}_segments_table.html"""
+    """
+    Read the single canonical segment table:
+      {charts_dir_fs}/{T}/{T}_segments_table.html
+    """
     path = f"{charts_dir_fs}/{ticker}/{ticker}_segments_table.html"
     try:
         return open(path, encoding="utf-8").read()
     except FileNotFoundError:
         return f"No segment data available for {ticker}."
 
-# ───────── per-axis carousels (non-invasive) ───────────────────
+# ───────── image helpers ───────────────────────────────────────
 _SLUG_TO_LABEL = {
     "products-services": "Products / Services",
     "product-line":      "Products / Services",
@@ -50,7 +63,8 @@ def _group_segment_images_by_label(ticker: str, charts_dir_fs: str):
             continue
         m = _slug_pat.match(f)
         if not m or m.group("tkr").upper() != ticker.upper():
-            legacy.append(f); continue
+            legacy.append(f)
+            continue
         lab = _SLUG_TO_LABEL.get((m.group("slug") or "").lower())
         if lab:
             by_label.setdefault(lab.lower(), []).append(f)
@@ -69,14 +83,13 @@ def _build_carousel_html_for_label(label_lower: str, ticker: str, charts_dir_fs:
         f'<div class="carousel-item"><img class="chart-img" src="{charts_dir_web}/{ticker}/{fn}" alt="{fn}"></div>'
         for fn in files
     ]
-    return '<div class="carousel-container seg-carousel">\n' + "\n".join(items) + "\n</div>"
+    return '<div class="carousel-container">\n' + "\n".join(items) + "\n</div>"
 
-# ───────── sequential sections (carousel → table) ──────────────
+# ───────── assemble sequential sections ────────────────────────
 def build_segment_sections_sequential(ticker: str, charts_dir_fs: str, charts_dir_web: str, raw_table_html: str) -> str:
     """
-    For each <h3>Axis Name</h3> in the combined table:
-      [carousel for that axis] then [that axis table]
-    If the combined table is missing, render image-only sections per axis.
+    Build HTML with [carousel] then [table] for each axis, sequentially.
+    If the table is missing, show image-only sections with a note.
     """
     imgs_by_label, legacy = _group_segment_images_by_label(ticker, charts_dir_fs)
     out_parts = []
@@ -108,33 +121,34 @@ def build_segment_sections_sequential(ticker: str, charts_dir_fs: str, charts_di
         for title, body in sections:
             label_lower = title.strip().lower()
             carousel = _build_carousel_html_for_label(label_lower, ticker, charts_dir_fs, charts_dir_web)
-            has_wrap = ("class='table-wrap'" in body) or ('class="table-wrap"' in body)
-            sec = ['<div class="seg-section">', f"<h3>{title}</h3>"]
-            if carousel: sec.append(carousel)
-            sec.append(body if has_wrap else f'<div class="table-wrap">{body}</div>')
+            body_has_wrap = ("class='table-wrap'" in body) or ('class="table-wrap"' in body)
+            sec = ['<div class="chart-block">', f"<h3>{title}</h3>"]
+            if carousel:
+                sec.append(carousel)
+            sec.append(body if body_has_wrap else f'<div class="table-wrap">{body}</div>')
             sec.append("</div>")
             out_parts.append("\n".join(sec))
             seen.add(label_lower)
 
-        # image-only axes with no table section found
+        # Extra image groups not referenced by table (rare)
         for lab in sorted(imgs_by_label.keys()):
             if lab in seen: continue
             carousel = _build_carousel_html_for_label(lab, ticker, charts_dir_fs, charts_dir_web)
             if carousel:
                 out_parts.append(
-                    "<div class=\"seg-section\">\n"
+                    "<div class=\"chart-block\">\n"
                     f"<h3>{lab.title()}</h3>\n"
                     f"{carousel}\n"
                     "<div class=\"table-wrap\"><p>No table for this axis.</p></div>\n"
                     "</div>"
                 )
     else:
-        # no table found → image-only sections
+        # No table → only images
         for lab in sorted(imgs_by_label.keys()):
             carousel = _build_carousel_html_for_label(lab, ticker, charts_dir_fs, charts_dir_web)
             if carousel:
                 out_parts.append(
-                    "<div class=\"seg-section\">\n"
+                    "<div class=\"chart-block\">\n"
                     f"<h3>{lab.title()}</h3>\n"
                     f"{carousel}\n"
                     "<div class=\"table-wrap\"><p>No table for this axis.</p></div>\n"
@@ -144,7 +158,7 @@ def build_segment_sections_sequential(ticker: str, charts_dir_fs: str, charts_di
             carousel = _build_carousel_html_for_label("segments", ticker, charts_dir_fs, charts_dir_web)
             if carousel:
                 out_parts.append(
-                    "<div class=\"seg-section\">\n"
+                    "<div class=\"chart-block\">\n"
                     "<h3>Segments</h3>\n"
                     f"{carousel}\n"
                     "<div class=\"table-wrap\"><p>No table for this axis.</p></div>\n"
@@ -155,7 +169,93 @@ def build_segment_sections_sequential(ticker: str, charts_dir_fs: str, charts_di
 
     return "\n".join(out_parts)
 
-# ───────── page generation (does not overwrite your templates) ─
+# ───────── dashboard builder (retained) ────────────────────────
+def generate_dashboard_table(raw_rows):
+    base_cols = [
+        "Ticker", "Share Price",
+        "Nick's TTM Value", "Nick's Forward Value",
+        "Finviz TTM Value", "Finviz Forward Value"
+    ]
+    df = pd.DataFrame(raw_rows, columns=base_cols)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        pct = pd.read_sql_query(
+            """SELECT Ticker, Percentile
+                 FROM Index_Growth_Pctile
+                WHERE Growth_Type='TTM'
+                  AND Date = (SELECT MAX(Date) FROM Index_Growth_Pctile)""",
+            conn
+        )
+
+    df = df.merge(pct, how="left", on="Ticker")
+
+    sp_num = pd.to_numeric(df["Share Price"], errors="coerce")
+    df["Share Price_num"]  = sp_num
+    df["Share Price_disp"] = sp_num.map(lambda x: f"{x:.2f}" if pd.notnull(x) else "–")
+
+    pct_cols = base_cols[2:]
+    for col in pct_cols:
+        num = pd.to_numeric(df[col].astype(str).str.rstrip('%'), errors="coerce")
+        df[col + "_num"]  = num
+        df[col + "_disp"] = num.map(lambda x: f"{x:.1f}" if pd.notnull(x) else "–")
+
+    df["Implied-Growth Pctile_num"]  = df["Percentile"]
+    df["Implied-Growth Pctile_disp"] = df["Percentile"].map(lambda x: f"{x:.0f}" if pd.notnull(x) else "–")
+    df.drop(columns="Percentile", inplace=True)
+
+    def link(t):
+        if t == "SPY":
+            return '<a href="spy_growth.html">SPY</a>'
+        if t == "QQQ":
+            return '<a href="qqq_growth.html">QQQ</a>'
+        return f'<a href="pages/{t}_page.html">{t}</a>'
+
+    df["Ticker"] = df["Ticker"].apply(link)
+    df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
+
+    body = []
+    for _, r in df.iterrows():
+        cells = [
+            f"<td>{r['Ticker']}</td>",
+            f'<td data-order="{r["Share Price_num"] if pd.notnull(r["Share Price_num"]) else -999}">{r["Share Price_disp"]}</td>'
+        ]
+        for col in pct_cols:
+            num, disp = r[col + "_num"], r[col + "_disp"]
+            cells.append(f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>')
+        num, disp = r["Implied-Growth Pctile_num"], r["Implied-Growth Pctile_disp"]
+        cells.append(f'<td class="pct" data-order="{num if pd.notnull(num) else -999}">{disp}</td>')
+        body.append("<tr>" + "".join(cells) + "</tr>")
+
+    headers = base_cols + ["Implied-Growth Pctile"]
+    thead = "<thead><tr>" + "".join(f"<th>{h}</th>" for h in headers) + "</tr></thead>"
+    dash_html = (
+        '<table id="sortable-table" style="width:100%">' +
+        thead + "<tbody>" + "".join(body) + "</tbody></table>"
+    )
+
+    # Summary values (not used for display here, but kept for potential use)
+    pc = lambda s: f"{s:.1f}" if pd.notnull(s) else "–"
+    ttm, fwd = df["Nick's TTM Value_num"].dropna(), df["Nick's Forward Value_num"].dropna()
+    fttm, ffwd = df["Finviz TTM Value_num"].dropna(), df["Finviz Forward Value_num"].dropna()
+
+    summary = [
+        ["Average", pc(ttm.mean()), pc(fwd.mean()), pc(fttm.mean()), pc(ffwd.mean())],
+        ["Median",  pc(ttm.median()), pc(fwd.median()), pc(fttm.median()), pc(ffwd.median())]
+    ]
+    avg_html = pd.DataFrame(summary, columns=["Metric"] + pct_cols).to_html(index=False, escape=False)
+
+    return avg_html + dash_html, {
+        "Nicks_TTM_Value_Average":       ttm.mean(),
+        "Nicks_TTM_Value_Median":        ttm.median(),
+        "Nicks_Forward_Value_Average":   fwd.mean(),
+        "Nicks_Forward	Value_Median":    fwd.median(),
+        "Finviz_TTM Value_Average":      fttm.mean() if not fttm.empty else None,
+        "Finviz_TTM Value_Median":       fttm.median() if not fttm.empty else None,
+        "Finviz_Forward Value_Average":  ffwd.mean() if not fttm.empty else None,
+        "Finviz_Forward Value_Median":   ffwd.median() if not fttm.empty else None
+    }
+
+# ───────── page generation (preserves your templates) ─────────
 def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
     charts_dir_web = "../" + charts_dir_fs
     os.makedirs("pages", exist_ok=True)
@@ -170,7 +270,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "ticker":                        t,
                 "company_name":                  get_company_short_name(t, cur),
 
-                # existing fragments you already render
+                # HTML fragments
                 "ticker_info":                   get_file_or_placeholder(f"{charts_dir_fs}/{t}_ticker_info.html"),
                 "financial_table":               get_file_or_placeholder(f"{charts_dir_fs}/{t}_rev_net_table.html"),
                 "yoy_growth_table_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_growth_tbl.html"),
@@ -182,11 +282,11 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
 
-                # NEW sequential block (use either key depending on your template)
+                # NEW sequential segment section: assign to both keys so either name works in your template
                 "segment_sections_html":         seg_html,
-                "segment_table_html":            seg_html,  # fills old placeholder {{ segment_table_html | safe }}
+                "segment_table_html":            seg_html,
 
-                # charts (web paths)
+                # Paths for chart images
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
                 "eps_chart_path":                f"{charts_dir_web}/{t}_eps_chart.png",
                 "forecast_rev_net_chart_path":   f"{charts_dir_web}/{t}_Revenue_Net_Income_Forecast.png",
@@ -201,16 +301,17 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
             }
 
-            # Use your existing templates as-is (no overwrites, no global CSS injection)
             tpl = env.get_template("ticker_template.html")
             rendered = tpl.render(ticker_data=d)
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
                 f.write(rendered)
 
 def create_home_page(*_args, **_kwargs):
-    """No-op here — keep using your existing home template and builder."""
+    """No-op here — use your existing home page builder."""
     pass
 
 def html_generator2(tickers, financial_data, full_dashboard_html, avg_values, spy_qqq_growth_html=""):
-    # Respect your current pages; do not override templates or CSS
+    """
+    Generate per-ticker pages with sequential segments, leaving the home page logic unchanged.
+    """
     prepare_and_generate_ticker_pages(tickers)
