@@ -2,11 +2,11 @@
 """
 generate_segment_charts.py — write charts (PNG) and a canonical table per ticker.
 
-• PNGs: charts/<T>/<T>_<axis-slug>_<segment>.png
-• Table: charts/<T>/<T>_segments_table.html  (will be overwritten by generate_segment_tables.py)
+• PNGs:  charts/<T>/<T>_<axis-slug>_<segment>.png
+• Table:  charts/<T>/<T>_segments_table.html
 """
 from __future__ import annotations
-import argparse, math, re
+import argparse, re
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple, Optional
@@ -119,7 +119,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     df["Revenue"]  = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-    # global y-axis
+    # y-limits shared across all charts
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
         min_y, max_y = 0.0, 0.0
@@ -134,7 +134,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     years_all = sorted(set(df["Year"].tolist()), key=lambda s: (not s.isdigit(), s))
     years_tbl = _last3_plus_ttm(list(df["Year"].unique()))
 
-    written_pngs: List[str] = []
     for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
@@ -147,8 +146,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         w = 0.35
         axp.bar([i - w/2 for i in x], revenues_b,  width=w, label="Revenue")
         axp.bar([i + w/2 for i in x], op_incomes_b, width=w, label="Operating Income")
-        axp.set_xticks(x)
-        axp.set_xticklabels(years_all)
+        axp.set_xticks(x); axp.set_xticklabels(years_all)
         axp.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
         axis_label = _norm_axis_label(axis)
         axp.set_ylabel("Value ($B)")
@@ -163,9 +161,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         out_name = f"{ticker}_{axis_slug}_{safe_seg}.png"
         plt.savefig(out_dir / out_name)
         plt.close(fig)
-        written_pngs.append(out_name)
 
-    # Simple, readable combined table (will be overwritten by generate_segment_tables.py)
+    # Combined table (per axis)
     def pv(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
         p = sub_df[sub_df["Year"].isin(years_tbl)].pivot_table(
             index="Segment", columns="Year", values=col, aggfunc="sum"
@@ -180,6 +177,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         label = _norm_axis_label(axis_value)
         rev_p = pv("Revenue", group)
         oi_p  = pv("OpIncome", group)
+
         last  = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
         if last:
             if last in rev_p.columns:
