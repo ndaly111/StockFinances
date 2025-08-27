@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# html_generator2.py – retro fix: economic data + sequential segment sections + dividend
+# html_generator2.py — sequential segment sections (no tabs) + retro css + dividend
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf, re
@@ -37,7 +37,7 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
 def get_first_file(paths, placeholder="No data available") -> str:
     """
     Return contents of the first existing file in `paths`. Each entry may be a literal path or a glob pattern.
-    Robust to unreadable files and non-UTF8 bytes (replaced).
+    Robust to unreadable files / encoding issues.
     """
     import glob
     for p in paths:
@@ -53,7 +53,29 @@ def get_first_file(paths, placeholder="No data available") -> str:
                     continue
     return placeholder
 
-# Inject retro CSS + container override
+# ───────── segment lookup (robust) ─────────────────────────────
+def find_segment_table_html(t: str, charts_dir_fs: str) -> str:
+    """
+    Search for the combined segments table in several common locations (subfolder, root, docs/charts, wildcards).
+    """
+    bases = [charts_dir_fs]
+    if charts_dir_fs != "docs/charts":
+        bases.append("docs/charts")
+
+    candidates = []
+    for base in bases:
+        candidates += [
+            f"{base}/{t}/{t}_segments_table.html",     # canonical (subfolder)
+            f"{base}/{t}/segments_table.html",         # alias
+            f"{base}/{t}/segment_performance.html",    # alias
+            f"{base}/{t}_segments_table.html",         # root copy
+            f"{base}/{t}_segment_performance.html",    # root alias
+            f"{base}/{t}/*segments_table.html",        # wildcard variant
+            f"{base}/*{t}*_segments_table.html",       # stray fallback
+        ]
+    return get_first_file(candidates, f"No segment data available for {t}.")
+
+# ───────── retro CSS injection ─────────────────────────────────
 def inject_retro(html: str) -> str:
     if '/static/css/retro.css' not in html:
         html = html.replace(
@@ -65,8 +87,7 @@ def inject_retro(html: str) -> str:
         )
     return html
 
-# ───────── segment helpers (sequential layout) ────────────────
-# Map file name slugs -> human labels (and invert)
+# ───────── sequential segment helpers (NO TABS) ───────────────
 _SLUG_TO_LABEL = {
     "products-services": "Products / Services",
     "product-line": "Products / Services",
@@ -82,19 +103,14 @@ _SLUG_TO_LABEL = {
     "sales-channels": "Sales Channels",
     "unlabeled-axis": "Unlabeled Axis",
 }
-_LABEL_TO_SLUGS = {}
-for s, lab in _SLUG_TO_LABEL.items():
-    _LABEL_TO_SLUGS.setdefault(lab.lower(), set()).add(s)
-
 _slug_pat = re.compile(r'^(?P<tkr>[A-Za-z0-9]+)_(?P<slug>[a-z0-9-]+)_.+\.png$', re.IGNORECASE)
 
 def _group_segment_images_by_label(ticker: str, charts_dir_fs: str):
     """
-    Returns (dict[label_lower -> list[file_names]], legacy_files_without_axis)
+    Returns (by_label: dict[label_lower -> list[file names]], legacy: list[file names without axis])
     """
     seg_dir = os.path.join(charts_dir_fs, ticker)
-    by_label = {}
-    legacy = []
+    by_label, legacy = {}, []
     if not os.path.isdir(seg_dir):
         return by_label, legacy
     for f in sorted(os.listdir(seg_dir)):
@@ -104,142 +120,117 @@ def _group_segment_images_by_label(ticker: str, charts_dir_fs: str):
         if not m or m.group("tkr").upper() != ticker.upper():
             legacy.append(f)
             continue
-        slug = (m.group("slug") or "").lower()
-        label = _SLUG_TO_LABEL.get(slug)
-        if not label:
+        lab = _SLUG_TO_LABEL.get((m.group("slug") or "").lower())
+        if lab:
+            by_label.setdefault(lab.lower(), []).append(f)
+        else:
             legacy.append(f)
-            continue
-        by_label.setdefault(label.lower(), []).append(f)
     return by_label, legacy
-
-def _parse_segment_sections_from_html(raw_html: str):
-    """
-    Parses the combined segment table HTML into:
-      preface_html (css/note before first <h3>)
-      ordered list of (title_text, body_html_without_h3)
-    """
-    if not isinstance(raw_html, str) or not raw_html.strip():
-        return "", []
-
-    h3 = re.compile(r'<h3>(.*?)</h3>', re.IGNORECASE | re.DOTALL)
-    sections = []
-    pos = 0
-    m_first = h3.search(raw_html, pos)
-    if not m_first:
-        return raw_html, []
-    preface = raw_html[:m_first.start()].strip()
-
-    while True:
-        m = h3.search(raw_html, pos)
-        if not m:
-            break
-        title = (m.group(1) or "").strip()
-        start = m.end()
-        m2 = h3.search(raw_html, start)
-        end = m2.start() if m2 else len(raw_html)
-        body = raw_html[start:end].strip()
-        # strip leading separators
-        body = re.sub(r'^\s*(<hr\s*/?>)+', '', body, flags=re.IGNORECASE)
-        sections.append((title, body))
-        pos = end
-    return preface, sections
 
 def _build_carousel_html_for_label(label_lower: str, ticker: str, charts_dir_fs: str, charts_dir_web: str):
     imgs_by_label, legacy = _group_segment_images_by_label(ticker, charts_dir_fs)
     files = imgs_by_label.get(label_lower, [])
+    if not files and label_lower == "segments":
+        files = legacy
     if not files:
-        # Optionally show legacy under "segments" when label is "segments"
-        if label_lower == "segments" and legacy:
-            files = legacy
-        else:
-            return ""
-    items = []
-    for f in files:
-        src = f"{charts_dir_web}/{ticker}/{f}"
-        items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
+        return ""
+    items = [
+        f'<div class="carousel-item"><img class="chart-img" src="{charts_dir_web}/{ticker}/{fn}" alt="{fn}"></div>'
+        for fn in files
+    ]
     return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
 def build_segment_sections_sequential(ticker: str, charts_dir_fs: str, charts_dir_web: str, raw_table_html: str) -> str:
     """
-    Returns a single HTML string:
-      [optional preface]
-      repeat for each section in table order:
-        <div class="chart-block">
-          <h3>Axis Name</h3>
-          [carousel for that axis if any images exist]
-          [table body for that axis]
-        </div>
-      [optional legacy images as final section]
+    Render sequential sections:
+      [carousel for axis #1]
+      [table for axis #1]
+      ...
+    If the table is missing, still render image-only sections per axis with a “No table for this axis.” note.
     """
-    if not raw_table_html or "No segment data available" in raw_table_html:
-        return raw_table_html or ""
-    preface, sections = _parse_segment_sections_from_html(raw_table_html)
+    imgs_by_label, legacy = _group_segment_images_by_label(ticker, charts_dir_fs)
     out_parts = []
+
+    # Parse table (if present)
+    sections, preface = [], ""
+    if isinstance(raw_table_html, str) and raw_table_html.strip() and "No segment data available" not in raw_table_html:
+        h3 = re.compile(r"<h3>(.*?)</h3>", re.IGNORECASE | re.DOTALL)
+        pos = 0
+        first = h3.search(raw_table_html, pos)
+        if first:
+            preface = raw_table_html[:first.start()].strip()
+            while True:
+                m = h3.search(raw_table_html, pos)
+                if not m:
+                    break
+                title = (m.group(1) or "").strip()
+                start = m.end()
+                m2 = h3.search(raw_table_html, start)
+                end = m2.start() if m2 else len(raw_table_html)
+                body = raw_table_html[start:end].strip()
+                body = re.sub(r"^\s*(<hr\s*/?>)+", "", body, flags=re.IGNORECASE)
+                sections.append((title, body))
+                pos = end
+
     if preface:
-        # Keep CSS/note block at top once
         out_parts.append(preface)
 
-    imgs_by_label, legacy = _group_segment_images_by_label(ticker, charts_dir_fs)
+    if sections:
+        seen = set()
+        for title, body in sections:
+            label_lower = title.strip().lower()
+            carousel = _build_carousel_html_for_label(label_lower, ticker, charts_dir_fs, charts_dir_web)
+            body_has_wrap = ("class='table-wrap'" in body) or ('class="table-wrap"' in body)
+            sec = ['<div class="chart-block">', f"<h3>{title}</h3>"]
+            if carousel:
+                sec.append(carousel)
+            sec.append(body if body_has_wrap else f'<div class="table-wrap">{body}</div>')
+            sec.append("</div>")
+            out_parts.append("\n".join(sec))
+            seen.add(label_lower)
 
-    seen_any = False
-    for title, body in sections:
-        label_lower = title.strip().lower()
-        carousel = _build_carousel_html_for_label(label_lower, ticker, charts_dir_fs, charts_dir_web)
-        # Avoid double-wrapping: the generator already wrapped table in .table-wrap
-        body_has_wrap = "class='table-wrap'" in body or 'class="table-wrap"' in body
-        section_html = ['<div class="chart-block">', f"<h3>{title}</h3>"]
-        if carousel:
-            section_html.append(carousel)
-        section_html.append(body if body_has_wrap else f'<div class="table-wrap">{body}</div>')
-        section_html.append("</div>")
-        out_parts.append("\n".join(section_html))
-        seen_any = True
+        # Any image groups that had no table section
+        for lab in sorted(imgs_by_label.keys()):
+            if lab in seen:
+                continue
+            carousel = _build_carousel_html_for_label(lab, ticker, charts_dir_fs, charts_dir_web)
+            if carousel:
+                out_parts.append(
+                    "<div class=\"chart-block\">\n"
+                    f"<h3>{lab.title()}</h3>\n"
+                    f"{carousel}\n"
+                    "<div class=\"table-wrap\"><p>No table for this axis.</p></div>\n"
+                    "</div>"
+                )
+    else:
+        # No table at all → image-only sections
+        for lab in sorted(imgs_by_label.keys()):
+            carousel = _build_carousel_html_for_label(lab, ticker, charts_dir_fs, charts_dir_web)
+            if carousel:
+                out_parts.append(
+                    "<div class=\"chart-block\">\n"
+                    f"<h3>{lab.title()}</h3>\n"
+                    f"{carousel}\n"
+                    "<div class=\"table-wrap\"><p>No table for this axis.</p></div>\n"
+                    "</div>"
+                )
+        if legacy:
+            carousel = _build_carousel_html_for_label("segments", ticker, charts_dir_fs, charts_dir_web)
+            if carousel:
+                out_parts.append(
+                    "<div class=\"chart-block\">\n"
+                    "<h3>Segments</h3>\n"
+                    f"{carousel}\n"
+                    "<div class=\"table-wrap\"><p>No table for this axis.</p></div>\n"
+                    "</div>"
+                )
 
-    # If there are legacy images with no matching section, append them at the end
-    if legacy:
-        label = "Segments"
-        carousel = _build_carousel_html_for_label("segments", ticker, charts_dir_fs, charts_dir_web)
-        if carousel:
-            out_parts.append(
-                "<div class=\"chart-block\">\n"
-                f"<h3>{label}</h3>\n"
-                f"{carousel}\n"
-                "<div class=\"table-wrap\"><p>No table for this axis.</p></div>\n"
-                "</div>"
-            )
-            seen_any = True
+        if not out_parts:
+            return raw_table_html or ""
 
-    return "\n".join(out_parts) if seen_any or preface else ""
+    return "\n".join(out_parts)
 
-# (Kept for compatibility; not used by the template anymore)
-def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
-    imgs_by_label, legacy = _group_segment_images_by_label(ticker, charts_dir_fs)
-    parts = []
-    # Render known labels in a stable order (optional)
-    label_order = [
-        "products / services", "regions", "operating segments",
-        "domestic vs foreign", "country", "major customers", "sales channels", "unlabeled axis"
-    ]
-    used = set()
-    for lab in label_order:
-        files = imgs_by_label.get(lab, [])
-        if files:
-            items = [f'<div class="carousel-item"><img class="chart-img" src="../charts/{ticker}/{fn}" alt="{fn}"></div>' for fn in files]
-            parts.append(f'<h3>{lab.title()}</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
-            used.add(lab)
-    # Any remaining labels
-    for lab, files in imgs_by_label.items():
-        if lab in used or not files:
-            continue
-        items = [f'<div class="carousel-item"><img class="chart-img" src="../charts/{ticker}/{fn}" alt="{fn}"></div>' for fn in files]
-        parts.append(f'<h3>{lab.title()}</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
-    # Legacy bundle
-    if legacy:
-        items = [f'<div class="carousel-item"><img class="chart-img" src="../charts/{ticker}/{fn}" alt="{fn}"></div>' for fn in legacy]
-        parts.append('<h3>Segments</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
-    return "\n".join(parts)
-
-# ───────── template creation (no tabs; sequential sections) ────
+# ───────── template creation (NO TABS) ─────────────────────────
 def ensure_templates_exist():
     retro_css = r"""/* === retro.css — late-90s / early-2000s vibe === */
 body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
@@ -250,21 +241,14 @@ h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
 table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.85rem}
 th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}
 td{padding:4px;border:1px solid #8080FF}
-.marquee-wrapper{background:#000080;color:#FFFF00;padding:4px;font-weight:bold}
-.blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
 .container{max-width:none;width:100%;}
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
 .chart-block{margin-top:14px}
 .table-wrap{overflow-x:auto;border:1px solid #8080FF}
-.segment-table-wrapper .table-wrap table td:nth-child(2){text-align:center}
-.segment-table-wrapper .table-wrap table td:nth-child(3),
-.segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
-.carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
-.carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
 """
     create_template("static/css/retro.css", retro_css)
 
-    # Home page (unchanged)
+    # Home page
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
@@ -334,7 +318,7 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # Ticker page — Segment Performance now uses sequential sections
+    # Ticker page — NO TABS; sequential sections
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
@@ -526,19 +510,8 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         for t in tickers:
-            # read raw combined segment table (as produced by generator)
-            segment_table_raw = get_first_file(
-                [
-                    f"{charts_dir_fs}/{t}/{t}_segments_table.html",   # canonical (subfolder)
-                    f"{charts_dir_fs}/{t}/segments_table.html",       # alias
-                    f"{charts_dir_fs}/{t}/segment_performance.html",  # alias
-                    f"{charts_dir_fs}/{t}_segments_table.html",       # root copy
-                    f"{charts_dir_fs}/{t}_segment_performance.html",  # root alias
-                    f"{charts_dir_fs}/{t}/*segments_table.html",      # wildcard variant
-                    f"{charts_dir_fs}/*{t}*_segments_table.html",     # stray fallback
-                ],
-                f"No segment data available for {t}."
-            )
+            # load combined segment table (if present)
+            segment_table_raw = find_segment_table_html(t, charts_dir_fs)
 
             d = {
                 "ticker":                        t,
@@ -556,7 +529,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
 
-                # NEW: prebuilt sequential segment sections
+                # SEQUENTIAL SEGMENT SECTIONS (NO TABS)
                 "segment_sections_html":         build_segment_sections_sequential(t, charts_dir_fs, charts_dir_web, segment_table_raw),
 
                 # Images (web paths)
