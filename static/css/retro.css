@@ -1,13 +1,10 @@
-/* === retro.css — late-90s / early-2000s vibe === */
-body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
+/* === retro.css — retro vibe === */
+body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF;color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
 h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
-.navbar{background:#C0C0C0;border:2px outset #FFF;padding:6px;text-align:center}
-.button,.navbar a{display:inline-block;border:2px outset #C0C0C0;background:#E0E0E0;padding:3px 8px;font-weight:bold;margin:2px}
-table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:100%;font-size:.85rem}
-th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}
-td{padding:4px;border:1px solid #8080FF}
 .container{max-width:none;width:100%;}
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
 .chart-block{margin-top:14px}
 .table-wrap{overflow-x:auto;border:1px solid #8080FF}
+.carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:1px solid #8080FF;background:#FAFAFF}
+.carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
