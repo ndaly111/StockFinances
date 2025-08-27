@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# main_remote.py – 2025-08-27  (segments first; normalize table to single canonical path)
-# ────────────────────────────────────────────────────────────────────
-import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time, shutil
+# main_remote.py – 2025-08-27  (segments first; canonical table path)
+import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,18 +32,15 @@ from backfill_index_growth     import backfill_index_growth
 from generate_index_growth_pages import generate_index_growth_pages
 
 from generate_segment_charts   import generate_segment_charts_for_ticker
+from generate_segment_tables   import generate_segment_table_for_ticker  # NEW
 
 # Constants
-# ────────────────────────────────────────────────────────────────────
 TICKERS_FILE_PATH = "tickers.csv"
 DB_PATH           = "Stock Data.db"
 UPDATE_GROWTH_CSV = "update_growth.csv"
 CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
 
-# ────────────────────────────────────────────────────────────────────
-# Build-stamp helper (for run-wide freshness checks)
-# ────────────────────────────────────────────────────────────────────
 def write_build_stamp(stamp_path=Path(CHARTS_DIR) / "_build_stamp.txt") -> str:
     Path(CHARTS_DIR).mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).isoformat()
@@ -52,9 +48,6 @@ def write_build_stamp(stamp_path=Path(CHARTS_DIR) / "_build_stamp.txt") -> str:
     print(f"[build-stamp] {stamp_path} = {ts}")
     return ts
 
-# ────────────────────────────────────────────────────────────────────
-# Helpers
-# ────────────────────────────────────────────────────────────────────
 def manage_tickers(tickers_file, is_remote=False):
     tickers = ticker_manager.read_tickers(tickers_file)
     tickers = ticker_manager.modify_tickers(tickers, is_remote)
@@ -71,9 +64,7 @@ def establish_database_connection(db_path):
 def log_average_valuations(avg_values, tickers_file):
     if tickers_file != "tickers.csv":
         return
-    req = ("Nicks_TTM_Value_Average",
-           "Nicks_Forward_Value_Average",
-           "Finviz_TTM_Value_Average")
+    req = ("Nicks_TTM_Value_Average","Nicks_Forward_Value_Average","Finviz_TTM_Value_Average")
     if not all(k in avg_values for k in req):
         print("[WARNING] Missing keys in avg_values; skipping DB insert.")
         return
@@ -136,69 +127,30 @@ def fetch_10_year_treasury_yield():
         print(f"[YF] Error fetching 10Y Treasury Yield: {e}")
         return None
 
-# ────────────────────────────────────────────────────────────────────
-# Segment helpers
-# ────────────────────────────────────────────────────────────────────
-def _normalize_segment_table_to_canonical(ticker: str, out_dir: Path) -> bool:
-    """
-    Ensure there is exactly one canonical table at:
-        charts/<TICKER>/<TICKER>_segments_table.html
-
-    We look for known writer outputs and copy the first one we find into the canonical path.
-    """
-    canonical = out_dir / f"{ticker}_segments_table.html"
-    # Candidate sources in priority order:
-    candidates = [
-        canonical,                                        # already canonical
-        out_dir / "segments_table.html",                  # legacy alias
-        out_dir / "segment_performance.html",             # legacy alias
-        Path(CHARTS_DIR) / f"{ticker}_segments.html",     # flat writer (helper script)
-    ]
-    # add tolerant wildcards (inside subfolder and root-stray)
-    candidates += [p for pat in [out_dir / "*segments_table.html",
-                                 Path(CHARTS_DIR) / f"*{ticker}*_segments_table.html"]
-                   for p in map(Path, glob.glob(str(pat)))]
-
-    # If we already have canonical, we're done.
-    if canonical.exists():
-        return True
-
-    # Find the first readable candidate and copy to canonical
-    for src in candidates:
-        try:
-            if src.exists() and src.is_file():
-                shutil.copyfile(src, canonical)
-                print(f"[segments] normalized table → {canonical} (from {src})")
-                return True
-        except Exception as e:
-            print(f"[segments] WARN: could not normalize from {src}: {e}")
-
-    return False
-
+# ───────────────────────────────────────────────────────────
+# Segments: charts + table (canonical)
+# ───────────────────────────────────────────────────────────
 def build_segments_for_ticker(ticker: str) -> bool:
-    """
-    Generate segment charts for `ticker`, then normalize any existing table
-    (from any known writer) into the canonical path. Return True if the
-    canonical exists afterwards.
-    """
     out_dir = Path(CHARTS_DIR) / ticker
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1) Generate charts (and table if your generator emits one)
+    # 1) Charts (PNGs)
     generate_segment_charts_for_ticker(ticker, out_dir)
 
-    # 2) Normalize table path to canonical
-    ok = _normalize_segment_table_to_canonical(ticker, out_dir)
-    return ok
+    # 2) Combined table (canonical path)
+    try:
+        generate_segment_table_for_ticker(ticker, charts_dir=Path(CHARTS_DIR))
+    except Exception as e:
+        print(f"[segments] WARN: could not write table for {ticker}: {e}")
 
-# ────────────────────────────────────────────────────────────────────
+    canonical = out_dir / f"{ticker}_segments_table.html"
+    return canonical.exists() and canonical.is_file()
+
+# ───────────────────────────────────────────────────────────
 # Main
-# ────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 def mini_main():
-    # Build stamp first so we can verify freshness of artifacts created in this run
     write_build_stamp()
-
-    # 1) Economic data first
     generate_economic_data()
 
     financial_data, dashboard_data = {}, []
@@ -213,18 +165,15 @@ def mini_main():
         cursor = conn.cursor()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
-        missing_segments = []  # collect any tickers that didn't produce a table
+        missing_segments = []
 
-        # 2) Per-ticker pipeline (generate segments early for each ticker)
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
-                # Ensure segments (charts + canonical table) exist up front so pages can include them later
                 ok = build_segments_for_ticker(ticker)
                 if not ok:
                     missing_segments.append(ticker)
 
-                # Financial pipelines
                 annual_and_ttm_update(ticker, DB_PATH)
                 fetch_and_update_balance_sheet_data(ticker, cursor)
                 balancesheet_chart(ticker)
@@ -236,19 +185,14 @@ def mini_main():
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
 
-                # Optional: be polite to external sources (SEC, etc.)
                 time.sleep(0.5)
-
             except Exception as e:
-                # Prevent one ticker failure from killing the run
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
 
-        # Fail fast if any ticker lacked a segment table
         if missing_segments:
             raise RuntimeError("Missing segment tables for: " + ", ".join(missing_segments))
 
-        # 3) Post-run generators
         eps_dividend_generator()
         generate_all_summaries()
 
@@ -257,12 +201,9 @@ def mini_main():
         spy_qqq_html = index_growth(treasury)
         generate_earnings_tables()
         render_index_growth_charts()
-
-        # These generate standalone index growth pages + backfill artifacts
         backfill_index_growth()
         generate_index_growth_pages()
 
-        # 4) Pages (includes segment table read-in)
         html_generator2(
             tickers,
             financial_data,
@@ -270,19 +211,8 @@ def mini_main():
             avg_vals,
             spy_qqq_html
         )
-
-        # 5) Optional: Generate a one-page freshness report under charts/
-        try:
-            from freshness_check import read_stamp, scan_charts, write_report
-            stamp = read_stamp()
-            stale = scan_charts(stamp)
-            write_report(stale)  # writes charts/freshness_report.html
-        except Exception as e:
-            print(f"[freshness] WARN: could not write freshness report: {e}")
-
     finally:
         conn.close()
 
-# ────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     mini_main()
