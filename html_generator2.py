@@ -58,16 +58,9 @@ def inject_retro(html: str) -> str:
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
     """
     Build horizontal carousels for segment charts; one <h3> per axis.
-    File scheme: charts/<ticker>/<ticker>_<axis-slug>_<segment>.png
+    New PNGs live in: charts/<ticker>/<ticker>_<axis-slug>_<segment>.png
+    This also sweeps legacy root files: charts/<ticker>_*.png
     """
-    seg_dir = os.path.join(charts_dir_fs, ticker)
-    if not os.path.isdir(seg_dir):
-        return ""
-
-    pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
-    if not pngs:
-        return ""
-
     KNOWN = {
         "products-services": "Products / Services",
         "product-line": "Products / Services",
@@ -85,47 +78,75 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
     }
     pat = re.compile(rf"^{re.escape(ticker)}_(?P<axis>[a-z0-9-]+)_.+\.png$", re.IGNORECASE)
 
-    grouped, legacy = {}, []
-    for f in pngs:
-        m = pat.match(f)
-        if m:
-            slug = m.group("axis").lower()
-            title = KNOWN.get(slug)
-            if title:
-                grouped.setdefault(title, []).append(f)
+    grouped = {}      # {Axis Title -> [img src, ...]}
+    legacy_srcs = []  # unmatched → "Unlabeled Axis"
+
+    # 1) Subfolder (canonical): charts/<ticker>/
+    sub_dir = os.path.join(charts_dir_fs, ticker)
+    if os.path.isdir(sub_dir):
+        for f in sorted(os.listdir(sub_dir)):
+            if not f.lower().endswith(".png") or not f.startswith(f"{ticker}_"):
+                continue
+            m = pat.match(f)
+            src = f"{charts_dir_web}/{ticker}/{f}"
+            if m:
+                slug = m.group("axis").lower()
+                title = KNOWN.get(slug)
+                if title:
+                    grouped.setdefault(title, []).append(src)
+                else:
+                    legacy_srcs.append(src)
             else:
-                legacy.append(f)
-        else:
-            legacy.append(f)
+                legacy_srcs.append(src)
 
+    # 2) Legacy root spillover: charts/<ticker>_*.png
+    if os.path.isdir(charts_dir_fs):
+        for f in sorted(os.listdir(charts_dir_fs)):
+            if not f.lower().endswith(".png") or not f.startswith(f"{ticker}_"):
+                continue
+            # skip ones we already captured in subfolder
+            if os.path.isfile(os.path.join(sub_dir, f)):
+                continue
+            m = pat.match(f)
+            src = f"{charts_dir_web}/{f}"  # root path
+            if m:
+                slug = m.group("axis").lower()
+                title = KNOWN.get(slug)
+                if title:
+                    grouped.setdefault(title, []).append(src)
+                else:
+                    legacy_srcs.append(src)
+            else:
+                legacy_srcs.append(src)
+
+    # Nothing found
+    if not grouped and not legacy_srcs:
+        return ""
+
+    # Compose HTML
     parts = []
-    # Per-axis carousels
     for title in sorted(grouped.keys()):
-        items = []
-        for f in grouped[title]:
-            src = f"{charts_dir_web}/{ticker}/{f}"
-            items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
-        parts.append(f'<h3>{title}</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
+        items = [f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker} {title}"></div>'
+                 for src in grouped[title]]
+        parts.append(f'<h3>{title}</h3>\n'
+                     f'<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
 
-    # Legacy catch-all (if any)
-    if legacy:
-        items = []
-        for f in legacy:
-            src = f"{charts_dir_web}/{ticker}/{f}"
-            items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
-        parts.append('<h3>Segments</h3>\n<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
+    if legacy_srcs:
+        # Use a title that can match a table section
+        items = [f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker} Unlabeled Axis"></div>'
+                 for src in legacy_srcs]
+        parts.append('<h3>Unlabeled Axis</h3>\n'
+                     '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
 
     return "\n".join(parts)
 
 def _split_h3_sections(html: str, wanted_class: str = None):
     """
-    Split an HTML string into [(title, body_html)] where body_html is the content
-    immediately following the <h3> until the next <h3> or end.
-    If wanted_class is provided, we try to capture a specific wrapper (<div class=...>...</div>).
+    Split HTML into [(title, body_html)] sections keyed by <h3>...</h3>.
+    If wanted_class is provided, capture only the first matching wrapper in that section.
     """
     if not html:
         return []
-    # Find every <h3>...</h3>
     heads = list(re.finditer(r"<h3[^>]*>(.*?)</h3>", html, flags=re.IGNORECASE | re.DOTALL))
     sections = []
     for i, m in enumerate(heads):
@@ -134,10 +155,10 @@ def _split_h3_sections(html: str, wanted_class: str = None):
         end = heads[i+1].start() if i+1 < len(heads) else len(html)
         blob = html[start:end]
         if wanted_class:
-            # Try to pull only the first container of that class
-            pat = re.compile(rf"<div[^>]*class=['\"][^'\"]*{wanted_class}[^'\"]*['\"][^>]*>.*?</div>",
-                             flags=re.IGNORECASE | re.DOTALL)
-            mm = pat.search(blob)
+            mm = re.search(
+                rf"<div[^>]*class=['\"][^'\"]*{wanted_class}[^'\"]*['\"][^>]*>.*?</div>",
+                blob, flags=re.IGNORECASE | re.DOTALL
+            )
             if mm:
                 blob = mm.group(0)
         sections.append((title, blob.strip()))
@@ -145,8 +166,8 @@ def _split_h3_sections(html: str, wanted_class: str = None):
 
 def interleave_segment_blocks(carousel_html: str, table_html: str) -> str:
     """
-    Produce: [charts for Axis A] [table for Axis A]  then Axis B, etc.
-    Uses <h3> titles to align a carousel with its matching table section.
+    For each axis title: render [charts row] then [matching table].
+    Falls back to an inline notice if a table section is missing.
     """
     car = _split_h3_sections(carousel_html, wanted_class="carousel-container")
     tab = _split_h3_sections(table_html,   wanted_class="table-wrap")
@@ -163,10 +184,11 @@ def interleave_segment_blocks(carousel_html: str, table_html: str) -> str:
 
     blocks = []
     for title in order:
-        # some axes may have multiple carousels (rare); print them all then one table
+        table_part = tab_map.get(title, '<div class="table-wrap"><p>No table for this axis.</p></div>')
         for body in car_map[title]:
-            blocks.append(f'<div class="seg-axis-block">\n<h3>{title}</h3>\n{body}\n{tab_map.get(title, "")}\n</div>')
-    # leftover tables with no charts
+            blocks.append(f'<div class="seg-axis-block">\n<h3>{title}</h3>\n{body}\n{table_part}\n</div>')
+
+    # tables that have no charts
     for title, body in tab_map.items():
         if title not in car_map:
             blocks.append(f'<div class="seg-axis-block">\n<h3>{title}</h3>\n{body}\n</div>')
@@ -456,16 +478,16 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         for t in tickers:
-            # read canonical table first; keep a safe fallback to the flat file if present
+            # Read canonical table (with safe fallback to helper flat file)
             raw_table = get_first_file(
                 [
-                    f"{charts_dir_fs}/{t}/{t}_segments_table.html",   # canonical
-                    f"{charts_dir_fs}/{t}_segments.html",             # optional helper flat file
+                    f"{charts_dir_fs}/{t}/{t}_segments_table.html",  # canonical
+                    f"{charts_dir_fs}/{t}_segments.html",            # optional helper flat file
                 ],
                 f"No segment data available for {t}."
             )
             raw_carousels = build_segment_carousel_html(t, charts_dir_fs, charts_dir_web)
-            interleaved = interleave_segment_blocks(raw_carousels, raw_table)
+            interleaved   = interleave_segment_blocks(raw_carousels, raw_table)
 
             d = {
                 "ticker":                        t,
