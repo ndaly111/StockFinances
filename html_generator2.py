@@ -34,6 +34,8 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
     except FileNotFoundError:
         return ph
 
+
+
 def get_first_file(paths, placeholder="No data available") -> str:
     """
     Return contents of the first existing file in `paths`. Each entry may be a literal path or a glob pattern.
@@ -69,6 +71,7 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
       group them by <axis-slug> and show one carousel per axis.
 
     • If files are legacy (e.g., <ticker>_<segment>.png), DO NOT try to
+
       infer an axis. Show them together in a single 'Segments' carousel.
     """
     import re
@@ -539,12 +542,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "segment_table_html":            get_first_file(
                                                     [
                                                         # canonical (subfolder)
-                                                        f"{charts_dir_fs}/{t}/{t}_segments_table.html",
-                                                        f"{charts_dir_fs}/{t}/segments_table.html",
-                                                        f"{charts_dir_fs}/{t}/segment_performance.html",
-                                                        f"{charts_dir_fs}/{t}/*segments_table.html",
-                                                        # root compatibility copies
-                                                        f"{charts_dir_fs}/{t}_segments_table.html",
+                                                    {t}_segments_table.html",
                                                         f"{charts_dir_fs}/{t}_segment_performance.html",
                                                         f"{charts_dir_fs}/*{t}*_segments_table.html",
                                                     ],
