@@ -11,23 +11,57 @@
   </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+  <script>
+    $(function(){
+      $('#sortable-table').DataTable({
+        pageLength:100,scrollX:true,
+        createdRow:function(row){
+          $('td',row).each(function(){
+            if(!$(this).attr('data-order')) return;
+            var n=parseFloat($(this).data('order'));if(isNaN(n)) return;
+            var col=$(this).index();
+            if(col===6){$(this).addClass(n<50?'negative':'positive');}
+            else if(col>=2&&col<=5){$(this).addClass(n<0?'negative':'positive');}
+          });
+        }
+      });
+    });
+  </script>
 </head><body>
 <div class="container">
+
+  <div class="marquee-wrapper">
+    <marquee behavior="scroll" direction="left" scrollamount="6">
+      Nick's Stock Financials — Surfacing Under-Priced Stocks Since 2025
+    </marquee>
+  </div>
+
+  <nav class="navbar">
+    {% for t in tickers %}
+      <a href="pages/{{t}}_page.html" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}
+    {% endfor %}
+  </nav>
+
   <header><h1>Financial Overview</h1></header>
+
   <div id="spy-qqq-growth" class="center-table">
     <h2>SPY vs QQQ Overview</h2>
     {{ spy_qqq_growth | safe }}
   </div>
+
   <div id="economic-data" class="center-table">
     <h2>Economic Data</h2>
     {{ economic_data | safe }}
   </div>
+
   <div class="center-table">
     <h2>Past Earnings (Last 7 Days)</h2>
     {{ earnings_past | safe }}
     <h2>Upcoming Earnings</h2>
     {{ earnings_upcoming | safe }}
   </div>
+
   <div>{{ dashboard_table | safe }}</div>
+
   <footer><p>Nick's Financial Data Dashboard</p></footer>
 </div></body></html>
