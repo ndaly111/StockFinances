@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# main_remote.py – 2025-08-27  (segments first; single-path table write)
+# main_remote.py – 2025-08-27  (segments first; normalize table to single canonical path)
 # ────────────────────────────────────────────────────────────────────
-import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time
+import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time, shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,19 +33,6 @@ from backfill_index_growth     import backfill_index_growth
 from generate_index_growth_pages import generate_index_growth_pages
 
 from generate_segment_charts   import generate_segment_charts_for_ticker
-
-# NEW: use the “missing link” generator if present to render the combined HTML snippet
-try:
-    # your posted script exposes render_table_html(ticker, df)
-    from generate_segment_tables import render_table_html
-except Exception:
-    render_table_html = None
-
-# Needed to fetch the raw segment dataframe when we render the combined HTML
-try:
-    from sec_segment_data_arelle import get_segment_data
-except Exception:
-    get_segment_data = None
 
 # Constants
 # ────────────────────────────────────────────────────────────────────
@@ -152,49 +139,57 @@ def fetch_10_year_treasury_yield():
 # ────────────────────────────────────────────────────────────────────
 # Segment helpers
 # ────────────────────────────────────────────────────────────────────
-def _write_single_path_segment_table(ticker: str, out_dir: Path) -> None:
+def _normalize_segment_table_to_canonical(ticker: str, out_dir: Path) -> bool:
     """
-    If the lightweight generator is available, render ONE combined table per ticker
-    and write it to the canonical path: charts/<TICKER>/<TICKER>_segments_table.html
-    """
-    if render_table_html is None or get_segment_data is None:
-        return  # nothing to do; rely on generate_segment_charts_for_ticker to have written it
+    Ensure there is exactly one canonical table at:
+        charts/<TICKER>/<TICKER>_segments_table.html
 
-    try:
-        df   = get_segment_data(ticker)
-        html = render_table_html(ticker, df)
-        canonical = out_dir / f"{ticker}_segments_table.html"
-        canonical.write_text(html, encoding="utf-8")
-        print(f"[segments] wrote canonical table → {canonical}")
-    except Exception as e:
-        print(f"[segments] WARN: could not write canonical table for {ticker}: {e}")
+    We look for known writer outputs and copy the first one we find into the canonical path.
+    """
+    canonical = out_dir / f"{ticker}_segments_table.html"
+    # Candidate sources in priority order:
+    candidates = [
+        canonical,                                        # already canonical
+        out_dir / "segments_table.html",                  # legacy alias
+        out_dir / "segment_performance.html",             # legacy alias
+        Path(CHARTS_DIR) / f"{ticker}_segments.html",     # flat writer (helper script)
+    ]
+    # add tolerant wildcards (inside subfolder and root-stray)
+    candidates += [p for pat in [out_dir / "*segments_table.html",
+                                 Path(CHARTS_DIR) / f"*{ticker}*_segments_table.html"]
+                   for p in map(Path, glob.glob(str(pat)))]
+
+    # If we already have canonical, we're done.
+    if canonical.exists():
+        return True
+
+    # Find the first readable candidate and copy to canonical
+    for src in candidates:
+        try:
+            if src.exists() and src.is_file():
+                shutil.copyfile(src, canonical)
+                print(f"[segments] normalized table → {canonical} (from {src})")
+                return True
+        except Exception as e:
+            print(f"[segments] WARN: could not normalize from {src}: {e}")
+
+    return False
 
 def build_segments_for_ticker(ticker: str) -> bool:
     """
-    Generate segment charts + table for `ticker` into charts/<TICKER>/...
-    Returns True if a table file exists afterwards (canonical or tolerated alias).
+    Generate segment charts for `ticker`, then normalize any existing table
+    (from any known writer) into the canonical path. Return True if the
+    canonical exists afterwards.
     """
     out_dir = Path(CHARTS_DIR) / ticker
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1) Charts + any table emitted by generate_segment_charts_for_ticker
+    # 1) Generate charts (and table if your generator emits one)
     generate_segment_charts_for_ticker(ticker, out_dir)
 
-    # 2) Ensure the single-path combined table exists (write/overwrite it from the helper if available)
-    _write_single_path_segment_table(ticker, out_dir)
-
-    # 3) Check for canonical (preferred) or tolerated aliases (for backward-compatibility)
-    patterns = [
-        out_dir / f"{ticker}_segments_table.html",  # canonical
-        out_dir / "segments_table.html",            # tolerated legacy
-        out_dir / "segment_performance.html",       # tolerated legacy
-        out_dir / "*segments_table.html",           # wildcard inside subfolder
-    ]
-    # include root-stray fallback if a prior run wrote incorrectly
-    patterns += [Path(CHARTS_DIR) / f"*{ticker}*_segments_table.html"]
-
-    found = any(glob.glob(str(p)) for p in patterns)
-    return bool(found)
+    # 2) Normalize table path to canonical
+    ok = _normalize_segment_table_to_canonical(ticker, out_dir)
+    return ok
 
 # ────────────────────────────────────────────────────────────────────
 # Main
@@ -224,7 +219,7 @@ def mini_main():
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
-                # Ensure segments (charts + table) exist up front so pages can include them later
+                # Ensure segments (charts + canonical table) exist up front so pages can include them later
                 ok = build_segments_for_ticker(ticker)
                 if not ok:
                     missing_segments.append(ticker)
