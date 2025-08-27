@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# main_remote.py – 2025-08-20  (robust build: segments first for each ticker)
+# main_remote.py – 2025-08-27  (segments first; single-path table write)
 # ────────────────────────────────────────────────────────────────────
 import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time
 from datetime import datetime, timezone
@@ -33,6 +33,19 @@ from backfill_index_growth     import backfill_index_growth
 from generate_index_growth_pages import generate_index_growth_pages
 
 from generate_segment_charts   import generate_segment_charts_for_ticker
+
+# NEW: use the “missing link” generator if present to render the combined HTML snippet
+try:
+    # your posted script exposes render_table_html(ticker, df)
+    from generate_segment_tables import render_table_html
+except Exception:
+    render_table_html = None
+
+# Needed to fetch the raw segment dataframe when we render the combined HTML
+try:
+    from sec_segment_data_arelle import get_segment_data
+except Exception:
+    get_segment_data = None
 
 # Constants
 # ────────────────────────────────────────────────────────────────────
@@ -139,21 +152,43 @@ def fetch_10_year_treasury_yield():
 # ────────────────────────────────────────────────────────────────────
 # Segment helpers
 # ────────────────────────────────────────────────────────────────────
+def _write_single_path_segment_table(ticker: str, out_dir: Path) -> None:
+    """
+    If the lightweight generator is available, render ONE combined table per ticker
+    and write it to the canonical path: charts/<TICKER>/<TICKER>_segments_table.html
+    """
+    if render_table_html is None or get_segment_data is None:
+        return  # nothing to do; rely on generate_segment_charts_for_ticker to have written it
+
+    try:
+        df   = get_segment_data(ticker)
+        html = render_table_html(ticker, df)
+        canonical = out_dir / f"{ticker}_segments_table.html"
+        canonical.write_text(html, encoding="utf-8")
+        print(f"[segments] wrote canonical table → {canonical}")
+    except Exception as e:
+        print(f"[segments] WARN: could not write canonical table for {ticker}: {e}")
+
 def build_segments_for_ticker(ticker: str) -> bool:
     """
     Generate segment charts + table for `ticker` into charts/<TICKER>/...
-    Returns True if a table file exists afterwards (canonical or alias/glob fallback).
+    Returns True if a table file exists afterwards (canonical or tolerated alias).
     """
     out_dir = Path(CHARTS_DIR) / ticker
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1) Charts + any table emitted by generate_segment_charts_for_ticker
     generate_segment_charts_for_ticker(ticker, out_dir)
 
-    # Check for canonical + aliases + tolerant globs
+    # 2) Ensure the single-path combined table exists (write/overwrite it from the helper if available)
+    _write_single_path_segment_table(ticker, out_dir)
+
+    # 3) Check for canonical (preferred) or tolerated aliases (for backward-compatibility)
     patterns = [
-        out_dir / f"{ticker}_segments_table.html",
-        out_dir / "segments_table.html",
-        out_dir / "segment_performance.html",
-        out_dir / "*segments_table.html",
+        out_dir / f"{ticker}_segments_table.html",  # canonical
+        out_dir / "segments_table.html",            # tolerated legacy
+        out_dir / "segment_performance.html",       # tolerated legacy
+        out_dir / "*segments_table.html",           # wildcard inside subfolder
     ]
     # include root-stray fallback if a prior run wrote incorrectly
     patterns += [Path(CHARTS_DIR) / f"*{ticker}*_segments_table.html"]
@@ -189,7 +224,7 @@ def mini_main():
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
-                # Ensure segments exist up front so pages can include them later
+                # Ensure segments (charts + table) exist up front so pages can include them later
                 ok = build_segments_for_ticker(ticker)
                 if not ok:
                     missing_segments.append(ticker)
@@ -210,15 +245,13 @@ def mini_main():
                 time.sleep(0.5)
 
             except Exception as e:
-                # Prevent one ticker failure (e.g., yfinance timeout) from killing the run
+                # Prevent one ticker failure from killing the run
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
 
         # Fail fast if any ticker lacked a segment table
         if missing_segments:
-            raise RuntimeError(
-                "Missing segment tables for: " + ", ".join(missing_segments)
-            )
+            raise RuntimeError("Missing segment tables for: " + ", ".join(missing_segments))
 
         # 3) Post-run generators
         eps_dividend_generator()
