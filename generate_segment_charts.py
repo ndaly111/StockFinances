@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""
-generate_segment_charts.py — SEGMENTS v2025-08-22 (axis-first, issuer-agnostic)
-
-• One HTML section PER AxisType (Products/Services, Regions, Operating Segments, etc.).
-• Charts are written per (AxisType, Segment) with a shared y-axis across all.
-• PNG naming includes the axis slug:  <TICKER>_<axis-slug>_<segment>.png
-• Compact pivot tables: last 3 FY (+ TTM if present). “% of Total (TTM)” per section.
-• Filters out elimination/recon/unallocated rows and rows with negative latest revenue.
-• Always writes a table file (or an explicit error), and also writes a root copy at charts/<TICKER>_segments_table.html.
-"""
-
+# generate_segment_charts.py — SEGMENTS (axis-first, single table path)
 from __future__ import annotations
 import argparse, math, re, traceback
 from datetime import datetime
@@ -18,32 +8,17 @@ from typing import List, Tuple, Optional
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from sec_segment_data_arelle import get_segment_data
+from sec_segment_data_arelle import get_segment_data  # unchanged extractor
 
-VERSION = "SEGMENTS v2025-08-22"
+VERSION = "SEGMENTS v2025-08-26"
 
-def read_tickers(csv_path: Path) -> List[str]:
-    if not csv_path.is_file():
-        return []
-    try:
-        df = pd.read_csv(csv_path)
-    except Exception:
-        return []
-    cols = [c for c in df.columns if c.lower() == "ticker"]
-    if not cols:
-        return []
-    return [str(t).upper().strip() for t in df[cols[0]].dropna().tolist()]
+HIDE_RE = re.compile(
+    r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
+    r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
+    re.IGNORECASE,
+)
 
-def sort_years(years: List[str]) -> List[str]:
-    def key(y: str) -> Tuple[int, int | str]:
-        if y == "TTM": return (2, 0)
-        try: return (0, int(y))
-        except Exception: return (1, y)
-    return [y for _, y in sorted([(key(y), y) for y in years], key=lambda x: x[0])]
-
-def ensure_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-
+# ────────────────────────────────────────────────────────────────
 def _humanize_segment_name(raw: str) -> str:
     if not isinstance(raw, str) or not raw:
         return str(raw)
@@ -51,8 +26,7 @@ def _humanize_segment_name(raw: str) -> str:
     name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
-    title = " ".join(w if w.isupper() else w.capitalize() for w in name.split())
-    return title
+    return " ".join(w if w.isupper() else w.capitalize() for w in name.split())
 
 def _norm_axis_label(axis: Optional[str]) -> str:
     s = (axis or "").strip()
@@ -77,7 +51,7 @@ def _to_float(x):
     except: return pd.NA
 
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
-    if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
+    if not isinstance(max_abs_value, (int, float)) or pd.isna(max_abs_value) or max_abs_value == 0:
         return (1.0, "$")
     v = abs(max_abs_value)
     if v >= 1e12: return (1e12, "$T")
@@ -115,11 +89,8 @@ def _slug(s: str) -> str:
     return re.sub(r"(^-|-$)", "", s)
 
 def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> None:
+    """Remove stale PNGs from prior runs to avoid mixing schemes."""
     try:
-        for generic in ("segment_performance.png", f"{ticker}_segment_performance.png"):
-            p = out_dir / generic
-            if p.exists():
-                p.unlink()
         keep = set(keep_files)
         for p in out_dir.glob(f"{ticker}_*.png"):
             if p.name not in keep:
@@ -127,48 +98,41 @@ def _cleanup_segment_pngs(out_dir: Path, ticker: str, keep_files: List[str]) -> 
     except Exception as e:
         print(f"[{VERSION}] WARN: cleanup in {out_dir} hit an issue: {e}")
 
-HIDE_RE = re.compile(
-    r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
-    r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
-    re.IGNORECASE,
-)
-
+# ────────────────────────────────────────────────────────────────
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
+    ticker = (ticker or "").upper().strip()
     charts_root = Path("charts")
-    canonical_dir = charts_root / ticker
-    try:
-        out_dir = Path(out_dir)
-    except Exception:
-        out_dir = canonical_dir
-    if out_dir.resolve().name.upper() != ticker.upper():
-        out_dir = canonical_dir
+    out_dir = Path(out_dir)
+    if out_dir.resolve().name.upper() != ticker:
+        out_dir = charts_root / ticker
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    error_html_path = out_dir / f"{ticker}_segments_table.html"
+    table_path = out_dir / f"{ticker}_segments_table.html"
 
     try:
+        # Fetch & normalize
         try:
             df = get_segment_data(ticker)
         except Exception as fetch_err:
             msg = f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>"
-            error_html_path.write_text(msg, encoding="utf-8")
+            table_path.write_text(msg, encoding="utf-8")
             print(f"[{VERSION}] fetch error for {ticker}: {fetch_err}")
             return
 
         if df is None or df.empty:
-            error_html_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
+            table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
             return
 
         df = df.copy()
-        df["Segment"] = df["Segment"].astype(str).map(_humanize_segment_name)
-        df["Year"] = df["Year"].astype(str)
-        df["Revenue"] = df["Revenue"].map(_to_float)
+        df["Segment"]  = df["Segment"].astype(str).map(_humanize_segment_name)
+        df["Year"]     = df["Year"].astype(str)
+        df["Revenue"]  = df["Revenue"].map(_to_float)
         df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-        _op_all_missing = df["OpIncome"].isna().all() or (df["OpIncome"].fillna(0) == 0).all()
-        if _op_all_missing:
-            df["OpIncome"] = pd.NA
+        if df["OpIncome"].isna().all() or (df["OpIncome"].fillna(0) == 0).all():
+            df["OpIncome"] = pd.NA  # hide OI columns if truly unavailable
 
+        # Y-axis range (shared per axis chart)
         all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
         if all_vals.empty:
             min_y, max_y = 0.0, 0.0
@@ -180,20 +144,19 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         margin = spread * 0.1 if spread else 1.0
         min_y_plot, max_y_plot = min_y - margin, max_y + margin
 
-        years_all = sort_years(sorted(set(df["Year"].tolist())))
+        years_all = sorted(set(df["Year"].tolist()), key=lambda y: (y!="TTM", y))
         years_tbl = _last3_plus_ttm(df["Year"].tolist())
 
+        # Build charts per (AxisType, Segment)
         written_pngs: List[str] = []
         for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
             revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
             op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-
             revenues_b   = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
             op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
 
             fig, axp = plt.subplots(figsize=(8, 5))
-            x = list(range(len(years_all)))
-            w = 0.35
+            x = list(range(len(years_all))); w = 0.35
             axp.bar([i - w/2 for i in x], revenues_b,  width=w, label="Revenue")
             axp.bar([i + w/2 for i in x], op_incomes_b, width=w, label="Operating Income")
             axp.set_xticks(x); axp.set_xticklabels(years_all)
@@ -201,20 +164,18 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             axis_label = _norm_axis_label(axis)
             axp.set_ylabel("Value ($B)")
             axp.set_title(f"{seg} — {axis_label}")
-            axp.axhline(0, linewidth=0.8)
-            axp.yaxis.grid(True, linestyle="--", alpha=0.5)
-            axp.legend(loc="upper left")
-            plt.tight_layout()
+            axp.axhline(0, linewidth=0.8); axp.yaxis.grid(True, linestyle="--", alpha=0.5)
+            axp.legend(loc="upper left"); plt.tight_layout()
 
-            safe_seg = _safe_seg_filename(seg)
+            safe_seg  = _safe_seg_filename(seg)
             axis_slug = _slug(axis_label)
-            out_name = f"{ticker}_{axis_slug}_{safe_seg}.png"
-            plt.savefig(out_dir / out_name)
-            plt.close(fig)
+            out_name  = f"{ticker}_{axis_slug}_{safe_seg}.png"
+            plt.savefig(out_dir / out_name); plt.close(fig)
             written_pngs.append(out_name)
 
         _cleanup_segment_pngs(out_dir, ticker, written_pngs)
 
+        # Build compact per-axis pivot tables for HTML
         def pv(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
             p = sub_df[sub_df["Year"].isin(years_tbl)].pivot_table(
                 index="Segment", columns="Year", values=col, aggfunc="sum"
@@ -317,65 +278,38 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             "Sections generated: " + (", ".join(sorted(set(axes_found))) if axes_found else "None") +
             ".</div>"
         )
-
         content = f"<!-- {VERSION} -->\n{css}\n{caption}\n" + "\n<hr/>\n".join(sections_html) + "\n" + debug
 
-        # Write canonical + aliases (subfolder)
-        canonical = out_dir / f"{ticker}_segments_table.html"
-        aliases = [
-            out_dir / "segments_table.html",
-            out_dir / "segment_performance.html",
-            out_dir / f"{ticker}_segment_performance.html",
-        ]
-
-        def write_file(p: Path, text: str):
-            try:
-                p.unlink(missing_ok=True)
-            except Exception:
-                pass
-            p.write_text(text, encoding="utf-8")
-            print(f"[{VERSION}] wrote {p} ({p.stat().st_size} bytes)")
-
-        write_file(canonical, content)
-        for a in aliases:
-            write_file(a, content)
-
-        # Root compatibility copy (some readers/globs expect this)
-        root_copy = Path("charts") / f"{ticker}_segments_table.html"
-        write_file(root_copy, content)
+        # WRITE ONLY THE CANONICAL FILE
+        table_path.write_text(content, encoding="utf-8")
+        print(f"[{VERSION}] wrote {table_path} ({table_path.stat().st_size} bytes)")
 
     except Exception as e:
         tb = traceback.format_exc(limit=5)
         html = f"<p>Error generating segment table for {ticker}: {e}</p><pre style='font-size:11px;color:#666'>{tb}</pre>"
-        error_html_path.write_text(html, encoding="utf-8")
+        table_path.write_text(html, encoding="utf-8")
         print(f"[{VERSION}] ERROR for {ticker}: {e}")
 
+# CLI
 def main():
-    parser = argparse.ArgumentParser(description="Generate axis-first segment charts and tables for tickers.")
-    parser.add_argument("--tickers_csv", type=str, default="tickers.csv",
-                        help="CSV with a 'Ticker' column")
-    parser.add_argument("--output_dir", type=str, default="charts",
-                        help="Output directory (default: charts/)")
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser(description="Generate segment charts + single-table HTML per ticker.")
+    ap.add_argument("--tickers_csv", type=str, default="tickers.csv", help="CSV with a 'Ticker' column")
+    ap.add_argument("--output_dir", type=str, default="charts", help="Output directory (default: charts/)")
+    args = ap.parse_args()
 
-    print(f"{VERSION} starting…")
-
-    csv_path = Path(args.tickers_csv)
-    tickers = read_tickers(csv_path)
-    if not tickers:
-        print(f"Error: No tickers found in '{csv_path}'. Provide a CSV with a 'Ticker' column.")
+    df = pd.read_csv(args.tickers_csv)
+    col = next((c for c in df.columns if c.lower() == "ticker"), None)
+    if not col:
+        print(f"Error: No 'Ticker' column in {args.tickers_csv}")
         return
+    tickers = [str(t).upper().strip() for t in df[col].dropna()]
 
-    output_dir = Path(args.output_dir)
-    ensure_dir(output_dir)
+    out_base = Path(args.output_dir)
+    out_base.mkdir(parents=True, exist_ok=True)
 
-    for i, tk in enumerate(tickers, start=1):
-        print(f"[{i}/{len(tickers)}] Processing {tk}…")
-        tk_dir = output_dir / tk
-        ensure_dir(tk_dir)
-        generate_segment_charts_for_ticker(tk, tk_dir)
-
-    print("Done.")
+    for i, tk in enumerate(tickers, 1):
+        print(f"[{i}/{len(tickers)}] {tk}")
+        generate_segment_charts_for_ticker(tk, out_base / tk)
 
 if __name__ == "__main__":
     main()
