@@ -18,11 +18,3 @@ td{padding:4px;border:1px solid #8080FF}
 .segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
 .carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
 .carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
-
-/* === segment tabs === */
-.seg-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px}
-.seg-tab{cursor:pointer;padding:6px 10px;border:2px outset #C0C0C0;background:#EAEAFF;font-weight:bold;color:#000080}
-.seg-tab.active{background:#C0C0FF;border:2px inset #C0C0C0}
-.seg-pane{display:none}
-.seg-pane.active{display:block}
-.seg-note{font-size:12px;color:#444;margin:6px 0 8px}
