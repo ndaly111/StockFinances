@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SEC_USER_AGENT: "StockFinances/1.0 (Contact: ${{ secrets.Email }})"
+      SEC_EMAIL: ${{ secrets.EMAIL }}
     steps:
     - name: Check out repository
       uses: actions/checkout@v4
@@ -46,8 +47,10 @@ jobs:
         git config --global user.name 'ndaly111'
         git config --global user.email 'ndaly111@gmail.com'
 
-    - name: Commit results
+    - name: Commit charts and pages
       run: |
-        git add charts || true
-        git commit -m "Automated segment charts" || echo "No changes to commit"
-        git push || true
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add charts/**/*.png charts/**/*.html pages/*.html index.html
+        git commit -m "Update charts & segment tables [skip ci]" || echo "No changes"
+        git push
