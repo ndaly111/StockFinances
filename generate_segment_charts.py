@@ -11,6 +11,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple, Optional
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")  # headless backend for CI
 import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
@@ -110,7 +112,10 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     df = get_segment_data(ticker)
     if df is None or df.empty:
-        table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
+        # Preserve any existing non-empty table to avoid erasing good output on transient SEC failures.
+        if not table_path.exists():
+            table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
+        print(f"[segments] no rows for {ticker}; preserved existing table at {table_path}")
         return
 
     df = df.copy()

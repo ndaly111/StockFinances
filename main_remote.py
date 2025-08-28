@@ -31,8 +31,8 @@ from generate_earnings_tables  import generate_earnings_tables
 from backfill_index_growth     import backfill_index_growth
 from generate_index_growth_pages import generate_index_growth_pages
 
+# We no longer call the second table generator; chart writer owns the table.
 from generate_segment_charts   import generate_segment_charts_for_ticker
-from generate_segment_tables   import generate_segment_table_for_ticker  # NEW
 
 # Constants
 TICKERS_FILE_PATH = "tickers.csv"
@@ -134,15 +134,10 @@ def build_segments_for_ticker(ticker: str) -> bool:
     out_dir = Path(CHARTS_DIR) / ticker
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1) Charts (PNGs)
+    # 1) Charts (+ canonical table emitted by generate_segment_charts_for_ticker)
     generate_segment_charts_for_ticker(ticker, out_dir)
 
-    # 2) Combined table (canonical path)
-    try:
-        generate_segment_table_for_ticker(ticker, charts_dir=Path(CHARTS_DIR))
-    except Exception as e:
-        print(f"[segments] WARN: could not write table for {ticker}: {e}")
-
+    # 2) No second writer call. We only normalize/verify file presence below.
     canonical = out_dir / f"{ticker}_segments_table.html"
     return canonical.exists() and canonical.is_file()
 
