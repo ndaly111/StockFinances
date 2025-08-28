@@ -42,6 +42,7 @@ REVENUE_BASE_TAGS = {
 OPINC_BASE_TAGS = {"OperatingIncomeLoss"}
 
 # Canonical axis names we keep
+# Extended mapping to unify various SEC axis labels
 AXIS_NORMALIZER = {
     # Geography → canonical "GeographicalAreasAxis"
     "StatementGeographicalAxis": "GeographicalAreasAxis",
@@ -71,6 +72,8 @@ AXIS_NORMALIZER = {
     "SalesChannelsAxis": "SalesChannelsAxis",
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
+
+# Keep whitelist in sync with the normalizer
 AXIS_WHITELIST = set(AXIS_NORMALIZER.values())
 
 _NEG_TOKENS = ("cost", "cogs", "expense", "gain", "loss", "grossprofit", "tax", "deferred", "impair", "interest")
