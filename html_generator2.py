@@ -61,16 +61,25 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
     New PNGs live in: charts/<ticker>/<ticker>_<axis-slug>_<segment>.png
     This also sweeps legacy root files: charts/<ticker>_*.png
     """
+    # Slug -> Title map. Values MUST match table <h3> titles exactly.
     KNOWN = {
+        # Products / Services families
         "products-services": "Products / Services",
         "product-line": "Products / Services",
+        "product-lines": "Products / Services",
         "product": "Products / Services",
         "product-category": "Products / Services",
+        "product-categories": "Products / Services",
+
+        # Geography
         "regions": "Regions",
         "geographical-areas": "Regions",
         "geographical-regions": "Regions",
-        "domestic-vs-foreign": "Domestic vs Foreign",
+        "geographical-region": "Regions",
+        "domestic-vs-foreign": "Domestic Vs Foreign",  # capital "Vs" to match table
         "country": "Country",
+
+        # Segments & others
         "operating-segments": "Operating Segments",
         "major-customers": "Major Customers",
         "sales-channels": "Sales Channels",
