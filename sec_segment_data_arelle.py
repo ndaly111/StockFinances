@@ -43,25 +43,28 @@ OPINC_BASE_TAGS = {"OperatingIncomeLoss"}
 
 # Canonical axis names we keep
 AXIS_NORMALIZER = {
-    # Geography
+    # Geography → canonical "GeographicalAreasAxis"
     "StatementGeographicalAxis": "GeographicalAreasAxis",
     "GeographicalAreasAxis": "GeographicalAreasAxis",
-    "GeographicalRegionsAxis": "GeographicalRegionsAxis",
-    "GeographicalRegionAxis": "GeographicalRegionsAxis",
+    "GeographicalRegionsAxis": "GeographicalAreasAxis",
+    "GeographicalRegionAxis": "GeographicalAreasAxis",
     "DomesticAndForeignAxis": "DomesticAndForeignAxis",
     "CountryAxis": "CountryAxis",
-    # Product/Service
+
+    # Product / Service → canonical "ProductsAndServicesAxis"
     "ProductOrServiceAxis": "ProductsAndServicesAxis",
     "ProductsAndServicesAxis": "ProductsAndServicesAxis",
-    "ProductLineAxis": "ProductLineAxis",
-    "ProductAxis": "ProductAxis",
-    "ProductCategoryAxis": "ProductCategoryAxis",
-    "ProductCategoriesAxis": "ProductCategoryAxis",
+    "ProductLineAxis": "ProductsAndServicesAxis",
+    "ProductAxis": "ProductsAndServicesAxis",
+    "ProductCategoryAxis": "ProductsAndServicesAxis",
+    "ProductCategoriesAxis": "ProductsAndServicesAxis",
+
     # Operating segments
     "OperatingSegmentsAxis": "OperatingSegmentsAxis",
     "BusinessSegmentsAxis": "OperatingSegmentsAxis",
     "ReportableSegmentsAxis": "OperatingSegmentsAxis",
     "SegmentsAxis": "OperatingSegmentsAxis",
+
     # Customers / Channels
     "MajorCustomersAxis": "MajorCustomersAxis",
     "SignificantCustomersAxis": "MajorCustomersAxis",
