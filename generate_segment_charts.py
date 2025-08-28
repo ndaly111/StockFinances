@@ -2,28 +2,127 @@
 """
 generate_segment_charts.py — write charts (PNG) and a canonical table per ticker.
 
-• PNGs:  charts/<T>/<T>_<axis-slug>_<segment>.png
-• Table:  charts/<T>/<T>_segments_table.html
+• PNGs: charts/<T>/<T>_<axis-slug>_<segment>.png
+• Table: charts/<T>/<T>_segments_table.html
 """
 from __future__ import annotations
-import argparse, re
-from datetime import datetime
+
+# NEW (headless backend) – must come before pyplot import
+import matplotlib
+matplotlib.use("Agg")
+
+import argparse, math, re, json, sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple, Optional
+
 import pandas as pd
-import matplotlib
-matplotlib.use("Agg")  # headless backend for CI
 import matplotlib.pyplot as plt
+import yfinance as yf  # lightweight fallback for earnings date
 
 from sec_segment_data_arelle import get_segment_data
 
 VERSION = "SEGMENTS v2025-08-27"
+DB_PATH = "Stock Data.db"                  # existing DB
+STAMP_FILENAME = "_segments_stamp.json"    # per‑ticker freshness stamp
 
 HIDE_RE = re.compile(
     r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
     r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
     re.IGNORECASE,
 )
+
+# ───────────────────────────────────────────────────────────
+# tiny freshness helpers (self‑contained; no main_remote changes)
+# ───────────────────────────────────────────────────────────
+def _seg_stamp_path(ticker: str) -> Path:
+    return Path("charts") / ticker / STAMP_FILENAME
+
+def _read_seg_stamp(ticker: str) -> Optional[datetime]:
+    p = _seg_stamp_path(ticker)
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        dt = pd.to_datetime(data.get("updated_at"), errors="coerce")
+        if pd.notna(dt):
+            return dt.to_pydatetime().replace(tzinfo=None)
+    except Exception:
+        pass
+    return None
+
+def _write_seg_stamp(ticker: str, earnings_date: Optional[datetime]) -> None:
+    p = _seg_stamp_path(ticker)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "earnings_date": earnings_date.isoformat() if isinstance(earnings_date, datetime) else None,
+        "version": VERSION,
+    }
+    p.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+def _get_last_earnings_date_from_db(ticker: str) -> Optional[datetime]:
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            # probe a few likely tables/columns; cheap and safe
+            candidates = [
+                ("EarningsCalendar", "EarningsDate"),
+                ("Earnings",         "date"),
+                ("Earnings_Dates",   "earnings_date"),
+            ]
+            for tbl, col in candidates:
+                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (tbl,))
+                if not cur.fetchone():
+                    continue
+                try:
+                    cur.execute(f"SELECT MAX({col}) FROM {tbl} WHERE Ticker=?", (ticker,))
+                    row = cur.fetchone()
+                    if row and row[0]:
+                        dt = pd.to_datetime(row[0], errors="coerce")
+                        if pd.notna(dt):
+                            return dt.to_pydatetime().replace(tzinfo=None)
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    return None
+
+def _get_last_earnings_date_fallback_yf(ticker: str) -> Optional[datetime]:
+    try:
+        t = yf.Ticker(ticker)
+        # modern yfinance: .calendar is a DataFrame with one column
+        cal = t.calendar
+        if isinstance(cal, pd.DataFrame) and not cal.empty:
+            ser = cal.iloc[:, 0]
+            # try common labels
+            for key in ("Earnings Date", "EarningsDate", "Earnings Call Date"):
+                if key in cal.index:
+                    vals = cal.loc[key].values if hasattr(cal.loc[key], "values") else [cal.loc[key]]
+                    dts = [pd.to_datetime(v, errors="coerce") for v in vals]
+                    dts = [d for d in dts if pd.notna(d)]
+                    if dts:
+                        return max(dts).to_pydatetime().replace(tzinfo=None)
+        info = t.info or {}
+        if "earningsDate" in info:
+            dt = pd.to_datetime(info["earningsDate"], errors="coerce")
+            if pd.notna(dt):
+                return dt.to_pydatetime().replace(tzinfo=None)
+    except Exception:
+        pass
+    return None
+
+def _latest_earnings_date(ticker: str) -> Optional[datetime]:
+    return _get_last_earnings_date_from_db(ticker) or _get_last_earnings_date_fallback_yf(ticker)
+
+def _should_refresh(ticker: str, earnings_dt: Optional[datetime], fallback_days: int = 14) -> bool:
+    """True → refresh; False → skip."""
+    last = _read_seg_stamp(ticker)
+    if last is None:
+        return True
+    if earnings_dt:  # compare to actual earnings date if we have one
+        return last < earnings_dt
+    # no earnings date available → conservative TTL
+    return (datetime.now() - last).days >= fallback_days
+# ───────────────────────────────────────────────────────────
 
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
@@ -97,7 +196,12 @@ def _slug(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     return re.sub(r"(^-|-$)", "", s)
 
-def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
+# (unchanged) _cleanup_legacy_tables removed to avoid accidental deletes on skip/empty
+
+def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool = False) -> None:
+    """
+    Produce per-segment PNGs and a canonical table, **only when needed**.
+    """
     charts_root = Path("charts")
     canonical_dir = charts_root / ticker
     try:
@@ -110,12 +214,18 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     table_path = out_dir / f"{ticker}_segments_table.html"
 
+    # NEW: earnings‑gated refresh
+    earnings_dt = _latest_earnings_date(ticker)
+    if not force and not _should_refresh(ticker, earnings_dt):
+        print(f"[segments] {ticker}: up-to-date (earnings={earnings_dt or 'unknown'}). Skipping.")
+        return
+
+    # Fetch SEC data
     df = get_segment_data(ticker)
+
+    # NEW: if SEC data is empty, **do not overwrite** any existing table
     if df is None or df.empty:
-        # Preserve any existing non-empty table to avoid erasing good output on transient SEC failures.
-        if not table_path.exists():
-            table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
-        print(f"[segments] no rows for {ticker}; preserved existing table at {table_path}")
+        print(f"[segments] {ticker}: SEC returned no segment data; leaving existing artifacts untouched.")
         return
 
     df = df.copy()
@@ -124,7 +234,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     df["Revenue"]  = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-    # y-limits shared across all charts
+    # global y-axis
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
         min_y, max_y = 0.0, 0.0
@@ -139,6 +249,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     years_all = sorted(set(df["Year"].tolist()), key=lambda s: (not s.isdigit(), s))
     years_tbl = _last3_plus_ttm(list(df["Year"].unique()))
 
+    written_pngs: List[str] = []
     for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
@@ -151,7 +262,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         w = 0.35
         axp.bar([i - w/2 for i in x], revenues_b,  width=w, label="Revenue")
         axp.bar([i + w/2 for i in x], op_incomes_b, width=w, label="Operating Income")
-        axp.set_xticks(x); axp.set_xticklabels(years_all)
+        axp.set_xticks(x)
+        axp.set_xticklabels(years_all)
         axp.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
         axis_label = _norm_axis_label(axis)
         axp.set_ylabel("Value ($B)")
@@ -166,8 +278,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         out_name = f"{ticker}_{axis_slug}_{safe_seg}.png"
         plt.savefig(out_dir / out_name)
         plt.close(fig)
+        written_pngs.append(out_name)
 
-    # Combined table (per axis)
+    # Build the combined table (unchanged logic)
     def pv(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
         p = sub_df[sub_df["Year"].isin(years_tbl)].pivot_table(
             index="Segment", columns="Year", values=col, aggfunc="sum"
@@ -182,7 +295,6 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         label = _norm_axis_label(axis_value)
         rev_p = pv("Revenue", group)
         oi_p  = pv("OpIncome", group)
-
         last  = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
         if last:
             if last in rev_p.columns:
@@ -233,20 +345,25 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 """.strip()
     stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     caption = (
-        f'<div style="font-size:12px;color:#666;margin:6px 0 8px;">'
+        '<div style="font-size:12px;color:#666;margin:6px 0 8px;">'
         f'{VERSION} · {stamp} — Single-scale per section; TTM is <b>bold</b>; '
-        f'“% of Total (TTM)” uses visible rows in that section.'
-        f'</div>'
+        '“% of Total (TTM)” uses visible rows in that section.'
+        '</div>'
     )
     content = css + "\n" + caption + "\n" + "\n<hr/>\n".join(sections_html)
     table_path.write_text(content, encoding="utf-8")
     print(f"[{VERSION}] wrote {table_path} ({table_path.stat().st_size} bytes)")
 
+    # NEW: mark success
+    _write_seg_stamp(ticker, earnings_dt)
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tickers_csv", default="tickers.csv")
     ap.add_argument("--output_dir", default="charts")
+    ap.add_argument("--force", action="store_true", help="Force refresh even if up-to-date")
     args = ap.parse_args()
+
     p = Path(args.tickers_csv)
     if not p.is_file():
         print(f"ERROR: {p} missing or no 'Ticker' column")
@@ -255,13 +372,14 @@ def main():
     if "Ticker" not in df.columns:
         print(f"ERROR: 'Ticker' column missing in {p}")
         return
+
     tickers = df["Ticker"].dropna().astype(str).str.upper().tolist()
     out_base = Path(args.output_dir)
     for i, tk in enumerate(tickers, start=1):
         out_dir = out_base / tk
         ensure_dir(out_dir)
         print(f"[{i}/{len(tickers)}] {tk} → {out_dir}")
-        generate_segment_charts_for_ticker(tk, out_dir)
+        generate_segment_charts_for_ticker(tk, out_dir, force=args.force)
 
 if __name__ == "__main__":
     main()
