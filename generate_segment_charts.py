@@ -224,8 +224,12 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     df = get_segment_data(ticker)
 
     # NEW: if SEC data is empty, **do not overwrite** any existing table
-    if df is None or df.empty:
-        print(f"[segments] {ticker}: SEC returned no segment data; leaving existing artifacts untouched.")
+    if df is None or (hasattr(df, "empty") and df.empty):
+        if not table_path.exists():
+            table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
+        print(
+            f"[segments] {ticker}: SEC returned no segment data; leaving existing table untouched at {table_path}"
+        )
         return
 
     df = df.copy()
@@ -249,7 +253,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     years_all = sorted(set(df["Year"].tolist()), key=lambda s: (not s.isdigit(), s))
     years_tbl = _last3_plus_ttm(list(df["Year"].unique()))
 
-    written_pngs: List[str] = []
+    written_pngs: List[Path] = []
     for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
@@ -276,9 +280,10 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         safe_seg = _safe_seg_filename(seg)
         axis_slug = _slug(axis_label)
         out_name = f"{ticker}_{axis_slug}_{safe_seg}.png"
-        plt.savefig(out_dir / out_name)
+        out_path = out_dir / out_name
+        plt.savefig(out_path)
         plt.close(fig)
-        written_pngs.append(out_name)
+        written_pngs.append(out_path)
 
     # Build the combined table (unchanged logic)
     def pv(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
@@ -353,6 +358,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     content = css + "\n" + caption + "\n" + "\n<hr/>\n".join(sections_html)
     table_path.write_text(content, encoding="utf-8")
     print(f"[{VERSION}] wrote {table_path} ({table_path.stat().st_size} bytes)")
+    for p in written_pngs:
+        print(f"[{VERSION}] emitted {p}")
 
     # NEW: mark success
     _write_seg_stamp(ticker, earnings_dt)
