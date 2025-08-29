@@ -224,8 +224,12 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     df = get_segment_data(ticker)
 
     # NEW: if SEC data is empty, **do not overwrite** any existing table
-    if df is None or df.empty:
-        print(f"[segments] {ticker}: SEC returned no segment data; leaving existing artifacts untouched.")
+    if df is None or (hasattr(df, "empty") and df.empty):
+        if not table_path.exists():
+            table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
+        print(
+            f"[segments] {ticker}: SEC returned no segment data; leaving existing table untouched at {table_path}"
+        )
         return
 
     df = df.copy()
