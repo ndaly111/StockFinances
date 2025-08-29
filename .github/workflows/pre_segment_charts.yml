@@ -12,7 +12,9 @@ jobs:
   pre-segment-charts:
     runs-on: ubuntu-latest
     env:
-      SEC_USER_AGENT: "StockFinances/1.0 (Contact: ${{ secrets.Email }})"
+      SEC_EMAIL: ${{ secrets.EMAIL }}
+      SEC_USER_AGENT: "StockFinances/1.0 (Contact: ${{ secrets.EMAIL }})"
+      MPLBACKEND: Agg
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -26,7 +28,7 @@ jobs:
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           fi
-          pip install pandas matplotlib requests beautifulsoup4 lxml
+          pip install pandas matplotlib requests beautifulsoup4 lxml yfinance
       - name: Pre-run segment charts
         run: python generate_segment_charts.py --tickers_csv tickers.csv --output_dir charts
       - name: Upload charts artifact
@@ -35,12 +37,10 @@ jobs:
           name: pre-segment-charts
           path: charts/
           if-no-files-found: warn
-      - name: Set up git identity
+      - name: Commit charts & tables
         run: |
-          git config --global user.name 'ndaly111'
-          git config --global user.email 'ndaly111@gmail.com'
-      - name: Commit results
-        run: |
-          git add charts || true
-          git commit -m "Automated pre segment charts" || echo "No changes to commit"
-          git push || true
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add charts/**/*.png charts/**/*.html || true
+          git diff --cached --quiet || git commit -m "Update segment charts/tables"
+          git push

@@ -12,8 +12,9 @@ jobs:
   run-segment-charts:
     runs-on: ubuntu-latest
     env:
-      SEC_USER_AGENT: "StockFinances/1.0 (Contact: ${{ secrets.Email }})"
+      SEC_USER_AGENT: "StockFinances/1.0 (Contact: ${{ secrets.EMAIL }})"
       SEC_EMAIL: ${{ secrets.EMAIL }}
+      MPLBACKEND: Agg
     steps:
     - name: Check out repository
       uses: actions/checkout@v4
@@ -29,7 +30,7 @@ jobs:
         if [ -f requirements.txt ]; then
           pip install -r requirements.txt
         fi
-        pip install pandas matplotlib requests beautifulsoup4 lxml
+        pip install pandas matplotlib requests beautifulsoup4 lxml yfinance
 
     - name: Generate segment charts
       run: |
@@ -42,15 +43,10 @@ jobs:
         path: charts/
         if-no-files-found: warn
 
-    - name: Set up Git identity
-      run: |
-        git config --global user.name 'ndaly111'
-        git config --global user.email 'ndaly111@gmail.com'
-
-    - name: Commit charts and pages
+    - name: Commit charts & tables
       run: |
         git config user.name "github-actions"
         git config user.email "actions@github.com"
-        git add charts/**/*.png charts/**/*.html pages/*.html index.html
-        git commit -m "Update charts & segment tables [skip ci]" || echo "No changes"
+        git add charts/**/*.png charts/**/*.html pages/*.html index.html || true
+        git diff --cached --quiet || git commit -m "Update segment charts/tables"
         git push
