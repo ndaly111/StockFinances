@@ -138,18 +138,22 @@ def _humanize_segment_name(raw: str) -> str:
 
 def _norm_axis_label(axis: Optional[str]) -> str:
     s = (axis or "").strip()
-    s = re.sub(r".*:", "", s)
-    s = s.replace("Axis", "")
-    s = re.sub(r"([a-z])([A-Z])", r"\1 \2", s)
-    s = s.replace("_", " ").strip()
-    if not s:
-        return "Unlabeled Axis"
-    s = s.replace("Geographical Areas", "Regions")
-    s = s.replace("Geographical Region", "Regions")
-    s = s.replace("Domestic And Foreign", "Domestic vs Foreign")
-    s = s.replace("Products And Services", "Products / Services")
-    s = re.sub(r"\s+", " ", s)
-    return s.title()
+    parts = [p for p in s.split("+") if p]
+    labels: List[str] = []
+    for part in parts:
+        p = re.sub(r".*:", "", part)
+        p = p.replace("Axis", "")
+        p = re.sub(r"([a-z])([A-Z])", r"\1 \2", p)
+        p = p.replace("_", " ").strip()
+        if not p:
+            p = "Unlabeled Axis"
+        p = p.replace("Geographical Areas", "Regions")
+        p = p.replace("Geographical Region", "Regions")
+        p = p.replace("Domestic And Foreign", "Domestic vs Foreign")
+        p = p.replace("Products And Services", "Products / Services")
+        p = re.sub(r"\s+", " ", p)
+        labels.append(p.title())
+    return " & ".join(labels) if labels else "Unlabeled Axis"
 
 def _to_float(x):
     if pd.isna(x): return pd.NA
