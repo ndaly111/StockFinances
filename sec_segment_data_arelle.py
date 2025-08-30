@@ -73,8 +73,6 @@ AXIS_NORMALIZER = {
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
 
-# Keep whitelist in sync with the normalizer
-AXIS_WHITELIST = set(AXIS_NORMALIZER.values())
 
 _NEG_TOKENS = ("cost", "cogs", "expense", "gain", "loss", "grossprofit", "tax", "deferred", "impair", "interest")
 
@@ -128,8 +126,10 @@ def _clean_member_label(lbl: Optional[str], member: Optional[str]) -> str:
     return cand
 
 def _axis_to_type(axis: str) -> Optional[str]:
-    base = AXIS_NORMALIZER.get(_strip_ns(axis)) or _strip_ns(axis)
-    return AXIS_NORMALIZER.get(base, base) if base else None
+    base = _strip_ns(axis)
+    if not base:
+        return None
+    return AXIS_NORMALIZER.get(base, base)
 
 def _iter_fact_items(fact: dict) -> List[dict]:
     out: List[dict] = []
@@ -172,7 +172,7 @@ def _extract_axes_members(segments_raw) -> List[Tuple[str, str]]:
     for seg in _coerce_segments_list(segments_raw):
         axis_raw = seg.get("dim") or seg.get("axis") or ""
         axis = _axis_to_type(axis_raw)
-        if not axis or axis not in AXIS_WHITELIST:
+        if not axis:
             continue
         label = _clean_member_label(seg.get("memberLabel"), seg.get("member"))
         if not label:
