@@ -61,25 +61,16 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
     New PNGs live in: charts/<ticker>/<ticker>_<axis-slug>_<segment>.png
     This also sweeps legacy root files: charts/<ticker>_*.png
     """
-    # Slug -> Title map. Values MUST match table <h3> titles exactly.
     KNOWN = {
-        # Products / Services families
         "products-services": "Products / Services",
         "product-line": "Products / Services",
-        "product-lines": "Products / Services",
         "product": "Products / Services",
         "product-category": "Products / Services",
-        "product-categories": "Products / Services",
-
-        # Geography
         "regions": "Regions",
         "geographical-areas": "Regions",
         "geographical-regions": "Regions",
-        "geographical-region": "Regions",
-        "domestic-vs-foreign": "Domestic Vs Foreign",  # capital "Vs" to match table
+        "domestic-vs-foreign": "Domestic vs Foreign",
         "country": "Country",
-
-        # Segments & others
         "operating-segments": "Operating Segments",
         "major-customers": "Major Customers",
         "sales-channels": "Sales Channels",
@@ -104,9 +95,7 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
                 if title:
                     grouped.setdefault(title, []).append(src)
                 else:
-                    # Derive a readable title from the slug for unknown axes
-                    derived = slug.replace('-', ' ').title()
-                    grouped.setdefault(derived, []).append(src)
+                    legacy_srcs.append(src)
             else:
                 legacy_srcs.append(src)
 
@@ -126,9 +115,7 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
                 if title:
                     grouped.setdefault(title, []).append(src)
                 else:
-                    # Derive a readable title from the slug for unknown axes
-                    derived = slug.replace('-', ' ').title()
-                    grouped.setdefault(derived, []).append(src)
+                    legacy_srcs.append(src)
             else:
                 legacy_srcs.append(src)
 
@@ -152,12 +139,6 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
                      '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
 
     return "\n".join(parts)
-
-def _canon(title: str) -> str:
-    """
-    Canonicalize a section title so minor diffs (case/spacing/punct) still match.
-    """
-    return re.sub(r"[^a-z0-9]", "", (title or "").lower())
 
 def _split_h3_sections(html: str, wanted_class: str = None):
     """
@@ -185,52 +166,35 @@ def _split_h3_sections(html: str, wanted_class: str = None):
 
 def interleave_segment_blocks(carousel_html: str, table_html: str) -> str:
     """
-    For each axis: render [charts row] then [matching table].
-    - Canonicalizes titles to tolerate small diffs.
-    - If there's only one table section, use it as fallback for any chart group.
+    For each axis title: render [charts row] then [matching table].
+    Falls back to an inline notice if a table section is missing.
     """
     car = _split_h3_sections(carousel_html, wanted_class="carousel-container")
     tab = _split_h3_sections(table_html,   wanted_class="table-wrap")
 
-    # Build maps keyed by canonical titles
     car_map = {}
     order = []
     for title, body in car:
-        k = _canon(title)
-        if k not in car_map:
-            order.append(k)
-            car_map[k] = []
-        car_map[k].append((title, body))
+        if title not in car_map:
+            order.append(title)
+            car_map[title] = []
+        car_map[title].append(body)
 
-    tab_map = { _canon(title): (title, body) for title, body in tab }
-
-    # Single-table fallback (common when only one section is generated)
-    fallback = next(iter(tab_map.values())) if len(tab_map) == 1 else None
+    tab_map = {title: body for title, body in tab}
 
     blocks = []
-    for k in order:
-        _table_title, table_body = tab_map.get(
-            k, fallback or ("", '<div class="table-wrap"><p>No table for this axis.</p></div>')
-        )
-        for orig_title, body in car_map[k]:
-            blocks.append(
-                f'<div class="seg-axis-block">\n'
-                f'  <h3>{orig_title}</h3>\n'
-                f'  {body}\n'
-                f'  {table_body}\n'
-                f'</div>'
-            )
+    for title in order:
+        table_part = tab_map.get(title, '<div class="table-wrap"><p>No table for this axis.</p></div>')
+        for body in car_map[title]:
+            blocks.append(f'<div class="seg-axis-block">\n<h3>{title}</h3>\n{body}\n{table_part}\n</div>')
 
-    # Tables that have no charts
-    for k2, (t_title, t_body) in tab_map.items():
-        if k2 not in car_map:
-            blocks.append(
-                f'<div class="seg-axis-block">\n'
-                f'  <h3>{t_title}</h3>\n'
-                f'  {t_body}\n'
-                f'</div>'
-            )
-    return "\n".join(blocks).strip() or (table_html or "")
+    # tables that have no charts
+    for title, body in tab_map.items():
+        if title not in car_map:
+            blocks.append(f'<div class="seg-axis-block">\n<h3>{title}</h3>\n{body}\n</div>')
+
+    html = "\n".join(blocks).strip()
+    return html or (table_html or "")
 
 # ───────── template creation ────────────────────────────────────
 def ensure_templates_exist():
