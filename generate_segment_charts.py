@@ -7,7 +7,7 @@ generate_segment_charts.py — write charts (PNG) and a canonical table per tick
 """
 from __future__ import annotations
 
-# NEW (headless backend) – must come before pyplot import
+# Headless backend for CI/servers and local runs (must be set before pyplot)
 import matplotlib
 matplotlib.use("Agg")
 
@@ -18,7 +18,7 @@ from typing import List, Tuple, Optional
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import yfinance as yf  # lightweight fallback for earnings date
+import yfinance as yf  # lightweight fallback for earnings-date gate
 
 from sec_segment_data_arelle import get_segment_data
 
@@ -38,24 +38,33 @@ HIDE_RE = re.compile(
 def _seg_stamp_path(ticker: str) -> Path:
     return Path("charts") / ticker / STAMP_FILENAME
 
-def _read_seg_stamp(ticker: str) -> Optional[datetime]:
+def _read_seg_stamp(ticker: str) -> Optional[dict]:
+    """Return metadata from the per‑ticker stamp file."""
     p = _seg_stamp_path(ticker)
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
         dt = pd.to_datetime(data.get("updated_at"), errors="coerce")
         if pd.notna(dt):
-            return dt.to_pydatetime().replace(tzinfo=None)
+            data["updated_at"] = dt.to_pydatetime().replace(tzinfo=None)
+        else:
+            data["updated_at"] = None
+        # ensure a list for files even if absent
+        if not isinstance(data.get("files"), list):
+            data["files"] = []
+        return data
     except Exception:
-        pass
-    return None
+        return None
 
-def _write_seg_stamp(ticker: str, earnings_date: Optional[datetime]) -> None:
+
+def _write_seg_stamp(ticker: str, earnings_date: Optional[datetime], files: List[str]) -> None:
+    """Persist metadata about the last successful run."""
     p = _seg_stamp_path(ticker)
     p.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "earnings_date": earnings_date.isoformat() if isinstance(earnings_date, datetime) else None,
         "version": VERSION,
+        "files": files,
     }
     p.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
@@ -115,7 +124,8 @@ def _latest_earnings_date(ticker: str) -> Optional[datetime]:
 
 def _should_refresh(ticker: str, earnings_dt: Optional[datetime], fallback_days: int = 14) -> bool:
     """True → refresh; False → skip."""
-    last = _read_seg_stamp(ticker)
+    info = _read_seg_stamp(ticker)
+    last = info.get("updated_at") if info else None
     if last is None:
         return True
     if earnings_dt:  # compare to actual earnings date if we have one
@@ -138,18 +148,22 @@ def _humanize_segment_name(raw: str) -> str:
 
 def _norm_axis_label(axis: Optional[str]) -> str:
     s = (axis or "").strip()
-    s = re.sub(r".*:", "", s)
-    s = s.replace("Axis", "")
-    s = re.sub(r"([a-z])([A-Z])", r"\1 \2", s)
-    s = s.replace("_", " ").strip()
-    if not s:
-        return "Unlabeled Axis"
-    s = s.replace("Geographical Areas", "Regions")
-    s = s.replace("Geographical Region", "Regions")
-    s = s.replace("Domestic And Foreign", "Domestic vs Foreign")
-    s = s.replace("Products And Services", "Products / Services")
-    s = re.sub(r"\s+", " ", s)
-    return s.title()
+    parts = [p for p in s.split("+") if p]
+    labels: List[str] = []
+    for part in parts:
+        p = re.sub(r".*:", "", part)
+        p = p.replace("Axis", "")
+        p = re.sub(r"([a-z])([A-Z])", r"\1 \2", p)
+        p = p.replace("_", " ").strip()
+        if not p:
+            p = "Unlabeled Axis"
+        p = p.replace("Geographical Areas", "Regions")
+        p = p.replace("Geographical Region", "Regions")
+        p = p.replace("Domestic And Foreign", "Domestic vs Foreign")
+        p = p.replace("Products And Services", "Products / Services")
+        p = re.sub(r"\s+", " ", p)
+        labels.append(p.title())
+    return " & ".join(labels) if labels else "Unlabeled Axis"
 
 def _to_float(x):
     if pd.isna(x): return pd.NA
@@ -196,6 +210,17 @@ def _slug(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     return re.sub(r"(^-|-$)", "", s)
 
+# remove any pngs in out_dir not in keep_files
+def _cleanup_pngs(out_dir: Path, keep_files: List[str]) -> None:
+    existing = {p.name for p in out_dir.glob("*.png")}
+    keep = set(keep_files)
+    for fname in sorted(existing - keep):
+        try:
+            (out_dir / fname).unlink()
+            print(f"[segments] removed outdated {(out_dir / fname)}")
+        except Exception:
+            pass
+
 # (unchanged) _cleanup_legacy_tables removed to avoid accidental deletes on skip/empty
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool = False) -> None:
@@ -216,7 +241,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
 
     # NEW: earnings‑gated refresh
     earnings_dt = _latest_earnings_date(ticker)
+    stamp_info = _read_seg_stamp(ticker) or {}
     if not force and not _should_refresh(ticker, earnings_dt):
+        _cleanup_pngs(out_dir, stamp_info.get("files", []))
         print(f"[segments] {ticker}: up-to-date (earnings={earnings_dt or 'unknown'}). Skipping.")
         return
 
@@ -225,11 +252,13 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
 
     # NEW: if SEC data is empty, **do not overwrite** any existing table
     if df is None or (hasattr(df, "empty") and df.empty):
+        _cleanup_pngs(out_dir, [])
         if not table_path.exists():
             table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
         print(
             f"[segments] {ticker}: SEC returned no segment data; leaving existing table untouched at {table_path}"
         )
+        _write_seg_stamp(ticker, earnings_dt, [])
         return
 
     df = df.copy()
@@ -237,6 +266,24 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     df["Year"]     = df["Year"].astype(str)
     df["Revenue"]  = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
+
+    # Filter out hidden segments or those with negative/missing latest revenue
+    def _keep_group(g: pd.DataFrame) -> bool:
+        axis, seg = g.name
+        if HIDE_RE.search(str(seg)):
+            return False
+        years = g["Year"].tolist()
+        if "TTM" in years:
+            rev = g.loc[g["Year"] == "TTM", "Revenue"].sum(min_count=1)
+        else:
+            numeric = [y for y in years if str(y).isdigit()]
+            if not numeric:
+                return False
+            last_year = max(numeric, key=int)
+            rev = g.loc[g["Year"] == last_year, "Revenue"].sum(min_count=1)
+        return pd.notna(rev) and rev >= 0
+
+    df = df.groupby(["AxisType", "Segment"], dropna=False).filter(_keep_group)
 
     # global y-axis
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
@@ -257,7 +304,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-
+        if all(pd.isna(v) for v in revenues) and all(pd.isna(v) for v in op_incomes):
+            continue
         revenues_b   = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
         op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
 
@@ -361,8 +409,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     for p in written_pngs:
         print(f"[{VERSION}] emitted {p}")
 
-    # NEW: mark success
-    _write_seg_stamp(ticker, earnings_dt)
+    # remove any old pngs not generated this run
+    _cleanup_pngs(out_dir, [p.name for p in written_pngs])
+
+    # NEW: mark success with list of files
+    _write_seg_stamp(ticker, earnings_dt, [p.name for p in written_pngs])
 
 def main():
     ap = argparse.ArgumentParser()

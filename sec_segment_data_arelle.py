@@ -9,8 +9,7 @@ Outputs a DataFrame with columns:
   OpIncome (float, USD; NaN if unavailable)
   AxisType (canonical axis name: ProductsAndServicesAxis, GeographicalAreasAxis, etc.)
 
-Notes
-- Aggregates across *all* axes present; if a fact has multiple dimensions, it contributes to each axis section.
+- Combines multiple axes into a single composite axis so each fact contributes once.
 - Filters to USD-like units.
 - Polite SEC headers and small delay (PAUSE_SEC).
 """
@@ -73,8 +72,6 @@ AXIS_NORMALIZER = {
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
 
-# Keep whitelist in sync with the normalizer
-AXIS_WHITELIST = set(AXIS_NORMALIZER.values())
 
 _NEG_TOKENS = ("cost", "cogs", "expense", "gain", "loss", "grossprofit", "tax", "deferred", "impair", "interest")
 
@@ -128,8 +125,10 @@ def _clean_member_label(lbl: Optional[str], member: Optional[str]) -> str:
     return cand
 
 def _axis_to_type(axis: str) -> Optional[str]:
-    base = AXIS_NORMALIZER.get(_strip_ns(axis)) or _strip_ns(axis)
-    return AXIS_NORMALIZER.get(base, base) if base else None
+    base = _strip_ns(axis)
+    if not base:
+        return None
+    return AXIS_NORMALIZER.get(base, base)
 
 def _iter_fact_items(fact: dict) -> List[dict]:
     out: List[dict] = []
@@ -172,7 +171,7 @@ def _extract_axes_members(segments_raw) -> List[Tuple[str, str]]:
     for seg in _coerce_segments_list(segments_raw):
         axis_raw = seg.get("dim") or seg.get("axis") or ""
         axis = _axis_to_type(axis_raw)
-        if not axis or axis not in AXIS_WHITELIST:
+        if not axis:
             continue
         label = _clean_member_label(seg.get("memberLabel"), seg.get("member"))
         if not label:
@@ -207,6 +206,13 @@ def _collect_items(kind: str, all_facts: dict) -> List[dict]:
     return items
 
 def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], float]:
+    """Aggregate items by axis combination, avoiding double counting.
+
+    If a fact has multiple axes, those axes are joined into a single
+    composite key (e.g. "ProductsAndServicesAxis+GeographicalAreasAxis") and
+    the member labels are joined with " | " so the fact contributes only once
+    to the totals.
+    """
     agg: Dict[Tuple[str, str, str], float] = {}
     for it in all_items:
         segs = it.get("segments") or it.get("segment")
@@ -220,10 +226,29 @@ def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], floa
             val = float(it.get("val"))
         except Exception:
             continue
-        for axis, label in axes:
-            key = (axis, label, str(year))
-            agg[key] = agg.get(key, 0.0) + val
+        axes_sorted = sorted(axes, key=lambda x: x[0])
+        axis_key = "+".join(a for a, _ in axes_sorted)
+        label_key = " | ".join(lbl for _, lbl in axes_sorted)
+        key = (axis_key, label_key, str(year))
+        agg[key] = agg.get(key, 0.0) + val
     return agg
+
+def _total_company_revenue(all_items: List[dict]) -> Dict[str, float]:
+    """Aggregate unsegmented revenue items by year."""
+    totals: Dict[str, float] = {}
+    for it in all_items:
+        segs = it.get("segments") or it.get("segment")
+        if _coerce_segments_list(segs):
+            continue  # skip segmented facts
+        year = _year_from_item(it)
+        if not year:
+            continue
+        try:
+            val = float(it.get("val"))
+        except Exception:
+            continue
+        totals[str(year)] = totals.get(str(year), 0.0) + val
+    return totals
 
 def get_segment_data(ticker: str) -> pd.DataFrame:
     cik = _cik_from_ticker(ticker)
@@ -235,6 +260,7 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
 
     rev_agg = _harvest_tag_multi(rev_items)
     op_agg  = _harvest_tag_multi(op_items)
+    totals_company = _total_company_revenue(rev_items)
 
     keys = set(rev_agg.keys()) | set(op_agg.keys())
     if not keys:
@@ -254,4 +280,15 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
     df["Revenue"] = pd.to_numeric(df["Revenue"], errors="coerce")
     df["OpIncome"] = pd.to_numeric(df["OpIncome"], errors="coerce")
     df = df[df["Segment"].astype(str).str.strip() != ""].copy()
+
+    # Validate that segment totals roughly match reported company revenue
+    try:
+        seg_totals = df.groupby("Year")["Revenue"].sum(min_count=1).to_dict()
+        for yr, tot in totals_company.items():
+            seg = seg_totals.get(yr)
+            if seg is not None and abs(seg - tot) > 1.0:  # tolerance for rounding
+                print(f"[segments] WARNING {ticker} {yr}: segments {seg} != reported {tot}")
+    except Exception:
+        pass
+
     return df
