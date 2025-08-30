@@ -238,6 +238,24 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     df["Revenue"]  = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
+    # Filter out hidden segments or those with negative/missing latest revenue
+    def _keep_group(g: pd.DataFrame) -> bool:
+        axis, seg = g.name
+        if HIDE_RE.search(str(seg)):
+            return False
+        years = g["Year"].tolist()
+        if "TTM" in years:
+            rev = g.loc[g["Year"] == "TTM", "Revenue"].sum(min_count=1)
+        else:
+            numeric = [y for y in years if str(y).isdigit()]
+            if not numeric:
+                return False
+            last_year = max(numeric, key=int)
+            rev = g.loc[g["Year"] == last_year, "Revenue"].sum(min_count=1)
+        return pd.notna(rev) and rev >= 0
+
+    df = df.groupby(["AxisType", "Segment"], dropna=False).filter(_keep_group)
+
     # global y-axis
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
     if all_vals.empty:
@@ -257,7 +275,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-
+        if all(pd.isna(v) for v in revenues) and all(pd.isna(v) for v in op_incomes):
+            continue
         revenues_b   = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
         op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
 
