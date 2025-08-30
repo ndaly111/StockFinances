@@ -38,24 +38,33 @@ HIDE_RE = re.compile(
 def _seg_stamp_path(ticker: str) -> Path:
     return Path("charts") / ticker / STAMP_FILENAME
 
-def _read_seg_stamp(ticker: str) -> Optional[datetime]:
+def _read_seg_stamp(ticker: str) -> Optional[dict]:
+    """Return metadata from the per‑ticker stamp file."""
     p = _seg_stamp_path(ticker)
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
         dt = pd.to_datetime(data.get("updated_at"), errors="coerce")
         if pd.notna(dt):
-            return dt.to_pydatetime().replace(tzinfo=None)
+            data["updated_at"] = dt.to_pydatetime().replace(tzinfo=None)
+        else:
+            data["updated_at"] = None
+        # ensure a list for files even if absent
+        if not isinstance(data.get("files"), list):
+            data["files"] = []
+        return data
     except Exception:
-        pass
-    return None
+        return None
 
-def _write_seg_stamp(ticker: str, earnings_date: Optional[datetime]) -> None:
+
+def _write_seg_stamp(ticker: str, earnings_date: Optional[datetime], files: List[str]) -> None:
+    """Persist metadata about the last successful run."""
     p = _seg_stamp_path(ticker)
     p.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "earnings_date": earnings_date.isoformat() if isinstance(earnings_date, datetime) else None,
         "version": VERSION,
+        "files": files,
     }
     p.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
@@ -115,7 +124,8 @@ def _latest_earnings_date(ticker: str) -> Optional[datetime]:
 
 def _should_refresh(ticker: str, earnings_dt: Optional[datetime], fallback_days: int = 14) -> bool:
     """True → refresh; False → skip."""
-    last = _read_seg_stamp(ticker)
+    info = _read_seg_stamp(ticker)
+    last = info.get("updated_at") if info else None
     if last is None:
         return True
     if earnings_dt:  # compare to actual earnings date if we have one
@@ -196,6 +206,17 @@ def _slug(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     return re.sub(r"(^-|-$)", "", s)
 
+# remove any pngs in out_dir not in keep_files
+def _cleanup_pngs(out_dir: Path, keep_files: List[str]) -> None:
+    existing = {p.name for p in out_dir.glob("*.png")}
+    keep = set(keep_files)
+    for fname in sorted(existing - keep):
+        try:
+            (out_dir / fname).unlink()
+            print(f"[segments] removed outdated {(out_dir / fname)}")
+        except Exception:
+            pass
+
 # (unchanged) _cleanup_legacy_tables removed to avoid accidental deletes on skip/empty
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool = False) -> None:
@@ -216,7 +237,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
 
     # NEW: earnings‑gated refresh
     earnings_dt = _latest_earnings_date(ticker)
+    stamp_info = _read_seg_stamp(ticker) or {}
     if not force and not _should_refresh(ticker, earnings_dt):
+        _cleanup_pngs(out_dir, stamp_info.get("files", []))
         print(f"[segments] {ticker}: up-to-date (earnings={earnings_dt or 'unknown'}). Skipping.")
         return
 
@@ -225,11 +248,13 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
 
     # NEW: if SEC data is empty, **do not overwrite** any existing table
     if df is None or (hasattr(df, "empty") and df.empty):
+        _cleanup_pngs(out_dir, [])
         if not table_path.exists():
             table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
         print(
             f"[segments] {ticker}: SEC returned no segment data; leaving existing table untouched at {table_path}"
         )
+        _write_seg_stamp(ticker, earnings_dt, [])
         return
 
     df = df.copy()
@@ -361,8 +386,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     for p in written_pngs:
         print(f"[{VERSION}] emitted {p}")
 
-    # NEW: mark success
-    _write_seg_stamp(ticker, earnings_dt)
+    # remove any old pngs not generated this run
+    _cleanup_pngs(out_dir, [p.name for p in written_pngs])
+
+    # NEW: mark success with list of files
+    _write_seg_stamp(ticker, earnings_dt, [p.name for p in written_pngs])
 
 def main():
     ap = argparse.ArgumentParser()
