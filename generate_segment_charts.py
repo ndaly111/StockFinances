@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# minor commit update to trigger commit
+
 """
 generate_segment_charts.py — write charts (PNG) and a canonical table per ticker.
 
