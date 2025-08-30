@@ -7,7 +7,7 @@ generate_segment_charts.py — write charts (PNG) and a canonical table per tick
 """
 from __future__ import annotations
 
-# NEW (headless backend) – must come before pyplot import
+# Headless backend for CI/servers and local runs (must be set before pyplot)
 import matplotlib
 matplotlib.use("Agg")
 
@@ -18,7 +18,7 @@ from typing import List, Tuple, Optional
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import yfinance as yf  # lightweight fallback for earnings date
+import yfinance as yf  # lightweight fallback for earnings-date gate
 
 from sec_segment_data_arelle import get_segment_data
 
