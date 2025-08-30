@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 from datetime import datetime
 from typing import List, Tuple, Optional
-import re, pandas as pd
+import re, pandas as pd, html
 
 from sec_segment_data_arelle import get_segment_data
 
@@ -37,7 +37,8 @@ STYLE = """
 def _humanize_segment_name(raw: str) -> str:
     if not isinstance(raw, str) or not raw:
         return str(raw)
-    name = str(raw)
+    # strip any angle brackets to avoid accidental HTML injection
+    name = re.sub(r"[<>]", "", str(raw))
     name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
@@ -95,8 +96,9 @@ def _pivot(df: pd.DataFrame, col: str, years: List[str]) -> pd.DataFrame:
     return p.reindex(columns=[y for y in years if y in p.columns])
 
 def _render_axis_section(axis_label: str, rev_p: pd.DataFrame, oi_p: pd.DataFrame) -> str:
+    safe_label = html.escape(axis_label)
     if rev_p.empty and oi_p.empty:
-        return f"<h3>{axis_label}</h3><div class='table-wrap'><p>No data for this axis.</p></div>"
+        return f"<h3>{safe_label}</h3><div class='table-wrap'><p>No data for this axis.</p></div>"
     cols = list(rev_p.columns)
     last = "TTM" if "TTM" in cols else (cols[-1] if cols else None)
     if last:
@@ -126,11 +128,9 @@ def _render_axis_section(axis_label: str, rev_p: pd.DataFrame, oi_p: pd.DataFram
             out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
         else:
             out[c] = out[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
-    for c in [c for c in out.columns if c.startswith("TTM ")]:
-        out[c] = out[c].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
     out.index.name = "Segment"
-    html_table = out.reset_index().to_html(index=False, escape=False, classes="seg-table", border=0)
-    return f"<h3>{axis_label}</h3>\n<div class='table-wrap'>{html_table}</div>"
+    html_table = out.reset_index().to_html(index=False, escape=True, classes="seg-table", border=0)
+    return f"<h3>{safe_label}</h3>\n<div class='table-wrap'>{html_table}</div>"
 
 def _build_combined_html(ticker: str, df: pd.DataFrame) -> str:
     updated = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
