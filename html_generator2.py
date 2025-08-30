@@ -104,7 +104,9 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
                 if title:
                     grouped.setdefault(title, []).append(src)
                 else:
-                    legacy_srcs.append(src)
+                    # Derive a readable title from the slug for unknown axes
+                    derived = slug.replace('-', ' ').title()
+                    grouped.setdefault(derived, []).append(src)
             else:
                 legacy_srcs.append(src)
 
@@ -124,7 +126,9 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
                 if title:
                     grouped.setdefault(title, []).append(src)
                 else:
-                    legacy_srcs.append(src)
+                    # Derive a readable title from the slug for unknown axes
+                    derived = slug.replace('-', ' ').title()
+                    grouped.setdefault(derived, []).append(src)
             else:
                 legacy_srcs.append(src)
 
@@ -140,7 +144,7 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
         parts.append(f'<h3>{title}</h3>\n'
                      f'<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
 
-    if not parts and legacy_srcs:
+    if legacy_srcs:
         # Use a title that can match a table section
         items = [f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker} Unlabeled Axis"></div>'
                  for src in legacy_srcs]
