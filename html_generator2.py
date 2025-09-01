@@ -54,89 +54,60 @@ def inject_retro(html: str) -> str:
         )
     return html
 
-# ───────── segment helpers ──────────────────────────────────────
+# ────── segment helpers ────────────────────────────────
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
-    """
-    Build horizontal carousels for segment charts; one <h3> per axis.
-    New PNGs live in: charts/<ticker>/<ticker>_<axis-slug>_<segment>.png
-    This also sweeps legacy root files: charts/<ticker>_*.png
-    """
-    KNOWN = {
-        "products-services": "Products / Services",
-        "product-line": "Products / Services",
-        "product": "Products / Services",
-        "product-category": "Products / Services",
-        "regions": "Regions",
-        "geographical-areas": "Regions",
-        "geographical-regions": "Regions",
-        "domestic-vs-foreign": "Domestic vs Foreign",
-        "country": "Country",
-        "operating-segments": "Operating Segments",
-        "major-customers": "Major Customers",
-        "sales-channels": "Sales Channels",
-        "unlabeled-axis": "Unlabeled Axis",
-    }
-    pat = re.compile(rf"^{re.escape(ticker)}_(?P<axis>[a-z0-9-]+)_.+\.png$", re.IGNORECASE)
+    """Build Business Segment carousels grouped by type id, with headings that match table sections."""
 
-    grouped = {}      # {Axis Title -> [img src, ...]}
-    legacy_srcs = []  # unmatched → "Unlabeled Axis"
-
-    # 1) Subfolder (canonical): charts/<ticker>/
+    # Use the ticker as passed for filesystem/URL; bisseg filenames themselves contain the UPPERCASE ticker.
     sub_dir = os.path.join(charts_dir_fs, ticker)
-    if os.path.isdir(sub_dir):
-        for f in sorted(os.listdir(sub_dir)):
-            if not f.lower().endswith(".png") or not f.startswith(f"{ticker}_"):
-                continue
-            m = pat.match(f)
-            src = f"{charts_dir_web}/{ticker}/{f}"
-            if m:
-                slug = m.group("axis").lower()
-                title = KNOWN.get(slug)
-                if title:
-                    grouped.setdefault(title, []).append(src)
-                else:
-                    legacy_srcs.append(src)
-            else:
-                legacy_srcs.append(src)
-
-    # 2) Legacy root spillover: charts/<ticker>_*.png
-    if os.path.isdir(charts_dir_fs):
-        for f in sorted(os.listdir(charts_dir_fs)):
-            if not f.lower().endswith(".png") or not f.startswith(f"{ticker}_"):
-                continue
-            # skip ones we already captured in subfolder
-            if os.path.isfile(os.path.join(sub_dir, f)):
-                continue
-            m = pat.match(f)
-            src = f"{charts_dir_web}/{f}"  # root path
-            if m:
-                slug = m.group("axis").lower()
-                title = KNOWN.get(slug)
-                if title:
-                    grouped.setdefault(title, []).append(src)
-                else:
-                    legacy_srcs.append(src)
-            else:
-                legacy_srcs.append(src)
-
-    # Nothing found
-    if not grouped and not legacy_srcs:
+    if not os.path.isdir(sub_dir):
         return ""
 
-    # Compose HTML
-    parts = []
-    for title in sorted(grouped.keys()):
-        items = [f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker} {title}"></div>'
-                 for src in grouped[title]]
-        parts.append(f'<h3>{title}</h3>\n'
-                     f'<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
+    pat = re.compile(
+        rf"^(\d+){ticker.upper()}_bisseg_(.+)\.png$",
+        re.IGNORECASE,
+    )
 
-    if legacy_srcs:
-        # Use a title that can match a table section
-        items = [f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker} Unlabeled Axis"></div>'
-                 for src in legacy_srcs]
-        parts.append('<h3>Unlabeled Axis</h3>\n'
-                     '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>")
+    grouped: dict[int, list[str]] = {}
+    for fname in os.listdir(sub_dir):
+        m = pat.match(fname)
+        if not m:
+            continue
+        type_id = int(m.group(1))
+        grouped.setdefault(type_id, []).append(f"{charts_dir_web}/{ticker}/{fname}")
+
+    if not grouped:
+        return ""
+
+    # Ensure stable order within each type
+    for _k in grouped:
+        grouped[_k].sort()
+
+    # Derive axis labels from the existing table so headings match, allowing interleave to pair chart+table.
+    labels: list[str] = []
+    try:
+        table_path = os.path.join(charts_dir_fs, ticker, f"{ticker}_segments_table.html")
+        raw_table = open(table_path, encoding="utf-8").read()
+        sections = _split_h3_sections(raw_table, wanted_class="table-wrap")
+        labels = [title for (title, _body) in sections]
+    except Exception:
+        labels = []
+
+    type_ids = sorted(grouped)
+    title_map = {tid: (labels[i] if i < len(labels) else f"Business Segments (Type {tid})")
+                 for i, tid in enumerate(type_ids)}
+
+    parts: list[str] = []
+    for type_id in type_ids:
+        title = title_map[type_id]
+        items = [
+            f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker.upper()} {title}"></div>'
+            for src in grouped[type_id]
+        ]
+        parts.append(
+            f'<h3>{title}</h3>\n'
+            f'<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
+        )
 
     return "\n".join(parts)
 
