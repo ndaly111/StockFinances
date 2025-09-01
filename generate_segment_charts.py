@@ -237,6 +237,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         out_dir = canonical_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Keep canonical casing used by main_remote and the reader
     table_path = out_dir / f"{ticker}_segments_table.html"
 
     # NEW: earnings‑gated refresh
@@ -250,15 +251,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     # Fetch SEC data
     df = get_segment_data(ticker)
 
-    # NEW: if SEC data is empty, **do not overwrite** any existing table
+    # NEW: if SEC data is empty, retain existing artifacts and emit nothing
     if df is None or (hasattr(df, "empty") and df.empty):
-        _cleanup_pngs(out_dir, [])
-        if not table_path.exists():
-            table_path.write_text(f"<p>No segment data available for {ticker}.</p>", encoding="utf-8")
         print(
-            f"[segments] {ticker}: SEC returned no segment data; leaving existing table untouched at {table_path}"
+            f"[segments] {ticker}: SEC returned no segment data; retaining existing table at {table_path}"
         )
-        _write_seg_stamp(ticker, earnings_dt, [])
         return
 
     df = df.copy()
@@ -266,6 +263,13 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     df["Year"]     = df["Year"].astype(str)
     df["Revenue"]  = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
+
+    # Ensure AxisType has a label before we assign type IDs or render sections
+    if "AxisType" not in df.columns or df["AxisType"].isna().all():
+        df["AxisType"] = "UnlabeledAxis"
+    else:
+        # Fill any partial NaNs to keep grouping consistent
+        df["AxisType"] = df["AxisType"].fillna("UnlabeledAxis")
 
     # Filter out hidden segments or those with negative/missing latest revenue
     def _keep_group(g: pd.DataFrame) -> bool:
@@ -283,7 +287,13 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
             rev = g.loc[g["Year"] == last_year, "Revenue"].sum(min_count=1)
         return pd.notna(rev) and rev >= 0
 
-    df = df.groupby(["AxisType", "Segment"], dropna=False).filter(_keep_group)
+    df = df.groupby(["AxisType", "Segment"], dropna=False, sort=False).filter(_keep_group)
+
+    # map axis types to IDs in first-seen order
+    axis_ids: dict[str, int] = {}
+    for axis_val in df["AxisType"].tolist():
+        lbl = _norm_axis_label(axis_val)
+        axis_ids.setdefault(lbl, len(axis_ids) + 1)
 
     # global y-axis
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
@@ -300,8 +310,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     years_all = sorted(set(df["Year"].tolist()), key=lambda s: (not s.isdigit(), s))
     years_tbl = _last3_plus_ttm(list(df["Year"].unique()))
 
-    written_pngs: List[Path] = []
-    for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False):
+    # store *filenames* (strings) for cleanup/stamp
+    written_pngs: List[str] = []
+    for (axis, seg), seg_df in df.groupby(["AxisType", "Segment"], dropna=False, sort=False):
         revenues   = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
         op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
         if all(pd.isna(v) for v in revenues) and all(pd.isna(v) for v in op_incomes):
@@ -318,6 +329,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         axp.set_xticklabels(years_all)
         axp.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
         axis_label = _norm_axis_label(axis)
+        axis_id = axis_ids.get(axis_label, 0)
         axp.set_ylabel("Value ($B)")
         axp.set_title(f"{seg} — {axis_label}")
         axp.axhline(0, linewidth=0.8)
@@ -326,12 +338,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         plt.tight_layout()
 
         safe_seg = _safe_seg_filename(seg)
-        axis_slug = _slug(axis_label)
-        out_name = f"{ticker}_{axis_slug}_{safe_seg}.png"
+        out_name = f"{axis_id}{ticker.upper()}_bisseg_{safe_seg}.png"
         out_path = out_dir / out_name
         plt.savefig(out_path)
         plt.close(fig)
-        written_pngs.append(out_path)
+        written_pngs.append(out_name)
 
     # Build the combined table (unchanged logic)
     def pv(col: str, sub_df: pd.DataFrame) -> pd.DataFrame:
@@ -340,11 +351,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         )
         return p.reindex(columns=[y for y in years_tbl if y in p.columns])
 
-    if "AxisType" not in df.columns or df["AxisType"].isna().all():
-        df["AxisType"] = "UnlabeledAxis"
-
     sections_html: List[str] = []
-    for axis_value, group in df.groupby("AxisType", dropna=False):
+    for axis_value, group in df.groupby("AxisType", dropna=False, sort=False):
         label = _norm_axis_label(axis_value)
         rev_p = pv("Revenue", group)
         oi_p  = pv("OpIncome", group)
@@ -406,14 +414,14 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     content = css + "\n" + caption + "\n" + "\n<hr/>\n".join(sections_html)
     table_path.write_text(content, encoding="utf-8")
     print(f"[{VERSION}] wrote {table_path} ({table_path.stat().st_size} bytes)")
-    for p in written_pngs:
-        print(f"[{VERSION}] emitted {p}")
+    for name in written_pngs:
+        print(f"[{VERSION}] emitted {out_dir / name}")
 
     # remove any old pngs not generated this run
-    _cleanup_pngs(out_dir, [p.name for p in written_pngs])
+    _cleanup_pngs(out_dir, written_pngs)
 
     # NEW: mark success with list of files
-    _write_seg_stamp(ticker, earnings_dt, [p.name for p in written_pngs])
+    _write_seg_stamp(ticker, earnings_dt, written_pngs)
 
 def main():
     ap = argparse.ArgumentParser()
