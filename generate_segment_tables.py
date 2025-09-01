@@ -14,6 +14,7 @@ from datetime import datetime
 from typing import List, Tuple, Optional
 import re, pandas as pd
 
+from segment_formatting_helpers import _humanize_segment_name, _to_float
 from sec_segment_data_arelle import get_segment_data
 
 OUTPUT_DIR = Path("charts")
@@ -33,15 +34,6 @@ STYLE = """
 .table-note { font-size:12px; color:#666; margin:6px 0 8px; }
 </style>
 """.strip()
-
-def _humanize_segment_name(raw: str) -> str:
-    if not isinstance(raw, str) or not raw:
-        return str(raw)
-    name = str(raw)
-    name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
-    name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)
-    name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
-    return " ".join(w if w.isupper() else w.capitalize() for w in name.split())
 
 def _norm_axis_label(axis: Optional[str]) -> str:
     s = (axis or "").strip()
@@ -139,13 +131,13 @@ def _build_combined_html(ticker: str, df: pd.DataFrame) -> str:
     df = df.copy()
     df["Segment"]  = df["Segment"].astype(str).map(_humanize_segment_name)
     df["Year"]     = df["Year"].astype(str)
-    df["Revenue"]  = pd.to_numeric(df["Revenue"], errors="coerce")
-    df["OpIncome"] = pd.to_numeric(df["OpIncome"], errors="coerce")
+    df["Revenue"]  = df["Revenue"].map(_to_float).astype(float)
+    df["OpIncome"] = df["OpIncome"].map(_to_float).astype(float)
     years = _last3_plus_ttm(df["Year"].tolist())
     if "AxisType" not in df.columns or df["AxisType"].isna().all():
         df["AxisType"] = "UnlabeledAxis"
     sections = []
-    for axis_value, sub in df.groupby("AxisType", dropna=False):
+    for axis_value, sub in df.groupby("AxisType", dropna=False, sort=False):
         axis_label = _norm_axis_label(axis_value)
         rev_p = _pivot(sub, "Revenue", years)
         oi_p  = _pivot(sub, "OpIncome", years)
