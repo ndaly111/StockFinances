@@ -38,7 +38,15 @@ REVENUE_BASE_TAGS = {
     "ServiceRevenue",
     "OperatingRevenue",
 }
-OPINC_BASE_TAGS = {"OperatingIncomeLoss"}
+
+_REV_SEGMENT_RE = re.compile(
+    r"(?:netsales|salesrevenue|revenue).*segment|segment.*(?:netsales|salesrevenue|revenue)",
+    re.IGNORECASE,
+)
+_OPINC_LIKE_RE = re.compile(
+    r"operatingincome|operatingprofit|segmentoperatingincome",
+    re.IGNORECASE,
+)
 
 # Canonical axis names we keep
 # Extended mapping to unify various SEC axis labels
@@ -183,14 +191,11 @@ def _is_revenue_like(base_tag: str) -> bool:
     t = base_tag.lower()
     if any(tok in t for tok in _NEG_TOKENS):
         return False
-    return (
-        t in {s.lower() for s in REVENUE_BASE_TAGS}
-        or t.endswith("revenuenet")
-        or t.endswith("revenues")
-        or t.endswith("revenue")
-        or t == "netsales"
-        or "salesrevenue" in t
-    )
+    return t in {s.lower() for s in REVENUE_BASE_TAGS} or bool(_REV_SEGMENT_RE.search(t))
+
+
+def _is_opincome_like(base_tag: str) -> bool:
+    return bool(_OPINC_LIKE_RE.search(base_tag))
 
 def _collect_items(kind: str, all_facts: dict) -> List[dict]:
     items: List[dict] = []
@@ -199,9 +204,11 @@ def _collect_items(kind: str, all_facts: dict) -> List[dict]:
         if kind == "rev":
             if not _is_revenue_like(base):
                 continue
-        else:
-            if base not in OPINC_BASE_TAGS:
+        elif kind == "op":
+            if not _is_opincome_like(base):
                 continue
+        else:
+            continue
         items.extend(_iter_fact_items(fact))
     return items
 
