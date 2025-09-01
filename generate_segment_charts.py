@@ -11,7 +11,7 @@ from __future__ import annotations
 import matplotlib
 matplotlib.use("Agg")
 
-import argparse, math, re, json, sqlite3
+import argparse, math, re, json, sqlite3, html
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple, Optional
@@ -140,7 +140,8 @@ def ensure_dir(path: Path) -> None:
 def _humanize_segment_name(raw: str) -> str:
     if not isinstance(raw, str) or not raw:
         return str(raw)
-    name = str(raw)
+    # strip potential HTML angle brackets to avoid injection issues
+    name = re.sub(r"[<>]", "", str(raw))
     name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
     name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
@@ -389,12 +390,10 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
                 out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
             else:
                 out[c] = out[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
-        for c in [c for c in out.columns if c.startswith("TTM ")]:
-            out[c] = out[c].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
 
         out.index.name = "Segment"
-        html_table = out.reset_index().to_html(index=False, escape=False, classes="segment-pivot", border=0)
-        sections_html.append(f"<h3>{label}</h3>\n<div class='table-wrap'>{html_table}</div>")
+        html_table = out.reset_index().to_html(index=False, escape=True, classes="segment-pivot", border=0)
+        sections_html.append(f"<h3>{html.escape(label)}</h3>\n<div class='table-wrap'>{html_table}</div>")
 
     css = """
 <style>
@@ -407,7 +406,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     caption = (
         '<div style="font-size:12px;color:#666;margin:6px 0 8px;">'
-        f'{VERSION} · {stamp} — Single-scale per section; TTM is <b>bold</b>; '
+        f'{VERSION} · {stamp} — Single-scale per section; '
         '“% of Total (TTM)” uses visible rows in that section.'
         '</div>'
     )
