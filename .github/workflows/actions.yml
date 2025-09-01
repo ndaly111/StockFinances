@@ -12,9 +12,12 @@ jobs:
   run-main-script:
     runs-on: ubuntu-latest
 
-    # ───── all steps can now see $FRED_API_KEY ─────
+    # ───── all steps can now see required secrets ─────
     env:
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+      SEC_EMAIL: ${{ secrets.EMAIL }}          # required by generate_segment_charts.py
+      EMAIL_FOR_SEC: ${{ secrets.EMAIL }}      # accepted fallback
+      EMAIL: ${{ secrets.EMAIL }}              # accepted fallback
 
     steps:
     # ---------------------------------------------------------------- checkout main
