@@ -2,7 +2,7 @@
 """
 generate_segment_charts.py — write charts (PNG) and a canonical table per ticker.
 
-• PNGs: charts/<T>/<T>_<axis-slug>_<segment>.png
+• PNGs: charts/<T>/<TypeId><T>_bisseg_<Segment>.png
 • Table: charts/<T>/<T>_segments_table.html
 """
 from __future__ import annotations
@@ -11,7 +11,7 @@ from __future__ import annotations
 import matplotlib
 matplotlib.use("Agg")
 
-import argparse, math, re, json, sqlite3
+import argparse, math, re, json, sqlite3, os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple, Optional
@@ -237,25 +237,51 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         out_dir = canonical_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Require a contact email for SEC requests
+    sec_email = (
+        os.getenv("SEC_EMAIL")
+        or os.getenv("EMAIL_FOR_SEC")
+        or os.getenv("EMAIL")
+    )
+    if not sec_email:
+        raise RuntimeError(
+            "Missing SEC contact email. Set SEC_EMAIL, EMAIL_FOR_SEC, or EMAIL (e.g., 'name@example.com')."
+        )
+    # ensure downstream helpers see a valid email
+    os.environ.setdefault("SEC_EMAIL", sec_email)
+
     # Keep canonical casing used by main_remote and the reader
     table_path = out_dir / f"{ticker}_segments_table.html"
 
     # NEW: earnings‑gated refresh
     earnings_dt = _latest_earnings_date(ticker)
     stamp_info = _read_seg_stamp(ticker) or {}
+    # Migration/version awareness:
+    #  • If the stored stamp was from another VERSION, or
+    #  • If the stored files contain no bisseg names,
+    # then force one regeneration to populate new filenames.
+    prev_files = stamp_info.get('files') or []
+    has_bisseg = any(re.match(rf'^\d+{ticker.upper()}_bisseg_.+\.png$', f or '') for f in prev_files)
+    if stamp_info.get('version') != VERSION or not has_bisseg:
+        force = True
+
     if not force and not _should_refresh(ticker, earnings_dt):
-        _cleanup_pngs(out_dir, stamp_info.get("files", []))
+        _cleanup_pngs(out_dir, stamp_info.get('files', []))
         print(f"[segments] {ticker}: up-to-date (earnings={earnings_dt or 'unknown'}). Skipping.")
         return
-
     # Fetch SEC data
     df = get_segment_data(ticker)
 
     # NEW: if SEC data is empty, retain existing artifacts and emit nothing
-    if df is None or (hasattr(df, "empty") and df.empty):
+    if df is None or (hasattr(df, 'empty') and df.empty):
         print(
-            f"[segments] {ticker}: SEC returned no segment data; retaining existing table at {table_path}"
+            f'[segments] {ticker}: SEC returned no segment data; retaining existing table at {table_path}'
         )
+        # Stamp the check so we don't thrash on subsequent runs.
+        try:
+            _write_seg_stamp(ticker, earnings_dt, prev_files if isinstance(prev_files, list) else [])
+        except Exception:
+            pass
         return
 
     df = df.copy()
@@ -329,7 +355,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         axp.set_xticklabels(years_all)
         axp.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
         axis_label = _norm_axis_label(axis)
-        axis_id = axis_ids.get(axis_label, 0)
+        axis_id = max(1, axis_ids.get(axis_label, 1))
         axp.set_ylabel("Value ($B)")
         axp.set_title(f"{seg} — {axis_label}")
         axp.axhline(0, linewidth=0.8)
