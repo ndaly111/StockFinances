@@ -2,7 +2,7 @@
 """
 generate_segment_charts.py — write charts (PNG) and a canonical table per ticker.
 
-• PNGs: charts/<T>/<T>_<axis-slug>_<segment>.png
+• PNGs: charts/<T>/<TypeId><T>_bisseg_<Segment>.png
 • Table: charts/<T>/<T>_segments_table.html
 """
 from __future__ import annotations
@@ -11,7 +11,7 @@ from __future__ import annotations
 import matplotlib
 matplotlib.use("Agg")
 
-import argparse, math, re, json, sqlite3
+import argparse, math, re, json, sqlite3, os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple, Optional
@@ -19,6 +19,7 @@ from typing import List, Tuple, Optional
 import pandas as pd
 import matplotlib.pyplot as plt
 import yfinance as yf  # lightweight fallback for earnings-date gate
+from segment_formatting_helpers import _humanize_segment_name, _to_float
 
 from sec_segment_data_arelle import get_segment_data
 
@@ -31,6 +32,20 @@ HIDE_RE = re.compile(
     r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
     re.IGNORECASE,
 )
+
+def _ensure_sec_email() -> str:
+    """Ensure a contact email is available for SEC data pulls."""
+    email = (
+        os.environ.get("SEC_EMAIL")
+        or os.environ.get("EMAIL_FOR_SEC")
+        or os.environ.get("EMAIL")
+    )
+    if not email:
+        raise SystemExit(
+            "ERROR: Missing SEC contact email; set SEC_EMAIL or EMAIL_FOR_SEC or EMAIL"
+        )
+    os.environ["SEC_EMAIL"] = email
+    return email
 
 # ───────────────────────────────────────────────────────────
 # tiny freshness helpers (self‑contained; no main_remote changes)
@@ -137,15 +152,6 @@ def _should_refresh(ticker: str, earnings_dt: Optional[datetime], fallback_days:
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
-def _humanize_segment_name(raw: str) -> str:
-    if not isinstance(raw, str) or not raw:
-        return str(raw)
-    name = str(raw)
-    name = re.sub(r"\s*(Member|Segment)\s*$", "", name, flags=re.IGNORECASE)
-    name = re.sub(r"\b([A-Z])\s+([A-Z])\b", r"\1\2", name)
-    name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
-    return " ".join(w if w.isupper() else w.capitalize() for w in name.split())
-
 def _norm_axis_label(axis: Optional[str]) -> str:
     s = (axis or "").strip()
     parts = [p for p in s.split("+") if p]
@@ -164,13 +170,6 @@ def _norm_axis_label(axis: Optional[str]) -> str:
         p = re.sub(r"\s+", " ", p)
         labels.append(p.title())
     return " & ".join(labels) if labels else "Unlabeled Axis"
-
-def _to_float(x):
-    if pd.isna(x): return pd.NA
-    if isinstance(x, (int, float)): return float(x)
-    s = str(x).replace(",", "").strip()
-    try: return float(s)
-    except: return pd.NA
 
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     if not isinstance(max_abs_value, (int, float)) or pd.isna(max_abs_value) or max_abs_value == 0:
@@ -227,6 +226,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     """
     Produce per-segment PNGs and a canonical table, **only when needed**.
     """
+    # Ensure SEC email present when invoked outside of __main__ (e.g., main_remote)
+    _ensure_sec_email()
     charts_root = Path("charts")
     canonical_dir = charts_root / ticker
     try:
@@ -243,6 +244,12 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
     # NEW: earnings‑gated refresh
     earnings_dt = _latest_earnings_date(ticker)
     stamp_info = _read_seg_stamp(ticker) or {}
+    prev_files = stamp_info.get("files") or []
+    has_bisseg = any(
+        re.match(rf'^\d+{ticker.upper()}_bisseg_.+\.png$', f or '') for f in prev_files
+    )
+    if stamp_info.get("version") != VERSION or not has_bisseg:
+        force = True
     if not force and not _should_refresh(ticker, earnings_dt):
         _cleanup_pngs(out_dir, stamp_info.get("files", []))
         print(f"[segments] {ticker}: up-to-date (earnings={earnings_dt or 'unknown'}). Skipping.")
@@ -256,6 +263,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         print(
             f"[segments] {ticker}: SEC returned no segment data; retaining existing table at {table_path}"
         )
+        _write_seg_stamp(ticker, earnings_dt, prev_files)
         return
 
     df = df.copy()
@@ -289,11 +297,10 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
 
     df = df.groupby(["AxisType", "Segment"], dropna=False, sort=False).filter(_keep_group)
 
-    # map axis types to IDs in first-seen order
+    # Map AxisType (normalized) -> Type ID (1..M) in first-seen order
     axis_ids: dict[str, int] = {}
     for axis_val in df["AxisType"].tolist():
-        lbl = _norm_axis_label(axis_val)
-        axis_ids.setdefault(lbl, len(axis_ids) + 1)
+        axis_ids.setdefault(_norm_axis_label(axis_val), len(axis_ids) + 1)
 
     # global y-axis
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
@@ -329,7 +336,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path, force: bool =
         axp.set_xticklabels(years_all)
         axp.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
         axis_label = _norm_axis_label(axis)
-        axis_id = axis_ids.get(axis_label, 0)
+        axis_id = max(1, axis_ids.get(axis_label, 1))
         axp.set_ylabel("Value ($B)")
         axp.set_title(f"{seg} — {axis_label}")
         axp.axhline(0, linewidth=0.8)
@@ -429,6 +436,7 @@ def main():
     ap.add_argument("--output_dir", default="charts")
     ap.add_argument("--force", action="store_true", help="Force refresh even if up-to-date")
     args = ap.parse_args()
+    _ensure_sec_email()
 
     p = Path(args.tickers_csv)
     if not p.is_file():

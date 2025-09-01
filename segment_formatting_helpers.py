@@ -10,25 +10,28 @@ import pandas as pd
 def _humanize_segment_name(raw: str) -> str:
     """Convert XBRL segment member names to readable labels."""
     if not isinstance(raw, str) or not raw:
-        return raw
-    name = raw.replace("SegmentMember", "")
+        return str(raw)
+    name = str(raw)
+    # strip common XBRL suffixes and tidy spaced capitals
+    name = name.replace('SegmentMember', '')
+    name = re.sub(r'\s*(Member|Segment)\s*$', '', name, flags=re.IGNORECASE)
+    name = re.sub(r'\b([A-Z])\s+([A-Z])\b', r'\1\2', name)
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
     fixes = {
-        "Greater China": "Greater China",
-        "Rest Of Asia Pacific": "Rest of Asia Pacific",
-        "North America": "North America",
-        "Latin America": "Latin America",
-        "United States": "United States",
-        "Middle East": "Middle East",
-        "Asia Pacific": "Asia Pacific",
-        "Americas": "Americas",
-        "Europe": "Europe",
-        "Japan": "Japan",
-        "China": "China",
+        'Greater China': 'Greater China',
+        'Rest Of Asia Pacific': 'Rest of Asia Pacific',
+        'North America': 'North America',
+        'Latin America': 'Latin America',
+        'United States': 'United States',
+        'Middle East': 'Middle East',
+        'Asia Pacific': 'Asia Pacific',
+        'Americas': 'Americas',
+        'Europe': 'Europe',
+        'Japan': 'Japan',
+        'China': 'China',
     }
-    title = " ".join(w if w.isupper() else w.capitalize() for w in name.split())
+    title = ' '.join(w if w.isupper() else w.capitalize() for w in name.split())
     return fixes.get(title, title)
-
 
 def _to_float(x):
     if pd.isna(x):
