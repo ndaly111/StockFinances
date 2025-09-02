@@ -9,16 +9,23 @@ Outputs a DataFrame with columns:
   OpIncome (float, USD; NaN if unavailable)
   AxisType (canonical axis name: ProductsAndServicesAxis, GeographicalAreasAxis, etc.)
 
-- Combines multiple axes into a single composite axis so each fact contributes once.
+Notes
+- Aggregates across *all* axes present; if a fact has multiple dimensions, it contributes to each axis section.
 - Filters to USD-like units.
 - Polite SEC headers and small delay (PAUSE_SEC).
 """
+
 from __future__ import annotations
-import json, os, re, time
+
+import json
+import os
+import re
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import requests
+
 import pandas as pd
+import requests
 
 SEC_CIK_CACHE = Path(".sec_cik_cache.json")
 SEC_HEADERS_EMAIL_ENV = ("SEC_EMAIL", "EMAIL_FOR_SEC")
@@ -38,59 +45,36 @@ REVENUE_BASE_TAGS = {
     "ServiceRevenue",
     "OperatingRevenue",
 }
-
-_REV_SEGMENT_RE = re.compile(
-    r"(?:netsales|salesrevenue|revenue).*segment|segment.*(?:netsales|salesrevenue|revenue)",
-    re.IGNORECASE,
-)
-_OPINC_LIKE_RE = re.compile(
-    r"operatingincome|operatingprofit|segmentoperatingincome",
-    re.IGNORECASE,
-)
+OPINC_BASE_TAGS = {"OperatingIncomeLoss"}
 
 # Canonical axis names we keep
-# Extended mapping to unify various SEC axis labels
 AXIS_NORMALIZER = {
-    # Geography → canonical "GeographicalAreasAxis"
+    # Geography
     "StatementGeographicalAxis": "GeographicalAreasAxis",
     "GeographicalAreasAxis": "GeographicalAreasAxis",
-    "GeographicalRegionsAxis": "GeographicalAreasAxis",
-    "GeographicalRegionAxis": "GeographicalAreasAxis",
-    "GeographicalSegmentsAxis": "GeographicalAreasAxis",
+    "GeographicalRegionsAxis": "GeographicalRegionsAxis",
+    "GeographicalRegionAxis": "GeographicalRegionsAxis",
     "DomesticAndForeignAxis": "DomesticAndForeignAxis",
     "CountryAxis": "CountryAxis",
-
-    # Product / Service → canonical "ProductsAndServicesAxis"
+    # Product/Service
     "ProductOrServiceAxis": "ProductsAndServicesAxis",
     "ProductsAndServicesAxis": "ProductsAndServicesAxis",
-    "ProductLineAxis": "ProductsAndServicesAxis",
-    "ProductAxis": "ProductsAndServicesAxis",
-    "ProductCategoryAxis": "ProductsAndServicesAxis",
-    "ProductCategoriesAxis": "ProductsAndServicesAxis",
-    "ProductSegmentsAxis": "ProductsAndServicesAxis",
-
+    "ProductLineAxis": "ProductLineAxis",
+    "ProductAxis": "ProductAxis",
+    "ProductCategoryAxis": "ProductCategoryAxis",
+    "ProductCategoriesAxis": "ProductCategoryAxis",
     # Operating segments
     "OperatingSegmentsAxis": "OperatingSegmentsAxis",
     "BusinessSegmentsAxis": "OperatingSegmentsAxis",
     "ReportableSegmentsAxis": "OperatingSegmentsAxis",
     "SegmentsAxis": "OperatingSegmentsAxis",
-    # Statement*SegmentsAxis variants from frames responses
-    "StatementBusinessSegmentsAxis": "OperatingSegmentsAxis",
-
     # Customers / Channels
     "MajorCustomersAxis": "MajorCustomersAxis",
     "SignificantCustomersAxis": "MajorCustomersAxis",
     "SalesChannelsAxis": "SalesChannelsAxis",
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
-
-# Include "Statement*SegmentsAxis" variants automatically
-AXIS_NORMALIZER.update({
-    f"Statement{k}": v
-    for k, v in list(AXIS_NORMALIZER.items())
-    if k.endswith("SegmentsAxis") and not k.startswith("Statement") and f"Statement{k}" not in AXIS_NORMALIZER
-})
-
+AXIS_WHITELIST = set(AXIS_NORMALIZER.values())
 
 _NEG_TOKENS = ("cost", "cogs", "expense", "gain", "loss", "grossprofit", "tax", "deferred", "impair", "interest")
 
@@ -144,10 +128,8 @@ def _clean_member_label(lbl: Optional[str], member: Optional[str]) -> str:
     return cand
 
 def _axis_to_type(axis: str) -> Optional[str]:
-    base = _strip_ns(axis)
-    if not base:
-        return None
-    return AXIS_NORMALIZER.get(base, base)
+    base = AXIS_NORMALIZER.get(_strip_ns(axis)) or _strip_ns(axis)
+    return AXIS_NORMALIZER.get(base, base) if base else None
 
 def _iter_fact_items(fact: dict) -> List[dict]:
     out: List[dict] = []
@@ -190,7 +172,7 @@ def _extract_axes_members(segments_raw) -> List[Tuple[str, str]]:
     for seg in _coerce_segments_list(segments_raw):
         axis_raw = seg.get("dim") or seg.get("axis") or ""
         axis = _axis_to_type(axis_raw)
-        if not axis:
+        if not axis or axis not in AXIS_WHITELIST:
             continue
         label = _clean_member_label(seg.get("memberLabel"), seg.get("member"))
         if not label:
@@ -202,11 +184,14 @@ def _is_revenue_like(base_tag: str) -> bool:
     t = base_tag.lower()
     if any(tok in t for tok in _NEG_TOKENS):
         return False
-    return t in {s.lower() for s in REVENUE_BASE_TAGS} or bool(_REV_SEGMENT_RE.search(t))
-
-
-def _is_opincome_like(base_tag: str) -> bool:
-    return bool(_OPINC_LIKE_RE.search(base_tag))
+    return (
+        t in {s.lower() for s in REVENUE_BASE_TAGS}
+        or t.endswith("revenuenet")
+        or t.endswith("revenues")
+        or t.endswith("revenue")
+        or t == "netsales"
+        or "salesrevenue" in t
+    )
 
 def _collect_items(kind: str, all_facts: dict) -> List[dict]:
     items: List[dict] = []
@@ -215,22 +200,13 @@ def _collect_items(kind: str, all_facts: dict) -> List[dict]:
         if kind == "rev":
             if not _is_revenue_like(base):
                 continue
-        elif kind == "op":
-            if not _is_opincome_like(base):
-                continue
         else:
-            continue
+            if base not in OPINC_BASE_TAGS:
+                continue
         items.extend(_iter_fact_items(fact))
     return items
 
 def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], float]:
-    """Aggregate items by axis combination, avoiding double counting.
-
-    If a fact has multiple axes, those axes are joined into a single
-    composite key (e.g. "ProductsAndServicesAxis+GeographicalAreasAxis") and
-    the member labels are joined with " | " so the fact contributes only once
-    to the totals.
-    """
     agg: Dict[Tuple[str, str, str], float] = {}
     for it in all_items:
         segs = it.get("segments") or it.get("segment")
@@ -244,68 +220,10 @@ def _harvest_tag_multi(all_items: List[dict]) -> Dict[Tuple[str, str, str], floa
             val = float(it.get("val"))
         except Exception:
             continue
-        axes_sorted = sorted(axes, key=lambda x: x[0])
-        axis_key = "+".join(a for a, _ in axes_sorted)
-        label_key = " | ".join(lbl for _, lbl in axes_sorted)
-        key = (axis_key, label_key, str(year))
-        agg[key] = agg.get(key, 0.0) + val
+        for axis, label in axes:
+            key = (axis, label, str(year))
+            agg[key] = agg.get(key, 0.0) + val
     return agg
-
-def _total_company_revenue(all_items: List[dict]) -> Dict[str, float]:
-    """Aggregate unsegmented revenue items by year."""
-    totals: Dict[str, float] = {}
-    for it in all_items:
-        segs = it.get("segments") or it.get("segment")
-        if _coerce_segments_list(segs):
-            continue  # skip segmented facts
-        year = _year_from_item(it)
-        if not year:
-            continue
-        try:
-            val = float(it.get("val"))
-        except Exception:
-            continue
-        totals[str(year)] = totals.get(str(year), 0.0) + val
-    return totals
-
-_FRAMES_FALLBACK_TAGS = ["NetSalesBySegment", "NetSalesByReportableSegment"]
-
-def _fetch_frames_fallback(cik: int, years_back: int = 5) -> List[dict]:
-    """Fetch segment revenue from the SEC XBRL Frames API for a few candidate tags.
-
-    Returns items normalized to the CompanyFacts structure so they can flow
-    through the existing aggregation logic.
-    """
-    current_year = pd.Timestamp.today().year
-    years = list(range(current_year, current_year - years_back, -1))
-    for tag in _FRAMES_FALLBACK_TAGS:
-        out: List[dict] = []
-        for yr in years:
-            url = f"https://data.sec.gov/api/xbrl/frames/{tag}/USD/FY{yr}?cik={cik}"
-            try:
-                r = requests.get(url, headers=_user_agent_headers(), timeout=REQUEST_TIMEOUT)
-                r.raise_for_status()
-                data = r.json().get("data") or []
-            except Exception:
-                continue
-            time.sleep(PAUSE_SEC)
-            for row in data:
-                if int(row.get("cik", 0)) != cik:
-                    continue
-                seg = row.get("segment") or {}
-                norm_seg = {
-                    "dim": seg.get("dim") or seg.get("axis"),
-                    "member": seg.get("member"),
-                    "memberLabel": seg.get("memberLabel") or seg.get("label"),
-                }
-                out.append({
-                    "val": row.get("val"),
-                    "fy": row.get("fy"),
-                    "segments": [norm_seg],
-                })
-        if out:
-            return out
-    return []
 
 def get_segment_data(ticker: str) -> pd.DataFrame:
     cik = _cik_from_ticker(ticker)
@@ -315,12 +233,8 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
     rev_items = _collect_items("rev", all_facts)
     op_items  = _collect_items("op",  all_facts)
 
-    if not rev_items and not op_items:
-        rev_items = _fetch_frames_fallback(cik)
-
     rev_agg = _harvest_tag_multi(rev_items)
     op_agg  = _harvest_tag_multi(op_items)
-    totals_company = _total_company_revenue(rev_items)
 
     keys = set(rev_agg.keys()) | set(op_agg.keys())
     if not keys:
@@ -337,18 +251,7 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
         })
 
     df = pd.DataFrame(rows)
-    df["Revenue"] = pd.to_numeric(df["Revenue"], errors="coerce")
+    df["Revenue"]  = pd.to_numeric(df["Revenue"], errors="coerce")
     df["OpIncome"] = pd.to_numeric(df["OpIncome"], errors="coerce")
     df = df[df["Segment"].astype(str).str.strip() != ""].copy()
-
-    # Validate that segment totals roughly match reported company revenue
-    try:
-        seg_totals = df.groupby("Year")["Revenue"].sum(min_count=1).to_dict()
-        for yr, tot in totals_company.items():
-            seg = seg_totals.get(yr)
-            if seg is not None and abs(seg - tot) > 1.0:  # tolerance for rounding
-                print(f"[segments] WARNING {ticker} {yr}: segments {seg} != reported {tot}")
-    except Exception:
-        pass
-
     return df
