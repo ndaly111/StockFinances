@@ -56,6 +56,7 @@ AXIS_NORMALIZER = {
     "GeographicalAreasAxis": "GeographicalAreasAxis",
     "GeographicalRegionsAxis": "GeographicalAreasAxis",
     "GeographicalRegionAxis": "GeographicalAreasAxis",
+    "GeographicalSegmentsAxis": "GeographicalAreasAxis",
     "DomesticAndForeignAxis": "DomesticAndForeignAxis",
     "CountryAxis": "CountryAxis",
 
@@ -66,12 +67,15 @@ AXIS_NORMALIZER = {
     "ProductAxis": "ProductsAndServicesAxis",
     "ProductCategoryAxis": "ProductsAndServicesAxis",
     "ProductCategoriesAxis": "ProductsAndServicesAxis",
+    "ProductSegmentsAxis": "ProductsAndServicesAxis",
 
     # Operating segments
     "OperatingSegmentsAxis": "OperatingSegmentsAxis",
     "BusinessSegmentsAxis": "OperatingSegmentsAxis",
     "ReportableSegmentsAxis": "OperatingSegmentsAxis",
     "SegmentsAxis": "OperatingSegmentsAxis",
+    # Statement*SegmentsAxis variants from frames responses
+    "StatementBusinessSegmentsAxis": "OperatingSegmentsAxis",
 
     # Customers / Channels
     "MajorCustomersAxis": "MajorCustomersAxis",
@@ -79,6 +83,13 @@ AXIS_NORMALIZER = {
     "SalesChannelsAxis": "SalesChannelsAxis",
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
+
+# Include "Statement*SegmentsAxis" variants automatically
+AXIS_NORMALIZER.update({
+    f"Statement{k}": v
+    for k, v in list(AXIS_NORMALIZER.items())
+    if k.endswith("SegmentsAxis") and not k.startswith("Statement") and f"Statement{k}" not in AXIS_NORMALIZER
+})
 
 
 _NEG_TOKENS = ("cost", "cogs", "expense", "gain", "loss", "grossprofit", "tax", "deferred", "impair", "interest")
