@@ -56,6 +56,7 @@ AXIS_NORMALIZER = {
     "GeographicalAreasAxis": "GeographicalAreasAxis",
     "GeographicalRegionsAxis": "GeographicalAreasAxis",
     "GeographicalRegionAxis": "GeographicalAreasAxis",
+    "GeographicalSegmentsAxis": "GeographicalAreasAxis",
     "DomesticAndForeignAxis": "DomesticAndForeignAxis",
     "CountryAxis": "CountryAxis",
 
@@ -66,12 +67,15 @@ AXIS_NORMALIZER = {
     "ProductAxis": "ProductsAndServicesAxis",
     "ProductCategoryAxis": "ProductsAndServicesAxis",
     "ProductCategoriesAxis": "ProductsAndServicesAxis",
+    "ProductSegmentsAxis": "ProductsAndServicesAxis",
 
     # Operating segments
     "OperatingSegmentsAxis": "OperatingSegmentsAxis",
     "BusinessSegmentsAxis": "OperatingSegmentsAxis",
     "ReportableSegmentsAxis": "OperatingSegmentsAxis",
     "SegmentsAxis": "OperatingSegmentsAxis",
+    # Statement*SegmentsAxis variants from frames responses
+    "StatementBusinessSegmentsAxis": "OperatingSegmentsAxis",
 
     # Customers / Channels
     "MajorCustomersAxis": "MajorCustomersAxis",
@@ -79,6 +83,13 @@ AXIS_NORMALIZER = {
     "SalesChannelsAxis": "SalesChannelsAxis",
     "DistributionChannelsAxis": "SalesChannelsAxis",
 }
+
+# Include "Statement*SegmentsAxis" variants automatically
+AXIS_NORMALIZER.update({
+    f"Statement{k}": v
+    for k, v in list(AXIS_NORMALIZER.items())
+    if k.endswith("SegmentsAxis") and not k.startswith("Statement") and f"Statement{k}" not in AXIS_NORMALIZER
+})
 
 
 _NEG_TOKENS = ("cost", "cogs", "expense", "gain", "loss", "grossprofit", "tax", "deferred", "impair", "interest")
@@ -257,6 +268,45 @@ def _total_company_revenue(all_items: List[dict]) -> Dict[str, float]:
         totals[str(year)] = totals.get(str(year), 0.0) + val
     return totals
 
+_FRAMES_FALLBACK_TAGS = ["NetSalesBySegment", "NetSalesByReportableSegment"]
+
+def _fetch_frames_fallback(cik: int, years_back: int = 5) -> List[dict]:
+    """Fetch segment revenue from the SEC XBRL Frames API for a few candidate tags.
+
+    Returns items normalized to the CompanyFacts structure so they can flow
+    through the existing aggregation logic.
+    """
+    current_year = pd.Timestamp.today().year
+    years = list(range(current_year, current_year - years_back, -1))
+    for tag in _FRAMES_FALLBACK_TAGS:
+        out: List[dict] = []
+        for yr in years:
+            url = f"https://data.sec.gov/api/xbrl/frames/{tag}/USD/FY{yr}?cik={cik}"
+            try:
+                r = requests.get(url, headers=_user_agent_headers(), timeout=REQUEST_TIMEOUT)
+                r.raise_for_status()
+                data = r.json().get("data") or []
+            except Exception:
+                continue
+            time.sleep(PAUSE_SEC)
+            for row in data:
+                if int(row.get("cik", 0)) != cik:
+                    continue
+                seg = row.get("segment") or {}
+                norm_seg = {
+                    "dim": seg.get("dim") or seg.get("axis"),
+                    "member": seg.get("member"),
+                    "memberLabel": seg.get("memberLabel") or seg.get("label"),
+                }
+                out.append({
+                    "val": row.get("val"),
+                    "fy": row.get("fy"),
+                    "segments": [norm_seg],
+                })
+        if out:
+            return out
+    return []
+
 def get_segment_data(ticker: str) -> pd.DataFrame:
     cik = _cik_from_ticker(ticker)
     facts = _fetch_companyfacts(cik)
@@ -264,6 +314,9 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
 
     rev_items = _collect_items("rev", all_facts)
     op_items  = _collect_items("op",  all_facts)
+
+    if not rev_items and not op_items:
+        rev_items = _fetch_frames_fallback(cik)
 
     rev_agg = _harvest_tag_multi(rev_items)
     op_agg  = _harvest_tag_multi(op_items)
