@@ -23,7 +23,7 @@ from segment_formatting_helpers import _humanize_segment_name, _to_float
 
 from sec_segment_data_arelle import get_segment_data
 
-VERSION = "SEGMENTS v2025-08-27"
+VVERSION = "SEGMENTS v2025-09-02"
 DB_PATH = "Stock Data.db"                  # existing DB
 STAMP_FILENAME = "_segments_stamp.json"    # per‑ticker freshness stamp
 
