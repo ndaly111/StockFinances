@@ -4,7 +4,12 @@ from jinja2 import Environment, FileSystemLoader, Template
 import os, sqlite3, pandas as pd, yfinance as yf, re
 
 DB_PATH = "Stock Data.db"
-env = Environment(loader=FileSystemLoader("templates"))
+env = Environment(loader=FileSystemLoader("templates"
+                                         ))
+
+# gate to match Aug 10 rollback
+VERSION = "SEGMENTS v2025-08-10b"
+
 
 # ───────── helpers ──────────────────────────────────────────────
 def ensure_directory_exists(path: str):

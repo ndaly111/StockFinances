@@ -9,15 +9,16 @@ import yfinance as yf
 
 env = Environment(loader=FileSystemLoader(os.path.dirname(os.path.abspath(__file__))))
 
+# gate to match Aug 10 rollback
+VERSION = "SEGMENTS v2025-08-10b"
+
+
 def format_to_millions(value):
+    """Format a numeric value into millions with a dollar sign and commas."""
     print("html_generator 1 format to millions")
-    """
-    Formats a numerical value to a string representing the value in millions
-    with a dollar sign and commas.
-    """
-    print("html generator 1 formatting to millions", value)
     try:
-        print("---value",value)
+        print("html generator 1 formatting to millions", value)
+        print("---value", value)
         # Assume value is already a float representing the total amount (not in millions)
         value_in_millions = value / 1e6  # Convert to millions
         formatted_value = f"${value_in_millions:,.0f}M"
