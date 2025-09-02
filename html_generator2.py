@@ -61,59 +61,81 @@ def inject_retro(html: str) -> str:
 
 # ────── segment helpers ────────────────────────────────
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
-    """Build Business Segment carousels grouped by type id, with headings that match table sections."""
+    """
+    Build Business Segment image blocks for all `.png` files located in charts/{ticker}/.
+    This supports the rollback naming convention where images no longer have a type prefix.
 
-    # Use the ticker as passed for filesystem/URL; bisseg filenames themselves contain the UPPERCASE ticker.
+    If only one image is present, a single block is rendered. If multiple images exist
+    and a segment table exists, images will be paired with table headers when possible;
+    otherwise all images will appear under a single “Business Segments” header.
+    """
     sub_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(sub_dir):
         return ""
 
-    pat = re.compile(
-        rf"^(\d+){ticker.upper()}_bisseg_(.+)\.png$",
-        re.IGNORECASE,
-    )
-
-    grouped: dict[int, list[str]] = {}
-    for fname in os.listdir(sub_dir):
-        m = pat.match(fname)
-        if not m:
-            continue
-        type_id = int(m.group(1))
-        grouped.setdefault(type_id, []).append(f"{charts_dir_web}/{ticker}/{fname}")
-
-    if not grouped:
+    # Collect every PNG file in charts/{ticker}/
+    png_files = sorted(f for f in os.listdir(sub_dir) if f.lower().endswith(".png"))
+    if not png_files:
         return ""
 
-    # Ensure stable order within each type
-    for _k in grouped:
-        grouped[_k].sort()
+    # Convert filenames to web paths
+    srcs = [f"{charts_dir_web}/{ticker}/{fname}" for fname in png_files]
 
-    # Derive axis labels from the existing table so headings match, allowing interleave to pair chart+table.
+    # Try to read the corresponding segments table from multiple possible locations
+    raw_table = None
+    for tbl in [
+        os.path.join(charts_dir_fs, f"{ticker}_segments_table.html"),
+        os.path.join(charts_dir_fs, ticker, f"{ticker}_segments_table.html"),
+        os.path.join(charts_dir_fs, f"{ticker}_segments.html"),
+        os.path.join(charts_dir_fs, ticker, f"{ticker}_segments.html"),
+    ]:
+        try:
+            with open(tbl, encoding="utf-8") as fh:
+                raw_table = fh.read()
+                break
+        except Exception:
+            pass
+
     labels: list[str] = []
-    try:
-        table_path = os.path.join(charts_dir_fs, ticker, f"{ticker}_segments_table.html")
-        raw_table = open(table_path, encoding="utf-8").read()
-        sections = _split_h3_sections(raw_table, wanted_class="table-wrap")
-        labels = [title for (title, _body) in sections]
-    except Exception:
-        labels = []
+    if raw_table:
+        try:
+            sections = _split_h3_sections(raw_table, wanted_class="table-wrap")
+            labels = [title for title, _body in sections]
+        except Exception:
+            labels = []
 
-    type_ids = sorted(grouped)
-    title_map = {tid: (labels[i] if i < len(labels) else f"Business Segments (Type {tid})")
-                 for i, tid in enumerate(type_ids)}
+    # If only one image exists, create a simple block and reuse the first label if available
+    if len(srcs) == 1:
+        title = labels[0] if labels else "Business Segments"
+        return (
+            f'<h3>{title}</h3>\n'
+            f'<div class="seg-axis-block">\n'
+            f'  <img class="chart-img" src="{srcs[0]}" alt="{ticker.upper()} {title}"/>\n'
+            f'</div>'
+        )
 
+    # Multiple images: try to map images 1-to-1 with labels; otherwise group all images under one header
     parts: list[str] = []
-    for type_id in type_ids:
-        title = title_map[type_id]
+    if labels and len(labels) >= len(srcs):
+        # Pair each image with a label
+        for label, src in zip(labels, srcs):
+            parts.append(
+                f'<h3>{label}</h3>\n'
+                f'<div class="carousel-container chart-block">\n'
+                f'  <div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker.upper()} {label}"></div>\n'
+                f'</div>'
+            )
+    else:
+        # Fallback: single header for all images
+        title = "Business Segments"
         items = [
             f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker.upper()} {title}"></div>'
-            for src in grouped[type_id]
+            for src in srcs
         ]
         parts.append(
             f'<h3>{title}</h3>\n'
             f'<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
         )
-
     return "\n".join(parts)
 
 def _split_h3_sections(html: str, wanted_class: str = None):
@@ -457,8 +479,10 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
             # Read canonical table (with safe fallback to helper flat file)
             raw_table = get_first_file(
                 [
-                    f"{charts_dir_fs}/{t}/{t}_segments_table.html",  # canonical
-                    f"{charts_dir_fs}/{t}_segments.html",            # optional helper flat file
+                    f"{charts_dir_fs}/{t}_segments_table.html",      # root (after rollback)
+                    f"{charts_dir_fs}/{t}/{t}_segments_table.html",  # subfolder
+                    f"{charts_dir_fs}/{t}_segments.html",
+                    f"{charts_dir_fs}/{t}/{t}_segments.html",
                 ],
                 f"No segment data available for {t}."
             )
