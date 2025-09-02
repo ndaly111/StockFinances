@@ -29,7 +29,7 @@ import math
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -94,15 +94,31 @@ def _to_float(x):
     try: return float(s)
     except: return pd.NA
 
-def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
-    """Pick a single divisor + unit label for the *whole* table."""
-    if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
+def _choose_scale(values: Iterable[float]) -> Tuple[float, str]:
+    """Return a divisor and unit that avoids tiny decimals.
+
+    Chooses the largest unit ($T/$B/$M/$K/$) such that the smallest
+    non-zero value remains at least 0.1 after scaling.  If no values are
+    provided, defaults to dollars.
+    """
+    cleaned = [abs(float(v)) for v in values if isinstance(v, (int, float)) and not math.isnan(v) and v != 0]
+    if not cleaned:
         return (1.0, "$")
-    v = abs(max_abs_value)
-    if v >= 1e12: return (1e12, "$T")
-    if v >= 1e9:  return (1e9,  "$B")
-    if v >= 1e6:  return (1e6,  "$M")
-    if v >= 1e3:  return (1e3,  "$K")
+
+    max_val = max(cleaned)
+    min_val = min(cleaned)
+    scales = [
+        (1e12, "$T"),
+        (1e9, "$B"),
+        (1e6, "$M"),
+        (1e3, "$K"),
+        (1.0, "$")
+    ]
+    for div, unit in scales:
+        max_scaled = max_val / div
+        min_scaled = min_val / div
+        if max_scaled >= 1 and min_scaled >= 0.1:
+            return div, unit
     return (1.0, "$")
 
 def _fmt_scaled(x, div, unit) -> str:
@@ -222,8 +238,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         if total_ttm and total_ttm != 0:
             pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
-    max_val = pd.concat([rev_p, oi_p]).abs().max().max()
-    div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
+    all_vals = pd.concat([rev_p, oi_p]).stack().dropna().values
+    div, unit = _choose_scale(all_vals)
 
     cols: List[Tuple[str, str]] = []
     for y in [c for c in years_tbl if c != "TTM"]:
