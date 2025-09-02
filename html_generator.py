@@ -11,6 +11,10 @@ env = Environment(loader=FileSystemLoader(os.path.dirname(os.path.abspath(__file
 
 def format_to_millions(value):
     print("html_generator 1 format to millions")
+    
+# gate to match Aug 10 rollback
+VERSION = "SEGMENTS v2025-08-10b"
+
     """
     Formats a numerical value to a string representing the value in millions
     with a dollar sign and commas.
