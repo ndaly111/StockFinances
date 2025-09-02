@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-# html_generator2.py – retro fix: economic data + per-axis segment blocks (carousel + table) + dividend
+# html_generator2.py – retro fix: economic data + segment carousel/table + dividend
+# ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
-import os, sqlite3, pandas as pd, yfinance as yf, re
+import os, sqlite3, pandas as pd, yfinance as yf
 
 DB_PATH = "Stock Data.db"
-env = Environment(loader=FileSystemLoader("templates"
-                                         ))
-
-# gate to match Aug 10 rollback
-VERSION = "SEGMENTS v2025-08-10b"
-
+env = Environment(loader=FileSystemLoader("templates"))
 
 # ───────── helpers ──────────────────────────────────────────────
 def ensure_directory_exists(path: str):
@@ -38,16 +34,7 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
     except FileNotFoundError:
         return ph
 
-def get_first_file(paths, placeholder="No data available") -> str:
-    import glob
-    for p in paths:
-        for m in glob.glob(p):
-            try:
-                return open(m, encoding="utf-8").read()
-            except FileNotFoundError:
-                continue
-    return placeholder
-
+# Inject retro CSS + container override
 def inject_retro(html: str) -> str:
     if '/static/css/retro.css' not in html:
         html = html.replace(
@@ -59,144 +46,26 @@ def inject_retro(html: str) -> str:
         )
     return html
 
-# ────── segment helpers ────────────────────────────────
+# ───────── segment helpers ──────────────────────────────────────
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
     """
-    Build Business Segment image blocks for all `.png` files located in charts/{ticker}/.
-    This supports the rollback naming convention where images no longer have a type prefix.
-
-    If only one image is present, a single block is rendered. If multiple images exist
-    and a segment table exists, images will be paired with table headers when possible;
-    otherwise all images will appear under a single “Business Segments” header.
+    Carousel shows ALL PNGs in charts/<ticker>/*.png
     """
-    sub_dir = os.path.join(charts_dir_fs, ticker)
-    if not os.path.isdir(sub_dir):
+    seg_dir = os.path.join(charts_dir_fs, ticker)
+    if not os.path.isdir(seg_dir):
         return ""
-
-    # Collect every PNG file in charts/{ticker}/
-    png_files = sorted(f for f in os.listdir(sub_dir) if f.lower().endswith(".png"))
-    if not png_files:
+    pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
+    if not pngs:
         return ""
-
-    # Convert filenames to web paths
-    srcs = [f"{charts_dir_web}/{ticker}/{fname}" for fname in png_files]
-
-    # Try to read the corresponding segments table from multiple possible locations
-    raw_table = None
-    for tbl in [
-        os.path.join(charts_dir_fs, f"{ticker}_segments_table.html"),
-        os.path.join(charts_dir_fs, ticker, f"{ticker}_segments_table.html"),
-        os.path.join(charts_dir_fs, f"{ticker}_segments.html"),
-        os.path.join(charts_dir_fs, ticker, f"{ticker}_segments.html"),
-    ]:
-        try:
-            with open(tbl, encoding="utf-8") as fh:
-                raw_table = fh.read()
-                break
-        except Exception:
-            pass
-
-    labels: list[str] = []
-    if raw_table:
-        try:
-            sections = _split_h3_sections(raw_table, wanted_class="table-wrap")
-            labels = [title for title, _body in sections]
-        except Exception:
-            labels = []
-
-    # If only one image exists, create a simple block and reuse the first label if available
-    if len(srcs) == 1:
-        title = labels[0] if labels else "Business Segments"
-        return (
-            f'<h3>{title}</h3>\n'
-            f'<div class="seg-axis-block">\n'
-            f'  <img class="chart-img" src="{srcs[0]}" alt="{ticker.upper()} {title}"/>\n'
-            f'</div>'
-        )
-
-    # Multiple images: try to map images 1-to-1 with labels; otherwise group all images under one header
-    parts: list[str] = []
-    if labels and len(labels) >= len(srcs):
-        # Pair each image with a label
-        for label, src in zip(labels, srcs):
-            parts.append(
-                f'<h3>{label}</h3>\n'
-                f'<div class="carousel-container chart-block">\n'
-                f'  <div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker.upper()} {label}"></div>\n'
-                f'</div>'
-            )
-    else:
-        # Fallback: single header for all images
-        title = "Business Segments"
-        items = [
-            f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{ticker.upper()} {title}"></div>'
-            for src in srcs
-        ]
-        parts.append(
-            f'<h3>{title}</h3>\n'
-            f'<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
-        )
-    return "\n".join(parts)
-
-def _split_h3_sections(html: str, wanted_class: str = None):
-    """
-    Split HTML into [(title, body_html)] sections keyed by <h3>...</h3>.
-    If wanted_class is provided, capture only the first matching wrapper in that section.
-    """
-    if not html:
-        return []
-    heads = list(re.finditer(r"<h3[^>]*>(.*?)</h3>", html, flags=re.IGNORECASE | re.DOTALL))
-    sections = []
-    for i, m in enumerate(heads):
-        title = re.sub(r"<.*?>", "", m.group(1)).strip()
-        start = m.end()
-        end = heads[i+1].start() if i+1 < len(heads) else len(html)
-        blob = html[start:end]
-        if wanted_class:
-            mm = re.search(
-                rf"<div[^>]*class=['\"][^'\"]*{wanted_class}[^'\"]*['\"][^>]*>.*?</div>",
-                blob, flags=re.IGNORECASE | re.DOTALL
-            )
-            if mm:
-                blob = mm.group(0)
-        sections.append((title, blob.strip()))
-    return sections
-
-def interleave_segment_blocks(carousel_html: str, table_html: str) -> str:
-    """
-    For each axis title: render [charts row] then [matching table].
-    Falls back to an inline notice if a table section is missing.
-    """
-    car = _split_h3_sections(carousel_html, wanted_class="carousel-container")
-    tab = _split_h3_sections(table_html,   wanted_class="table-wrap")
-
-    car_map = {}
-    order = []
-    for title, body in car:
-        if title not in car_map:
-            order.append(title)
-            car_map[title] = []
-        car_map[title].append(body)
-
-    tab_map = {title: body for title, body in tab}
-
-    blocks = []
-    for title in order:
-        table_part = tab_map.get(title, '<div class="table-wrap"><p>No table for this axis.</p></div>')
-        for body in car_map[title]:
-            blocks.append(f'<div class="seg-axis-block">\n<h3>{title}</h3>\n{body}\n{table_part}\n</div>')
-
-    # tables that have no charts
-    for title, body in tab_map.items():
-        if title not in car_map:
-            blocks.append(f'<div class="seg-axis-block">\n<h3>{title}</h3>\n{body}\n</div>')
-
-    html = "\n".join(blocks).strip()
-    return html or (table_html or "")
+    items = []
+    for f in pngs:
+        src = f"{charts_dir_web}/{ticker}/{f}"  # web path for /pages/*
+        items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
+    return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
 # ───────── template creation ────────────────────────────────────
 def ensure_templates_exist():
-    retro_css = r"""/* === retro.css — keep your existing look === */
+    retro_css = r"""/* === retro.css — late-90s / early-2000s vibe === */
 body{font-family:Verdana,Geneva,sans-serif;background:#F0F0FF url("../images/retro_bg.gif");color:#000080;margin:0}
 a{color:#0000FF}a:visited{color:#800080}a:hover{text-decoration:underline}
 h1,h2,h3{color:#FF0000;text-shadow:1px 1px #000080;margin:8px 0}
@@ -206,16 +75,20 @@ table{border:2px solid #000080;border-collapse:collapse;background:#FFF;width:10
 th{background:#C0C0FF;padding:4px;border:1px solid #8080FF}
 td{padding:4px;border:1px solid #8080FF}
 .marquee-wrapper{background:#000080;color:#FFFF00;padding:4px;font-weight:bold}
+.blink{animation:blink 1s steps(5,start) infinite}@keyframes blink{to{visibility:hidden}}
 .container{max-width:none;width:100%;}
 .chart-img{max-width:100%;height:auto;display:block;margin:0 auto}
 .chart-block{margin-top:14px}
 .table-wrap{overflow-x:auto;border:1px solid #8080FF}
+.segment-table-wrapper .table-wrap table td:nth-child(2){text-align:center}
+.segment-table-wrapper .table-wrap table td:nth-child(3),
+.segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
 .carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
 .carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
-.seg-axis-block{margin-bottom:16px}
 """
     create_template("static/css/retro.css", retro_css)
 
+    # Home page now includes Economic Data section
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
@@ -285,7 +158,7 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/home_template.html", home_tpl)
 
-    # Ticker page: NO TABS. Interleaved segments only.
+    # Ticker page (all legacy sections + segments + dividend)
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
@@ -329,10 +202,15 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
   </div>
 
-  {% if ticker_data.segment_interleaved_html %}
+  {% if ticker_data.segment_carousel_html %}
   <div class="chart-block">
     <h2>Segment Performance</h2>
-    {{ ticker_data.segment_interleaved_html | safe }}
+    {{ ticker_data.segment_carousel_html | safe }}
+    <div class="segment-table-wrapper">
+      <div class="table-wrap">
+        {{ ticker_data.segment_table_html | safe }}
+      </div>
+    </div>
   </div>
   {% endif %}
 
@@ -364,7 +242,7 @@ td{padding:4px;border:1px solid #8080FF}
 </div></body></html>"""
     create_template("templates/ticker_template.html", ticker_tpl)
 
-# ───────── dashboard builder (exported) ────────────────────────
+# ───────── dashboard builder  (exported to main_remote.py) ─
 def generate_dashboard_table(raw_rows):
     base_cols = [
         "Ticker", "Share Price",
@@ -384,6 +262,7 @@ def generate_dashboard_table(raw_rows):
 
     df = df.merge(pct, how="left", on="Ticker")
 
+    # numeric / display columns
     sp_num = pd.to_numeric(df["Share Price"], errors="coerce")
     df["Share Price_num"]  = sp_num
     df["Share Price_disp"] = sp_num.map(lambda x: f"{x:.2f}" if pd.notnull(x) else "–")
@@ -395,7 +274,9 @@ def generate_dashboard_table(raw_rows):
         df[col + "_disp"] = num.map(lambda x: f"{x:.1f}" if pd.notnull(x) else "–")
 
     df["Implied-Growth Pctile_num"]  = df["Percentile"]
-    df["Implied-Growth Pctile_disp"] = df["Percentile"].map(lambda x: f"{x:.0f}" if pd.notnull(x) else "–")
+    df["Implied-Growth Pctile_disp"] = df["Percentile"].map(
+        lambda x: f"{x:.0f}" if pd.notnull(x) else "–"
+    )
     df.drop(columns="Percentile", inplace=True)
 
     def link(t):
@@ -408,6 +289,7 @@ def generate_dashboard_table(raw_rows):
     df["Ticker"] = df["Ticker"].apply(link)
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
 
+    # Build table rows
     body = []
     for _, r in df.iterrows():
         cells = [
@@ -428,11 +310,10 @@ def generate_dashboard_table(raw_rows):
         thead + "<tbody>" + "".join(body) + "</tbody></table>"
     )
 
+    # Summary stats
     pc = lambda s: f"{s:.1f}" if pd.notnull(s) else "–"
-    ttm  = df["Nick's TTM Value_num"].dropna()
-    fwd  = df["Nick's Forward Value_num"].dropna()
-    fttm = df["Finviz TTM Value_num"].dropna()
-    ffwd = df["Finviz Forward Value_num"].dropna()
+    ttm, fwd = df["Nick's TTM Value_num"].dropna(), df["Nick's Forward Value_num"].dropna()
+    fttm, ffwd = df["Finviz TTM Value_num"].dropna(), df["Finviz Forward Value_num"].dropna()
 
     summary = [
         ["Average", pc(ttm.mean()), pc(fwd.mean()), pc(fttm.mean()), pc(ffwd.mean())],
@@ -449,13 +330,13 @@ def generate_dashboard_table(raw_rows):
         "Nicks_TTM_Value_Median":        ttm.median(),
         "Nicks_Forward_Value_Average":   fwd.mean(),
         "Nicks_Forward_Value_Median":    fwd.median(),
-        "Finviz_TTM Value_Average":      fttm.mean() if not fttm.empty else None,
-        "Finviz_TTM Value_Median":       fttm.median() if not fttm.empty else None,
-        "Finviz_Forward Value_Average":  ffwd.mean() if not ffwd.empty else None,
-        "Finviz_Forward Value_Median":   ffwd.median() if not ffwd.empty else None
+        "Finviz_TTM_Value_Average":      fttm.mean() if not fttm.empty else None,
+        "Finviz_TTM_Value_Median":       fttm.median() if not fttm.empty else None,
+        "Finviz_Forward_Value_Average":  ffwd.mean() if not ffwd.empty else None,
+        "Finviz_Forward_Value_Median":   ffwd.median() if not ffwd.empty else None
     }
 
-# ───────── ancillary page builders ──────────────────────────
+# ───────── ancillary page builders (retro-injected) ───────
 def render_spy_qqq_growth_pages():
     chart_dir, out_dir = "charts", "."
     for key in ("spy", "qqq"):
@@ -470,30 +351,21 @@ def render_spy_qqq_growth_pages():
             f.write(inject_retro(rendered))
 
 def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
+    """
+    Filesystem reads: charts_dir_fs (e.g., 'charts')
+    Web <img src> from /pages/*: '../charts/...'
+    """
     charts_dir_web = "../" + charts_dir_fs
     ensure_directory_exists("pages")
 
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         for t in tickers:
-            # Read canonical table (with safe fallback to helper flat file)
-            raw_table = get_first_file(
-                [
-                    f"{charts_dir_fs}/{t}_segments_table.html",      # root (after rollback)
-                    f"{charts_dir_fs}/{t}/{t}_segments_table.html",  # subfolder
-                    f"{charts_dir_fs}/{t}_segments.html",
-                    f"{charts_dir_fs}/{t}/{t}_segments.html",
-                ],
-                f"No segment data available for {t}."
-            )
-            raw_carousels = build_segment_carousel_html(t, charts_dir_fs, charts_dir_web)
-            interleaved   = interleave_segment_blocks(raw_carousels, raw_table)
-
             d = {
                 "ticker":                        t,
                 "company_name":                  get_company_short_name(t, cur),
 
-                # HTML fragments
+                # HTML fragments (read contents)
                 "ticker_info":                   get_file_or_placeholder(f"{charts_dir_fs}/{t}_ticker_info.html"),
                 "financial_table":               get_file_or_placeholder(f"{charts_dir_fs}/{t}_rev_net_table.html"),
                 "yoy_growth_table_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_growth_tbl.html"),
@@ -504,9 +376,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "expense_yoy_html":              get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_expense_change.html"),
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
-
-                # Segments (interleaved: charts for each axis, then that axis table)
-                "segment_interleaved_html":      interleaved,
+                "segment_table_html":            get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table.html", "No segment data available."),
 
                 # Images (web paths)
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
@@ -521,6 +391,9 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "valuation_chart":               f"{charts_dir_web}/{t}_valuation_chart.png",
                 "eps_dividend_chart_path":       f"{charts_dir_web}/{t}_eps_dividend_forecast.png",
                 "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
+
+                # Segment carousel
+                "segment_carousel_html":         build_segment_carousel_html(t, charts_dir_fs, charts_dir_web),
             }
             rendered = env.get_template("ticker_template.html").render(ticker_data=d)
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
