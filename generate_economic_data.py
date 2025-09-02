@@ -162,12 +162,20 @@ def generate_economic_data():
         # ---- fetch core series ----
         start = (dt.date.today() - dt.timedelta(days=15 * 365)).strftime("%Y-%m-%d")
 
-        unrate = fred.get_series("UNRATE",   observation_start=start)
-        cpi_ix = fred.get_series("CPIAUCSL", observation_start=start)  # raw index; convert to YoY %
-        dgs10  = fred.get_series("DGS10",    observation_start=start)
-        gdp    = fred.get_series("GDPC1",    observation_start=start)
-        tarL   = fred.get_series("DFEDTARL", observation_start=start)
-        tarU   = fred.get_series("DFEDTARU", observation_start=start)
+        def _fred_series(sid: str) -> pd.Series:
+            """Fetch a FRED series, returning an empty Series on error."""
+            try:
+                return fred.get_series(sid, observation_start=start)
+            except Exception as e:
+                print(f"\u26a0\ufe0f FRED: failed to fetch {sid}: {e}")
+                return pd.Series(dtype=float)
+
+        unrate = _fred_series("UNRATE")
+        cpi_ix = _fred_series("CPIAUCSL")  # raw index; convert to YoY %
+        dgs10  = _fred_series("DGS10")
+        gdp    = _fred_series("GDPC1")
+        tarL   = _fred_series("DFEDTARL")
+        tarU   = _fred_series("DFEDTARU")
 
         # ---- upsert raw series EXCEPT CPI (we store CPI as YoY %) ----
         for sid, ser in {
