@@ -138,7 +138,7 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     """Generate charts and a compact pivot HTML table for a single ticker."""
     try:
-        df = get_segment_data(ticker)
+        df = get_segment_data(ticker, dump_raw=True)
     except Exception as fetch_err:
         print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
         ensure_dir(out_dir)
