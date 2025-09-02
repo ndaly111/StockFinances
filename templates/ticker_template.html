@@ -41,10 +41,15 @@
     <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
   </div>
 
-  {% if ticker_data.segment_interleaved_html %}
+  {% if ticker_data.segment_carousel_html %}
   <div class="chart-block">
     <h2>Segment Performance</h2>
-    {{ ticker_data.segment_interleaved_html | safe }}
+    {{ ticker_data.segment_carousel_html | safe }}
+    <div class="segment-table-wrapper">
+      <div class="table-wrap">
+        {{ ticker_data.segment_table_html | safe }}
+      </div>
+    </div>
   </div>
   {% endif %}
 
