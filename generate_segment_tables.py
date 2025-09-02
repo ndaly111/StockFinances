@@ -1,160 +1,134 @@
 #!/usr/bin/env python3
-"""
-generate_segment_tables.py
-Build ONE combined HTML file per ticker with a section per axis (Products/Services, Regions, etc.)
-Canonical path: charts/<TICKER>/<TICKER>_segments_table.html
+# generate_segment_tables.py
+# Pulls segment data and writes HTML snippets to charts/{TICKER}_segments.html
+# Also creates charts/segments_index.html to preview all.
+#
+# Usage:
+#   pip install pandas requests beautifulsoup4 lxml
+#   python generate_segment_tables.py
 
-Section layout:
-  <h3>{Axis Name}</h3>
-  <div class="table-wrap"><table class="seg-table"> ... </table></div>
-"""
-from __future__ import annotations
+import time
 from pathlib import Path
 from datetime import datetime
-from typing import List, Tuple, Optional
-import re, pandas as pd
+import pandas as pd
 
-from segment_formatting_helpers import _humanize_segment_name, _to_float
 from sec_segment_data_arelle import get_segment_data
 
+# EDIT these to test
+TICKERS = ["AAPL", "MSFT", "AMZN"]
+
 OUTPUT_DIR = Path("charts")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-HIDE_RE = re.compile(
-    r"(Eliminat|Reconcil|Intersegment|Unallocat|All Other|"
-    r"Corporate(?!.*Bank)|Consolidat|Adjust|Aggregation)",
-    re.IGNORECASE,
-)
 
-STYLE = """
+def _fmt_billions(v) -> str:
+    if pd.isna(v):
+        return ""
+    try:
+        v = float(v)
+    except Exception:
+        return ""
+    sign = "-" if v < 0 else ""
+    v = abs(v)
+    if v >= 1e9:
+        return f"{sign}${v/1e9:.1f}B"
+    elif v >= 1e6:
+        return f"{sign}${v/1e6:.1f}M"
+    else:
+        return f"{sign}${v:,.0f}"
+
+
+def _wrap_panel(inner: str) -> str:
+    return f"""
 <style>
-.seg-table { width:100%; border-collapse:collapse; font-family:Arial,sans-serif; font-size:14px; }
-.seg-table th, .seg-table td { padding:6px 8px; border-bottom:1px solid #eee; white-space:nowrap; }
-.seg-table thead th { position:sticky; top:0; background:#fff; z-index:1; border-bottom:1px solid #ddd; }
-.table-wrap { overflow:auto; max-width:100%; }
-.table-note { font-size:12px; color:#666; margin:6px 0 8px; }
+.seg-block {{ margin: 16px 0; font-family: Arial, sans-serif; }}
+.seg-block h3 {{ margin: 0 0 8px 0; font-size: 18px; }}
+.seg-table {{ width: 100%; border-collapse: collapse; font-size: 14px; }}
+.seg-table th {{ text-align: left; border-bottom: 2px solid #ddd; }}
+.seg-table td {{ border-bottom: 1px solid #eee; }}
+.seg-table th, .seg-table td {{ padding: 6px 8px; }}
+.seg-foot {{ display:flex; gap:12px; margin-top:6px; font-size: 12px; color:#666; }}
 </style>
+{inner}
 """.strip()
 
-def _norm_axis_label(axis: Optional[str]) -> str:
-    s = (axis or "").strip()
-    parts = [p for p in s.split("+") if p]
-    labels: List[str] = []
-    for part in parts:
-        p = re.sub(r".*:", "", part)
-        p = p.replace("Axis", "")
-        p = re.sub(r"([a-z])([A-Z])", r"\1 \2", p)
-        p = p.replace("_", " ").strip()
-        if not p:
-            p = "Unlabeled Axis"
-        p = p.replace("Geographical Areas", "Regions")
-        p = p.replace("Geographical Region", "Regions")
-        p = p.replace("Domestic And Foreign", "Domestic vs Foreign")
-        p = p.replace("Products And Services", "Products / Services")
-        p = re.sub(r"\s+", " ", p)
-        labels.append(p.title())
-    return " & ".join(labels) if labels else "Unlabeled Axis"
 
-def _choose_scale(max_abs_value: float):
-    if not isinstance(max_abs_value, (int, float)) or pd.isna(max_abs_value) or max_abs_value == 0:
-        return (1.0, "$")
-    v = abs(max_abs_value)
-    if v >= 1e12: return (1e12, "$T")
-    if v >= 1e9:  return (1e9,  "$B")
-    if v >= 1e6:  return (1e6,  "$M")
-    if v >= 1e3:  return (1e3,  "$K")
-    return (1.0, "$")
-
-def _fmt_scaled(x, div, unit) -> str:
-    if pd.isna(x): return "–"
-    try: val = float(x)/float(div)
-    except: return "–"
-    if abs(val) >= 100: fmt = "{:,.0f}" if unit == "$" else "{:.0f}"
-    elif abs(val) >= 10: fmt = "{:,.1f}" if unit == "$" else "{:.1f}"
-    else:                fmt = "{:,.2f}" if unit == "$" else "{:.2f}"
-    s = fmt.format(val)
-    return f"${s}" if unit == "$" else f"{s}{unit[-1]}"
-
-def _last3_plus_ttm(all_years: List[str]) -> List[str]:
-    nums = sorted({int(y) for y in all_years if str(y).isdigit()})
-    keep = nums[-3:] if len(nums) > 3 else nums
-    out = [str(y) for y in keep]
-    if "TTM" in set(all_years):
-        out.append("TTM")
-    return out
-
-def _pivot(df: pd.DataFrame, col: str, years: List[str]) -> pd.DataFrame:
-    p = df[df["Year"].isin(years)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
-    return p.reindex(columns=[y for y in years if y in p.columns])
-
-def _render_axis_section(axis_label: str, rev_p: pd.DataFrame, oi_p: pd.DataFrame) -> str:
-    if rev_p.empty and oi_p.empty:
-        return f"<h3>{axis_label}</h3><div class='table-wrap'><p>No data for this axis.</p></div>"
-    cols = list(rev_p.columns)
-    last = "TTM" if "TTM" in cols else (cols[-1] if cols else None)
-    if last:
-        if last in rev_p.columns:
-            rev_p = rev_p[rev_p[last].notna()]
-        oi_p = oi_p.reindex(index=rev_p.index)
-        hide = rev_p.index.to_series().apply(lambda s: bool(HIDE_RE.search(str(s))))
-        rev_p = rev_p[~hide]; oi_p = oi_p.reindex(index=rev_p.index)
-        if last in rev_p.columns:
-            neg = rev_p[last] < 0
-            rev_p = rev_p[~neg]; oi_p = oi_p.reindex(index=rev_p.index)
-        rev_p = rev_p.sort_values(by=last, ascending=False)
-        oi_p  = oi_p.loc[rev_p.index]
-    max_val = pd.concat([rev_p, oi_p]).abs().max().max()
-    div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
-    out = pd.DataFrame(index=rev_p.index)
-    for y in rev_p.columns:
-        out[f"{y} Rev ({unit})"] = rev_p.get(y)
-        if y in oi_p.columns and not oi_p[y].isna().all():
-            out[f"{y} OI ({unit})"] = oi_p.get(y)
-    if "TTM" in rev_p.columns:
-        tot = rev_p["TTM"].sum(skipna=True)
-        if tot:
-            out["% of Total (TTM)"] = (rev_p["TTM"] / tot) * 100.0
-    for c in out.columns:
-        if c == "% of Total (TTM)":
-            out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
-        else:
-            out[c] = out[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
-    for c in [c for c in out.columns if c.startswith("TTM ")]:
-        out[c] = out[c].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
-    out.index.name = "Segment"
-    html_table = out.reset_index().to_html(index=False, escape=False, classes="seg-table", border=0)
-    return f"<h3>{axis_label}</h3>\n<div class='table-wrap'>{html_table}</div>"
-
-def _build_combined_html(ticker: str, df: pd.DataFrame) -> str:
+def render_table_html(ticker: str, df: pd.DataFrame) -> str:
     updated = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    if df is None or df.empty:
-        return STYLE + "\n" + f"<div class='table-note'>{ticker} — No segment data available. Updated {updated}</div>"
-    df = df.copy()
-    df["Segment"]  = df["Segment"].astype(str).map(_humanize_segment_name)
-    df["Year"]     = df["Year"].astype(str)
-    df["Revenue"]  = df["Revenue"].map(_to_float).astype(float)
-    df["OpIncome"] = df["OpIncome"].map(_to_float).astype(float)
-    years = _last3_plus_ttm(df["Year"].tolist())
-    if "AxisType" not in df.columns or df["AxisType"].isna().all():
-        df["AxisType"] = "UnlabeledAxis"
-    sections = []
-    for axis_value, sub in df.groupby("AxisType", dropna=False, sort=False):
-        axis_label = _norm_axis_label(axis_value)
-        rev_p = _pivot(sub, "Revenue", years)
-        oi_p  = _pivot(sub, "OpIncome", years)
-        sections.append(_render_axis_section(axis_label, rev_p, oi_p))
-    head = (
-        STYLE + "\n" +
-        f"<div class='table-note'>{ticker} — Segment Revenue & Operating Income (Last 3 FY + TTM where present). "
-        f"Updated {updated}. Source: SEC Inline XBRL</div>"
-    )
-    return head + "\n" + "\n<hr/>\n".join(sections)
+    title = f"{ticker} — Segment Revenue & Operating Income (Last 3 FY + TTM)"
 
-def generate_segment_table_for_ticker(ticker: str, charts_dir: Path = OUTPUT_DIR) -> Path:
-    out_dir = charts_dir / ticker
-    out_dir.mkdir(parents=True, exist_ok=True)
-    df = get_segment_data(ticker)
-    html = _build_combined_html(ticker, df)
-    out_file = out_dir / f"{ticker}_segments_table.html"  # canonical
-    out_file.write_text(html, encoding="utf-8")
-    print(f"✓ wrote {out_file}")
-    return out_file
+    if df is None or df.empty:
+        body = f"""
+        <div class="seg-block">
+          <h3>{title}</h3>
+          <p>No segment-level data found from the latest 10-K/10-Q.</p>
+          <p class="asof">Updated: {updated}</p>
+        </div>
+        """
+        return _wrap_panel(body)
+
+    # Sort: Year desc (TTM bottom), Revenue desc within year
+    def year_key(y):
+        return (9999 if y == "TTM" else int(y))
+    df = df.copy()
+    df["__yrkey"] = df["Year"].map(year_key)
+    df.sort_values(["__yrkey", "Revenue"], ascending=[False, False], inplace=True)
+    df.drop(columns="__yrkey", inplace=True)
+
+    df["Revenue"] = df["Revenue"].map(_fmt_billions)
+    df["OpIncome"] = df["OpIncome"].map(_fmt_billions)
+
+    rows = []
+    rows.append('<table class="seg-table" cellpadding="6" cellspacing="0">')
+    rows.append("<thead><tr><th>Segment</th><th>Year</th><th>Revenue</th><th>Operating Income</th></tr></thead>")
+    rows.append("<tbody>")
+    for _, r in df.iterrows():
+        rows.append(
+            f"<tr><td>{r['Segment']}</td><td>{r['Year']}</td><td>{r['Revenue']}</td><td>{r['OpIncome']}</td></tr>"
+        )
+    rows.append("</tbody></table>")
+    table_html = "\n".join(rows)
+
+    body = f"""
+    <div class="seg-block">
+      <h3>{title}</h3>
+      {table_html}
+      <div class="seg-foot">
+        <span class="asof">Updated: {updated}</span>
+        <span class="src">Source: SEC Inline XBRL (10-K/10-Q)</span>
+      </div>
+    </div>
+    """
+    return _wrap_panel(body)
+
+
+def save_html(path: Path, html: str):
+    path.write_text(html, encoding="utf-8")
+    print(f"✓ wrote {path}")
+
+
+def main():
+    all_snippets = []
+    for i, t in enumerate(TICKERS, start=1):
+        try:
+            print(f"[{i}/{len(TICKERS)}] fetching {t}…")
+            df = get_segment_data(t)
+            html = render_table_html(t, df)
+            out_file = OUTPUT_DIR / f"{t}_segments.html"
+            save_html(out_file, html)
+            all_snippets.append((t, html))
+            time.sleep(0.8)  # polite pacing
+        except Exception as e:
+            print(f"!! {t}: {e}")
+            err_html = _wrap_panel(f"<h3>{t} — Segment Revenue & Operating Income</h3><p>Error: {e}</p>")
+            save_html(OUTPUT_DIR / f"{t}_segments.html", err_html)
+
+    pieces = [f"<h2>Segment Tables ({datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')})</h2>"]
+    for t, html in all_snippets:
+        pieces.append(f'<div id="{t}">{html}</div>')
+    index_html = "\n\n".join(pieces)
+    save_html(OUTPUT_DIR / "segments_index.html", index_html)
+
+
+if __name__ == "__main__":
+    main()
