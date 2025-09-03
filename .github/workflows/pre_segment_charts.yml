@@ -44,3 +44,25 @@ jobs:
           git add charts/**/*.png charts/**/*.html || true
           git diff --cached --quiet || git commit -m "Update segment charts/tables"
           git push
+      - name: run HTML_Generator2.py
+        run: html_generator2.py
+# ---------------------------------------------------------------- deploy to gh-pages
+      - name: Clone repository (main)
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          path: main_repo
+  
+      - name: Check out gh-pages branch
+        run: |
+          git clone --branch=gh-pages https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
+          cd gh-pages
+          cp -r ../main_repo/* .
+  
+      - name: Commit and push changes to gh-pages
+        run: |
+          cd gh-pages
+          git add .
+          git commit -m "Deploy to GitHub Pages" --allow-empty
+          git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages --force
+
