@@ -1,0 +1,159 @@
+                                                    Concept  PeriodEnd                                                                      Dims         Value
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                            srt:ProductOrServiceAxis:us-gaap:ProductMember  2.429010e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                            srt:ProductOrServiceAxis:us-gaap:ProductMember  2.558870e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                            srt:ProductOrServiceAxis:us-gaap:ProductMember  2.723110e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                            srt:ProductOrServiceAxis:us-gaap:ServiceMember  2.710820e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                            srt:ProductOrServiceAxis:us-gaap:ServiceMember  3.188980e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                            srt:ProductOrServiceAxis:us-gaap:ServiceMember  3.656480e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                            5.139830e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                            5.747850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                            6.379590e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  3.158800e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  3.528280e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  3.874970e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  1.180070e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  1.312000e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  1.429060e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  8.009600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  9.075700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  1.075560e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                            5.139830e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                            5.747850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                            6.379590e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                          srt:ProductOrServiceAxis:amzn:OnlineStoresMember  2.200040e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                          srt:ProductOrServiceAxis:amzn:OnlineStoresMember  2.318720e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                          srt:ProductOrServiceAxis:amzn:OnlineStoresMember  2.470290e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                        srt:ProductOrServiceAxis:amzn:PhysicalStoresMember  1.896300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                        srt:ProductOrServiceAxis:amzn:PhysicalStoresMember  2.003000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                        srt:ProductOrServiceAxis:amzn:PhysicalStoresMember  2.121500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31              srt:ProductOrServiceAxis:amzn:ThirdPartySellerServicesMember  1.177160e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31              srt:ProductOrServiceAxis:amzn:ThirdPartySellerServicesMember  1.400530e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31              srt:ProductOrServiceAxis:amzn:ThirdPartySellerServicesMember  1.561460e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                        srt:ProductOrServiceAxis:us-gaap:AdvertisingMember  3.773900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                        srt:ProductOrServiceAxis:us-gaap:AdvertisingMember  4.690600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                        srt:ProductOrServiceAxis:us-gaap:AdvertisingMember  5.621400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                  srt:ProductOrServiceAxis:amzn:SubscriptionServicesMember  3.521800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                  srt:ProductOrServiceAxis:amzn:SubscriptionServicesMember  4.020900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                  srt:ProductOrServiceAxis:amzn:SubscriptionServicesMember  4.437400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                     srt:ProductOrServiceAxis:amzn:AmazonWebServicesMember  8.009600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                     srt:ProductOrServiceAxis:amzn:AmazonWebServicesMember  9.075700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                     srt:ProductOrServiceAxis:amzn:AmazonWebServicesMember  1.075560e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                         srt:ProductOrServiceAxis:amzn:OtherServicesMember  4.247000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                         srt:ProductOrServiceAxis:amzn:OtherServicesMember  4.958000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                         srt:ProductOrServiceAxis:amzn:OtherServicesMember  5.425000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                            5.139830e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                            5.747850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                            6.379590e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                  srt:StatementGeographicalAxis:country:US  3.561130e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                  srt:StatementGeographicalAxis:country:US  3.956370e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                  srt:StatementGeographicalAxis:country:US  4.380150e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                  srt:StatementGeographicalAxis:country:DE  3.359800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                  srt:StatementGeographicalAxis:country:DE  3.758800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                  srt:StatementGeographicalAxis:country:DE  4.085600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                  srt:StatementGeographicalAxis:country:GB  3.007400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                  srt:StatementGeographicalAxis:country:GB  3.359100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                  srt:StatementGeographicalAxis:country:GB  3.785500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                  srt:StatementGeographicalAxis:country:JP  2.439600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                  srt:StatementGeographicalAxis:country:JP  2.600200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                  srt:StatementGeographicalAxis:country:JP  2.740100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                         srt:StatementGeographicalAxis:us-gaap:NonUsMember  6.980200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                         srt:StatementGeographicalAxis:us-gaap:NonUsMember  8.196700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                         srt:StatementGeographicalAxis:us-gaap:NonUsMember  9.383200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                            5.139830e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                            5.747850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                            6.379590e+11
+                                us-gaap:OperatingIncomeLoss 2022-12-31                                                                            1.224800e+10
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                                            3.685200e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                                            6.859300e+10
+                                us-gaap:OperatingIncomeLoss 2022-12-31      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember -2.847000e+09
+                                us-gaap:OperatingIncomeLoss 2023-12-31      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  1.487700e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  2.496700e+10
+                                us-gaap:OperatingIncomeLoss 2022-12-31     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember -7.746000e+09
+                                us-gaap:OperatingIncomeLoss 2023-12-31     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember -2.656000e+09
+                                us-gaap:OperatingIncomeLoss 2024-12-31     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  3.792000e+09
+                                us-gaap:OperatingIncomeLoss 2022-12-31 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  2.284100e+10
+                                us-gaap:OperatingIncomeLoss 2023-12-31 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  2.463100e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  3.983400e+10
+                                us-gaap:OperatingIncomeLoss 2022-12-31                                                                            1.224800e+10
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                                            3.685200e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                                            6.859300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                            srt:ProductOrServiceAxis:us-gaap:ProductMember  6.156900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                            srt:ProductOrServiceAxis:us-gaap:ProductMember  6.824600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                            srt:ProductOrServiceAxis:us-gaap:ProductMember  1.224840e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                            srt:ProductOrServiceAxis:us-gaap:ProductMember  1.322160e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                            srt:ProductOrServiceAxis:us-gaap:ServiceMember  8.640800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                            srt:ProductOrServiceAxis:us-gaap:ServiceMember  9.945600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                            srt:ProductOrServiceAxis:us-gaap:ServiceMember  1.688060e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                            srt:ProductOrServiceAxis:us-gaap:ServiceMember  1.911530e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                            1.479770e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                            1.677020e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                            2.912900e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                            3.233690e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  9.003300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  1.000680e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  1.763740e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  1.929550e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  3.166300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  3.676100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  6.359800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  7.027400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  2.628100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  3.087300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  5.131800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  6.014000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                            1.479770e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                            1.677020e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                            2.912900e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                            3.233690e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                          srt:ProductOrServiceAxis:amzn:OnlineStoresMember  5.539200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                          srt:ProductOrServiceAxis:amzn:OnlineStoresMember  6.148500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                          srt:ProductOrServiceAxis:amzn:OnlineStoresMember  1.100620e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                          srt:ProductOrServiceAxis:amzn:OnlineStoresMember  1.188920e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                        srt:ProductOrServiceAxis:amzn:PhysicalStoresMember  5.206000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                        srt:ProductOrServiceAxis:amzn:PhysicalStoresMember  5.595000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                        srt:ProductOrServiceAxis:amzn:PhysicalStoresMember  1.040800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                        srt:ProductOrServiceAxis:amzn:PhysicalStoresMember  1.112800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30              srt:ProductOrServiceAxis:amzn:ThirdPartySellerServicesMember  3.620100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30              srt:ProductOrServiceAxis:amzn:ThirdPartySellerServicesMember  4.034800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30              srt:ProductOrServiceAxis:amzn:ThirdPartySellerServicesMember  7.079700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30              srt:ProductOrServiceAxis:amzn:ThirdPartySellerServicesMember  7.686000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                   srt:ProductOrServiceAxis:amzn:AdvertisingServicesMember  1.277100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                   srt:ProductOrServiceAxis:amzn:AdvertisingServicesMember  1.569400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                   srt:ProductOrServiceAxis:amzn:AdvertisingServicesMember  2.459500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                   srt:ProductOrServiceAxis:amzn:AdvertisingServicesMember  2.961500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                  srt:ProductOrServiceAxis:amzn:SubscriptionServicesMember  1.086600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                  srt:ProductOrServiceAxis:amzn:SubscriptionServicesMember  1.220800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                  srt:ProductOrServiceAxis:amzn:SubscriptionServicesMember  2.158800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                  srt:ProductOrServiceAxis:amzn:SubscriptionServicesMember  2.392300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                     srt:ProductOrServiceAxis:amzn:AmazonWebServicesMember  2.628100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                     srt:ProductOrServiceAxis:amzn:AmazonWebServicesMember  3.087300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                     srt:ProductOrServiceAxis:amzn:AmazonWebServicesMember  5.131800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                     srt:ProductOrServiceAxis:amzn:AmazonWebServicesMember  6.014000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                         srt:ProductOrServiceAxis:amzn:OtherServicesMember  1.260000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                         srt:ProductOrServiceAxis:amzn:OtherServicesMember  1.499000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                         srt:ProductOrServiceAxis:amzn:OtherServicesMember  2.522000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                         srt:ProductOrServiceAxis:amzn:OtherServicesMember  2.811000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                            1.479770e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                            1.677020e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                            2.912900e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                            3.233690e+11
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                            1.467200e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                            1.917100e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                            2.997900e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                            3.757600e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  5.065000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  7.517000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  1.004800e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30      us-gaap:StatementBusinessSegmentsAxis:amzn:NorthAmericaSegmentMember  1.335800e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  2.730000e+08
+                                us-gaap:OperatingIncomeLoss 2025-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  1.494000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  1.176000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30     us-gaap:StatementBusinessSegmentsAxis:amzn:InternationalSegmentMember  2.511000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  9.334000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  1.016000e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  1.875500e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30 us-gaap:StatementBusinessSegmentsAxis:amzn:AmazonWebServicesSegmentMember  2.170700e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                            1.467200e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                            1.917100e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                            2.997900e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                            3.757600e+10

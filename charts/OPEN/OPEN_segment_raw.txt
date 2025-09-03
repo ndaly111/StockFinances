@@ -1,0 +1,25 @@
+                                                    Concept  PeriodEnd                                                 Dims         Value
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                       5.153000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                       6.946000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                       1.556700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                       5.153000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                       6.946000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                       1.556700e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                      -3.200000e+08
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                      -3.860000e+08
+                                us-gaap:OperatingIncomeLoss 2022-12-31                                                      -9.310000e+08
+                                us-gaap:OperatingIncomeLoss 2024-12-31 srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember -1.400000e+07
+                                us-gaap:OperatingIncomeLoss 2023-12-31 srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember -8.000000e+06
+                                us-gaap:OperatingIncomeLoss 2022-12-31 srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember -7.000000e+06
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       1.567000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       1.511000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       2.720000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       2.692000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       1.567000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       1.511000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       2.720000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       2.692000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                      -1.300000e+07
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                      -7.200000e+07
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                      -6.900000e+07
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                      -1.590000e+08

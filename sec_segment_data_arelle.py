@@ -310,6 +310,51 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
     return df, (rev_used or ""), (op_used or "")
 
 
+def collect_all_segment_facts(ix_path: Path) -> pd.DataFrame:
+    """Return all revenue/operating income facts with any dimensions.
+
+    This helper ignores the `_SEGMENT_DIM_RE` filter and returns a DataFrame
+    with columns: Concept, PeriodEnd, Dims, Value. Dims is a semicolon-delimited
+    list of `dimension:member` pairs. Missing or non-numeric facts are skipped.
+    """
+
+    html = ix_path.read_text(encoding="utf-8", errors="ignore")
+    soup = BeautifulSoup(html, "xml")
+
+    contexts = _parse_contexts_ixbrl(soup)
+    rows = []
+    for cname in REV_TAGS + OPINC_TAGS:
+        facts = soup.find_all("nonFraction", attrs={"name": cname})
+        for fact in facts:
+            ctx_id = fact.get("contextRef")
+            if not ctx_id or ctx_id not in contexts:
+                continue
+            ctx = contexts[ctx_id]
+            val = _scale_and_sign(
+                fact.text,
+                fact.get("decimals"),
+                fact.get("scale"),
+                fact.get("sign"),
+            )
+            if val is None:
+                continue
+            dims = ctx.get("dims", {})
+            dim_str = "; ".join(f"{k}:{v}" for k, v in dims.items())
+            rows.append(
+                {
+                    "Concept": cname,
+                    "PeriodEnd": ctx["period_end"],
+                    "Dims": dim_str,
+                    "Value": val,
+                }
+            )
+
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df = df[df["PeriodEnd"].notna()]
+    return df
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # TTM and public API
 # ──────────────────────────────────────────────────────────────────────────────
@@ -354,12 +399,15 @@ def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame
     return ttm[["Segment", "Year", "Revenue", "OpIncome"]]
 
 
-def get_segment_data(ticker: str) -> pd.DataFrame:
+def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
     """
     Public API:
       Input: ticker (e.g., 'AAPL')
       Output: DataFrame with columns: Segment, Year (yyyy or 'TTM'), Revenue, OpIncome
       df.attrs['revenue_concept'], df.attrs['op_income_concept'] record concept choices.
+
+      If ``dump_raw`` is True, a text file with all unfiltered facts for revenue
+      and operating income will be written to ``charts/{ticker}/{ticker}_segment_raw.txt``.
     """
     cik = resolve_ticker_to_cik(ticker)
     filings = fetch_latest_filings(cik)
@@ -368,6 +416,7 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
 
     rev_used = ""
     op_used = ""
+    raw_facts: List[pd.DataFrame] = []
 
     # Download iXBRL HTMLs and parse
     with pd.option_context("display.width", 200):
@@ -383,6 +432,8 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
                 rev_used = rev_used or k_rev_used
                 op_used = op_used or k_op_used
                 k_df = k_raw
+            if dump_raw:
+                raw_facts.append(collect_all_segment_facts(k_path))
 
         if ten_q:
             url_q = build_filing_url(cik, ten_q["accession"], ten_q["document"])
@@ -393,6 +444,23 @@ def get_segment_data(ticker: str) -> pd.DataFrame:
                 rev_used = rev_used or q_rev_used
                 op_used = op_used or q_op_used
                 q_df = q_raw
+            if dump_raw:
+                raw_facts.append(collect_all_segment_facts(q_path))
+
+    if dump_raw:
+        raw_df = (
+            pd.concat(raw_facts, ignore_index=True)
+            if raw_facts
+            else pd.DataFrame(columns=["Concept", "PeriodEnd", "Dims", "Value"])
+        )
+        out_dir = Path("charts") / ticker.upper()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        raw_path = out_dir / f"{ticker.upper()}_segment_raw.txt"
+        if raw_df.empty:
+            raw_path.write_text("No revenue or operating income facts found.", encoding="utf-8")
+        else:
+            with pd.option_context("display.max_colwidth", None):
+                raw_path.write_text(raw_df.to_string(index=False), encoding="utf-8")
 
     # bail out gracefully if nothing
     if k_df.empty and q_df.empty:

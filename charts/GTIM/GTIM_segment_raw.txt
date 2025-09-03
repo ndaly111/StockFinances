@@ -1,0 +1,37 @@
+                    Concept  PeriodEnd                                                       Dims       Value
+           us-gaap:Revenues 2024-09-24                                                            142315000.0
+           us-gaap:Revenues 2023-09-26                                                            138160000.0
+           us-gaap:Revenues 2024-09-24                                                            142315000.0
+           us-gaap:Revenues 2023-09-26                                                            138160000.0
+us-gaap:OperatingIncomeLoss 2024-09-24                                                              1380000.0
+us-gaap:OperatingIncomeLoss 2023-09-26                                                               963000.0
+us-gaap:OperatingIncomeLoss 2024-09-24 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   -231000.0
+us-gaap:OperatingIncomeLoss 2023-09-26 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember  -1342000.0
+us-gaap:OperatingIncomeLoss 2024-09-24 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   1611000.0
+us-gaap:OperatingIncomeLoss 2023-09-26 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   2305000.0
+us-gaap:OperatingIncomeLoss 2024-09-24                                                              1380000.0
+us-gaap:OperatingIncomeLoss 2023-09-26                                                               963000.0
+           us-gaap:Revenues 2025-07-01                                                             37025000.0
+           us-gaap:Revenues 2024-06-25                                                             37950000.0
+           us-gaap:Revenues 2025-07-01                                                            107637000.0
+           us-gaap:Revenues 2024-06-25                                                            106554000.0
+           us-gaap:Revenues 2025-07-01                                                             37025000.0
+           us-gaap:Revenues 2024-06-25                                                             37950000.0
+           us-gaap:Revenues 2025-07-01                                                            107637000.0
+           us-gaap:Revenues 2024-06-25                                                            106554000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                              1233000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                              1228000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                               796000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                              1498000.0
+us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   1139000.0
+us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember    388000.0
+us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   1272000.0
+us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember      7000.0
+us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember     94000.0
+us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember    840000.0
+us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   -476000.0
+us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   1491000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                              1233000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                              1228000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                               796000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                              1498000.0

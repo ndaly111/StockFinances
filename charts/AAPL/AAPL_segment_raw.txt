@@ -1,0 +1,167 @@
+                                                    Concept  PeriodEnd                                                                      Dims        Value
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                            srt:ProductOrServiceAxis:us-gaap:ProductMember 2.948660e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                            srt:ProductOrServiceAxis:us-gaap:ProductMember 2.980850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                            srt:ProductOrServiceAxis:us-gaap:ProductMember 3.161990e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 9.616900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 8.520000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 7.812900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                                                           3.910350e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                                                           3.832850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                                                           3.943280e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                srt:ProductOrServiceAxis:aapl:IPhoneMember 2.011830e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                srt:ProductOrServiceAxis:aapl:IPhoneMember 2.005830e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                srt:ProductOrServiceAxis:aapl:IPhoneMember 2.054890e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                   srt:ProductOrServiceAxis:aapl:MacMember 2.998400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                   srt:ProductOrServiceAxis:aapl:MacMember 2.935700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                   srt:ProductOrServiceAxis:aapl:MacMember 4.017700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                  srt:ProductOrServiceAxis:aapl:IPadMember 2.669400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                  srt:ProductOrServiceAxis:aapl:IPadMember 2.830000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                  srt:ProductOrServiceAxis:aapl:IPadMember 2.929200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28           srt:ProductOrServiceAxis:aapl:WearablesHomeandAccessoriesMember 3.700500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30           srt:ProductOrServiceAxis:aapl:WearablesHomeandAccessoriesMember 3.984500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24           srt:ProductOrServiceAxis:aapl:WearablesHomeandAccessoriesMember 4.124100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 9.616900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 8.520000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 7.812900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                                                           3.910350e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                                                           3.832850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                                                           3.943280e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 1.670450e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 1.625600e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 1.696580e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 1.013280e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 9.429400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 9.511800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 6.695200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 7.255900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 7.420000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 2.505200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 2.425700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 2.597700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 3.065800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 2.961500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 2.937500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                  srt:StatementGeographicalAxis:country:US 1.421960e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                  srt:StatementGeographicalAxis:country:US 1.385730e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                  srt:StatementGeographicalAxis:country:US 1.478590e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                  srt:StatementGeographicalAxis:country:CN 6.695200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                  srt:StatementGeographicalAxis:country:CN 7.255900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                  srt:StatementGeographicalAxis:country:CN 7.420000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                   srt:StatementGeographicalAxis:aapl:OtherCountriesMember 1.818870e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                   srt:StatementGeographicalAxis:aapl:OtherCountriesMember 1.721530e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                   srt:StatementGeographicalAxis:aapl:OtherCountriesMember 1.722690e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-28                                                                           3.910350e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30                                                                           3.832850e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-09-24                                                                           3.943280e+11
+                                us-gaap:OperatingIncomeLoss 2024-09-28                                                                           1.232160e+11
+                                us-gaap:OperatingIncomeLoss 2023-09-30                                                                           1.143010e+11
+                                us-gaap:OperatingIncomeLoss 2022-09-24                                                                           1.194370e+11
+                                us-gaap:OperatingIncomeLoss 2024-09-28          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 6.765600e+10
+                                us-gaap:OperatingIncomeLoss 2023-09-30          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 6.050800e+10
+                                us-gaap:OperatingIncomeLoss 2022-09-24          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 6.268300e+10
+                                us-gaap:OperatingIncomeLoss 2024-09-28            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 4.179000e+10
+                                us-gaap:OperatingIncomeLoss 2023-09-30            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 3.609800e+10
+                                us-gaap:OperatingIncomeLoss 2022-09-24            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 3.523300e+10
+                                us-gaap:OperatingIncomeLoss 2024-09-28      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 2.708200e+10
+                                us-gaap:OperatingIncomeLoss 2023-09-30      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 3.032800e+10
+                                us-gaap:OperatingIncomeLoss 2022-09-24      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 3.115300e+10
+                                us-gaap:OperatingIncomeLoss 2024-09-28             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 1.245400e+10
+                                us-gaap:OperatingIncomeLoss 2023-09-30             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 1.188800e+10
+                                us-gaap:OperatingIncomeLoss 2022-09-24             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 1.225700e+10
+                                us-gaap:OperatingIncomeLoss 2024-09-28 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 1.306200e+10
+                                us-gaap:OperatingIncomeLoss 2023-09-30 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 1.206600e+10
+                                us-gaap:OperatingIncomeLoss 2022-09-24 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 1.156900e+10
+                                us-gaap:OperatingIncomeLoss 2024-09-28                srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.620440e+11
+                                us-gaap:OperatingIncomeLoss 2023-09-30                srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.508880e+11
+                                us-gaap:OperatingIncomeLoss 2022-09-24                srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.528950e+11
+                                us-gaap:OperatingIncomeLoss 2024-09-28                                                                           1.232160e+11
+                                us-gaap:OperatingIncomeLoss 2023-09-30                                                                           1.143010e+11
+                                us-gaap:OperatingIncomeLoss 2022-09-24                                                                           1.194370e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                            srt:ProductOrServiceAxis:us-gaap:ProductMember 6.661300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                            srt:ProductOrServiceAxis:us-gaap:ProductMember 6.156400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                            srt:ProductOrServiceAxis:us-gaap:ProductMember 2.332870e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                            srt:ProductOrServiceAxis:us-gaap:ProductMember 2.249080e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 2.742300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 2.421300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 8.040800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 7.119700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                                                           9.403600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                                                           8.577700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                                                           3.136950e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                                                           2.961050e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                srt:ProductOrServiceAxis:aapl:IPhoneMember 4.458200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                srt:ProductOrServiceAxis:aapl:IPhoneMember 3.929600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                srt:ProductOrServiceAxis:aapl:IPhoneMember 1.605610e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                srt:ProductOrServiceAxis:aapl:IPhoneMember 1.549610e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                   srt:ProductOrServiceAxis:aapl:MacMember 8.046000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                   srt:ProductOrServiceAxis:aapl:MacMember 7.009000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                   srt:ProductOrServiceAxis:aapl:MacMember 2.498200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                   srt:ProductOrServiceAxis:aapl:MacMember 2.224000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                  srt:ProductOrServiceAxis:aapl:IPadMember 6.581000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                  srt:ProductOrServiceAxis:aapl:IPadMember 7.162000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                  srt:ProductOrServiceAxis:aapl:IPadMember 2.107100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                  srt:ProductOrServiceAxis:aapl:IPadMember 1.974400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28           srt:ProductOrServiceAxis:aapl:WearablesHomeandAccessoriesMember 7.404000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29           srt:ProductOrServiceAxis:aapl:WearablesHomeandAccessoriesMember 8.097000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28           srt:ProductOrServiceAxis:aapl:WearablesHomeandAccessoriesMember 2.667300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29           srt:ProductOrServiceAxis:aapl:WearablesHomeandAccessoriesMember 2.796300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 2.742300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 2.421300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 8.040800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                            srt:ProductOrServiceAxis:us-gaap:ServiceMember 7.119700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                                                           9.403600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                                                           8.577700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28                                                                           3.136950e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29                                                                           2.961050e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 4.119800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 3.767800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 1.341610e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 1.253810e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 2.401400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 2.188400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 8.232900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 7.640400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 1.536900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 1.472800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 4.988400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 5.191900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 5.782000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 5.097000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 2.206700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 1.912600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 7.673000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 6.390000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-28 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 2.525400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-29 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 2.327500e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28                                                                           2.820200e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29                                                                           2.535200e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28                                                                           1.006230e+11
+                                us-gaap:OperatingIncomeLoss 2024-06-29                                                                           9.362500e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 1.651100e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 1.520900e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 5.479400e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29          us-gaap:StatementBusinessSegmentsAxis:aapl:AmericasSegmentMember 5.064000e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 1.050100e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 9.170000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-28            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 3.542400e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29            us-gaap:StatementBusinessSegmentsAxis:aapl:EuropeSegmentMember 3.187200e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 5.822000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-29      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 5.562000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-28      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 2.060800e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29      us-gaap:StatementBusinessSegmentsAxis:aapl:GreaterChinaSegmentMember 2.088400e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 2.872000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-29             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 2.544000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-28             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 1.062000e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29             us-gaap:StatementBusinessSegmentsAxis:aapl:JapanSegmentMember 9.498000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-28 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 3.243000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-29 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 2.610000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-28 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 1.081300e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29 us-gaap:StatementBusinessSegmentsAxis:aapl:RestOfAsiaPacificSegmentMember 9.995000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-28                srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.894900e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29                srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.509500e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28                srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.322590e+11
+                                us-gaap:OperatingIncomeLoss 2024-06-29                srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.228890e+11
+                                us-gaap:OperatingIncomeLoss 2025-06-28                                                                           2.820200e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-29                                                                           2.535200e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-28                                                                           1.006230e+11
+                                us-gaap:OperatingIncomeLoss 2024-06-29                                                                           9.362500e+10
