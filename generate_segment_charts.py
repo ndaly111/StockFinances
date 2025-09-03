@@ -323,6 +323,13 @@ def main():
         ticker_dir = output_dir / ticker
         generate_segment_charts_for_ticker(ticker, ticker_dir)
 
+    # Combine raw segment dumps from all tickers into a single review file
+    with open("charts/all_segments_raw.txt", "w", encoding="utf-8") as out:
+        for f in Path("charts").glob("*/*_segment_raw.txt"):
+            out.write(f"---- {f.parent.name.upper()} ----\n\n")
+            out.write(f.read_text(encoding="utf-8"))
+            out.write("\n\n")
+
     print("Done.")
 
 if __name__ == "__main__":
