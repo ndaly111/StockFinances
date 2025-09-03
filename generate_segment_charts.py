@@ -318,10 +318,18 @@ def main():
     output_dir = Path(args.output_dir)
     ensure_dir(output_dir)
 
-    for idx, ticker in enumerate(tickers, start=1):
-        print(f"[{idx}/{len(tickers)}] Processing {ticker}…")
-        ticker_dir = output_dir / ticker
-        generate_segment_charts_for_ticker(ticker, ticker_dir)
+    review_path = Path("all_segments_raw.txt")
+    with review_path.open("w", encoding="utf-8") as review:
+        for idx, ticker in enumerate(tickers, start=1):
+            print(f"[{idx}/{len(tickers)}] Processing {ticker}…")
+            ticker_dir = output_dir / ticker
+            generate_segment_charts_for_ticker(ticker, ticker_dir)
+
+            raw_file = ticker_dir / f"{ticker}_segment_raw.txt"
+            if raw_file.exists():
+                review.write(f"---- {ticker.upper()} ----\n\n")
+                review.write(raw_file.read_text(encoding="utf-8"))
+                review.write("\n\n")
 
     print("Done.")
 
