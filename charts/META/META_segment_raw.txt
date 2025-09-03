@@ -1,0 +1,133 @@
+                                                    Concept  PeriodEnd                                                                                                               Dims         Value
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                                                                     1.645010e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                                                                     1.349020e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                                                                     1.166090e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31  srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.606330e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31  srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.319480e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31  srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.136420e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31 srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.722000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31 srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.058000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31 srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  8.080000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.623550e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.330060e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.144500e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  2.146000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  1.896000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  2.159000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                                                                     1.645010e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                                                                     1.349020e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                                                                     1.166090e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                  srt:StatementGeographicalAxis:meta:USCanadaMember  6.320700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                  srt:StatementGeographicalAxis:meta:USCanadaMember  5.288800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                  srt:StatementGeographicalAxis:meta:USCanadaMember  5.015000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                     srt:StatementGeographicalAxis:srt:EuropeMember  3.836100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                     srt:StatementGeographicalAxis:srt:EuropeMember  3.121000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                     srt:StatementGeographicalAxis:srt:EuropeMember  2.668100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                srt:StatementGeographicalAxis:srt:AsiaPacificMember  4.500900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                srt:StatementGeographicalAxis:srt:AsiaPacificMember  3.615400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.776000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                               srt:StatementGeographicalAxis:meta:RestOfWorldMember  1.792400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                               srt:StatementGeographicalAxis:meta:RestOfWorldMember  1.465000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                               srt:StatementGeographicalAxis:meta:RestOfWorldMember  1.201800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                                                                     1.645010e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                                                                     1.349020e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                                                                     1.166090e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                           srt:StatementGeographicalAxis:country:US  5.973000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                           srt:StatementGeographicalAxis:country:US  4.978000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                           srt:StatementGeographicalAxis:country:US  4.720000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                           srt:StatementGeographicalAxis:country:CN  1.835000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                           srt:StatementGeographicalAxis:country:CN  1.369000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                           srt:StatementGeographicalAxis:country:CN  7.400000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.623550e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.330060e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.144500e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  2.146000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  1.896000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  2.159000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                                                                     1.645010e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                                                                     1.349020e+11
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                                                                     1.166090e+11
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                     6.938000e+10
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                     4.675100e+10
+                                us-gaap:OperatingIncomeLoss 2022-12-31                                                                                                                     2.894400e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  8.710900e+10
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  6.287100e+10
+                                us-gaap:OperatingIncomeLoss 2022-12-31                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  4.266100e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember -1.772900e+10
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember -1.612000e+10
+                                us-gaap:OperatingIncomeLoss 2022-12-31                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember -1.371700e+10
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                     6.938000e+10
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                     4.675100e+10
+                                us-gaap:OperatingIncomeLoss 2022-12-31                                                                                                                     2.894400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     4.751600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     3.907100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     8.983000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     7.552700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30  srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  4.656300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30  srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  3.832900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30  srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  8.795500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30  srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  7.396500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  5.830000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30 srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  3.890000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.093000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30 srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember; us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  7.690000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  4.714600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  3.871800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  8.904800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  7.473400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  3.700000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  3.530000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  7.820000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  7.930000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     4.751600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     3.907100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     8.983000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     7.552700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                  srt:StatementGeographicalAxis:meta:USCanadaMember  1.845400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                  srt:StatementGeographicalAxis:meta:USCanadaMember  1.464000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                  srt:StatementGeographicalAxis:meta:USCanadaMember  3.532300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                  srt:StatementGeographicalAxis:meta:USCanadaMember  2.828700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                     srt:StatementGeographicalAxis:srt:EuropeMember  1.112800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                     srt:StatementGeographicalAxis:srt:EuropeMember  9.153000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                     srt:StatementGeographicalAxis:srt:EuropeMember  2.074900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                     srt:StatementGeographicalAxis:srt:EuropeMember  1.755700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.285800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.096700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.409700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.127900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                               srt:StatementGeographicalAxis:meta:RestOfWorldMember  5.076000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                               srt:StatementGeographicalAxis:meta:RestOfWorldMember  4.311000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                               srt:StatementGeographicalAxis:meta:RestOfWorldMember  9.661000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                               srt:StatementGeographicalAxis:meta:RestOfWorldMember  8.404000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     4.751600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     3.907100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     8.983000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     7.552700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  4.714600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  3.871800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  8.904800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  7.473400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  3.700000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  3.530000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  7.820000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember  7.930000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     4.751600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     3.907100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                     8.983000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                                                                     7.552700e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                     2.044100e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                                                                     1.484700e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                     3.799700e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                                                                     2.866500e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  2.497100e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  1.933500e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  4.673600e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                      us-gaap:StatementBusinessSegmentsAxis:meta:FamilyOfAppsMember  3.699900e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember -4.530000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember -4.488000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember -8.739000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                       us-gaap:StatementBusinessSegmentsAxis:meta:RealityLabsMember -8.334000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                     2.044100e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                                                                     1.484700e+10
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                     3.799700e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                                                                     2.866500e+10

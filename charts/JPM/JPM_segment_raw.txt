@@ -1,0 +1,22 @@
+         Concept  PeriodEnd                                                       Dims        Value
+us-gaap:Revenues 2024-12-31           srt:StatementGeographicalAxis:us-gaap:EMEAMember 2.235300e+10
+us-gaap:Revenues 2024-12-31        srt:StatementGeographicalAxis:srt:AsiaPacificMember 1.199500e+10
+us-gaap:Revenues 2024-12-31       srt:StatementGeographicalAxis:srt:LatinAmericaMember 3.885000e+09
+us-gaap:Revenues 2024-12-31 srt:StatementGeographicalAxis:jpm:TotalInternationalMember 3.823300e+10
+us-gaap:Revenues 2024-12-31       srt:StatementGeographicalAxis:srt:NorthAmericaMember 1.393230e+11
+us-gaap:Revenues 2024-12-31                                                            1.775560e+11
+us-gaap:Revenues 2023-12-31           srt:StatementGeographicalAxis:us-gaap:EMEAMember 2.097400e+10
+us-gaap:Revenues 2023-12-31        srt:StatementGeographicalAxis:srt:AsiaPacificMember 1.060500e+10
+us-gaap:Revenues 2023-12-31       srt:StatementGeographicalAxis:srt:LatinAmericaMember 3.294000e+09
+us-gaap:Revenues 2023-12-31 srt:StatementGeographicalAxis:jpm:TotalInternationalMember 3.487300e+10
+us-gaap:Revenues 2023-12-31       srt:StatementGeographicalAxis:srt:NorthAmericaMember 1.232310e+11
+us-gaap:Revenues 2023-12-31                                                            1.581040e+11
+us-gaap:Revenues 2022-12-31           srt:StatementGeographicalAxis:us-gaap:EMEAMember 1.876500e+10
+us-gaap:Revenues 2022-12-31        srt:StatementGeographicalAxis:srt:AsiaPacificMember 1.002500e+10
+us-gaap:Revenues 2022-12-31       srt:StatementGeographicalAxis:srt:LatinAmericaMember 3.178000e+09
+us-gaap:Revenues 2022-12-31 srt:StatementGeographicalAxis:jpm:TotalInternationalMember 3.196800e+10
+us-gaap:Revenues 2022-12-31       srt:StatementGeographicalAxis:srt:NorthAmericaMember 9.672700e+10
+us-gaap:Revenues 2022-12-31                                                            1.286950e+11
+us-gaap:Revenues 2024-12-31       srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember 4.020700e+10
+us-gaap:Revenues 2023-12-31       srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember 6.356300e+10
+us-gaap:Revenues 2022-12-31       srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember 4.310700e+10
