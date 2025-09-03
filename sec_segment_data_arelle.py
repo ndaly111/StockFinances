@@ -27,11 +27,15 @@ import re
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import urljoin
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+
+REQUEST_TIMEOUT = 20
+PAUSE_SEC = 0.3
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SEC HTTP headers + tiny CIK fallback
@@ -57,6 +61,41 @@ _FALLBACK_CIK = {
     "TSLA": "0001318605",
 }
 
+# Simple in-memory CIK cache
+_CIK_CACHE: Dict[str, int] | None = None
+
+def _load_cik_map() -> Dict[str, int]:
+    """Load (and cache) ticker→CIK mapping."""
+    global _CIK_CACHE
+    if _CIK_CACHE is None:
+        _CIK_CACHE = {t: int(cik) for t, cik in _FALLBACK_CIK.items()}
+    return _CIK_CACHE
+
+
+def _resolve_ticker_to_cik_online(ticker: str) -> str:
+    t = ticker.upper().strip()
+    url = "https://www.sec.gov/files/company_tickers.json"
+    resp = requests.get(url, headers=_sec_headers(), timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+    for rec in data.values():
+        if rec.get("ticker", "").upper() == t:
+            return str(rec["cik_str"]).zfill(10)
+    raise ValueError(f"Ticker not found in SEC mapping: {ticker}")
+
+
+def _cik(ticker: str) -> int:
+    m = _load_cik_map()
+    t = ticker.upper().strip()
+    if t not in m:
+        m[t] = int(_resolve_ticker_to_cik_online(t))
+    return m[t]
+
+
+def resolve_ticker_to_cik(ticker: str) -> str:
+    """Public wrapper: return zero-padded 10-digit CIK string."""
+    return f"{_cik(ticker):010d}"
+
 # Preferred/fallback concepts
 REV_TAGS = [
     "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -76,27 +115,6 @@ _SEGMENT_DIM_RE = re.compile(r"segment", re.IGNORECASE)
 # ──────────────────────────────────────────────────────────────────────────────
 # Basic EDGAR helpers
 # ──────────────────────────────────────────────────────────────────────────────
-
-def resolve_ticker_to_cik(ticker: str) -> str:
-    t = ticker.upper().strip()
-    if t in _FALLBACK_CIK:
-        return _FALLBACK_CIK[t]
-
-    url = "https://www.sec.gov/files/company_tickers.json"
-    try:
-        resp = requests.get(url, headers=_sec_headers(), timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as e:
-        raise RuntimeError(f"Failed to download ticker mapping: {e}")
-
-    for rec in data.values():
-        if rec.get("ticker", "").upper() == t:
-            return str(rec["cik_str"]).zfill(10)
-
-    raise ValueError(f"Ticker not found in SEC mapping: {ticker}")
-
-
 def fetch_latest_filings(cik: str) -> Dict[str, Dict[str, str]]:
     """
     Returns dict with '10-K' and '10-Q' metadata:
@@ -514,3 +532,167 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
     out.attrs["revenue_concept"] = rev_used
     out.attrs["op_income_concept"] = op_used
     return out
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10‑Q Item 2 (MD&A) → Axis ranking diagnostics
+
+
+def _get_text(url: str) -> Optional[str]:
+    try:
+        r = requests.get(url, headers=_sec_headers(), timeout=REQUEST_TIMEOUT)
+        r.raise_for_status()
+        ct = (r.headers.get("content-type") or "").lower()
+        if "html" not in ct and "text" not in ct:
+            return None
+        r.encoding = r.encoding or "utf-8"
+        return r.text
+    except Exception:
+        return None
+
+
+def _company_submissions(cik: str) -> dict:
+    url = f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json"
+    r = requests.get(url, headers=_sec_headers(), timeout=REQUEST_TIMEOUT)
+    r.raise_for_status()
+    time.sleep(PAUSE_SEC)
+    return r.json()
+
+
+def _locate_item2_text(html: str) -> Optional[str]:
+    """Extract plain text slice of Part I, Item 2 (MD&A) from 10‑Q HTML."""
+    if not html:
+        return None
+    txt = re.sub(r"(?is)<script.*?>.*?</script>", " ", html)
+    txt = re.sub(r"(?is)<style.*?>.*?</style>", " ", txt)
+    raw = re.sub(r"(?is)<.*?>", " ", txt)
+    raw = re.sub(r"\s+", " ", raw)
+    p_item2 = re.compile(r"(?i)\bItem\s+2\b.*?(Management.?s?\s+Discussion\s+and\s+Analysis|MD&A)?")
+    p_item3 = re.compile(r"(?i)\bItem\s+3\b")
+    p_item4 = re.compile(r"(?i)\bItem\s+4\b")
+    m2 = p_item2.search(raw)
+    if not m2:
+        return None
+    start = m2.start()
+    m3 = p_item3.search(raw, pos=start + 1)
+    m4 = p_item4.search(raw, pos=start + 1)
+    ends = [m.end() for m in [m3, m4] if m]
+    end = min(ends) if ends else min(len(raw), start + 20000)
+    return raw[start:end].strip()
+
+
+def _axis_group_from_axistype(axis_type: str) -> str:
+    a = (axis_type or "").lower()
+    if "operatingsegment" in a or "segmentsaxis" in a or "reportablesegment" in a:
+        return "OPERATING"
+    if "product" in a or "service" in a or "productline" in a or "category" in a:
+        return "PRODUCT"
+    if "geograph" in a or "region" in a or "country" in a or "domestic" in a or "foreign" in a:
+        return "GEOGRAPHY"
+    if "customer" in a:
+        return "CUSTOMER"
+    if "channel" in a or "distribution" in a:
+        return "CHANNEL"
+    return "OTHER"
+
+
+def _rank_axes_with_item2(df: pd.DataFrame, item2_text: str) -> pd.DataFrame:
+    if df is None or df.empty or not item2_text:
+        return pd.DataFrame(columns=["AxisType", "AxisGroup", "MembersMatched", "AxisScore"])
+    text = item2_text.lower()
+    KW = {
+        "OPERATING": ["segment", "operating", "reportable"],
+        "PRODUCT": ["product", "service", "model", "category", "line"],
+        "GEOGRAPHY": [
+            "geograph",
+            "region",
+            "country",
+            "domestic",
+            "foreign",
+            "international",
+            "americas",
+            "europe",
+            "emea",
+            "china",
+            "japan",
+            "apac",
+            "united states",
+        ],
+        "CUSTOMER": ["customer"],
+        "CHANNEL": ["channel", "distribution"],
+    }
+    weights = {"group": 2.0, "member": 3.0}
+    df2 = df.copy()
+    if "AxisType" not in df2.columns:
+        df2["AxisType"] = ""
+    df2["AxisGroup"] = df2["AxisType"].map(_axis_group_from_axistype)
+    axis_members = (
+        df2.groupby(["AxisType", "AxisGroup"])["Segment"]
+        .apply(lambda s: sorted(set([str(x) for x in s if str(x).strip()])))
+        .reset_index(name="Members")
+    )
+    rows = []
+    for _, r in axis_members.iterrows():
+        at = r["AxisType"]
+        ag = r["AxisGroup"]
+        members = r["Members"]
+        g_hits = sum(1 for kw in KW.get(ag, []) if kw in text)
+        m_hits = 0
+        matched_examples = []
+        for m in members:
+            m_norm = str(m).lower().strip()
+            if not m_norm:
+                continue
+            if m_norm in text:
+                m_hits += 1
+                if len(matched_examples) < 3:
+                    matched_examples.append(m)
+        score = weights["group"] * g_hits + weights["member"] * m_hits
+        rows.append(
+            {
+                "AxisType": at,
+                "AxisGroup": ag,
+                "MembersMatched": m_hits,
+                "AxisScore": round(score, 3),
+                "Examples": ", ".join(matched_examples),
+            }
+        )
+    out = pd.DataFrame(rows).sort_values(["AxisScore", "MembersMatched"], ascending=[False, False])
+    return out.reset_index(drop=True)
+
+
+def dump_item2_axis_ranking(ticker: str, df: pd.DataFrame, out_root: str = "charts") -> None:
+    """Fetch latest 10-Q Item 2 text and rank axes against it; writes diagnostics."""
+    try:
+        cik = resolve_ticker_to_cik(ticker)
+        subs = _company_submissions(cik)
+        recent = (subs.get("filings") or {}).get("recent") or {}
+        forms = recent.get("form") or []
+        acc = recent.get("accessionNumber") or []
+        prim = recent.get("primaryDocument") or []
+        row = next((i for i, f in enumerate(forms) if (f or "").upper() == "10-Q"), None)
+        if row is None:
+            return
+        acc_nd = (acc[row] or "").replace("-", "")
+        base = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc_nd}/"
+        url = urljoin(base, prim[row] or "")
+        html = _get_text(url)
+        if not html:
+            return
+        item2 = _locate_item2_text(html)
+        if not item2:
+            return
+        rank = _rank_axes_with_item2(df, item2)
+        if rank is None or rank.empty:
+            return
+        out_dir = Path(out_root) / ticker.upper() / "diagnostics"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "item2_axis_rank.tsv").write_text(
+            rank.to_csv(sep="\t", index=False), encoding="utf-8"
+        )
+        (out_dir / "item2_axis_rank.json").write_text(
+            rank.to_json(orient="records"), encoding="utf-8"
+        )
+        print(f"[segments] wrote {out_dir/'item2_axis_rank.tsv'} and .json")
+    except Exception as e:
+        print(f"[segments] Item 2 axis ranking skipped for {ticker}: {e}")
