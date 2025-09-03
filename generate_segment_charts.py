@@ -318,7 +318,8 @@ def main():
     output_dir = Path(args.output_dir)
     ensure_dir(output_dir)
 
-    review_path = Path("all_segments_raw.txt")
+    repo_root = Path(__file__).resolve().parent
+    review_path = repo_root / "all_segments_raw.txt"
     with review_path.open("w", encoding="utf-8") as review:
         for idx, ticker in enumerate(tickers, start=1):
             print(f"[{idx}/{len(tickers)}] Processing {ticker}…")
