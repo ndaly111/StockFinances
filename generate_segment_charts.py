@@ -32,11 +32,17 @@ from pathlib import Path
 from typing import List, Tuple
 
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")  # headless-safe for CI
 import matplotlib.pyplot as plt
 
 from sec_segment_data_arelle import get_segment_data
+try:
+    from sec_segment_data_arelle import dump_item2_axis_ranking
+except Exception:
+    dump_item2_axis_ranking = None
 
-VERSION = "SEGMENTS v2025-08-10b"
+VERSION = "SEGMENTS v2025-09-02"
 
 # ─────────────────────────── utilities ───────────────────────────
 
@@ -161,6 +167,13 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     df["Year"] = df["Year"].astype(str)
     df["Revenue"] = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
+
+    # Item 2 axis ranking (diagnostics only)
+    if dump_item2_axis_ranking:
+        try:
+            dump_item2_axis_ranking(ticker, df)
+        except Exception:
+            pass
 
     # Shared y-axis scale
     all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
