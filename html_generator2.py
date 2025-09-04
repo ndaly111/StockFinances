@@ -221,6 +221,11 @@ td{padding:4px;border:1px solid #8080FF}
   </div>
 
   <div class="chart-block">
+    <h2>EPS &amp; Dividend</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
+  </div>
+
+  <div class="chart-block">
     <h2>Valuation</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.valuation_chart }}" alt="Valuation">
     <div class="table-wrap">{{ ticker_data.valuation_info_table | safe }}</div>
@@ -231,11 +236,6 @@ td{padding:4px;border:1px solid #8080FF}
     <h2>Implied Growth</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.implied_growth_chart_path }}" alt="Implied Growth">
     <div class="table-wrap">{{ ticker_data.implied_growth_table_html | safe }}</div>
-  </div>
-
-  <div class="chart-block">
-    <h2>EPS &amp; Dividend</h2>
-    <img class="chart-img chart-block" src="{{ ticker_data.eps_dividend_chart_path }}" alt="EPS & Dividend">
   </div>
 
   <p class="chart-block"><a href="../index.html">← Back</a></p>
