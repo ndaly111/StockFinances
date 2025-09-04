@@ -134,12 +134,16 @@ def build_segments_for_ticker(ticker: str) -> bool:
     out_dir = Path(CHARTS_DIR) / ticker
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1) Charts (+ canonical table emitted by generate_segment_charts_for_ticker)
+    # 1) Charts (+ tables emitted by generate_segment_charts_for_ticker)
     generate_segment_charts_for_ticker(ticker, out_dir)
 
-    # 2) No second writer call. We only normalize/verify file presence below.
-    canonical = out_dir / f"{ticker}_segments_table.html"
-    return canonical.exists() and canonical.is_file()
+    axis1 = out_dir / f"axis1_{ticker}_segments_table.html"
+    axis2 = out_dir / f"axis2_{ticker}_segments_table.html"
+    ok1 = axis1.exists() and axis1.is_file()
+    ok2 = axis2.exists() and axis2.is_file()
+    if not ok1 or not ok2:
+        print(f"[segments] Missing segment tables for {ticker}: axis1={ok1} axis2={ok2}")
+    return ok1 and ok2
 
 # ───────────────────────────────────────────────────────────
 # Main
