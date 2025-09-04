@@ -8,8 +8,12 @@
 .segment-pivot td { font-variant-numeric: tabular-nums; text-align:right; }
 .segment-pivot td:first-child, .segment-pivot th:first-child { text-align:left; }
 .table-note { font-size:12px; color:#666; margin:6px 0 8px; }
+/* raw-link style for the per-axis table footer */
+.raw-link{margin:6px 0 10px 0;font-size:13px}
+.raw-link a{color:#0066cc;text-decoration:none}
+.raw-link a:hover{text-decoration:underline}
 </style>
-<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 08:19 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
+<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 13:28 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
 <div class='table-wrap'><table class="dataframe segment-pivot">
   <thead>
     <tr style="text-align: right;">
@@ -27,76 +31,244 @@
   </thead>
   <tbody>
     <tr>
-      <td>Entertainment</td>
-      <td>237B</td>
-      <td>2.13B</td>
-      <td>244B</td>
-      <td>1.44B</td>
-      <td>247B</td>
-      <td>3.92B</td>
-      <td><strong>505B</strong></td>
-      <td><strong>8.93B</strong></td>
-      <td>47.9%</td>
-    </tr>
-    <tr>
-      <td>Experiences</td>
-      <td>140B</td>
-      <td>7.29B</td>
-      <td>163B</td>
-      <td>8.95B</td>
-      <td>171B</td>
-      <td>9.27B</td>
-      <td><strong>353B</strong></td>
-      <td><strong>19.9B</strong></td>
-      <td>33.5%</td>
-    </tr>
-    <tr>
-      <td>Sports</td>
-      <td>104B</td>
-      <td>2.71B</td>
-      <td>103B</td>
-      <td>2.46B</td>
-      <td>106B</td>
-      <td>2.41B</td>
-      <td><strong>214B</strong></td>
-      <td><strong>5.41B</strong></td>
-      <td>20.3%</td>
-    </tr>
-    <tr>
-      <td>Eliminations And Other Member</td>
-      <td>-3.38B</td>
+      <td>Service Member</td>
+      <td>74.2B</td>
       <td>0.00B</td>
-      <td>-2.79B</td>
+      <td>159B</td>
       <td>0.00B</td>
-      <td>-3.19B</td>
+      <td>164B</td>
       <td>0.00B</td>
-      <td><strong>-3.19B</strong></td>
+      <td><strong>335B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>-0.3%</td>
+      <td>29.2%</td>
     </tr>
     <tr>
-      <td>Segment Eliminations Member</td>
-      <td>-3.54B</td>
+      <td>Total</td>
+      <td>251B</td>
       <td>0.00B</td>
-      <td>-4.19B</td>
+      <td>178B</td>
       <td>0.00B</td>
-      <td>-4.79B</td>
+      <td>183B</td>
       <td>0.00B</td>
-      <td><strong>-13.9B</strong></td>
+      <td><strong>183B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>-1.3%</td>
+      <td>15.9%</td>
     </tr>
     <tr>
-      <td>Content License Segment Adjustment Member</td>
-      <td>-2.05B</td>
+      <td>Total Segments Member</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td><strong>95.6B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>8.3%</td>
+    </tr>
+    <tr>
+      <td>Entertainment Third Party Member</td>
+      <td>39.2B</td>
       <td>0.00B</td>
+      <td>40.3B</td>
+      <td>0.00B</td>
+      <td>40.8B</td>
+      <td>0.00B</td>
+      <td><strong>83.3B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>7.3%</td>
+    </tr>
+    <tr>
+      <td>Affiliatefees Member</td>
+      <td>35.0B</td>
+      <td>0.00B</td>
+      <td>33.8B</td>
+      <td>0.00B</td>
+      <td>32.2B</td>
+      <td>0.00B</td>
+      <td><strong>62.9B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>5.5%</td>
+    </tr>
+    <tr>
+      <td>Advertising Member</td>
+      <td>26.1B</td>
+      <td>0.00B</td>
+      <td>23.0B</td>
+      <td>0.00B</td>
+      <td>23.8B</td>
+      <td>0.00B</td>
+      <td><strong>46.9B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>4.1%</td>
+    </tr>
+    <tr>
+      <td>Admission Member</td>
+      <td>17.2B</td>
+      <td>0.00B</td>
+      <td>20.8B</td>
+      <td>0.00B</td>
+      <td>22.3B</td>
+      <td>0.00B</td>
+      <td><strong>46.3B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>4.0%</td>
+    </tr>
+    <tr>
+      <td>Subscription Fees Member</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
+      <td><strong>44.8B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.9%</td>
+    </tr>
+    <tr>
+      <td>Subscriptionfees Member</td>
+      <td>30.6B</td>
+      <td>0.00B</td>
+      <td>35.9B</td>
+      <td>0.00B</td>
+      <td>40.9B</td>
+      <td>0.00B</td>
+      <td><strong>40.9B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.6%</td>
+    </tr>
+    <tr>
+      <td>Product Member</td>
+      <td>8.52B</td>
+      <td>0.00B</td>
+      <td>18.7B</td>
+      <td>0.00B</td>
+      <td>19.0B</td>
+      <td>0.00B</td>
+      <td><strong>38.8B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.4%</td>
+    </tr>
+    <tr>
+      <td>Retailandwholesalesalesofmerchandisefoodandbeverage Member</td>
+      <td>15.7B</td>
+      <td>0.00B</td>
+      <td>17.8B</td>
+      <td>0.00B</td>
+      <td>18.4B</td>
+      <td>0.00B</td>
+      <td><strong>37.8B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.3%</td>
+    </tr>
+    <tr>
+      <td>Resortandvacations Member</td>
+      <td>12.8B</td>
+      <td>0.00B</td>
+      <td>15.9B</td>
+      <td>0.00B</td>
+      <td>16.8B</td>
+      <td>0.00B</td>
+      <td><strong>35.4B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.1%</td>
+    </tr>
+    <tr>
+      <td>Sports Third Party Member</td>
+      <td>16.4B</td>
+      <td>0.00B</td>
+      <td>16.1B</td>
+      <td>0.00B</td>
+      <td>16.4B</td>
+      <td>0.00B</td>
+      <td><strong>33.1B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>2.9%</td>
+    </tr>
+    <tr>
+      <td>Other Revenue Member</td>
+      <td>8.40B</td>
+      <td>0.00B</td>
+      <td>10.1B</td>
+      <td>0.00B</td>
+      <td>9.52B</td>
+      <td>0.00B</td>
+      <td><strong>18.9B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.6%</td>
+    </tr>
+    <tr>
+      <td>License Member</td>
+      <td>7.94B</td>
+      <td>0.00B</td>
+      <td>6.26B</td>
+      <td>0.00B</td>
+      <td>7.57B</td>
+      <td>0.00B</td>
+      <td><strong>15.0B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.3%</td>
+    </tr>
+    <tr>
+      <td>Theatricaldistributionlicensing Member</td>
+      <td>3.75B</td>
+      <td>0.00B</td>
+      <td>6.35B</td>
+      <td>0.00B</td>
+      <td>4.53B</td>
+      <td>0.00B</td>
+      <td><strong>10.4B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.9%</td>
+    </tr>
+    <tr>
+      <td>T V V O D And Home Entertainment Distribution Member</td>
       <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td><strong>7.89B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.7%</td>
+    </tr>
+    <tr>
+      <td>T V S V O Ddistributionlicensing Member</td>
+      <td>6.78B</td>
+      <td>0.00B</td>
+      <td>5.98B</td>
+      <td>0.00B</td>
+      <td>5.21B</td>
+      <td>0.00B</td>
+      <td><strong>5.21B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.5%</td>
+    </tr>
+    <tr>
+      <td>Intersegment Eliminations Member</td>
+      <td>1.18B</td>
+      <td>0.00B</td>
+      <td>1.40B</td>
+      <td>0.00B</td>
+      <td>1.59B</td>
+      <td>0.00B</td>
+      <td><strong>3.42B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.3%</td>
+    </tr>
+    <tr>
+      <td>Entertainment Member</td>
+      <td>2.17B</td>
+      <td>0.00B</td>
+      <td>1.86B</td>
+      <td>0.00B</td>
+      <td>1.51B</td>
+      <td>0.00B</td>
+      <td><strong>1.51B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.1%</td>
     </tr>
   </tbody>
 </table></div>
