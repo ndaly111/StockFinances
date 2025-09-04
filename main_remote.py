@@ -190,7 +190,8 @@ def mini_main():
                 continue
 
         if missing_segments:
-            raise RuntimeError("Missing segment tables for: " + ", ".join(missing_segments))
+            msg = "Missing segment tables for: " + ", ".join(missing_segments)
+            print(f"[WARN] {msg}")
 
         eps_dividend_generator()
         generate_all_summaries()
