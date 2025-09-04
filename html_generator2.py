@@ -34,6 +34,19 @@ def get_file_or_placeholder(path: str, ph: str = "No data available") -> str:
     except FileNotFoundError:
         return ph
 
+def get_file_with_fallback(paths, ph: str = "No data available") -> str:
+    """Return the contents of the first existing file in ``paths``.
+
+    ``paths`` may contain alternate legacy filenames.  If none of the
+    paths exist, ``ph`` is returned instead.
+    """
+    for p in paths:
+        try:
+            return open(p, encoding="utf-8").read()
+        except FileNotFoundError:
+            continue
+    return ph
+
 # Inject retro CSS + container override
 def inject_retro(html: str) -> str:
     if '/static/css/retro.css' not in html:
@@ -57,6 +70,9 @@ def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web:
     pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
     def build(prefix):
         imgs = [f for f in pngs if f.startswith(prefix + "_")]
+        if not imgs:
+            # fallback for legacy files like ``name_axis1.png``/``name_axis2.png``
+            imgs = [f for f in pngs if f.endswith("_" + prefix + ".png")]
         if not imgs:
             return ""
         items = []
@@ -391,8 +407,14 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "expense_yoy_html":              get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_expense_change.html"),
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
-                "segment_table_html_axis1":     get_file_or_placeholder(f"{charts_dir_fs}/{t}/axis1_{t}_segments_table.html", "No segment data available."),
-                "segment_table_html_axis2":     get_file_or_placeholder(f"{charts_dir_fs}/{t}/axis2_{t}_segments_table.html", "No segment data available."),
+                "segment_table_html_axis1":     get_file_with_fallback([
+                    f"{charts_dir_fs}/{t}/axis1_{t}_segments_table.html",
+                    f"{charts_dir_fs}/{t}/{t}_segments_table_axis1.html",
+                ], "No segment data available."),
+                "segment_table_html_axis2":     get_file_with_fallback([
+                    f"{charts_dir_fs}/{t}/axis2_{t}_segments_table.html",
+                    f"{charts_dir_fs}/{t}/{t}_segments_table_axis2.html",
+                ], "No segment data available."),
 
                 # Images (web paths)
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
