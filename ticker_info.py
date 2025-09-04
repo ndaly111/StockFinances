@@ -21,6 +21,7 @@ def fetch_stock_data(ticker, treasury_yield):
     pe_ratio = raw_info.get('trailingPE')
     price_to_book = raw_info.get('priceToBook')
     marketcap = raw_info.get('marketCap')
+    dividend_rate = raw_info.get('dividendRate') or raw_info.get('trailingAnnualDividendRate')
 
     forward_pe_ratio = current_price / forward_eps if current_price and forward_eps else None
     treasury_yield = float(treasury_yield) / 100 if treasury_yield and treasury_yield != '-' else None
@@ -32,6 +33,7 @@ def fetch_stock_data(ticker, treasury_yield):
     implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if isinstance(implied_forward_growth, (int, float)) else '-'
 
     formatted_close_price = f"${current_price:.2f}" if current_price else '-'
+    formatted_dividend = f"${dividend_rate:.2f}" if dividend_rate else '-'
 
     data = {
         'Close Price': formatted_close_price,
@@ -40,6 +42,7 @@ def fetch_stock_data(ticker, treasury_yield):
         'Forward P/E Ratio': f"{forward_pe_ratio:.1f}" if forward_pe_ratio else '-',
         'Implied Growth*': implied_growth_formatted,
         'Implied Forward Growth*': implied_forward_growth_formatted,
+        'Dividend': formatted_dividend,
         'P/B Ratio': f"{price_to_book:.1f}" if price_to_book else '-',
     }
 
