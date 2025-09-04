@@ -109,7 +109,13 @@ OPINC_TAGS = [
 ]
 
 # Regex helpers
-_SEGMENT_DIM_RE = re.compile(r"segment", re.IGNORECASE)
+# Previously we only captured dimensions whose qualified name contained
+# “segment”.  Apple (and many other filers) report product level data using
+# ``ProductOrServiceAxis`` which does not include the word “segment".  As a
+# result, product/service facts were skipped and the generated tables showed
+# the same axis twice.  Broaden the regex so that we recognise dimensions that
+# mention "product" or "service" as well.
+_SEGMENT_DIM_RE = re.compile(r"(segment|product|service)", re.IGNORECASE)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -481,8 +487,15 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
         out_dir = Path("charts") / ticker.upper()
         out_dir.mkdir(parents=True, exist_ok=True)
         raw_path = out_dir / f"{ticker.upper()}_segment_raw.txt"
+        try:
+            raw_path.unlink(missing_ok=True)
+        except Exception:
+            pass
         if raw_df.empty:
-            raw_path.write_text("No revenue or operating income facts found.", encoding="utf-8")
+            raw_path.write_text(
+                "No revenue or operating income facts found.",
+                encoding="utf-8",
+            )
         else:
             with pd.option_context("display.max_colwidth", None):
                 raw_path.write_text(raw_df.to_string(index=False), encoding="utf-8")
