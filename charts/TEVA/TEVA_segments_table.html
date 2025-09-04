@@ -8,8 +8,12 @@
 .segment-pivot td { font-variant-numeric: tabular-nums; text-align:right; }
 .segment-pivot td:first-child, .segment-pivot th:first-child { text-align:left; }
 .table-note { font-size:12px; color:#666; margin:6px 0 8px; }
+/* raw-link style for the per-axis table footer */
+.raw-link{margin:6px 0 10px 0;font-size:13px}
+.raw-link a{color:#0066cc;text-decoration:none}
+.raw-link a:hover{text-decoration:underline}
 </style>
-<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 08:29 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
+<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 13:38 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
 <div class='table-wrap'><table class="dataframe segment-pivot">
   <thead>
     <tr style="text-align: right;">
@@ -27,76 +31,160 @@
   </thead>
   <tbody>
     <tr>
-      <td>United States</td>
-      <td>21.0B</td>
-      <td>3.87B</td>
-      <td>23.2B</td>
-      <td>4.79B</td>
-      <td>24.1B</td>
-      <td>4.59B</td>
-      <td><strong>24.9B</strong></td>
-      <td><strong>5.27B</strong></td>
-      <td>46.5%</td>
+      <td>Product Member</td>
+      <td>25.5B</td>
+      <td>0.00B</td>
+      <td>26.0B</td>
+      <td>0.00B</td>
+      <td>28.9B</td>
+      <td>0.00B</td>
+      <td><strong>29.1B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>59.4%</td>
     </tr>
     <tr>
-      <td>Europe</td>
-      <td>13.6B</td>
-      <td>2.99B</td>
-      <td>14.5B</td>
-      <td>2.96B</td>
-      <td>15.3B</td>
+      <td>Generics Medicians Including Otc And Biosimilars Member</td>
+      <td>8.60B</td>
+      <td>0.00B</td>
+      <td>8.73B</td>
+      <td>0.00B</td>
+      <td>9.46B</td>
+      <td>0.00B</td>
+      <td><strong>9.34B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>19.1%</td>
+    </tr>
+    <tr>
+      <td>Distribution Service Member</td>
+      <td>3.04B</td>
+      <td>0.00B</td>
+      <td>3.23B</td>
+      <td>0.00B</td>
       <td>3.15B</td>
-      <td><strong>15.6B</strong></td>
-      <td><strong>3.05B</strong></td>
-      <td>29.1%</td>
-    </tr>
-    <tr>
-      <td>International Markets Member</td>
-      <td>11.8B</td>
-      <td>1.08B</td>
-      <td>11.8B</td>
-      <td>0.93B</td>
-      <td>12.3B</td>
-      <td>0.88B</td>
-      <td><strong>11.3B</strong></td>
-      <td><strong>0.84B</strong></td>
-      <td>21.0%</td>
-    </tr>
-    <tr>
-      <td>Other Activities Member</td>
-      <td>2.09B</td>
       <td>0.00B</td>
-      <td>1.85B</td>
-      <td>0.00B</td>
-      <td>1.89B</td>
-      <td>0.00B</td>
-      <td><strong>1.78B</strong></td>
+      <td><strong>3.12B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>3.3%</td>
+      <td>6.4%</td>
     </tr>
     <tr>
-      <td>Corporate Member</td>
+      <td>Austedo Member</td>
+      <td>0.97B</td>
       <td>0.00B</td>
-      <td>3.97B</td>
+      <td>1.24B</td>
       <td>0.00B</td>
-      <td>4.34B</td>
+      <td>1.69B</td>
       <td>0.00B</td>
-      <td>4.31B</td>
+      <td><strong>1.96B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td><strong>4.58B</strong></td>
-      <td>0.0%</td>
+      <td>4.0%</td>
     </tr>
     <tr>
-      <td>All Other Segments Member</td>
+      <td>Anda Member</td>
+      <td>1.47B</td>
+      <td>0.00B</td>
+      <td>1.58B</td>
+      <td>0.00B</td>
+      <td>1.54B</td>
+      <td>0.00B</td>
+      <td><strong>1.51B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.1%</td>
+    </tr>
+    <tr>
+      <td>Other Products Member</td>
+      <td>1.19B</td>
+      <td>0.00B</td>
+      <td>1.82B</td>
+      <td>0.00B</td>
+      <td>1.38B</td>
+      <td>0.00B</td>
+      <td><strong>1.28B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>2.6%</td>
+    </tr>
+    <tr>
+      <td>Product And Service Other Member</td>
+      <td>0.86B</td>
+      <td>0.00B</td>
+      <td>1.14B</td>
+      <td>0.00B</td>
+      <td>0.73B</td>
+      <td>0.00B</td>
+      <td><strong>0.69B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.4%</td>
+    </tr>
+    <tr>
+      <td>Ajovy Member</td>
+      <td>0.38B</td>
+      <td>0.00B</td>
+      <td>0.43B</td>
+      <td>0.00B</td>
+      <td>0.51B</td>
+      <td>0.00B</td>
+      <td><strong>0.61B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.2%</td>
+    </tr>
+    <tr>
+      <td>C O P A X O N E Member</td>
+      <td>0.69B</td>
+      <td>0.00B</td>
+      <td>0.59B</td>
+      <td>0.00B</td>
+      <td>0.50B</td>
+      <td>0.00B</td>
+      <td><strong>0.45B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.9%</td>
+    </tr>
+    <tr>
+      <td>License Member</td>
+      <td>0.42B</td>
+      <td>0.00B</td>
+      <td>1.36B</td>
+      <td>0.00B</td>
+      <td>0.35B</td>
+      <td>0.00B</td>
+      <td><strong>0.38B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.8%</td>
+    </tr>
+    <tr>
+      <td>Respiratory Product Member</td>
+      <td>0.27B</td>
+      <td>0.00B</td>
+      <td>0.27B</td>
+      <td>0.00B</td>
+      <td>0.24B</td>
+      <td>0.00B</td>
+      <td><strong>0.23B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.5%</td>
+    </tr>
+    <tr>
+      <td>Uzedy Member</td>
+      <td>–</td>
+      <td>–</td>
+      <td>0.02B</td>
+      <td>0.00B</td>
+      <td>0.12B</td>
+      <td>0.00B</td>
+      <td><strong>0.20B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.4%</td>
+    </tr>
+    <tr>
+      <td>Bendeka And Treanda Member</td>
+      <td>0.31B</td>
+      <td>0.00B</td>
+      <td>0.24B</td>
       <td>0.00B</td>
       <td>0.17B</td>
       <td>0.00B</td>
-      <td>0.02B</td>
-      <td>0.00B</td>
-      <td>0.02B</td>
+      <td><strong>0.16B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td><strong>-0.04B</strong></td>
-      <td>0.0%</td>
+      <td>0.3%</td>
     </tr>
   </tbody>
 </table></div>

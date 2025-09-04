@@ -8,8 +8,12 @@
 .segment-pivot td { font-variant-numeric: tabular-nums; text-align:right; }
 .segment-pivot td:first-child, .segment-pivot th:first-child { text-align:left; }
 .table-note { font-size:12px; color:#666; margin:6px 0 8px; }
+/* raw-link style for the per-axis table footer */
+.raw-link{margin:6px 0 10px 0;font-size:13px}
+.raw-link a{color:#0066cc;text-decoration:none}
+.raw-link a:hover{text-decoration:underline}
 </style>
-<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 08:30 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
+<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 13:39 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
 <div class='table-wrap'><table class="dataframe segment-pivot">
   <thead>
     <tr style="text-align: right;">
@@ -27,64 +31,124 @@
   </thead>
   <tbody>
     <tr>
-      <td>U S Domestic Package Member</td>
-      <td>129B</td>
+      <td>Ground Member</td>
+      <td>47.5B</td>
       <td>0.00B</td>
-      <td>120B</td>
+      <td>45.0B</td>
       <td>0.00B</td>
-      <td>121B</td>
+      <td>45.3B</td>
       <td>0.00B</td>
-      <td><strong>121B</strong></td>
+      <td><strong>44.9B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>46.8%</td>
+      <td>50.0%</td>
     </tr>
     <tr>
-      <td>U. S. Domestic Package</td>
-      <td>64.6B</td>
+      <td>Export Member</td>
+      <td>15.3B</td>
       <td>0.00B</td>
-      <td>60.2B</td>
+      <td>14.0B</td>
       <td>0.00B</td>
-      <td>60.4B</td>
+      <td>14.1B</td>
       <td>0.00B</td>
-      <td><strong>60.3B</strong></td>
+      <td><strong>14.3B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>23.4%</td>
+      <td>16.0%</td>
     </tr>
     <tr>
-      <td>International Package Member</td>
-      <td>39.4B</td>
+      <td>Next Day Air Member</td>
+      <td>10.7B</td>
       <td>0.00B</td>
-      <td>35.7B</td>
+      <td>9.89B</td>
       <td>0.00B</td>
-      <td>35.9B</td>
+      <td>9.70B</td>
       <td>0.00B</td>
-      <td><strong>36.6B</strong></td>
+      <td><strong>9.72B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>14.2%</td>
+      <td>10.8%</td>
     </tr>
     <tr>
-      <td>Supply Chain Solutions Member</td>
-      <td>32.1B</td>
+      <td>Logistic Member</td>
+      <td>5.35B</td>
       <td>0.00B</td>
-      <td>25.8B</td>
+      <td>5.93B</td>
       <td>0.00B</td>
-      <td>25.5B</td>
+      <td>6.44B</td>
       <td>0.00B</td>
-      <td><strong>22.1B</strong></td>
+      <td><strong>6.33B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>8.6%</td>
-    </tr>
-    <tr>
-      <td>International</td>
-      <td>19.7B</td>
-      <td>0.00B</td>
-      <td>17.8B</td>
-      <td>0.00B</td>
-      <td>18.0B</td>
-      <td>0.00B</td>
-      <td><strong>18.3B</strong></td>
-      <td><strong>-0.11B</strong></td>
       <td>7.1%</td>
+    </tr>
+    <tr>
+      <td>Deferred Member</td>
+      <td>5.97B</td>
+      <td>0.00B</td>
+      <td>5.09B</td>
+      <td>0.00B</td>
+      <td>4.76B</td>
+      <td>0.00B</td>
+      <td><strong>4.48B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>5.0%</td>
+    </tr>
+    <tr>
+      <td>Domestic Member</td>
+      <td>3.35B</td>
+      <td>0.00B</td>
+      <td>3.14B</td>
+      <td>0.00B</td>
+      <td>3.19B</td>
+      <td>0.00B</td>
+      <td><strong>3.32B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.7%</td>
+    </tr>
+    <tr>
+      <td>Forwarding Member</td>
+      <td>8.94B</td>
+      <td>0.00B</td>
+      <td>5.53B</td>
+      <td>0.00B</td>
+      <td>4.73B</td>
+      <td>0.00B</td>
+      <td><strong>3.01B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.4%</td>
+    </tr>
+    <tr>
+      <td>Product And Service Other Member</td>
+      <td>1.74B</td>
+      <td>0.00B</td>
+      <td>1.46B</td>
+      <td>0.00B</td>
+      <td>1.57B</td>
+      <td>0.00B</td>
+      <td><strong>1.74B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.9%</td>
+    </tr>
+    <tr>
+      <td>Cargo Member</td>
+      <td>1.01B</td>
+      <td>0.00B</td>
+      <td>0.68B</td>
+      <td>0.00B</td>
+      <td>0.63B</td>
+      <td>0.00B</td>
+      <td><strong>1.37B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.5%</td>
+    </tr>
+    <tr>
+      <td>Cargo And Other Member</td>
+      <td>0.40B</td>
+      <td>0.00B</td>
+      <td>0.25B</td>
+      <td>0.00B</td>
+      <td>0.57B</td>
+      <td>0.00B</td>
+      <td><strong>0.57B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.6%</td>
     </tr>
   </tbody>
 </table></div>

@@ -8,8 +8,12 @@
 .segment-pivot td { font-variant-numeric: tabular-nums; text-align:right; }
 .segment-pivot td:first-child, .segment-pivot th:first-child { text-align:left; }
 .table-note { font-size:12px; color:#666; margin:6px 0 8px; }
+/* raw-link style for the per-axis table footer */
+.raw-link{margin:6px 0 10px 0;font-size:13px}
+.raw-link a{color:#0066cc;text-decoration:none}
+.raw-link a:hover{text-decoration:underline}
 </style>
-<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 08:21 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
+<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 13:31 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
 <div class='table-wrap'><table class="dataframe segment-pivot">
   <thead>
     <tr style="text-align: right;">
@@ -27,40 +31,256 @@
   </thead>
   <tbody>
     <tr>
-      <td>Reportable Segment Aggregation Before Other Operating</td>
-      <td>787B</td>
-      <td>24.0B</td>
-      <td>763B</td>
-      <td>21.7B</td>
-      <td>919B</td>
-      <td>42.6B</td>
-      <td><strong>919B</strong></td>
-      <td><strong>42.6B</strong></td>
-      <td>63.7%</td>
+      <td>Product Member</td>
+      <td>152B</td>
+      <td>0.00B</td>
+      <td>147B</td>
+      <td>0.00B</td>
+      <td>154B</td>
+      <td>0.00B</td>
+      <td><strong>280B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>39.0%</td>
     </tr>
     <tr>
-      <td>Primary</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>486B</strong></td>
-      <td><strong>35.5B</strong></td>
-      <td>33.7%</td>
+      <td>Major Product Line Building Materials Member</td>
+      <td>54.6B</td>
+      <td>0.00B</td>
+      <td>52.7B</td>
+      <td>0.00B</td>
+      <td>52.8B</td>
+      <td>0.00B</td>
+      <td><strong>94.0B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>13.1%</td>
     </tr>
     <tr>
-      <td>All Other Segments Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>19.2B</td>
-      <td>0.21B</td>
-      <td><strong>36.8B</strong></td>
-      <td><strong>0.70B</strong></td>
-      <td>2.6%</td>
+      <td>Major Product Line Dcor Member</td>
+      <td>54.4B</td>
+      <td>0.00B</td>
+      <td>51.9B</td>
+      <td>0.00B</td>
+      <td>51.8B</td>
+      <td>0.00B</td>
+      <td><strong>92.0B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>12.8%</td>
+    </tr>
+    <tr>
+      <td>Major Product Line Hardlines Member</td>
+      <td>48.4B</td>
+      <td>0.00B</td>
+      <td>48.1B</td>
+      <td>0.00B</td>
+      <td>48.6B</td>
+      <td>0.00B</td>
+      <td><strong>88.7B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>12.4%</td>
+    </tr>
+    <tr>
+      <td>Appliances Member</td>
+      <td>14.5B</td>
+      <td>0.00B</td>
+      <td>13.9B</td>
+      <td>0.00B</td>
+      <td>14.0B</td>
+      <td>0.00B</td>
+      <td><strong>14.0B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>2.0%</td>
+    </tr>
+    <tr>
+      <td>Power Member</td>
+      <td>13.3B</td>
+      <td>0.00B</td>
+      <td>12.9B</td>
+      <td>0.00B</td>
+      <td>13.1B</td>
+      <td>0.00B</td>
+      <td><strong>13.1B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.8%</td>
+    </tr>
+    <tr>
+      <td>Building Materials Member</td>
+      <td>11.4B</td>
+      <td>0.00B</td>
+      <td>12.1B</td>
+      <td>0.00B</td>
+      <td>12.4B</td>
+      <td>0.00B</td>
+      <td><strong>12.4B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.7%</td>
+    </tr>
+    <tr>
+      <td>Plumbing Member</td>
+      <td>12.5B</td>
+      <td>0.00B</td>
+      <td>12.5B</td>
+      <td>0.00B</td>
+      <td>12.4B</td>
+      <td>0.00B</td>
+      <td><strong>12.4B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.7%</td>
+    </tr>
+    <tr>
+      <td>Lumber Member</td>
+      <td>13.4B</td>
+      <td>0.00B</td>
+      <td>11.7B</td>
+      <td>0.00B</td>
+      <td>11.8B</td>
+      <td>0.00B</td>
+      <td><strong>11.8B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.6%</td>
+    </tr>
+    <tr>
+      <td>Paint Member</td>
+      <td>11.1B</td>
+      <td>0.00B</td>
+      <td>11.0B</td>
+      <td>0.00B</td>
+      <td>11.2B</td>
+      <td>0.00B</td>
+      <td><strong>11.2B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.6%</td>
+    </tr>
+    <tr>
+      <td>Indoor Garden Member</td>
+      <td>10.1B</td>
+      <td>0.00B</td>
+      <td>10.3B</td>
+      <td>0.00B</td>
+      <td>10.5B</td>
+      <td>0.00B</td>
+      <td><strong>10.5B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.5%</td>
+    </tr>
+    <tr>
+      <td>Outdoor Garden Member</td>
+      <td>10.0B</td>
+      <td>0.00B</td>
+      <td>10.3B</td>
+      <td>0.00B</td>
+      <td>10.3B</td>
+      <td>0.00B</td>
+      <td><strong>10.3B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.4%</td>
+    </tr>
+    <tr>
+      <td>Service Member</td>
+      <td>5.60B</td>
+      <td>0.00B</td>
+      <td>5.83B</td>
+      <td>0.00B</td>
+      <td>5.84B</td>
+      <td>0.00B</td>
+      <td><strong>10.3B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.4%</td>
+    </tr>
+    <tr>
+      <td>Hardware Member</td>
+      <td>8.95B</td>
+      <td>0.00B</td>
+      <td>9.01B</td>
+      <td>0.00B</td>
+      <td>9.00B</td>
+      <td>0.00B</td>
+      <td><strong>9.00B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.3%</td>
+    </tr>
+    <tr>
+      <td>Flooring Member</td>
+      <td>9.20B</td>
+      <td>0.00B</td>
+      <td>8.76B</td>
+      <td>0.00B</td>
+      <td>8.60B</td>
+      <td>0.00B</td>
+      <td><strong>8.60B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.2%</td>
+    </tr>
+    <tr>
+      <td>Millwork Member</td>
+      <td>8.43B</td>
+      <td>0.00B</td>
+      <td>8.30B</td>
+      <td>0.00B</td>
+      <td>8.34B</td>
+      <td>0.00B</td>
+      <td><strong>8.34B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.2%</td>
+    </tr>
+    <tr>
+      <td>Electrical Member</td>
+      <td>8.82B</td>
+      <td>0.00B</td>
+      <td>8.04B</td>
+      <td>0.00B</td>
+      <td>7.88B</td>
+      <td>0.00B</td>
+      <td><strong>7.88B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.1%</td>
+    </tr>
+    <tr>
+      <td>Kitchen And Blinds Member</td>
+      <td>7.75B</td>
+      <td>0.00B</td>
+      <td>7.15B</td>
+      <td>0.00B</td>
+      <td>7.24B</td>
+      <td>0.00B</td>
+      <td><strong>7.24B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.0%</td>
+    </tr>
+    <tr>
+      <td>Bath Member</td>
+      <td>6.86B</td>
+      <td>0.00B</td>
+      <td>6.63B</td>
+      <td>0.00B</td>
+      <td>6.49B</td>
+      <td>0.00B</td>
+      <td><strong>6.49B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.9%</td>
+    </tr>
+    <tr>
+      <td>Storage Organization Member</td>
+      <td>6.02B</td>
+      <td>0.00B</td>
+      <td>5.63B</td>
+      <td>0.00B</td>
+      <td>5.64B</td>
+      <td>0.00B</td>
+      <td><strong>5.64B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.8%</td>
+    </tr>
+    <tr>
+      <td>Lighting Member</td>
+      <td>5.04B</td>
+      <td>0.00B</td>
+      <td>4.53B</td>
+      <td>0.00B</td>
+      <td>4.22B</td>
+      <td>0.00B</td>
+      <td><strong>4.22B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.6%</td>
     </tr>
   </tbody>
 </table></div>

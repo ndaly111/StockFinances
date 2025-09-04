@@ -8,8 +8,12 @@
 .segment-pivot td { font-variant-numeric: tabular-nums; text-align:right; }
 .segment-pivot td:first-child, .segment-pivot th:first-child { text-align:left; }
 .table-note { font-size:12px; color:#666; margin:6px 0 8px; }
+/* raw-link style for the per-axis table footer */
+.raw-link{margin:6px 0 10px 0;font-size:13px}
+.raw-link a{color:#0066cc;text-decoration:none}
+.raw-link a:hover{text-decoration:underline}
 </style>
-<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 08:22 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
+<div class="table-note">SEGMENTS v2025-09-02 · 2025-09-04 13:32 UTC — Values are shown in a single scale for this table: <b>$B</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>
 <div class='table-wrap'><table class="dataframe segment-pivot">
   <thead>
     <tr style="text-align: right;">
@@ -25,172 +29,442 @@
   </thead>
   <tbody>
     <tr>
-      <td>Innovative Medicine Member</td>
-      <td>750B</td>
+      <td>D A R Z A L E X Member</td>
+      <td>35.4B</td>
       <td>0.00B</td>
-      <td>398B</td>
+      <td>23.3B</td>
       <td>0.00B</td>
-      <td><strong>575B</strong></td>
+      <td><strong>44.0B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>51.9%</td>
+      <td>14.5%</td>
     </tr>
     <tr>
-      <td>Med Tech Member</td>
-      <td>405B</td>
+      <td>Stelara Member</td>
+      <td>41.2B</td>
       <td>0.00B</td>
-      <td>223B</td>
+      <td>20.7B</td>
       <td>0.00B</td>
-      <td><strong>330B</strong></td>
+      <td><strong>30.6B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>29.8%</td>
+      <td>10.1%</td>
     </tr>
     <tr>
-      <td>Oncology Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>54.9B</strong></td>
+      <td>G E N E R A L Member</td>
+      <td>21.0B</td>
+      <td>0.00B</td>
+      <td>10.7B</td>
+      <td>0.00B</td>
+      <td><strong>18.9B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>5.0%</td>
+      <td>6.2%</td>
     </tr>
     <tr>
-      <td>Immunology Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>35.1B</strong></td>
+      <td>A D V A N C E D Member</td>
+      <td>18.5B</td>
+      <td>0.00B</td>
+      <td>8.98B</td>
+      <td>0.00B</td>
+      <td><strong>15.8B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>3.2%</td>
+      <td>5.2%</td>
     </tr>
     <tr>
-      <td>Surgery Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>22.5B</strong></td>
+      <td>I N V E G A S U S T E N N A X E P L I O N T R I N Z A T R E V I C T A Member</td>
+      <td>16.5B</td>
+      <td>0.00B</td>
+      <td>8.44B</td>
+      <td>0.00B</td>
+      <td><strong>14.2B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>4.7%</td>
+    </tr>
+    <tr>
+      <td>Tremfya Member</td>
+      <td>11.6B</td>
+      <td>0.00B</td>
+      <td>7.34B</td>
+      <td>0.00B</td>
+      <td><strong>14.0B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>4.6%</td>
+    </tr>
+    <tr>
+      <td>C O N T A C T L E N S E S O T H E R Member</td>
+      <td>14.5B</td>
+      <td>0.00B</td>
+      <td>7.47B</td>
+      <td>0.00B</td>
+      <td><strong>13.2B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>4.3%</td>
+    </tr>
+    <tr>
+      <td>T R A U M A Member</td>
+      <td>11.7B</td>
+      <td>0.00B</td>
+      <td>6.10B</td>
+      <td>0.00B</td>
+      <td><strong>10.7B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.5%</td>
+    </tr>
+    <tr>
+      <td>E L E C T R O P H Y S I O L O G Y Member</td>
+      <td>17.2B</td>
+      <td>0.00B</td>
+      <td>10.5B</td>
+      <td>0.00B</td>
+      <td><strong>10.5B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.5%</td>
+    </tr>
+    <tr>
+      <td>I M B R U V I C A Member</td>
+      <td>14.1B</td>
+      <td>0.00B</td>
+      <td>6.08B</td>
+      <td>0.00B</td>
+      <td><strong>10.4B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>3.4%</td>
+    </tr>
+    <tr>
+      <td>Xarelto Member</td>
+      <td>9.68B</td>
+      <td>0.00B</td>
+      <td>4.75B</td>
+      <td>0.00B</td>
+      <td><strong>8.61B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>2.8%</td>
+    </tr>
+    <tr>
+      <td>Simponi Simponi Aria Member</td>
+      <td>8.76B</td>
+      <td>0.00B</td>
+      <td>4.38B</td>
+      <td>0.00B</td>
+      <td><strong>8.46B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>2.8%</td>
+    </tr>
+    <tr>
+      <td>U P T R A V I Member</td>
+      <td>5.81B</td>
+      <td>0.00B</td>
+      <td>3.63B</td>
+      <td>0.00B</td>
+      <td><strong>6.44B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>2.1%</td>
+    </tr>
+    <tr>
+      <td>Erleada Member</td>
+      <td>8.54B</td>
+      <td>0.00B</td>
+      <td>6.00B</td>
+      <td>0.00B</td>
+      <td><strong>6.00B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>2.0%</td>
     </tr>
     <tr>
-      <td>Orthopaedics Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>20.6B</strong></td>
+      <td>Remicade Member</td>
+      <td>8.36B</td>
+      <td>0.00B</td>
+      <td>3.21B</td>
+      <td>0.00B</td>
+      <td><strong>5.96B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>2.0%</td>
+    </tr>
+    <tr>
+      <td>S P I N E S P O R T S O T H E R Member</td>
+      <td>11.6B</td>
+      <td>0.00B</td>
+      <td>5.85B</td>
+      <td>0.00B</td>
+      <td><strong>5.85B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>1.9%</td>
     </tr>
     <tr>
-      <td>Neuroscience Member</td>
+      <td>P R E Z I S T A P R E Z C O B I X R E Z O L S T A S Y M T U Z A Member</td>
+      <td>7.59B</td>
+      <td>0.00B</td>
+      <td>3.42B</td>
+      <td>0.00B</td>
+      <td><strong>5.82B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.9%</td>
+    </tr>
+    <tr>
+      <td>H I P S Member</td>
+      <td>6.15B</td>
+      <td>0.00B</td>
+      <td>3.28B</td>
+      <td>0.00B</td>
+      <td><strong>5.78B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.9%</td>
+    </tr>
+    <tr>
+      <td>K N E E S Member</td>
+      <td>5.63B</td>
+      <td>0.00B</td>
+      <td>3.09B</td>
+      <td>0.00B</td>
+      <td><strong>5.43B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.8%</td>
+    </tr>
+    <tr>
+      <td>E R L E A D A Member</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
-      <td><strong>17.2B</strong></td>
+      <td><strong>5.17B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.7%</td>
+    </tr>
+    <tr>
+      <td>S U R G I C A L Member</td>
+      <td>5.35B</td>
+      <td>0.00B</td>
+      <td>2.83B</td>
+      <td>0.00B</td>
+      <td><strong>5.16B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.7%</td>
+    </tr>
+    <tr>
+      <td>E D U R A N Trilpivirine Member</td>
+      <td>4.32B</td>
+      <td>0.00B</td>
+      <td>2.54B</td>
+      <td>0.00B</td>
+      <td><strong>4.70B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>1.6%</td>
     </tr>
     <tr>
-      <td>Vision Member</td>
+      <td>Other Member</td>
+      <td>5.44B</td>
+      <td>0.00B</td>
+      <td>2.38B</td>
+      <td>0.00B</td>
+      <td><strong>4.59B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.5%</td>
+    </tr>
+    <tr>
+      <td>S P R A V A T O Member</td>
+      <td>2.13B</td>
+      <td>0.00B</td>
+      <td>2.15B</td>
+      <td>0.00B</td>
+      <td><strong>4.45B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.5%</td>
+    </tr>
+    <tr>
+      <td>C A R V Y K T I Member</td>
+      <td>1.26B</td>
+      <td>0.00B</td>
+      <td>1.93B</td>
+      <td>0.00B</td>
+      <td><strong>4.42B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.5%</td>
+    </tr>
+    <tr>
+      <td>O P S U M I T Member</td>
+      <td>7.51B</td>
+      <td>0.00B</td>
+      <td>4.37B</td>
+      <td>0.00B</td>
+      <td><strong>4.37B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.4%</td>
+    </tr>
+    <tr>
+      <td>S P I N E O T H E R Member</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
-      <td><strong>12.1B</strong></td>
+      <td><strong>4.25B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.4%</td>
+    </tr>
+    <tr>
+      <td>O T H E R N E U R O S C I E N C E Member</td>
+      <td>6.57B</td>
+      <td>0.00B</td>
+      <td>2.35B</td>
+      <td>0.00B</td>
+      <td><strong>3.98B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>1.3%</td>
+    </tr>
+    <tr>
+      <td>O P S U M I T O P S Y N V I Member</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td><strong>3.37B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>1.1%</td>
     </tr>
     <tr>
-      <td>Pulmonary Hypertension Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>9.76B</strong></td>
+      <td>Abiomed Member</td>
+      <td>2.67B</td>
+      <td>0.00B</td>
+      <td>2.99B</td>
+      <td>0.00B</td>
+      <td><strong>2.99B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>0.9%</td>
+      <td>1.0%</td>
     </tr>
     <tr>
-      <td>Cardiovascular Metabolism Other Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>8.62B</strong></td>
+      <td>Other Oncology Member</td>
+      <td>1.81B</td>
+      <td>0.00B</td>
+      <td>1.86B</td>
+      <td>0.00B</td>
+      <td><strong>2.41B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>0.8%</td>
     </tr>
     <tr>
-      <td>Infectious Diseases Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>7.23B</strong></td>
+      <td>C O N C E R T A Methylphenidate Member</td>
+      <td>2.85B</td>
+      <td>0.00B</td>
+      <td>1.28B</td>
+      <td>0.00B</td>
+      <td><strong>2.23B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>0.7%</td>
     </tr>
     <tr>
-      <td>Cardiovascular Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>6.73B</strong></td>
+      <td>Z Y T I G A Member</td>
+      <td>5.31B</td>
+      <td>0.00B</td>
+      <td>1.26B</td>
+      <td>0.00B</td>
+      <td><strong>2.09B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>0.6%</td>
+      <td>0.7%</td>
     </tr>
     <tr>
-      <td>Electrophysiology Member</td>
+      <td>Shockwave Medical Inc. Member</td>
       <td>–</td>
       <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>4.26B</strong></td>
+      <td>1.13B</td>
+      <td>0.00B</td>
+      <td><strong>1.13B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>0.4%</td>
     </tr>
     <tr>
-      <td>Abiomed Member</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td>–</td>
-      <td><strong>1.32B</strong></td>
-      <td><strong>0.00B</strong></td>
-      <td>0.1%</td>
-    </tr>
-    <tr>
-      <td>Pharmaceutical Member</td>
+      <td>T E C V A Y L I Member</td>
       <td>0.82B</td>
       <td>0.00B</td>
       <td>1.10B</td>
       <td>0.00B</td>
       <td><strong>1.10B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>0.1%</td>
+      <td>0.4%</td>
     </tr>
     <tr>
-      <td>Shockwave Member</td>
+      <td>R Y B R E V A N T L A Z C L U Z E Member</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td><strong>1.00B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.3%</td>
+    </tr>
+    <tr>
+      <td>Tecvayli Member</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+      <td><strong>0.97B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.3%</td>
+    </tr>
+    <tr>
+      <td>C A P L Y T A Member</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td><strong>0.84B</strong></td>
       <td><strong>0.00B</strong></td>
-      <td>0.1%</td>
+      <td>0.3%</td>
     </tr>
     <tr>
       <td>Other Cardiovascular Member</td>
+      <td>1.38B</td>
+      <td>0.00B</td>
+      <td>0.76B</td>
+      <td>0.00B</td>
+      <td><strong>0.76B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.3%</td>
+    </tr>
+    <tr>
+      <td>Other Infectious Diseases Member</td>
+      <td>1.23B</td>
+      <td>0.00B</td>
+      <td>0.43B</td>
+      <td>0.00B</td>
+      <td><strong>0.70B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.2%</td>
+    </tr>
+    <tr>
+      <td>T A L V E Y Member</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
       <td>–</td>
-      <td><strong>0.31B</strong></td>
+      <td><strong>0.60B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.2%</td>
+    </tr>
+    <tr>
+      <td>Other Pulmonary Hypertension Member</td>
+      <td>1.15B</td>
+      <td>0.00B</td>
+      <td>0.56B</td>
+      <td>0.00B</td>
+      <td><strong>0.56B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.2%</td>
+    </tr>
+    <tr>
+      <td>C O V I D19 Member</td>
+      <td>6.59B</td>
+      <td>0.00B</td>
+      <td>0.40B</td>
+      <td>0.00B</td>
+      <td><strong>0.40B</strong></td>
+      <td><strong>0.00B</strong></td>
+      <td>0.1%</td>
+    </tr>
+    <tr>
+      <td>Other Immunology Member</td>
+      <td>0.06B</td>
+      <td>0.00B</td>
+      <td>0.01B</td>
+      <td>0.00B</td>
+      <td><strong>0.04B</strong></td>
       <td><strong>0.00B</strong></td>
       <td>0.0%</td>
     </tr>
