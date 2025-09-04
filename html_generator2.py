@@ -47,23 +47,19 @@ def inject_retro(html: str) -> str:
     return html
 
 # ───────── segment helpers ──────────────────────────────────────
-def build_segment_carousel_html(
-    ticker: str, charts_dir_fs: str, charts_dir_web: str, axis: int = 1
-) -> str:
-    """Return carousel HTML for a given axis (1 or 2)."""
+def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
+    """
+    Carousel shows ALL PNGs in charts/<ticker>/*.png
+    """
     seg_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(seg_dir):
         return ""
     pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
-    if axis == 1:
-        pngs = [f for f in pngs if "_axis2" not in f.lower()]
-    else:
-        pngs = [f for f in pngs if "_axis2" in f.lower()]
     if not pngs:
         return ""
     items = []
     for f in pngs:
-        src = f"{charts_dir_web}/{ticker}/{f}"
+        src = f"{charts_dir_web}/{ticker}/{f}"  # web path for /pages/*
         items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
     return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
 
@@ -381,7 +377,6 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
                 "segment_table_html":            get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table.html", "No segment data available."),
-                "segment2_table_html":           get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table_axis2.html", ""),
 
                 # Images (web paths)
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
@@ -398,8 +393,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
 
                 # Segment carousel
-                "segment_carousel_html":         build_segment_carousel_html(t, charts_dir_fs, charts_dir_web, axis=1),
-                "segment2_carousel_html":        build_segment_carousel_html(t, charts_dir_fs, charts_dir_web, axis=2),
+                "segment_carousel_html":         build_segment_carousel_html(t, charts_dir_fs, charts_dir_web),
             }
             rendered = env.get_template("ticker_template.html").render(ticker_data=d)
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
