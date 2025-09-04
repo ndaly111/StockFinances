@@ -1,2 +1,3 @@
 AxisType	AxisGroup	MembersMatched	AxisScore	Examples
 StatementBusinessSegmentsAxis	OPERATING	2	12.0	International, North America
+ProductOrServiceAxis	PRODUCT	0	10.0	
