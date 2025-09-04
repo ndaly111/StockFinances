@@ -1,2 +1,3 @@
 AxisType	AxisGroup	MembersMatched	AxisScore	Examples
-	OTHER	0	0.0	
+KeyProductPortfolioAxis	PRODUCT	0	0.0	
+ProductOrServiceAxis	PRODUCT	0	0.0	
