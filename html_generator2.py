@@ -47,21 +47,24 @@ def inject_retro(html: str) -> str:
     return html
 
 # ───────── segment helpers ──────────────────────────────────────
-def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> str:
+def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> dict:
     """
-    Carousel shows ALL PNGs in charts/<ticker>/*.png
+    Return separate carousels for axis1/axis2 based on filename prefixes.
     """
     seg_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(seg_dir):
-        return ""
+        return {"axis1": "", "axis2": ""}
     pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
-    if not pngs:
-        return ""
-    items = []
-    for f in pngs:
-        src = f"{charts_dir_web}/{ticker}/{f}"  # web path for /pages/*
-        items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
-    return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
+    def build(prefix):
+        imgs = [f for f in pngs if f.startswith(prefix + "_")]
+        if not imgs:
+            return ""
+        items = []
+        for f in imgs:
+            src = f"{charts_dir_web}/{ticker}/{f}"
+            items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
+        return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
+    return {"axis1": build("axis1"), "axis2": build("axis2")}
 
 # ───────── template creation ────────────────────────────────────
 def ensure_templates_exist():
@@ -202,13 +205,24 @@ td{padding:4px;border:1px solid #8080FF}
     <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
   </div>
 
-  {% if ticker_data.segment_carousel_html %}
+  {% if ticker_data.segment_carousel_html_axis1 %}
   <div class="chart-block">
-    <h2>Segment Performance</h2>
-    {{ ticker_data.segment_carousel_html | safe }}
+    <h2>Segment Performance (Axis 1)</h2>
+    {{ ticker_data.segment_carousel_html_axis1 | safe }}
     <div class="segment-table-wrapper">
       <div class="table-wrap">
-        {{ ticker_data.segment_table_html | safe }}
+        {{ ticker_data.segment_table_html_axis1 | safe }}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if ticker_data.segment_carousel_html_axis2 %}
+  <div class="chart-block">
+    <h2>Segment Performance (Axis 2)</h2>
+    {{ ticker_data.segment_carousel_html_axis2 | safe }}
+    <div class="segment-table-wrapper">
+      <div class="table-wrap">
+        {{ ticker_data.segment_table_html_axis2 | safe }}
       </div>
     </div>
   </div>
@@ -361,6 +375,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
         for t in tickers:
+            carousels = build_segment_carousel_html(t, charts_dir_fs, charts_dir_web)
             d = {
                 "ticker":                        t,
                 "company_name":                  get_company_short_name(t, cur),
@@ -376,7 +391,8 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "expense_yoy_html":              get_file_or_placeholder(f"{charts_dir_fs}/{t}_yoy_expense_change.html"),
                 "unmapped_expense_html":         get_file_or_placeholder(f"{charts_dir_fs}/{t}_unmapped_fields.html", "No unmapped expenses."),
                 "implied_growth_table_html":     get_file_or_placeholder(f"{charts_dir_fs}/{t}_implied_growth_summary.html", "No implied growth data available."),
-                "segment_table_html":            get_file_or_placeholder(f"{charts_dir_fs}/{t}/{t}_segments_table.html", "No segment data available."),
+                "segment_table_html_axis1":     get_file_or_placeholder(f"{charts_dir_fs}/{t}/axis1_{t}_segments_table.html", "No segment data available."),
+                "segment_table_html_axis2":     get_file_or_placeholder(f"{charts_dir_fs}/{t}/axis2_{t}_segments_table.html", "No segment data available."),
 
                 # Images (web paths)
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
@@ -392,8 +408,11 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "eps_dividend_chart_path":       f"{charts_dir_web}/{t}_eps_dividend_forecast.png",
                 "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
 
-                # Segment carousel
-                "segment_carousel_html":         build_segment_carousel_html(t, charts_dir_fs, charts_dir_web),
+                # Segment carousels
+                **{
+                    "segment_carousel_html_axis1": carousels.get("axis1", ""),
+                    "segment_carousel_html_axis2": carousels.get("axis2", ""),
+                },
             }
             rendered = env.get_template("ticker_template.html").render(ticker_data=d)
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:

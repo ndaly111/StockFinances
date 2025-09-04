@@ -42,7 +42,7 @@ try:
 except Exception:
     dump_item2_axis_ranking = None
 
-VERSION = "SEGMENTS v2025-09-02"
+VERSION = "SEGMENTS v2025-09-09"
 
 # ─────────────────────────── utilities ───────────────────────────
 
@@ -168,104 +168,115 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     df["Revenue"] = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
 
-    # Item 2 axis ranking (diagnostics only)
     if dump_item2_axis_ranking:
         try:
             dump_item2_axis_ranking(ticker, df)
         except Exception:
             pass
 
-    # Shared y-axis scale
-    all_vals = pd.concat([df["Revenue"].dropna(), df["OpIncome"].dropna()], ignore_index=True)
-    if all_vals.empty:
-        min_y, max_y = 0.0, 0.0
-    else:
-        min_y, max_y = float(all_vals.min()), float(all_vals.max())
-        if min_y > 0: min_y = 0.0
-        if max_y < 0: max_y = 0.0
-    spread = max_y - min_y
-    margin = spread * 0.1 if spread else 1.0
-    min_y_plot, max_y_plot = min_y - margin, max_y + margin
+    axes = []
+    used_segments = set()
+    for axis_type, sub in df.groupby("AxisType"):
+        segs = set(sub["Segment"])
+        segs = segs - used_segments
+        if len(segs) <= 1:
+            continue
+        used_segments.update(segs)
+        axes.append((axis_type, sub[sub["Segment"].isin(segs)].copy()))
+    axes = axes[:2]
 
-    years_all = sort_years(sorted(set(df["Year"].tolist())))
-    years_tbl = _last3_plus_ttm(df["Year"].tolist())
-    segments = sorted(set(df["Segment"].tolist()))
+    for idx in range(1, 3):
+        axis_label = f"axis{idx}"
+        if idx <= len(axes):
+            _, df_axis = axes[idx - 1]
+            all_vals = pd.concat([df_axis["Revenue"].dropna(), df_axis["OpIncome"].dropna()], ignore_index=True)
+            if all_vals.empty:
+                min_y, max_y = 0.0, 0.0
+            else:
+                min_y, max_y = float(all_vals.min()), float(all_vals.max())
+                if min_y > 0: min_y = 0.0
+                if max_y < 0: max_y = 0.0
+            spread = max_y - min_y
+            margin = spread * 0.1 if spread else 1.0
+            min_y_plot, max_y_plot = min_y - margin, max_y + margin
 
-    # Charts
-    for seg in segments:
-        seg_df = df[df["Segment"] == seg]
-        revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
-        op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-        revenues_b = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
-        op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
+            years_all = sort_years(sorted(set(df_axis["Year"].tolist())))
+            years_tbl = _last3_plus_ttm(df_axis["Year"].tolist())
+            segments = sorted(set(df_axis["Segment"].tolist()))
 
-        fig, ax = plt.subplots(figsize=(8, 5))
-        x_indices = list(range(len(years_all)))
-        bar_width = 0.35
-        ax.bar([x - bar_width / 2 for x in x_indices], revenues_b, width=bar_width, label="Revenue")
-        ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
-        ax.set_xticks(x_indices)
-        ax.set_xticklabels(years_all)
-        ax.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
-        ax.set_ylabel("Value ($B)")
-        ax.set_title(seg)
-        ax.yaxis.grid(True, linestyle="--", alpha=0.5)
-        ax.legend(loc="upper left")
-        plt.tight_layout()
-        fig_path = out_dir / f"{ticker}_{seg.replace('/', '_').replace(' ', '_')}.png"
-        plt.savefig(fig_path)
-        plt.close(fig)
+            for seg in segments:
+                seg_df = df_axis[df_axis["Segment"] == seg]
+                revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
+                op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
+                revenues_b = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
+                op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
 
-    # Table
-    def pv(col):
-        p = df[df["Year"].isin(years_tbl)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
-        return p.reindex(columns=[y for y in years_tbl if y in p.columns])
+                fig, ax = plt.subplots(figsize=(8, 5))
+                x_indices = list(range(len(years_all)))
+                bar_width = 0.35
+                ax.bar([x - bar_width / 2 for x in x_indices], revenues_b, width=bar_width, label="Revenue")
+                ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
+                ax.set_xticks(x_indices)
+                ax.set_xticklabels(years_all)
+                ax.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
+                ax.set_ylabel("Value ($B)")
+                ax.set_title(seg)
+                ax.yaxis.grid(True, linestyle="--", alpha=0.5)
+                ax.legend(loc="upper left")
+                plt.tight_layout()
+                fig_path = out_dir / f"{axis_label}_{ticker}_{seg.replace('/', '_').replace(' ', '_')}.png"
+                plt.savefig(fig_path)
+                plt.close(fig)
 
-    rev_p = pv("Revenue")
-    oi_p  = pv("OpIncome")
+            def pv(col):
+                p = df_axis[df_axis["Year"].isin(years_tbl)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
+                return p.reindex(columns=[y for y in years_tbl if y in p.columns])
 
-    sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
-    if sort_col:
-        rev_p = rev_p.sort_values(by=sort_col, ascending=False)
-        oi_p = oi_p.reindex(index=rev_p.index)
+            rev_p = pv("Revenue")
+            oi_p  = pv("OpIncome")
 
-    pct_series = None
-    if "TTM" in rev_p.columns:
-        total_ttm = rev_p["TTM"].sum(skipna=True)
-        if total_ttm and total_ttm != 0:
-            pct_series = (rev_p["TTM"] / total_ttm) * 100.0
+            sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
+            if sort_col:
+                rev_p = rev_p.sort_values(by=sort_col, ascending=False)
+                oi_p = oi_p.reindex(index=rev_p.index)
 
-    max_val = pd.concat([rev_p, oi_p]).abs().max().max()
-    div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
+            pct_series = None
+            if "TTM" in rev_p.columns:
+                total_ttm = rev_p["TTM"].sum(skipna=True)
+                if total_ttm and total_ttm != 0:
+                    pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
-    cols: List[Tuple[str, str]] = []
-    for y in [c for c in years_tbl if c != "TTM"]:
-        cols += [(y, "Rev"), (y, "OI")]
-    if "TTM" in years_tbl:
-        cols += [("TTM", "Rev"), ("TTM", "OI")]
+            max_val = pd.concat([rev_p, oi_p]).abs().max().max()
+            div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
-    out = pd.DataFrame(index=rev_p.index)
-    for (y, kind) in cols:
-        src = rev_p.get(y) if kind == "Rev" else oi_p.get(y)
-        label = f"{y} {'Rev' if kind=='Rev' else 'OI'} ({unit})"
-        out[label] = src
+            cols: List[Tuple[str, str]] = []
+            for y in [c for c in years_tbl if c != "TTM"]:
+                cols += [(y, "Rev"), (y, "OI")]
+            if "TTM" in years_tbl:
+                cols += [("TTM", "Rev"), ("TTM", "OI")]
 
-    if pct_series is not None:
-        out["% of Total (TTM)"] = pct_series
+            out_tbl = pd.DataFrame(index=rev_p.index)
+            for (y, kind) in cols:
+                src = rev_p.get(y) if kind == "Rev" else oi_p.get(y)
+                label = f"{y} {'Rev' if kind=='Rev' else 'OI'} ({unit})"
+                out_tbl[label] = src
 
-    for c in out.columns:
-        if c == "% of Total (TTM)":
-            out[c] = out[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
-        else:
-            out[c] = out[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
+            if pct_series is not None:
+                out_tbl["% of Total (TTM)"] = pct_series
 
-    for ttm_col in [c for c in out.columns if c.startswith("TTM ")]:
-        out[ttm_col] = out[ttm_col].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
+            for c in out_tbl.columns:
+                if c == "% of Total (TTM)":
+                    out_tbl[c] = out_tbl[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
+                else:
+                    out_tbl[c] = out_tbl[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
 
-    out.index.name = "Segment"
-    out_disp = out.reset_index()
+            for ttm_col in [c for c in out_tbl.columns if c.startswith("TTM ")]:
+                out_tbl[ttm_col] = out_tbl[ttm_col].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
 
-    css = """
+            out_tbl.index.name = "Segment"
+            out_disp = out_tbl.reset_index()
+
+            css = """
 <style>
 .table-wrap{overflow:auto; max-width:100%;}
 .segment-pivot { width:100%; border-collapse:collapse; font-family: Arial, sans-serif; font-size:14px; }
@@ -279,25 +290,32 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 </style>
 """.strip()
 
-    stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    caption = (
-        f'<div class="table-note">{VERSION} · {stamp} — Values are shown in a single scale for this table: '
-        f'<b>{unit}</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>'
-    )
-    html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
-    table_content = css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
+            stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            caption = (
+                f'<div class="table-note">{VERSION} · {stamp} — Values are shown in a single scale for this table: '
+                f'<b>{unit}</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>'
+            )
+            html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
+            table_content = css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
 
-    out_path = out_dir / f"{ticker}_segments_table.html"
-    try:
-        out_path.unlink(missing_ok=True)
-    except Exception:
-        pass
-    out_path.write_text(table_content, encoding="utf-8")
-    print(f"[{VERSION}] writing table → {out_path}")
-    try:
-        print(f"[{VERSION}] wrote {out_path.stat().st_size} bytes")
-    except Exception:
-        pass
+            out_path = out_dir / f"{axis_label}_{ticker}_segments_table.html"
+            try:
+                out_path.unlink(missing_ok=True)
+            except Exception:
+                pass
+            out_path.write_text(table_content, encoding="utf-8")
+            print(f"[{VERSION}] writing table → {out_path}")
+            try:
+                print(f"[{VERSION}] wrote {out_path.stat().st_size} bytes")
+            except Exception:
+                pass
+        else:
+            # write placeholder table
+            out_path = out_dir / f"{axis_label}_{ticker}_segments_table.html"
+            out_path.write_text(
+                f"<p>No segment data available for {ticker} (axis {idx}).</p>",
+                encoding="utf-8",
+            )
 
 # ─────────────────────────── CLI wrapper ───────────────────────────
 

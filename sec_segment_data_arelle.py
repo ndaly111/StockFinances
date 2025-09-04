@@ -262,7 +262,6 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
         rows = []
         used = None
         for cname in concepts:
-            # Facts are <ix:nonFraction name="us-gaap:Concept" contextRef="...">123</ix:nonFraction>
             facts = soup.find_all("nonFraction", attrs={"name": cname})
             if not facts:
                 continue
@@ -273,15 +272,15 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
                     continue
                 ctx = contexts[ctx_id]
                 dims = ctx["dims"] or {}
-                # must have a segment-like dimension
                 if not any(_SEGMENT_DIM_RE.search(d) for d in dims.keys()):
                     continue
 
-                # choose the first member that looks like a business segment
                 segment_label = None
+                axis_type = None
                 for dim_qn, mem_qn in dims.items():
                     if _SEGMENT_DIM_RE.search(dim_qn) and mem_qn:
-                        segment_label = mem_qn.split(":")[-1]  # human-ish fallback
+                        segment_label = mem_qn.split(":")[-1]
+                        axis_type = dim_qn.split(":")[-1]
                         break
                 if not segment_label:
                     continue
@@ -297,6 +296,7 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
 
                 rows.append({
                     "Segment": segment_label,
+                    "AxisType": axis_type,
                     "PeriodEnd": ctx["period_end"],
                     "Value": val,
                 })
@@ -305,7 +305,6 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
                 break  # stop at first concept that produced usable facts
 
         df = pd.DataFrame(rows)
-        # filter to non-null dates
         if not df.empty:
             df = df[df["PeriodEnd"].notna()]
         return df, used
@@ -314,17 +313,25 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
     op_df, op_used = collect(OPINC_TAGS)
 
     if rev_df.empty and op_df.empty:
-        return pd.DataFrame(columns=["Segment", "PeriodEnd", "Revenue", "OpIncome"]), rev_used, op_used
+        return pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"]), rev_used, op_used
 
-    # sum by segment + period
-    rev_g = rev_df.groupby(["Segment", "PeriodEnd"], as_index=False)["Value"].sum() if not rev_df.empty else pd.DataFrame(columns=["Segment", "PeriodEnd", "Value"])
+    # sum by segment + axis + period
+    rev_g = (
+        rev_df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)["Value"].sum()
+        if not rev_df.empty
+        else pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Value"])
+    )
     rev_g.rename(columns={"Value": "Revenue"}, inplace=True)
 
-    op_g = op_df.groupby(["Segment", "PeriodEnd"], as_index=False)["Value"].sum() if not op_df.empty else pd.DataFrame(columns=["Segment", "PeriodEnd", "Value"])
+    op_g = (
+        op_df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)["Value"].sum()
+        if not op_df.empty
+        else pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Value"])
+    )
     op_g.rename(columns={"Value": "OpIncome"}, inplace=True)
 
-    df = pd.merge(rev_g, op_g, on=["Segment", "PeriodEnd"], how="outer")
-    df = df.sort_values(["PeriodEnd", "Segment"]).reset_index(drop=True)
+    df = pd.merge(rev_g, op_g, on=["Segment", "AxisType", "PeriodEnd"], how="outer")
+    df = df.sort_values(["PeriodEnd", "AxisType", "Segment"]).reset_index(drop=True)
     return df, (rev_used or ""), (op_used or "")
 
 
@@ -383,11 +390,11 @@ def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame
     Requires PeriodEnd present (use before dropping it).
     """
     if fy_df.empty or q_df.empty:
-        return pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome"])
+        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
 
     latest_q_date = q_df["PeriodEnd"].max()
     if pd.isna(latest_q_date):
-        return pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome"])
+        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
 
     # derive “same quarter last year” by month/day offset of ~1 year
     prior_year_same_q_date = latest_q_date.replace(year=latest_q_date.year - 1)
@@ -398,12 +405,12 @@ def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame
 
     def _sum_cols(g: pd.DataFrame) -> pd.DataFrame:
         if g.empty:
-            return pd.DataFrame(columns=["Segment", "Revenue", "OpIncome"])
-        s = g.groupby("Segment", as_index=False)[["Revenue", "OpIncome"]].sum()
+            return pd.DataFrame(columns=["Segment", "AxisType", "Revenue", "OpIncome"])
+        s = g.groupby(["Segment", "AxisType"], as_index=False)[["Revenue", "OpIncome"]].sum()
         return s
 
-    ttm = _sum_cols(fy_last).merge(_sum_cols(q_latest), on="Segment", how="outer", suffixes=("_FY", "_Q"))
-    ttm = ttm.merge(_sum_cols(q_prev), on="Segment", how="left")
+    ttm = _sum_cols(fy_last).merge(_sum_cols(q_latest), on=["Segment", "AxisType"], how="outer", suffixes=("_FY", "_Q"))
+    ttm = ttm.merge(_sum_cols(q_prev), on=["Segment", "AxisType"], how="left")
     ttm.rename(columns={"Revenue": "Revenue_prevQ", "OpIncome": "OpIncome_prevQ"}, inplace=True)
 
     # Fill NaNs with 0 for arithmetic
@@ -414,7 +421,7 @@ def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame
     ttm["Revenue"] = ttm["Revenue_FY"] + ttm["Revenue_Q"] - ttm["Revenue_prevQ"]
     ttm["OpIncome"] = ttm["OpIncome_FY"] + ttm["OpIncome_Q"] - ttm["OpIncome_prevQ"]
     ttm["Year"] = "TTM"
-    return ttm[["Segment", "Year", "Revenue", "OpIncome"]]
+    return ttm[["Segment", "AxisType", "Year", "Revenue", "OpIncome"]]
 
 
 def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
@@ -438,8 +445,8 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
 
     # Download iXBRL HTMLs and parse
     with pd.option_context("display.width", 200):
-        k_df = pd.DataFrame(columns=["Segment", "PeriodEnd", "Revenue", "OpIncome"])
-        q_df = pd.DataFrame(columns=["Segment", "PeriodEnd", "Revenue", "OpIncome"])
+        k_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"])
+        q_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"])
 
         if ten_k:
             url_k = build_filing_url(cik, ten_k["accession"], ten_k["document"])
@@ -482,7 +489,7 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
 
     # bail out gracefully if nothing
     if k_df.empty and q_df.empty:
-        df = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome"])
+        df = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType"])
         df.attrs["revenue_concept"] = rev_used
         df.attrs["op_income_concept"] = op_used
         return df
@@ -502,7 +509,7 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
     def _roll(df: pd.DataFrame) -> pd.DataFrame:
         if df.empty:
             return df
-        g = df.groupby(["Segment", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]].sum()
+        g = df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]].sum()
         g["Year"] = g["PeriodEnd"].dt.year
         return g
 
@@ -512,22 +519,31 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
     # Keep last 3 fiscal-year ends from 10-K side (if present), else from 10-Q
     source_for_years = k_roll if not k_roll.empty else q_roll
     years = sorted(source_for_years["Year"].unique())[-3:] if not source_for_years.empty else []
-    fy = source_for_years[source_for_years["Year"].isin(years)][["Segment", "Year", "Revenue", "OpIncome"]].copy()
+    fy = source_for_years[source_for_years["Year"].isin(years)][["Segment", "AxisType", "Year", "Revenue", "OpIncome"]].copy()
 
     # Compute TTM if we have both annual + quarterly dates
-    ttm = compute_segment_ttm(k_df if not k_df.empty else q_df, q_df) if not q_df.empty else pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome"])
+    ttm = (
+        compute_segment_ttm(k_df if not k_df.empty else q_df, q_df)
+        if not q_df.empty
+        else pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
+    )
 
     out = pd.concat([fy, ttm], ignore_index=True)
     if out.empty:
-        out = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome"])
+        out = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType"])
     else:
-        # Sum duplicates (same Segment-Year) just in case
-        out = out.groupby(["Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]].sum()
-        # Order nicely: latest first, TTM at bottom
+        # Sum duplicates (same Segment-Year-Axis)
+        out = out.groupby(["Segment", "AxisType", "Year"], as_index=False)[["Revenue", "OpIncome"]].sum()
         def _yrkey(y):
             return 9999 if y == "TTM" else int(y)
         out["__k"] = out["Year"].map(_yrkey)
-        out = out.sort_values(["__k", "Segment"], ascending=[False, True]).drop(columns="__k").reset_index(drop=True)
+        out = (
+            out.sort_values(["__k", "Segment", "AxisType"], ascending=[False, True, True])
+            .drop(columns="__k")
+            .reset_index(drop=True)
+        )
+
+    out = out[["Segment", "Year", "Revenue", "OpIncome", "AxisType"]]
 
     out.attrs["revenue_concept"] = rev_used
     out.attrs["op_income_concept"] = op_used
