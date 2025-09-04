@@ -156,6 +156,17 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     ensure_dir(out_dir)
 
+    # Remove any pre-existing axis1/axis2 charts or tables so outdated
+    # images don't linger when segment compositions change. This ensures
+    # the carousel only shows freshly generated charts for the current
+    # axis breakdown.
+    for pattern in ("axis1_*", "axis2_*"):
+        for old_file in out_dir.glob(pattern):
+            try:
+                old_file.unlink()
+            except Exception:
+                pass
+
     if df is None or df.empty:
         (out_dir / f"{ticker}_segments_table.html").write_text(
             f"<p>No segment data available for {ticker}.</p>", encoding="utf-8"
