@@ -29,7 +29,6 @@ from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
 from backfill_index_growth     import backfill_index_growth
-from generate_index_growth_pages import generate_index_growth_pages
 
 # We no longer call the second table generator; chart writer owns the table.
 from generate_segment_charts   import generate_segment_charts_for_ticker
@@ -202,9 +201,11 @@ def mini_main():
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
         generate_earnings_tables()
-        render_index_growth_charts()
+        # Generate index growth charts for both SPY and QQQ so that
+        # their growth pages share the same styled summaries.
+        for idx in ("SPY", "QQQ"):
+            render_index_growth_charts(idx)
         backfill_index_growth()
-        generate_index_growth_pages()
 
         html_generator2(
             tickers,
