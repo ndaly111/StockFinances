@@ -150,9 +150,8 @@ def _store_ttm(tkr: str, d: dict, cur: sqlite3.Cursor):
     ))
 
 # ───────────────────────── main entry ─────────────────────────
-def annual_and_ttm_update(tkr: str, db_path: str = DB_PATH):
-    conn = get_db_connection(db_path)
-    cur  = conn.cursor()
+def annual_and_ttm_update(tkr: str, cur: sqlite3.Cursor):
+    """Update annual and TTM data for ``tkr`` using an existing cursor."""
 
     # Annual (only if none exist)
     cur.execute("SELECT 1 FROM Annual_Data WHERE Symbol=? LIMIT 1", (tkr,))
@@ -166,11 +165,14 @@ def annual_and_ttm_update(tkr: str, db_path: str = DB_PATH):
     if ttm:
         _store_ttm(tkr, ttm, cur)
 
-    conn.commit()
-    conn.close()
+    # Commit changes but leave connection management to caller
+    cur.connection.commit()
     logging.info("[%s] annual+TTM update complete", tkr)
 
 # stand-alone sanity test
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s")
-    annual_and_ttm_update("AAPL")
+    conn = get_db_connection(DB_PATH)
+    cur = conn.cursor()
+    annual_and_ttm_update("AAPL", cur)
+    conn.close()

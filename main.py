@@ -3,7 +3,7 @@ import os
 import sqlite3
 import ticker_manager
 from datetime import datetime
-from annual_and_ttm_update import annual_and_ttm_update
+from annual_and_ttm_update import annual_and_ttm_update, get_db_connection
 from html_generator import (create_html_for_tickers)
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data,
@@ -67,13 +67,8 @@ def manage_tickers(TICKERS_FILE_PATH, is_remote=False):
 def establish_database_connection(db_path):
     print("main 2 establish database connection")
     db_full_path = os.path.abspath(db_path)
-
-    if not os.path.exists(db_full_path):
-        print(f"Database file not found: {db_full_path}")
-        return None
-
-    print("Database exists. Establishing connection...")
-    return sqlite3.connect(db_full_path)
+    print("Establishing connection and ensuring schema...")
+    return get_db_connection(db_full_path)
 
 
 # Add the log_average_valuations function
@@ -237,7 +232,7 @@ def main():
             print(f"Processing ticker: {ticker}")
 
             # Existing data fetching and processing
-            annual_and_ttm_update(ticker,db_path)
+            annual_and_ttm_update(ticker, cursor)
 
             # Fetch and update balance sheet data
             fetch_and_update_balance_sheet_data(ticker, cursor)
