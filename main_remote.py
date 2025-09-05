@@ -6,7 +6,7 @@ from pathlib import Path
 
 import ticker_manager
 from generate_economic_data    import generate_economic_data
-from annual_and_ttm_update     import annual_and_ttm_update
+from annual_and_ttm_update     import annual_and_ttm_update, get_db_connection
 from html_generator            import create_html_for_tickers
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data, check_missing_balance_sheet_data,
@@ -56,10 +56,8 @@ def manage_tickers(tickers_file, is_remote=False):
     return tickers
 
 def establish_database_connection(db_path):
-    if not os.path.exists(db_path):
-        print(f"[ERROR] Database not found at {db_path}")
-        return None
-    return sqlite3.connect(db_path)
+    # Ensure schema once and return a ready connection
+    return get_db_connection(db_path)
 
 def log_average_valuations(avg_values, tickers_file):
     if tickers_file != "tickers.csv":
@@ -173,7 +171,7 @@ def mini_main():
                 if not ok:
                     missing_segments.append(ticker)
 
-                annual_and_ttm_update(ticker, DB_PATH)
+                annual_and_ttm_update(ticker, cursor)
                 fetch_and_update_balance_sheet_data(ticker, cursor)
                 balancesheet_chart(ticker)
                 scrape_forward_data(ticker)
