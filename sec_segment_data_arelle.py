@@ -560,6 +560,15 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
 
     out.attrs["revenue_concept"] = rev_used
     out.attrs["op_income_concept"] = op_used
+
+    from segment_overrides import load_overrides, apply_segment_overrides
+
+    try:
+        ov = load_overrides()
+        out = apply_segment_overrides(out, ticker, ov)
+    except Exception:
+        pass  # fail-open: do not break runs due to overrides
+
     return out
 
 

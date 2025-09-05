@@ -1,1 +1,1 @@
-[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":0,"AxisScore":10.0,"Examples":""},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":1,"AxisScore":9.0,"Examples":"Primary"}]
+[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":16,"AxisScore":58.0,"Examples":"Appliances, Bath, Building Materials"},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":1,"AxisScore":9.0,"Examples":"Primary"}]
