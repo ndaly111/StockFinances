@@ -223,7 +223,7 @@ td{padding:4px;border:1px solid #8080FF}
 
   {% if ticker_data.segment_carousel_html_axis1 %}
   <div class="chart-block">
-    <h2>Segment Performance (Axis 1)</h2>
+    <h2>Segment Performance</h2>
     {{ ticker_data.segment_carousel_html_axis1 | safe }}
     <div class="segment-table-wrapper">
       <div class="table-wrap">
@@ -234,7 +234,6 @@ td{padding:4px;border:1px solid #8080FF}
   {% endif %}
   {% if ticker_data.segment_carousel_html_axis2 %}
   <div class="chart-block">
-    <h2>Segment Performance (Axis 2)</h2>
     {{ ticker_data.segment_carousel_html_axis2 | safe }}
     <div class="segment-table-wrapper">
       <div class="table-wrap">
