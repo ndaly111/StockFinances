@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # main_remote.py – 2025-08-27  (segments first; canonical table path)
-import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time
+import sqlite3, pandas as pd, yfinance as yf, math
 from datetime import datetime, timezone
 from pathlib import Path
 
 import ticker_manager
 from generate_economic_data    import generate_economic_data
-from annual_and_ttm_update     import annual_and_ttm_update
+from annual_and_ttm_update     import annual_and_ttm_update, get_db_connection
 from html_generator            import create_html_for_tickers
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data, check_missing_balance_sheet_data,
@@ -29,7 +29,6 @@ from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
 from backfill_index_growth     import backfill_index_growth
-from generate_index_growth_pages import generate_index_growth_pages
 
 # We no longer call the second table generator; chart writer owns the table.
 from generate_segment_charts   import generate_segment_charts_for_ticker
@@ -56,10 +55,8 @@ def manage_tickers(tickers_file, is_remote=False):
     return tickers
 
 def establish_database_connection(db_path):
-    if not os.path.exists(db_path):
-        print(f"[ERROR] Database not found at {db_path}")
-        return None
-    return sqlite3.connect(db_path)
+    # Ensure schema once and return a ready connection
+    return get_db_connection(db_path)
 
 def log_average_valuations(avg_values, tickers_file):
     if tickers_file != "tickers.csv":
@@ -169,22 +166,26 @@ def mini_main():
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
+                # 1) Core financial data
+                annual_and_ttm_update(ticker, cursor)
+                scrape_forward_data(ticker)
+                generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
+
+                # 2) Balance sheet
+                fetch_and_update_balance_sheet_data(ticker, cursor)
+                balancesheet_chart(ticker)
+
+                # 3) Segments (run within loop so no separate pass/pause)
                 ok = build_segments_for_ticker(ticker)
                 if not ok:
                     missing_segments.append(ticker)
 
-                annual_and_ttm_update(ticker, DB_PATH)
-                fetch_and_update_balance_sheet_data(ticker, cursor)
-                balancesheet_chart(ticker)
-                scrape_forward_data(ticker)
-                generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
-
+                # 4) Valuation + reporting
                 prepared, mktcap = prepare_data_for_display(ticker, treasury)
                 generate_html_table(prepared, ticker)
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
 
-                time.sleep(0.5)
             except Exception as e:
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
@@ -200,9 +201,11 @@ def mini_main():
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
         generate_earnings_tables()
-        render_index_growth_charts()
+        # Generate index growth charts for both SPY and QQQ so that
+        # their growth pages share the same styled summaries.
+        for idx in ("SPY", "QQQ"):
+            render_index_growth_charts(idx)
         backfill_index_growth()
-        generate_index_growth_pages()
 
         html_generator2(
             tickers,
