@@ -105,13 +105,10 @@ def _build_html(df):
     return SUMMARY_CSS + sty.to_html()
 
 def _save_tables(tk, ig_df, pe_df):
+    tk_lower = tk.lower()
     files = {
-        f"{tk}_implied_growth_summary.html": _build_html(ig_df),
-        f"{tk.lower()}_growth_summary.html": _build_html(ig_df),
-        f"{tk}_growth_tbl.html":             _build_html(ig_df),   # legacy
-
-        f"{tk}_pe_ratio_summary.html":       _build_html(pe_df),
-        f"{tk.lower()}_pe_summary.html":     _build_html(pe_df)
+        f"{tk_lower}_growth_summary.html": _build_html(ig_df),
+        f"{tk_lower}_pe_summary.html":     _build_html(pe_df),
     }
     for name, html in files.items():
         with open(os.path.join(OUT_DIR, name), "w", encoding="utf-8") as f:
@@ -124,9 +121,9 @@ def render_index_growth_charts(tk="SPY"):
         pe_s = _series_pe(conn, tk)
 
     _chart(ig_s, f"{tk} Implied Growth (TTM)",
-           "Implied Growth Rate", f"{tk}_implied_growth.png")
+           "Implied Growth Rate", f"{tk.lower()}_growth_chart.png")
     _chart(pe_s, f"{tk} P/E Ratio", "P/E",
-           f"{tk}_pe_ratio.png")
+           f"{tk.lower()}_pe_chart.png")
 
     _save_tables(
         tk,
