@@ -415,6 +415,12 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                     f"{charts_dir_fs}/{t}/{t}_segments_table_axis2.html",
                 ], "No segment data available."),
 
+                "segment_raw_txt_path": (
+                    f"{charts_dir_web}/{t}/{t}_segment_raw.txt"
+                    if os.path.exists(f"{charts_dir_fs}/{t}/{t}_segment_raw.txt")
+                    else ""
+                ),
+
                 # Images (web paths)
                 "revenue_net_income_chart_path": f"{charts_dir_web}/{t}_revenue_net_income_chart.png",
                 "eps_chart_path":                f"{charts_dir_web}/{t}_eps_chart.png",

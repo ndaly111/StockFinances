@@ -1,0 +1,68 @@
+{
+  "_notes": [
+    "If a TICKER block exists, apply these special instructions.",
+    "If special instructions produce no rows and fail_open is true, fall back to current logic.",
+    "GLOBAL applies to all tickers; a TICKER block overrides/extends GLOBAL."
+  ],
+
+  "GLOBAL": {
+    "axis_search": {
+      "include_exact": [],
+      "include_regex": [],
+      "exclude_exact": ["dei:LegalEntityAxis", "srt:ConsolidationItemsAxis", "dei:ConsolidatedEntitiesAxis"],
+      "exclude_regex": []
+    },
+    "axis_translate": {
+      "us-gaap:ProductsOrServicesAxis": "srt:ProductOrServiceAxis"
+    },
+    "axis_labels": {
+      "srt:ProductOrServiceAxis": "Products / Services",
+      "us-gaap:StatementBusinessSegmentsAxis": "Business Segments",
+      "srt:StatementGeographicalAxis": "Geography",
+      "us-gaap:AirlineDestinationsAxis": "Destinations"
+    },
+
+    "member_aliases": {},
+    "member_regex": [],
+    "member_aliases_by_axis": {},
+    "member_regex_by_axis": {},
+
+    "member_aliases_raw": {},
+    "member_regex_raw": [],
+    "member_aliases_raw_by_axis": {},
+    "member_regex_raw_by_axis": {},
+
+    "prefer_axes": [],
+    "fail_open": true
+  },
+
+  "AAPL": {
+    "axis_search": {
+      "include_exact": ["srt:ProductOrServiceAxis", "us-gaap:StatementBusinessSegmentsAxis"],
+      "include_regex": [],
+      "exclude_exact": [],
+      "exclude_regex": []
+    },
+    "axis_translate": {
+      "us-gaap:ProductsOrServicesAxis": "srt:ProductOrServiceAxis"
+    },
+    "axis_labels": {
+      "us-gaap:StatementBusinessSegmentsAxis": "Business Segments"
+    },
+
+    "member_aliases_raw_by_axis": {
+      "srt:ProductOrServiceAxis": {
+        "IPhone": "iPhone",
+        "IPad":   "iPad",
+        "IMac":   "iMac"
+      }
+    },
+    "member_aliases": {
+      "United States": "US",
+      "Rest Of Asia Pacific": "Rest of Asia Pacific"
+    },
+    "member_regex": [],
+    "prefer_axes": ["Products / Services", "Business Segments"],
+    "fail_open": true
+  }
+}
