@@ -22,6 +22,12 @@ def fetch_stock_data(ticker, treasury_yield):
     price_to_book = raw_info.get('priceToBook')
     marketcap = raw_info.get('marketCap')
     dividend_rate = raw_info.get('dividendRate') or raw_info.get('trailingAnnualDividendRate')
+    dividend_yield = raw_info.get('dividendYield') or raw_info.get('trailingAnnualDividendYield')
+    if dividend_yield is None and dividend_rate and current_price:
+        try:
+            dividend_yield = dividend_rate / current_price
+        except Exception:
+            dividend_yield = None
 
     forward_pe_ratio = current_price / forward_eps if current_price and forward_eps else None
     treasury_yield = float(treasury_yield) / 100 if treasury_yield and treasury_yield != '-' else None
@@ -33,7 +39,12 @@ def fetch_stock_data(ticker, treasury_yield):
     implied_forward_growth_formatted = f"{implied_forward_growth * 100:.1f}%" if isinstance(implied_forward_growth, (int, float)) else '-'
 
     formatted_close_price = f"${current_price:.2f}" if current_price else '-'
-    formatted_dividend = f"${dividend_rate:.2f}" if dividend_rate else '-'
+    dividend_amount_str = f"${dividend_rate:.2f}" if dividend_rate else '-'
+    dividend_yield_str = f"{dividend_yield * 100:.1f}%" if dividend_yield else None
+    if dividend_amount_str != '-' and dividend_yield_str:
+        formatted_dividend = f"{dividend_amount_str}<br>{dividend_yield_str}"
+    else:
+        formatted_dividend = dividend_amount_str
 
     data = {
         'Close Price': formatted_close_price,
