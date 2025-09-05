@@ -427,15 +427,29 @@ def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame
     return ttm[["Segment", "AxisType", "Year", "Revenue", "OpIncome"]]
 
 
-def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
-    """
-    Public API:
-      Input: ticker (e.g., 'AAPL')
-      Output: DataFrame with columns: Segment, Year (yyyy or 'TTM'), Revenue, OpIncome
-      df.attrs['revenue_concept'], df.attrs['op_income_concept'] record concept choices.
+def get_segment_data(
+    ticker: str, *, dump_raw: bool = False, raw_dir: Path | None = None
+) -> pd.DataFrame:
+    """Fetch segment-level revenue & operating income for ``ticker``.
 
-      If ``dump_raw`` is True, a text file with all unfiltered facts for revenue
-      and operating income will be written to ``charts/{ticker}/{ticker}_segment_raw.txt``.
+    Parameters
+    ----------
+    ticker:
+        Stock ticker symbol, e.g. ``"AAPL"``.
+    dump_raw:
+        If ``True``, write all unfiltered revenue and operating-income facts to
+        ``{raw_dir}/{ticker}_segment_raw.txt``. Defaults to ``False``.
+    raw_dir:
+        Directory in which the raw text file should be written when
+        ``dump_raw`` is ``True``. If ``None`` (the default), the file is written
+        to ``charts/{ticker}`` relative to the current working directory.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns: Segment, Year (yyyy or ``"TTM"``), Revenue, OpIncome.
+        ``df.attrs['revenue_concept']`` and ``df.attrs['op_income_concept']``
+        record which XBRL concepts were used.
     """
     cik = resolve_ticker_to_cik(ticker)
     filings = fetch_latest_filings(cik)
@@ -481,7 +495,7 @@ def get_segment_data(ticker: str, dump_raw: bool = False) -> pd.DataFrame:
             if raw_facts
             else pd.DataFrame(columns=["Concept", "PeriodEnd", "Dims", "Value"])
         )
-        out_dir = Path("charts") / ticker.upper()
+        out_dir = (raw_dir or Path("charts") / ticker.upper()).resolve()
         out_dir.mkdir(parents=True, exist_ok=True)
         raw_path = out_dir / f"{ticker.upper()}_segment_raw.txt"
         try:

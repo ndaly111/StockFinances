@@ -112,7 +112,7 @@ def main():
     for i, t in enumerate(TICKERS, start=1):
         try:
             print(f"[{i}/{len(TICKERS)}] fetching {t}…")
-            df = get_segment_data(t, dump_raw=True)
+            df = get_segment_data(t, dump_raw=True, raw_dir=OUTPUT_DIR / t)
             html = render_table_html(t, df)
             out_file = OUTPUT_DIR / f"{t}_segments.html"
             save_html(out_file, html)
