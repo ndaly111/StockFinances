@@ -63,6 +63,10 @@
   </div>
   {% endif %}
 
+  {% if ticker_data.segment_raw_txt_path %}
+  <p class="chart-block"><a href="{{ ticker_data.segment_raw_txt_path }}">Raw segment data (TXT)</a></p>
+  {% endif %}
+
   <div class="chart-block">
     <h2>Balance Sheet</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.balance_sheet_chart_path }}" alt="Balance Sheet">
