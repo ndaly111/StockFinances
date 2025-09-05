@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import os
 import re
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -35,7 +34,6 @@ import requests
 from bs4 import BeautifulSoup
 
 REQUEST_TIMEOUT = 20
-PAUSE_SEC = 0.3
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SEC HTTP headers + tiny CIK fallback
@@ -168,7 +166,6 @@ def download_file(url: str, out_path: Path):
             for chunk in r.iter_content(chunk_size=1 << 15):
                 if chunk:
                     f.write(chunk)
-    time.sleep(0.5)  # be polite to SEC
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -593,7 +590,6 @@ def _company_submissions(cik: str) -> dict:
     url = f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json"
     r = requests.get(url, headers=_sec_headers(), timeout=REQUEST_TIMEOUT)
     r.raise_for_status()
-    time.sleep(PAUSE_SEC)
     return r.json()
 
 

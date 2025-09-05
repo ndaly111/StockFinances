@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # main_remote.py – 2025-08-27  (segments first; canonical table path)
-import os, sqlite3, pandas as pd, yfinance as yf, math, glob, time
+import sqlite3, pandas as pd, yfinance as yf, math
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -167,22 +167,26 @@ def mini_main():
         for ticker in tickers:
             print(f"[main] Processing {ticker}")
             try:
+                # 1) Core financial data
+                annual_and_ttm_update(ticker, cursor)
+                scrape_forward_data(ticker)
+                generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
+
+                # 2) Balance sheet
+                fetch_and_update_balance_sheet_data(ticker, cursor)
+                balancesheet_chart(ticker)
+
+                # 3) Segments (run within loop so no separate pass/pause)
                 ok = build_segments_for_ticker(ticker)
                 if not ok:
                     missing_segments.append(ticker)
 
-                annual_and_ttm_update(ticker, cursor)
-                fetch_and_update_balance_sheet_data(ticker, cursor)
-                balancesheet_chart(ticker)
-                scrape_forward_data(ticker)
-                generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
-
+                # 4) Valuation + reporting
                 prepared, mktcap = prepare_data_for_display(ticker, treasury)
                 generate_html_table(prepared, ticker)
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
 
-                time.sleep(0.5)
             except Exception as e:
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
