@@ -1,1 +1,1 @@
-[{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":2,"AxisScore":12.0,"Examples":"International, North America"},{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":0,"AxisScore":10.0,"Examples":""}]
+[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":3,"AxisScore":19.0,"Examples":"Beverage, Food, Licensed Stores"},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":4,"AxisScore":18.0,"Examples":"Channel Development, Corporate And Other, International"}]

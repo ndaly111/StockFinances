@@ -1,1 +1,1 @@
-[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":0,"AxisScore":2.0,"Examples":""},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":0,"AxisScore":2.0,"Examples":""}]
+[{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":4,"AxisScore":14.0,"Examples":"Ford Blue, Ford Credit, Ford Model E"},{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":0,"AxisScore":2.0,"Examples":""}]

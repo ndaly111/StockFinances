@@ -1,1 +1,1 @@
-[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":0,"AxisScore":8.0,"Examples":""},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":1,"AxisScore":7.0,"Examples":"International"}]
+[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":4,"AxisScore":20.0,"Examples":"Advertising, Other Services, Product"},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":1,"AxisScore":7.0,"Examples":"International"}]

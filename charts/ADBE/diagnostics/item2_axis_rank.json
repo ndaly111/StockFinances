@@ -1,1 +1,1 @@
-[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":0,"AxisScore":8.0,"Examples":""},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":0,"AxisScore":6.0,"Examples":""}]
+[{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":3,"AxisScore":15.0,"Examples":"Digital Experience, Digital Media, Publishing And Advertising"},{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":2,"AxisScore":14.0,"Examples":"Product, Subscription Revenue"}]
