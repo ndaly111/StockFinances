@@ -1,7 +1,8 @@
 # render_earnings_to_dashboard.py
 
 from ticker_manager import read_tickers, modify_tickers
-from html_generator2 import html_generator2, get_file_content_or_placeholder
+from html_generator2 import html_generator2, get_file_or_placeholder
+from generate_earnings_tables import generate_earnings_tables
 import os
 
 # Constants
@@ -12,11 +13,16 @@ SPY_QQQ_GROWTH_PATH     = 'charts/spy_qqq_growth.html'
 # Step 1: Load tickers
 tickers = modify_tickers(read_tickers(TICKERS_FILE_PATH), is_remote=True)
 
+# Refresh earnings tables so the dashboard shows current data
+# Use CI environment flag to bypass interactive prompts.
+os.environ.setdefault("CI", "1")
+generate_earnings_tables()
+
 # Step 2: Load base dashboard HTML
-dashboard_html = get_file_content_or_placeholder(DASHBOARD_HTML_PATH)
+dashboard_html = get_file_or_placeholder(DASHBOARD_HTML_PATH)
 
 # Step 3: Load SPY/QQQ growth fragment
-spy_qqq_growth_html = get_file_content_or_placeholder(SPY_QQQ_GROWTH_PATH)
+spy_qqq_growth_html = get_file_or_placeholder(SPY_QQQ_GROWTH_PATH)
 
 # Step 4: Placeholder valuation stats
 avg_values = {
