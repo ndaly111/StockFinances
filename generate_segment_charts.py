@@ -143,8 +143,9 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     """Generate charts and a compact pivot HTML table for a single ticker."""
+    ticker = ticker.upper()
     try:
-        df = get_segment_data(ticker, dump_raw=True)
+        df = get_segment_data(ticker, dump_raw=True, raw_dir=out_dir)
     except Exception as fetch_err:
         print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
         ensure_dir(out_dir)
@@ -352,10 +353,10 @@ def main():
     with review_path.open("w", encoding="utf-8") as review:
         for idx, ticker in enumerate(tickers, start=1):
             print(f"[{idx}/{len(tickers)}] Processing {ticker}…")
-            ticker_dir = output_dir / ticker
+            ticker_dir = output_dir / ticker.upper()
             generate_segment_charts_for_ticker(ticker, ticker_dir)
 
-            raw_file = ticker_dir / f"{ticker}_segment_raw.txt"
+            raw_file = ticker_dir / f"{ticker.upper()}_segment_raw.txt"
             if raw_file.exists():
                 review.write(f"---- {ticker.upper()} ----\n\n")
                 review.write(raw_file.read_text(encoding="utf-8"))
