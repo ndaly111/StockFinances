@@ -110,6 +110,7 @@ def save_html(path: Path, html: str):
 def main():
     all_snippets = []
     for i, t in enumerate(TICKERS, start=1):
+        t = t.upper()
         try:
             print(f"[{i}/{len(TICKERS)}] fetching {t}…")
             df = get_segment_data(t, dump_raw=True, raw_dir=OUTPUT_DIR / t)

@@ -428,7 +428,7 @@ def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame
 
 
 def get_segment_data(
-    ticker: str, *, dump_raw: bool = False, raw_dir: Path | None = None
+    ticker: str, *, dump_raw: bool = False, raw_dir: Path | str | None = None
 ) -> pd.DataFrame:
     """Fetch segment-level revenue & operating income for ``ticker``.
 
@@ -441,8 +441,9 @@ def get_segment_data(
         ``{raw_dir}/{ticker}_segment_raw.txt``. Defaults to ``False``.
     raw_dir:
         Directory in which the raw text file should be written when
-        ``dump_raw`` is ``True``. If ``None`` (the default), the file is written
-        to ``charts/{ticker}`` relative to the current working directory.
+        ``dump_raw`` is ``True``. May be a ``Path`` or string. If ``None`` (the
+        default), the file is written to ``charts/{ticker}`` relative to the
+        current working directory.
 
     Returns
     -------
@@ -495,7 +496,11 @@ def get_segment_data(
             if raw_facts
             else pd.DataFrame(columns=["Concept", "PeriodEnd", "Dims", "Value"])
         )
-        out_dir = (raw_dir or Path("charts") / ticker.upper()).resolve()
+        out_dir = (
+            Path(raw_dir).resolve()
+            if raw_dir
+            else (Path("charts") / ticker.upper()).resolve()
+        )
         out_dir.mkdir(parents=True, exist_ok=True)
         raw_path = out_dir / f"{ticker.upper()}_segment_raw.txt"
         try:
