@@ -348,19 +348,10 @@ def main():
     output_dir = Path(args.output_dir)
     ensure_dir(output_dir)
 
-    repo_root = Path(__file__).resolve().parent
-    review_path = repo_root / "all_segments_raw.txt"
-    with review_path.open("w", encoding="utf-8") as review:
-        for idx, ticker in enumerate(tickers, start=1):
-            print(f"[{idx}/{len(tickers)}] Processing {ticker}…")
-            ticker_dir = output_dir / ticker.upper()
-            generate_segment_charts_for_ticker(ticker, ticker_dir)
-
-            raw_file = ticker_dir / f"{ticker.upper()}_segment_raw.txt"
-            if raw_file.exists():
-                review.write(f"---- {ticker.upper()} ----\n\n")
-                review.write(raw_file.read_text(encoding="utf-8"))
-                review.write("\n\n")
+    for idx, ticker in enumerate(tickers, start=1):
+        print(f"[{idx}/{len(tickers)}] Processing {ticker}…")
+        ticker_dir = output_dir / ticker.upper()
+        generate_segment_charts_for_ticker(ticker, ticker_dir)
 
     print("Done.")
 
