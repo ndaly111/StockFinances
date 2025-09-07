@@ -1,4 +1,4 @@
-#start of main
+# start of main
 import os
 import sqlite3
 import ticker_manager
@@ -10,14 +10,27 @@ from balance_sheet_data_fetcher import (
     check_missing_balance_sheet_data,
     is_balance_sheet_data_outdated,
     fetch_balance_sheet_data_from_yahoo,
-    store_fetched_balance_sheet_data
+    store_fetched_balance_sheet_data,
 )
-from balancesheet_chart import (fetch_balance_sheet_data,plot_chart,format_value, create_and_save_table)
+# Alias chart helper's fetcher to avoid conflict with DB fetcher
+from balancesheet_chart import (
+    fetch_balance_sheet_data as fetch_bs_for_chart,
+    plot_chart,
+    format_value,
+    create_and_save_table,
+)
 import pandas as pd
-from Forward_data import (scrape_and_prepare_data,scrape_annual_estimates,store_in_database)
+from Forward_data import (
+    scrape_and_prepare_data,
+    scrape_annual_estimates,
+    store_in_database,
+)
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
 from bs4 import BeautifulSoup
-from ticker_info import (prepare_data_for_display,generate_html_table)
+from ticker_info import (
+    prepare_data_for_display,
+    generate_html_table,
+)
 import requests
 from html_generator2 import html_generator2, generate_dashboard_table
 from valuation_update import (valuation_update, process_update_growth_csv)
@@ -115,7 +128,7 @@ def log_average_valuations(avg_values):
 
 def balancesheet_chart(ticker, charts_output_dir):
     print("main 4 balancesheet chart")
-    balance_sheet_data = fetch_balance_sheet_data(ticker)
+    balance_sheet_data = fetch_bs_for_chart(ticker)
     if balance_sheet_data:
         plot_chart(balance_sheet_data, charts_output_dir, ticker)
         # Calculate debt to equity ratio
@@ -133,7 +146,7 @@ def fetch_and_update_balance_sheet_data(ticker, cursor):
     print(f"Fetching balance sheet data for ticker: {ticker}")
 
     # Step 1: Fetch current balance sheet data
-    current_data = fetch_balance_sheet_data(ticker)
+    current_data = fetch_balance_sheet_data(ticker, cursor)
     print("---Current balance sheet data:", current_data)
 
     # Step 2: Check for missing or null data
