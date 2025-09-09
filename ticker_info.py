@@ -21,9 +21,17 @@ def fetch_stock_data(ticker, treasury_yield):
     pe_ratio = raw_info.get('trailingPE')
     price_to_book = raw_info.get('priceToBook')
     marketcap = raw_info.get('marketCap')
-    dividend_rate = raw_info.get('dividendRate') or raw_info.get('trailingAnnualDividendRate')
-    dividend_yield = raw_info.get('dividendYield') or raw_info.get('trailingAnnualDividendYield')
-    if dividend_yield is None and dividend_rate and current_price:
+    # Retrieve the annual dividend. ``dividendRate`` is preferred but some
+    # tickers only populate ``trailingAnnualDividendRate``.  We avoid using the
+    # vendor-provided yield values because they may be stale or expressed as a
+    # percentage already.  Instead, always compute the yield from the annual
+    # dividend divided by the current share price.
+    dividend_rate = raw_info.get('dividendRate')
+    if dividend_rate is None:
+        dividend_rate = raw_info.get('trailingAnnualDividendRate')
+
+    dividend_yield = None
+    if dividend_rate is not None and current_price:
         try:
             dividend_yield = dividend_rate / current_price
         except Exception:
