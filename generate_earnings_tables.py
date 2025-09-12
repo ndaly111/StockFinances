@@ -1,179 +1,195 @@
-#!/usr/bin/env python3
-# ─────────────────────────────────────────────────────────────────────────────
-#  generate_earnings_tables.py   (fixed 07-Aug-2025)
-# ---------------------------------------------------------------------------
-"""
-Build / refresh earnings tables for the dashboard.
+import os
+import sqlite3
+import logging
+import pandas as pd
+from datetime import datetime
+import yfinance as yf
+from ticker_manager import read_tickers, modify_tickers
 
-Logic
------
-1.  Yahoo Finance calendar → actual EPS & date.
-2.  If either EPS _or_ estimate is missing:
-      2a. First try yfinance analyst-estimate endpoint.
-      2b. Otherwise scrape Finviz **politely** with back-off + caching.
-3.  Store to SQLite and render HTML tables.
-
-Dependencies
-------------
-beautifulsoup4, pandas, requests, yfinance
-"""
-
-import os, re, sys, sqlite3, time, random, math, logging, requests
-from pathlib import Path
-from datetime import datetime, timedelta, timezone
-
-import pandas as pd, yfinance as yf
-from bs4 import BeautifulSoup
-
-from ticker_manager import read_tickers, modify_tickers     # unchanged
-# ─── CONFIG ────────────────────────────────────────────────
-DB_PATH        = "Stock Data.db"
-OUTPUT_DIR     = Path("charts")
-OUTPUT_DIR.mkdir(exist_ok=True)
-PAST_HTML      = OUTPUT_DIR / "earnings_past.html"
-UPCOMING_HTML  = OUTPUT_DIR / "earnings_upcoming.html"
-
-FINVIZ_DELAY   = float(os.getenv("FINVIZ_DELAY", "1.0"))    # seconds between calls
-FINVIZ_UAS     = [
-    # rotating desktop UA strings
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/605.1.15 "
-    "(KHTML, like Gecko) Version/17.1 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-]
-CACHE_DIR      = Path(".cache/finviz")
-CACHE_DIR.mkdir(parents=True, exist_ok=True)
-LOGGER         = logging.getLogger("earnings")
-logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
-# ────────────────────────────────────────────────────────────
-
-
-# ════════════════════════════════════════════════════════════
-#  HELPERS — FINVIZ (rate-limit safe)                         ═
-# ════════════════════════════════════════════════════════════
-def _finviz_cache_path(ticker: str) -> Path:
-    return CACHE_DIR / f"{ticker.upper()}.html"
-
-
-def _fetch_finviz_html(ticker: str, max_retries: int = 4) -> str | None:
-    """
-    Politely download the Finviz quote page with:
-        • rotating User-Agent
-        • exponential back-off on 429
-        • on-disk 24 h cache
-    """
-    cache_f = _finviz_cache_path(ticker)
-    if cache_f.exists() and time.time() - cache_f.stat().st_mtime < 24 * 3600:
-        return cache_f.read_text(encoding="utf-8")
-
-    url     = f"https://finviz.com/quote.ashx?t={ticker}"
-    session = requests.Session()
-
-    for attempt in range(max_retries):
-        headers = {
-            "User-Agent":      random.choice(FINVIZ_UAS),
-            "Accept-Language": "en-US,en;q=0.9",
-            "Referer":         "https://www.google.com/"
-        }
-        try:
-            resp = session.get(url, headers=headers, timeout=20)
-            if resp.status_code == 429:
-                wait = (2 ** attempt) + random.uniform(0.5, 1.5)
-                LOGGER.warning("[Finviz] 429 for %s – retry %d/%d in %.1fs",
-                               ticker, attempt + 1, max_retries, wait)
-                time.sleep(wait)
-                continue
-            resp.raise_for_status()
-            cache_f.write_text(resp.text, encoding="utf-8")          # save cache
-            time.sleep(FINVIZ_DELAY)                                 # global throttle
-            return resp.text
-        except requests.RequestException as exc:
-            LOGGER.warning("[Finviz] %s – %s", ticker, exc)
-            time.sleep(2 ** attempt)
-    return None
-
-
-def _extract_eps_estimate_from_html(html: str) -> float | None:
-    soup = BeautifulSoup(html, "html.parser")
-    cell = soup.find(string=re.compile(r"EPS next Q", re.I))
-    if cell:
-        val_txt = cell.find_next("td").get_text(strip=True)
-        try:
-            return float(val_txt.replace("$", "").replace("%", ""))
-        except ValueError:
-            pass
-    return None
-
-
-def _get_eps_estimate_finviz(ticker: str) -> float | None:
-    html = _fetch_finviz_html(ticker)
-    return _extract_eps_estimate_from_html(html) if html else None
-
-
-# ════════════════════════════════════════════════════════════
-#  CORE PIPELINE                                              ═
-# ════════════════════════════════════════════════════════════
-def _yahoo_calendar_eps(tkr: str) -> tuple[datetime | None, float | None, float | None]:
-    """
-    Returns (report_date, actual_eps, estimate_eps) using yfinance.
-    """
-    try:
-        cal = yf.Ticker(tkr).earnings_dates
-        if cal is None or cal.empty:
-            return None, None, None
-
-        row          = cal.iloc[0]
-        dt_obj       = row["Earnings Date"]
-        eps_actual   = row["Reported EPS"]  if not math.isnan(row["Reported EPS"])  else None
-        eps_estimate = row["EPS Estimate"] if not math.isnan(row["EPS Estimate"]) else None
-        return dt_obj, eps_actual, eps_estimate
-    except Exception as exc:
-        LOGGER.warning("[Yahoo] %s – %s", tkr, exc)
-        return None, None, None
-
-
-def _analyst_estimate_yahoo(tkr: str) -> float | None:
-    """
-    yfinance 'analysis' table as secondary source for estimate.
-    """
-    try:
-        tbl = yf.Ticker(tkr).analysis
-        if tbl is not None and "Next Year (Est.)" in tbl.index:
-            val = tbl.loc["Next Year (Est.)"]["Earnings Estimate"]
-            return float(val) if not math.isnan(val) else None
-    except Exception:
-        pass
-    return None
-
-
-# ───────────────────────── ticker loader ─────────────────────
-def _load_tickers() -> list[str]:
-    """
-    • Locally  → prompt user via modify_tickers().
-    • In CI    → skip the prompt (no stdin) and just read CSV.
-    """
-    lst = read_tickers("tickers.csv")
-    if os.getenv("CI") or os.getenv("GITHUB_ACTIONS") or not sys.stdin.isatty():
-        print("Running in remote mode. Skipping ticker modification.")
-        return lst
-    return modify_tickers(lst)
-
-
-# ───────────────────────── entrypoint ────────────────────────
 def generate_earnings_tables():
-    """
-    Mini-main entrypoint.
-    """
-    tickers = _load_tickers()
+    # ——— Setup ———
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    OUTPUT_DIR         = 'charts'
+    DB_PATH            = 'Stock Data.db'
+    PAST_HTML_PATH     = os.path.join(OUTPUT_DIR, 'earnings_past.html')
+    UPCOMING_HTML_PATH = os.path.join(OUTPUT_DIR, 'earnings_upcoming.html')
 
-    with sqlite3.connect(DB_PATH) as conn:
-        # → your existing fetch / upsert / HTML rendering logic lives here.
-        #   When EPS estimate is missing, call _get_eps_estimate_finviz(tkr).
-        pass
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    yf.set_tz_cache_location(os.path.join(OUTPUT_DIR, 'tz_cache'))
 
+    # ——— Connect & ensure tables ———
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS earnings_past (
+        ticker TEXT,
+        earnings_date TEXT,
+        eps_estimate TEXT,
+        reported_eps TEXT,
+        surprise_percent REAL,
+        timestamp TEXT,
+        PRIMARY KEY (ticker, earnings_date)
+    )''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS earnings_upcoming (
+        ticker TEXT,
+        earnings_date TEXT,
+        timestamp TEXT,
+        PRIMARY KEY (ticker, earnings_date)
+    )''')
 
-# -------------------------------------------------------------------------
-if __name__ == "__main__":
-    generate_earnings_tables()
+    today = pd.to_datetime(datetime.now().date())
+    seven_days_ago   = today - pd.Timedelta(days=7)
+    seven_days_out   = today + pd.Timedelta(days=7)
+    ninety_days_out  = today + pd.Timedelta(days=90)
+
+    tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
+    reporting_today = set()
+
+    for ticker in tickers:
+        logging.info(f"Processing {ticker}")
+        try:
+            stock = yf.Ticker(ticker)
+            df = stock.get_earnings_dates(limit=30)
+            if df is None or df.empty:
+                continue
+
+            df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
+
+            recent = df[(df.index >= seven_days_ago) & (df.index <= today)]
+            for edate, row in recent.iterrows():
+                surprise = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
+                eps_est  = row.get('EPS Estimate')
+                rpt_eps  = row.get('Reported EPS')
+                if edate == today:
+                    reporting_today.add(ticker)
+                cursor.execute('''
+                    INSERT OR REPLACE INTO earnings_past
+                    (ticker, earnings_date, eps_estimate, reported_eps, surprise_percent, timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (
+                    ticker,
+                    edate.date().isoformat(),
+                    f"{eps_est:.2f}" if pd.notna(eps_est) else None,
+                    f"{rpt_eps:.2f}" if pd.notna(rpt_eps) else None,
+                    float(surprise) if pd.notna(surprise) else None,
+                    datetime.utcnow().isoformat()
+                ))
+
+            future = df[(df.index > today) & (df.index <= ninety_days_out)]
+            for fdate in future.index:
+                cursor.execute('''
+                    INSERT OR REPLACE INTO earnings_upcoming
+                    (ticker, earnings_date, timestamp)
+                    VALUES (?, ?, ?)
+                ''', (
+                    ticker,
+                    fdate.date().isoformat(),
+                    datetime.utcnow().isoformat()
+                ))
+
+        except Exception as e:
+            logging.error(f"Error processing {ticker}: {e}")
+
+    conn.commit()
+    conn.close()
+
+    # ——— Past Earnings HTML ———
+    conn = sqlite3.connect(DB_PATH)
+    dfp = pd.read_sql_query(f"""
+        SELECT * FROM earnings_past
+        WHERE earnings_date BETWEEN '{seven_days_ago.date()}' AND '{today.date()}'
+    """, conn, parse_dates=['earnings_date'])
+    conn.close()
+
+    if not dfp.empty:
+        dfp['Surprise Value'] = pd.to_numeric(dfp['surprise_percent'], errors='coerce')
+        dfp['Surprise HTML']  = dfp['Surprise Value'].apply(
+            lambda x: (
+                f'<span class="{"positive" if x>0 else "negative" if x<0 else ""}">{x:+.2f}%</span>'
+            ) if pd.notna(x) else "-"
+        )
+        dfp.sort_values('earnings_date', ascending=False, inplace=True)
+
+        note = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
+        reporting_html = (
+            f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>"
+            if reporting_today else ""
+        )
+
+        # only count actual beats (> 0%)
+        beats = dfp[dfp['Surprise Value'] > 0].nlargest(5, 'Surprise Value')
+        misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
+        summary_html = (
+            "<h3>Top 5 Earnings Beats</h3><ul>"
+            + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in beats.iterrows())
+            + "</ul><h3>Top 5 Earnings Misses</h3><ul>"
+            + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in misses.iterrows())
+            + "</ul>"
+        )
+
+        dfp_display = (
+            dfp[['ticker','earnings_date','eps_estimate','reported_eps','Surprise HTML']]
+            .rename(columns={
+                'ticker':        'Ticker',
+                'earnings_date': 'Earnings Date',
+                'eps_estimate':  'EPS Estimate',
+                'reported_eps':  'Reported EPS',
+                'Surprise HTML': 'Surprise'
+            })
+        )
+
+        head_html = dfp_display.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
+        if len(dfp_display) > 10:
+            rest_html  = dfp_display.iloc[10:].to_html(escape=False, index=False, classes='center-table', border=0)
+            table_html = head_html + f"<details><summary>Show More</summary>{rest_html}</details>"
+        else:
+            table_html = head_html
+
+        with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
+            f.write(note + reporting_html + summary_html + table_html)
+    else:
+        with open(PAST_HTML_PATH, 'w', encoding='utf-8') as f:
+            f.write("<p>No earnings in the past 7 days.</p>")
+
+    # ——— Upcoming Earnings HTML ———
+    conn = sqlite3.connect(DB_PATH)
+    dfu = pd.read_sql_query(f"""
+        SELECT * FROM earnings_upcoming
+        WHERE earnings_date > '{today.date()}' 
+          AND earnings_date <= '{ninety_days_out.date()}'
+    """, conn, parse_dates=['earnings_date'])
+    conn.close()
+
+    if not dfu.empty:
+        dfu['Date'] = pd.to_datetime(dfu['earnings_date'])
+        dfu.sort_values('Date', inplace=True)
+
+        early, later = [], []
+        for date, group in dfu.groupby(dfu['Date'].dt.date):
+            if date <= seven_days_out.date():
+                early.append((date, group))
+            else:
+                later.append((date, group))
+
+        html = ""
+        for date, group in early:
+            html += f"<h3>{date}</h3><ul>"
+            for _, row in group.iterrows():
+                html += f"<li>{row['ticker']}</li>"
+            html += "</ul>"
+
+        if later:
+            html += '<details><summary>Show More Upcoming Earnings</summary>'
+            for date, group in later:
+                html += f"<h3>{date}</h3><ul>"
+                for _, row in group.iterrows():
+                    html += f"<li>{row['ticker']}</li>"
+                html += "</ul>"
+            html += "</details>"
+
+        with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
+            f.write(html)
+    else:
+        with open(UPCOMING_HTML_PATH, 'w', encoding='utf-8') as f:
+            f.write("<p>No upcoming earnings in the next 90 days.</p>")
