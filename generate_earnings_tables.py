@@ -6,6 +6,13 @@ from datetime import datetime
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
+# yfinance relies on requests; fail fast if it's missing so callers see a
+# clear error instead of silent empty tables.
+try:  # pragma: no cover - import check only
+    import requests  # noqa: F401
+except Exception as exc:  # pragma: no cover - error path
+    raise ImportError("The 'requests' package is required to fetch earnings data") from exc
+
 def generate_earnings_tables():
     # ——— Setup ———
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -45,6 +52,7 @@ def generate_earnings_tables():
 
     tickers = modify_tickers(read_tickers('tickers.csv'), is_remote=True)
     reporting_today = set()
+    any_rows = False
 
     for ticker in tickers:
         logging.info(f"Processing {ticker}")
@@ -54,7 +62,15 @@ def generate_earnings_tables():
             if df is None or df.empty:
                 continue
 
-            df.index = pd.to_datetime(df.index).tz_localize(None).normalize()
+            idx = pd.to_datetime(df.index)
+            try:
+                if getattr(idx, "tz", None) is not None:
+                    idx = idx.tz_convert(None)
+                idx = idx.normalize()
+            except Exception as tz_err:
+                logging.warning(f"Timezone conversion issue for {ticker}: {tz_err}")
+                idx = idx.tz_localize(None, errors="ignore").normalize()
+            df.index = idx
 
             recent = df[(df.index >= seven_days_ago) & (df.index <= today)]
             for edate, row in recent.iterrows():
@@ -75,6 +91,7 @@ def generate_earnings_tables():
                     float(surprise) if pd.notna(surprise) else None,
                     datetime.utcnow().isoformat()
                 ))
+                any_rows = True
 
             future = df[(df.index > today) & (df.index <= ninety_days_out)]
             for fdate in future.index:
@@ -87,12 +104,16 @@ def generate_earnings_tables():
                     fdate.date().isoformat(),
                     datetime.utcnow().isoformat()
                 ))
+                any_rows = True
 
         except Exception as e:
             logging.error(f"Error processing {ticker}: {e}")
 
     conn.commit()
     conn.close()
+
+    if not any_rows:
+        logging.warning("No new earnings data fetched; regenerating HTML from existing tables")
 
     # ——— Past Earnings HTML ———
     conn = sqlite3.connect(DB_PATH)
@@ -109,7 +130,6 @@ def generate_earnings_tables():
                 f'<span class="{"positive" if x>0 else "negative" if x<0 else ""}">{x:+.2f}%</span>'
             ) if pd.notna(x) else "-"
         )
-        dfp.sort_values('earnings_date', ascending=False, inplace=True)
 
         note = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
         reporting_html = (
@@ -129,14 +149,15 @@ def generate_earnings_tables():
         )
 
         dfp_display = (
-            dfp[['ticker','earnings_date','eps_estimate','reported_eps','Surprise HTML']]
-            .rename(columns={
-                'ticker':        'Ticker',
-                'earnings_date': 'Earnings Date',
-                'eps_estimate':  'EPS Estimate',
-                'reported_eps':  'Reported EPS',
-                'Surprise HTML': 'Surprise'
-            })
+            dfp.sort_values('earnings_date', ascending=False)
+               [['ticker', 'earnings_date', 'eps_estimate', 'reported_eps', 'Surprise HTML']]
+               .rename(columns={
+                    'ticker':        'Ticker',
+                    'earnings_date': 'Earnings Date',
+                    'eps_estimate':  'EPS Estimate',
+                    'reported_eps':  'Reported EPS',
+                    'Surprise HTML': 'Surprise'
+               })
         )
 
         head_html = dfp_display.head(10).to_html(escape=False, index=False, classes='center-table', border=0)
