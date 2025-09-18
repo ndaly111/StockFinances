@@ -72,8 +72,8 @@ def generate_earnings_tables():
                 idx = idx.tz_localize(None, errors="ignore").normalize()
             df.index = idx
 
-            recent = df[(df.index >= seven_days_ago) & (df.index <= today)]
-            for edate, row in recent.iterrows():
+            historical = df[df.index <= today]
+            for edate, row in historical.iterrows():
                 surprise = pd.to_numeric(row.get('Surprise(%)'), errors='coerce')
                 eps_est  = row.get('EPS Estimate')
                 rpt_eps  = row.get('Reported EPS')
@@ -108,6 +108,11 @@ def generate_earnings_tables():
 
         except Exception as e:
             logging.error(f"Error processing {ticker}: {e}")
+
+    cursor.execute(
+        "DELETE FROM earnings_upcoming WHERE earnings_date <= ?",
+        (today.date().isoformat(),)
+    )
 
     conn.commit()
     conn.close()
