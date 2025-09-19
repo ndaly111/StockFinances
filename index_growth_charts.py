@@ -120,8 +120,23 @@ def render_index_growth_charts(tk="SPY"):
         ig_s = _series_growth(conn, tk)
         pe_s = _series_pe(conn, tk)
 
-    _chart(ig_s, f"{tk} Implied Growth (TTM)",
-           "Implied Growth Rate", f"{tk.lower()}_growth_chart.png")
+    ig_plot = ig_s
+    ig_ylabel = "Implied Growth Rate"
+    if not ig_s.empty:
+        med = ig_s.median(skipna=True)
+        max_abs = ig_s.abs().max()
+        if (
+            pd.notna(med) and np.isfinite(med)
+            and abs(med) < 1
+            and pd.notna(max_abs) and np.isfinite(max_abs)
+            and max_abs <= 2
+        ):
+            # Stored as decimals (e.g., 0.18 for 18%) → scale a copy for plotting.
+            ig_plot = ig_s * 100
+            ig_ylabel = "Implied Growth Rate (%)"
+
+    _chart(ig_plot, f"{tk} Implied Growth (TTM)",
+           ig_ylabel, f"{tk.lower()}_growth_chart.png")
     _chart(pe_s, f"{tk} P/E Ratio", "P/E",
            f"{tk.lower()}_pe_chart.png")
 
