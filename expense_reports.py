@@ -239,7 +239,11 @@ def _chart_abs(df: pd.DataFrame, tkr: str):
     ax.yaxis.set_major_formatter(FuncFormatter(lambda val, _: _fmt_short(val)))
     ax.legend(frameon=False, ncol=2)
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, f"{tkr}_expenses_vs_revenue.png"))
+    for name in (
+        f"{tkr}_expenses_vs_revenue.png",
+        f"{tkr}_rev_expense_chart.png",
+    ):
+        plt.savefig(os.path.join(OUTPUT_DIR, name))
     plt.close()
 
 
@@ -285,10 +289,18 @@ def _chart_pct(df: pd.DataFrame, tkr: str):
     fig.subplots_adjust(right=0.78, top=0.88)
     plt.tight_layout()
 
-    out = os.path.join(OUTPUT_DIR, f"{tkr}_expenses_pct_of_rev.png")
-    fig.savefig(out, dpi=120, bbox_inches="tight")
+    for name in (
+        f"{tkr}_expenses_pct_of_rev.png",
+        f"{tkr}_expense_percent_chart.png",
+    ):
+        fig.savefig(
+            os.path.join(OUTPUT_DIR, name), dpi=120, bbox_inches="tight"
+        )
     plt.close()
-    print(f"[{tkr}] expense-% chart saved → {out}")
+    print(
+        f"[{tkr}] expense-% chart saved → "
+        f"{os.path.join(OUTPUT_DIR, f'{tkr}_expenses_pct_of_rev.png')}"
+    )
 
 
 # ─────────────────────────── tables ────────────────────────────
