@@ -28,24 +28,40 @@ def fetch_frame(year: int):
     r.raise_for_status()
     return r.json()["data"]        # list of facts for many companies
 
-def collect_segment_revenue(cik: str, years):
+def collect_segment_revenue(cik: str, frames_by_year):
+    """Extract the rows for ``cik`` from pre-fetched ``frames_by_year``."""
+
     rows = []
-    for yr in years:
-        for fact in fetch_frame(yr):
-            if fact["cik"] == cik:
-                seg  = fact["segment"]["member"].replace("Member", "").split(":")[-1]
-                rows.append({"segment": seg,
-                             "fy": yr,
-                             "revenue": fact["val"] / 1_000_000})  # → $ millions
-        time.sleep(PAUSE_SEC)
+    for yr, facts in frames_by_year.items():
+        for fact in facts:
+            if fact["cik"] != cik:
+                continue
+
+            member = fact.get("segment", {}).get("member", "")
+            seg = member.rsplit(":", 1)[-1].replace("Member", "")
+            rows.append(
+                {
+                    "segment": seg,
+                    "fy": yr,
+                    "revenue": fact["val"] / 1_000_000,  # → $ millions
+                }
+            )
+
     return pd.DataFrame(rows)
 
 def main():
     cik_lookup = cik_map()
     yrs = list(range(pd.Timestamp.today().year, pd.Timestamp.today().year - YEARS_BACK, -1))
+
+    # Fetch each frame once and reuse across tickers instead of re-downloading.
+    frames_by_year = {}
+    for yr in yrs:
+        frames_by_year[yr] = fetch_frame(yr)
+        time.sleep(PAUSE_SEC)
+
     for tkr in TICKERS:
         cik = cik_lookup[tkr]
-        df  = collect_segment_revenue(cik, yrs)
+        df  = collect_segment_revenue(cik, frames_by_year)
         if df.empty:
             print(f"[{tkr}] no segment revenue facts found.")
             continue
