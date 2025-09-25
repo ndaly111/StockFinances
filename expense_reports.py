@@ -223,18 +223,25 @@ def _cats(df: pd.DataFrame, combo_present: bool):
 
 def _chart_abs(df: pd.DataFrame, tkr: str):
     f      = df.sort_values("year_int")
-    x      = f["year_label"].tolist()
+    x_lab  = f["year_label"].tolist()
+    idx    = np.arange(len(f))
+    width  = 0.38
     cats   = _cats(f, f["sga_combined"].notna().any())
     fig, ax = plt.subplots(figsize=(11, 6))
-    bottom = np.zeros(len(f), dtype=float)
 
+    revenue_vals = f["total_revenue"].fillna(0).astype(float).values
+    ax.bar(idx - width / 2, revenue_vals, width=width, color="#4a4a4a", label="Revenue")
+
+    bottom = np.zeros(len(f), dtype=float)
     for lbl, col, colour in cats:
         vals = f[col].fillna(0).astype(float).values
-        ax.bar(x, vals, bottom=bottom, color=colour, width=0.6, label=lbl)
+        ax.bar(idx + width / 2, vals, bottom=bottom, color=colour, width=width, label=lbl)
         bottom += vals
 
-    ax.plot(x, f["total_revenue"].astype(float), "k-o", lw=2, label="Revenue")
-    ax.set_ylim(0, max(bottom.max(), f["total_revenue"].max()) * 1.1)
+    ymax = max(bottom.max(), revenue_vals.max()) * 1.1 if len(f) else 1
+    ax.set_ylim(0, ymax)
+    ax.set_xticks(idx)
+    ax.set_xticklabels(x_lab)
     ax.set_title(f"Revenue vs Operating Expenses — {tkr}")
     ax.yaxis.set_major_formatter(FuncFormatter(lambda val, _: _fmt_short(val)))
     ax.legend(frameon=False, ncol=2)
