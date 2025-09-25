@@ -127,53 +127,73 @@ def apply_segment_overrides(df: pd.DataFrame, ticker: str, overrides: Dict) -> p
     hum_regex = _build_regex_list(rules.get("member_regex", []))
     hum_regex_by_axis = {ax: _build_regex_list(lst) for ax, lst in rules.get("member_regex_by_axis", {}).items()}
 
-    def translate_row(row):
-        axis = row["Axis"]
-        seg = row["Segment"]
-        raw_member = strip_namespace(seg)
-        raw_base = remove_suffixes(raw_member)
-        human = _humanize_segment_name(raw_base)
-        canon_raw = canon(raw_base)
-        canon_hum = canon(human)
+    axis_series = df["Axis"]
+    raw_member = df["Segment"].map(strip_namespace)
+    raw_base = raw_member.map(remove_suffixes)
+    human = raw_base.map(_humanize_segment_name)
 
-        name = None
-        if canon_raw in raw_exact:
-            name = raw_exact[canon_raw]
-        elif canon_raw in raw_exact_by_axis.get(axis, {}):
-            name = raw_exact_by_axis[axis][canon_raw]
-        elif canon_hum in hum_exact:
-            name = hum_exact[canon_hum]
-        elif canon_hum in hum_exact_by_axis.get(axis, {}):
-            name = hum_exact_by_axis[axis][canon_hum]
-        else:
-            for rx, rep in raw_regex:
-                new_raw = rx.sub(rep, raw_base)
-                if new_raw != raw_base:
-                    name = _humanize_segment_name(new_raw)
-                    break
-            else:
-                for rx, rep in raw_regex_by_axis.get(axis, []):
-                    new_raw = rx.sub(rep, raw_base)
-                    if new_raw != raw_base:
-                        name = _humanize_segment_name(new_raw)
-                        break
-                else:
-                    for rx, rep in hum_regex:
-                        new_hum = rx.sub(rep, human)
-                        if new_hum != human:
-                            name = new_hum
-                            break
-                    else:
-                        for rx, rep in hum_regex_by_axis.get(axis, []):
-                            new_hum = rx.sub(rep, human)
-                            if new_hum != human:
-                                name = new_hum
-                                break
-        if name is None:
-            name = human
-        return name
+    def _safe_canon_series(series: pd.Series) -> pd.Series:
+        return series.map(lambda v: canon("" if pd.isna(v) else v))
 
-    df["Segment"] = df.apply(translate_row, axis=1)
+    canon_raw = _safe_canon_series(raw_base)
+    canon_hum = _safe_canon_series(human)
+
+    raw_base_str = raw_base.fillna("").astype(str)
+    human_str = human.fillna("").astype(str)
+
+    translated = pd.Series(pd.NA, index=df.index, dtype="object")
+
+    def assign_from_dict(keys: pd.Series, mapping: Dict[str, str], mask: pd.Series | None = None) -> None:
+        if not mapping:
+            return
+        available = translated.isna()
+        if mask is not None:
+            available &= mask.fillna(False)
+        if not available.any():
+            return
+        hits = keys[available].map(mapping).dropna()
+        if not hits.empty:
+            translated.loc[hits.index] = hits
+
+    assign_from_dict(canon_raw, raw_exact)
+    for ax, mapping in raw_exact_by_axis.items():
+        assign_from_dict(canon_raw, mapping, axis_series == ax)
+
+    assign_from_dict(canon_hum, hum_exact)
+    for ax, mapping in hum_exact_by_axis.items():
+        assign_from_dict(canon_hum, mapping, axis_series == ax)
+
+    def apply_regex(base: pd.Series, rules: List, humanize: bool, mask: pd.Series | None = None) -> None:
+        if not rules:
+            return
+        mask = mask.fillna(False) if mask is not None else None
+        for rx, rep in rules:
+            available = translated.isna()
+            if mask is not None:
+                available &= mask
+            if not available.any():
+                break
+            subset = base[available]
+            if subset.empty:
+                continue
+            replaced = subset.str.replace(rx, rep, regex=True)
+            changed = replaced != subset
+            if not changed.any():
+                continue
+            values = replaced[changed]
+            if humanize:
+                values = values.map(_humanize_segment_name)
+            translated.loc[values.index] = values
+
+    apply_regex(raw_base_str, raw_regex, humanize=True)
+    for ax, rules in raw_regex_by_axis.items():
+        apply_regex(raw_base_str, rules, humanize=True, mask=axis_series == ax)
+
+    apply_regex(human_str, hum_regex, humanize=False)
+    for ax, rules in hum_regex_by_axis.items():
+        apply_regex(human_str, rules, humanize=False, mask=axis_series == ax)
+
+    df["Segment"] = translated.where(~translated.isna(), human)
     df = df.groupby(["Axis", "AxisLabel", "Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]].sum()
 
     # 6) Axis ordering
