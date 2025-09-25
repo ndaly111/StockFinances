@@ -24,20 +24,49 @@ EXPENSE_KEYWORDS = [
 ]
 
 def read_tickers(path: str) -> list[str]:
-    df = pd.read_csv(path, nrows=0)
-    df = pd.read_csv(path, header=None)
-    return df.iloc[:, 0].dropna().astype(str).tolist()
+    """Return the first column of ``path`` as a list of ticker symbols.
+
+    The previous implementation read the CSV twice – once to load an empty
+    header and again to coerce the entire file into a headerless DataFrame.
+    That extra I/O shows up when the ticker list grows into the hundreds.
+
+    Pandas already understands the header row, so we just ask for the first
+    column directly.  ``squeeze"`` keeps the code resilient to files with a
+    single column, and ``dropna``/``astype`` mirror the original behaviour
+    without the redundant read.
+    """
+
+    series = pd.read_csv(path, usecols=[0]).squeeze("columns")
+    return (
+        series.dropna()
+              .astype(str)
+              .str.strip()
+              .loc[lambda s: s != ""]
+              .tolist()
+    )
 
 def fetch_all_categories(tickers: list[str]) -> pd.DataFrame:
-    records = []
+    """Collect raw category labels for each ticker.
+
+    Building up a list of dicts inside the nested loop forced Python to append
+    row-by-row, which becomes noticeably slow when ``annual.index`` contains
+    hundreds of entries per ticker.  Instead we append lightweight DataFrames
+    and let ``pandas.concat`` perform the heavy lifting in vectorised C code.
+    ``unique`` trims duplicates within the same ticker so we don't emit the
+    same category dozens of times only to drop them later.
+    """
+
+    frames = []
     for tkr in tickers:
         print(f"🔍 Fetching {tkr}")
-        yf_tkr = yf.Ticker(tkr)
-        annual = yf_tkr.income_stmt
+        annual = yf.Ticker(tkr).income_stmt
         if isinstance(annual, pd.DataFrame) and not annual.empty:
-            for cat in annual.index:
-                records.append({"category": cat})
-    return pd.DataFrame(records)
+            frames.append(pd.DataFrame({"category": annual.index.unique()}))
+
+    if not frames:
+        return pd.DataFrame(columns=["category"])
+
+    return pd.concat(frames, ignore_index=True)
 
 def is_expense(category: str) -> bool:
     category_lower = category.lower()
