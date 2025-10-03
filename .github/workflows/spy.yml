@@ -1,0 +1,45 @@
+name: Load SP500 Index Series (one-time)
+on:
+  workflow_dispatch:
+    inputs:
+      db_path:
+        description: 'Path to SQLite db'
+        default: 'Stock Data.db'
+        required: true
+      pe_csv:
+        description: 'Path to sp500_daily_pe_filled.csv'
+        default: 'data/sp500_daily_pe_filled.csv'
+        required: true
+      growth_csv:
+        description: 'Path to sp500_implied_growth.csv'
+        default: 'data/sp500_implied_growth.csv'
+        required: true
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: python -c "print('No external deps required')"
+
+      - name: Run loader (dry-run)
+        run: |
+          python scripts/load_sp500_index_series.py \
+            --db "${{ github.event.inputs.db_path }}" \
+            --pe_csv "${{ github.event.inputs.pe_csv }}" \
+            --growth_csv "${{ github.event.inputs.growth_csv }}" \
+            --dry-run
+
+      - name: Run loader (write)
+        run: |
+          python scripts/load_sp500_index_series.py \
+            --db "${{ github.event.inputs.db_path }}" \
+            --pe_csv "${{ github.event.inputs.pe_csv }}" \
+            --growth_csv "${{ github.event.inputs.growth_csv }}"
