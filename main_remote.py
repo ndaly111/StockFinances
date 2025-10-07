@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # main_remote.py – 2025-08-27  (segments first; canonical table path)
-import sqlite3, pandas as pd, yfinance as yf, math
+import sqlite3, pandas as pd, yfinance as yf, math, subprocess, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -124,6 +124,42 @@ def fetch_10_year_treasury_yield():
         print(f"[YF] Error fetching 10Y Treasury Yield: {e}")
         return None
 
+
+def maybe_load_sp500_index_series(db_path: str = DB_PATH) -> None:
+    """Run the one-time SP500 loader script if today's data is absent."""
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT 1
+                  FROM Index_PE_History
+                 WHERE Date = ? AND Ticker = ? AND PE_Type = ?
+                 LIMIT 1;
+                """,
+                (today, "SPY", "TTM"),
+            )
+            if cur.fetchone():
+                print("[SP500 loader] Today's SPY P/E data already present; skipping loader.")
+                return
+    except sqlite3.Error as exc:
+        print(f"[SP500 loader] Unable to inspect Index_PE_History: {exc}")
+        return
+
+    script_path = Path("scripts") / "load_sp500_index_series.py"
+    if not script_path.exists():
+        print(f"[SP500 loader] Loader script not found at {script_path}")
+        return
+
+    print("[SP500 loader] Running load_sp500_index_series.py for SPY")
+    try:
+        subprocess.run([sys.executable, str(script_path)], check=True)
+    except subprocess.CalledProcessError as exc:
+        print(f"[SP500 loader] Loader script failed with exit code {exc.returncode}")
+
+
 # ───────────────────────────────────────────────────────────
 # Segments: charts + table (canonical)
 # ───────────────────────────────────────────────────────────
@@ -153,6 +189,9 @@ def mini_main():
     treasury = fetch_10_year_treasury_yield()
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
+    # ----- BEGIN TEMP SP500 LOADER CALL -----
+    maybe_load_sp500_index_series(DB_PATH)
+    # ----- END TEMP SP500 LOADER CALL -----
     conn = establish_database_connection(DB_PATH)
     if not conn:
         return
