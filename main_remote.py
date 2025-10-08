@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # main_remote.py – 2025-08-27  (segments first; canonical table path)
-import sqlite3, pandas as pd, yfinance as yf, math, subprocess, sys
+import sqlite3, pandas as pd, yfinance as yf, math, os, subprocess, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -39,6 +39,7 @@ DB_PATH           = "Stock Data.db"
 UPDATE_GROWTH_CSV = "update_growth.csv"
 CHARTS_DIR        = "charts/"
 TABLE_NAME        = "ForwardFinancialData"
+HISTORICAL_CUTOFF = "2025-07-01"
 
 def write_build_stamp(stamp_path=Path(CHARTS_DIR) / "_build_stamp.txt") -> str:
     Path(CHARTS_DIR).mkdir(parents=True, exist_ok=True)
@@ -126,8 +127,7 @@ def fetch_10_year_treasury_yield():
 
 
 def maybe_load_sp500_index_series(db_path: str = DB_PATH) -> None:
-    """Run the one-time SP500 loader script if today's data is absent."""
-    today = datetime.now().strftime("%Y-%m-%d")
+    """Run the one-time SP500 loader script when historical data is missing."""
 
     try:
         with sqlite3.connect(db_path) as conn:
@@ -136,16 +136,28 @@ def maybe_load_sp500_index_series(db_path: str = DB_PATH) -> None:
                 """
                 SELECT 1
                   FROM Index_PE_History
-                 WHERE Date = ? AND Ticker = ? AND PE_Type = ?
+                 WHERE Ticker = ? AND PE_Type = ? AND Date < ?
                  LIMIT 1;
                 """,
-                (today, "SPY", "TTM"),
+                ("SPY", "TTM", HISTORICAL_CUTOFF),
             )
             if cur.fetchone():
-                print("[SP500 loader] Today's SPY P/E data already present; skipping loader.")
+                print("[SP500 loader] Historical SPY P/E data already present; skipping loader.")
                 return
     except sqlite3.Error as exc:
         print(f"[SP500 loader] Unable to inspect Index_PE_History: {exc}")
+        return
+
+    pe_csv = Path(os.environ.get("SP500_PE_CSV", "data/sp500_daily_pe_filled.csv"))
+    yield_csv = Path(
+        os.environ.get("TREASURY_YIELD_CSV", "data/treasury_10y_yield.csv")
+    )
+    missing_inputs = [str(p) for p in (pe_csv, yield_csv) if not p.exists()]
+    if missing_inputs:
+        print(
+            "[SP500 loader] Missing required CSV files; skipping loader: "
+            + ", ".join(missing_inputs)
+        )
         return
 
     script_path = Path("scripts") / "load_sp500_index_series.py"
@@ -189,9 +201,9 @@ def mini_main():
     treasury = fetch_10_year_treasury_yield()
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
-    # ----- BEGIN TEMP SP500 LOADER CALL -----
+    # below is the inserted code
     maybe_load_sp500_index_series(DB_PATH)
-    # ----- END TEMP SP500 LOADER CALL -----
+    # above is the inserted code
     conn = establish_database_connection(DB_PATH)
     if not conn:
         return
