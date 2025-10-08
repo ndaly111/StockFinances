@@ -1,19 +1,26 @@
 # scripts/load_sp500_index_series.py
 # Purpose: One-time loader to insert SPY P/E (TTM) and implied growth into SQLite,
-# matching tables Index_PE_History and Index_Growth_History.
+# matching tables Index_PE_History and Index_Growth_History.  The script reads a
+# daily S&P 500 P/E series and a 10 year treasury yield series, aligns them by
+# date, derives the implied growth via
+#
+#     growth = ((PE / 10) ** 0.1) + treasury_yield - 1
+#
+# and persists both the raw P/E values and the calculated growth series.
 
 import argparse
 import csv
 import os
 import sqlite3
 from datetime import datetime
+from typing import Dict, Iterable, Tuple
 
 # -----------------------------
 # CONFIG — EDIT THESE IF NEEDED
 # -----------------------------
 DB_PATH = os.environ.get("INDEX_DB_PATH", "Stock Data.db")
 PE_CSV_PATH = os.environ.get("SP500_PE_CSV", "data/sp500_daily_pe_filled.csv")
-GROWTH_CSV_PATH = os.environ.get("SP500_GROWTH_CSV", "data/sp500_implied_growth.csv")
+YIELD_CSV_PATH = os.environ.get("TREASURY_YIELD_CSV", "data/treasury_10y_yield.csv")
 
 TICKER = "SPY"
 PE_TYPE = "TTM"
@@ -63,6 +70,23 @@ def ensure_tables(conn):
     """)
     conn.commit()
 
+def _norm(name: str) -> str:
+    """Normalise a column heading for loose matching."""
+
+    return "".join(ch for ch in name.upper() if ch.isalnum())
+
+
+def _resolve_column(fieldnames: Iterable[str], *candidates: str) -> str:
+    mapping: Dict[str, str] = {_norm(name): name for name in fieldnames if name}
+    for candidate in candidates:
+        key = _norm(candidate)
+        if key in mapping:
+            return mapping[key]
+    raise ValueError(
+        f"Unable to locate any of {candidates} in columns {list(fieldnames)}"
+    )
+
+
 def load_pe_rows(pe_csv_path):
     """
     Expecting columns: DATE, PE
@@ -71,13 +95,22 @@ def load_pe_rows(pe_csv_path):
     rows = []
     with open(pe_csv_path, newline="", encoding="utf-8-sig") as f:
         r = csv.DictReader(f)
-        need = {"DATE", "PE"}
-        missing = need - set(r.fieldnames or [])
-        if missing:
-            raise ValueError(f"{pe_csv_path} missing columns: {sorted(missing)}")
+        if not r.fieldnames:
+            raise ValueError(f"{pe_csv_path} has no header row")
+
+        date_col = _resolve_column(r.fieldnames, "DATE", "Date")
+        pe_col = _resolve_column(
+            r.fieldnames,
+            "PE",
+            "P/E",
+            "PE Ratio",
+            "PE_Ratio",
+            "PE_RATIO",
+        )
         for rec in r:
-            d = ymd(rec["DATE"])
-            pe = rec["PE"].strip() if rec["PE"] is not None else ""
+            d = ymd(rec[date_col])
+            pe_raw = rec.get(pe_col, "")
+            pe = pe_raw.strip() if pe_raw is not None else ""
             if pe == "" or pe.lower() == "nan":
                 continue  # skip blanks
             try:
@@ -87,29 +120,59 @@ def load_pe_rows(pe_csv_path):
             rows.append((d, TICKER, PE_TYPE, pe_val))
     return rows
 
-def load_growth_rows(growth_csv_path):
-    """
-    Expecting columns: DATE, Implied_Growth
-    Returns list of tuples: (Date, Ticker, Growth_Type, Implied_Growth)
-    """
-    rows = []
-    with open(growth_csv_path, newline="", encoding="utf-8-sig") as f:
+def load_yield_map(yield_csv_path: str) -> Dict[str, float]:
+    """Return mapping of YYYY-MM-DD ➜ 10 year yield (decimal)."""
+
+    yields: Dict[str, float] = {}
+    with open(yield_csv_path, newline="", encoding="utf-8-sig") as f:
         r = csv.DictReader(f)
-        need = {"DATE", "Implied_Growth"}
-        missing = need - set(r.fieldnames or [])
-        if missing:
-            raise ValueError(f"{growth_csv_path} missing columns: {sorted(missing)}")
+        if not r.fieldnames:
+            raise ValueError(f"{yield_csv_path} has no header row")
+
+        date_col = _resolve_column(r.fieldnames, "DATE", "Date")
+        yield_col = _resolve_column(
+            r.fieldnames,
+            "Yield",
+            "Rate",
+            "10Y",
+            "TenYear",
+            "DGS10",
+            "Treasury_Yield",
+        )
+
         for rec in r:
-            d = ymd(rec["DATE"])
-            g = rec["Implied_Growth"].strip() if rec["Implied_Growth"] is not None else ""
-            if g == "" or g.lower() == "nan":
+            d = ymd(rec[date_col])
+            y_raw = rec.get(yield_col, "")
+            y = y_raw.strip() if y_raw is not None else ""
+            if not y:
                 continue
+            y = y.replace("%", "")
             try:
-                g_val = float(g)
+                y_val = float(y)
             except ValueError:
                 continue
-            rows.append((d, TICKER, GROWTH_TYPE, g_val))
-    return rows
+            if y_val > 1:
+                y_val /= 100.0
+            yields[d] = y_val
+    return yields
+
+
+def compute_growth_rows(
+    pe_rows: Iterable[Tuple[str, str, str, float]],
+    yield_map: Dict[str, float],
+) -> Tuple[list[Tuple[str, str, str, float]], int]:
+    """Return (growth_rows, missing_count) from *pe_rows* and *yield_map*."""
+
+    rows: list[Tuple[str, str, str, float]] = []
+    missing = 0
+    for d, ticker, gtype, pe_val in pe_rows:
+        y = yield_map.get(d)
+        if y is None:
+            missing += 1
+            continue
+        growth = ((pe_val / 10.0) ** 0.1) + y - 1.0
+        rows.append((d, ticker, gtype, growth))
+    return rows, missing
 
 def insert_pe(conn, rows, dry_run=False):
     if not rows:
@@ -150,17 +213,27 @@ def main():
     parser = argparse.ArgumentParser(description="One-time loader for SPY P/E and implied growth")
     parser.add_argument("--db", default=DB_PATH, help="Path to SQLite DB (default: Stock Data.db)")
     parser.add_argument("--pe_csv", default=PE_CSV_PATH, help="Path to sp500_daily_pe_filled.csv")
-    parser.add_argument("--growth_csv", default=GROWTH_CSV_PATH, help="Path to sp500_implied_growth.csv")
+    parser.add_argument(
+        "--yield_csv",
+        default=YIELD_CSV_PATH,
+        help="Path to 10 year treasury yield CSV (default: data/treasury_10y_yield.csv)",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Validate and show counts without writing")
     args = parser.parse_args()
 
     if not os.path.exists(args.pe_csv):
         raise FileNotFoundError(f"PE CSV not found: {args.pe_csv}")
-    if not os.path.exists(args.growth_csv):
-        raise FileNotFoundError(f"Growth CSV not found: {args.growth_csv}")
+    if not os.path.exists(args.yield_csv):
+        raise FileNotFoundError(f"Treasury yield CSV not found: {args.yield_csv}")
 
     pe_rows = load_pe_rows(args.pe_csv)
-    growth_rows = load_growth_rows(args.growth_csv)
+    yield_map = load_yield_map(args.yield_csv)
+    growth_rows, missing = compute_growth_rows(pe_rows, yield_map)
+
+    if missing:
+        print(
+            f"[WARN] Skipped {missing} P/E rows without matching 10y yield entries."
+        )
 
     print(f"[INFO] Prepared {len(pe_rows)} P/E rows and {len(growth_rows)} growth rows.")
     if args.dry_run:
