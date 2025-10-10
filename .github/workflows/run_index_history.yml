@@ -1,0 +1,38 @@
+name: Update Index PE & Growth History
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 1"
+
+jobs:
+  update-index-history:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+
+      - name: Run index loader script
+        run: |
+          python scripts/load_sp500_index_series.py \
+            --db "Stock Data.db" \
+            --pe_csv "data/sp500_daily_pe_filled.csv" \
+            --yield_csv "data/treasury_10y_yield.csv"
+
+      - name: Commit updated database
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Stock Data.db"
+          git commit -m "Update index PE and growth history" || echo "No changes to commit"
+          git push
