@@ -15,8 +15,7 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+        with-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -29,14 +28,10 @@ jobs:
           python scripts/load_sp500_index_series.py \
             --db "Stock Data.db" \
             --pe_csv "data/sp500_daily_pe_filled.csv" \
-            --yield_csv "data/DGS10_filtered.csv" \
-            --ticker "SPY" \
-            --type "TTM"
+            --yield_csv "data/DGS10_filtered.cv" \
 
       - name: Generate index charts
-        run: |
-          python index_growth_charts.py SPY
-          python index_growth_charts.py QQQ
+        run:  index_growth_charts.py QQQ
 
       - name: Commit updated database and charts
         run: |
