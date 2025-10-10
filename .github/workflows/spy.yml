@@ -1,15 +1,14 @@
-# Inside jobs.load.steps or similar
-- name: Run loader (dry run to verify)
-  run: |
-    python scripts/load_sp500_index_series.py \
-      --db "Stock Data.db" \
-      --pe_csv "./sp500_daily_pe_filled.csv" \
-      --growth_csv "./sp500_implied_growth.csv" \
-      --dry-run
-
-- name: Run loader (write to DB)
-  run: |
-    python scripts/load_sp500_index_series.py \
-      --db "Stock Data.db" \
-      --pe_csv "./sp500_daily_pe_filled.csv" \
-      --growth_csv "./sp500_implied_growth.csv"
+name: Disabled spy workflow
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'This workflow is disabled because a valid one exists in Spyhistorical.yml'
+        required: false
+        default: ''
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: No-op
+        run: echo 'spy.yml is disabled; use Spyhistorical.yml instead'
