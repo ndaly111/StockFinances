@@ -1,0 +1,51 @@
+name: Update Index PE & Growth History
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 1"  # every Monday at 12:00 UTC
+
+jobs:
+  update-index-history:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install requirements if file exists; ignore errors to allow workflow to continue
+          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+
+      - name: Run index loader script
+        run: |
+          python scripts/load_sp500_index_series.py \
+            --db "Stock Data.db" \
+            --pe_csv "data/sp500_daily_pe_filled.csv" \
+            --yield_csv "data/DGS10_filtered.csv" \
+            --ticker "SPY" \
+            --type "TTM"
+
+      - name: Generate index charts
+        run: |
+          python index_growth_charts.py SPY
+          python index_growth_charts.py QQQ
+
+      - name: Commit updated database and charts
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add "Stock Data.db" || true
+          git add charts/spy_growth_chart.png charts/spy_pe_chart.png \
+                  charts/spy_growth_summary.html charts/spy_pe_summary.html || true
+          git add charts/qqq_growth_chart.png charts/qqq_pe_chart.png \
+                  charts/qqq_growth_summary.html charts/qqq_pe_summary.html || true
+          git commit -m "Auto-update: index PE & implied growth history and charts" || echo "No changes to commit"
+          git push
