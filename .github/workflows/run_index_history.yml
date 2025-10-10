@@ -1,38 +1,71 @@
-name: Update Index PE & Growth History
+name: One-off: Update SPY Index P/E & Implied Growth
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 12 * * 1"
+  workflow_dispatch:   # <<< one-time manual run (no schedule)
 
 jobs:
-  update-index-history:
+  update-spy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: update-spy
+      cancel-in-progress: false
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show repo status (debug)
+        run: git status
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install runtime deps (best effort)
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
+          # plot script uses matplotlib; keep optional to avoid breaking loader
+          pip install matplotlib || true
 
-      - name: Run index loader script
+      - name: Safety backup of Stock Data.db (untracked)
+        # This creates a local backup copy in the runner only (not committed).
+        run: |
+          cp "Stock Data.db" "Stock Data.db.bak.$(date -u +%Y%m%d%H%M%S)" || true
+          ls -lh "Stock Data.db"* || true
+
+      - name: Run index loader (SPY -> existing tables ONLY)
+        env:
+          INDEX_DB_PATH: "Stock Data.db"
+          SP500_PE_CSV: "data/sp500_daily_pe_filled.csv"
+          TREASURY_YIELD_CSV: "data/DGS10_filtered.csv"
         run: |
           python scripts/load_sp500_index_series.py \
             --db "Stock Data.db" \
             --pe_csv "data/sp500_daily_pe_filled.csv" \
-            --yield_csv "data/treasury_10y_yield.csv"
+            --yield_csv "data/DGS10_filtered.csv" \
+            --ticker "SPY" \
+            --type "TTM"
 
-      - name: Commit updated database
+      - name: Generate SPY charts (optional)
+        # Safe to skip if you don't need to refresh charts.
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "Stock Data.db"
-          git commit -m "Update index PE and growth history" || echo "No changes to commit"
+          if [ -f scripts/plot_index_charts.py ]; then
+            python scripts/plot_index_charts.py \
+              --db "Stock Data.db" \
+              --ticker "SPY" \
+              --outdir charts \
+              --prefix spy
+          fi
+
+      - name: Commit DB + charts
+        # Only commits changes to the existing DB and chart PNGs
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@github.com"
+          git add "Stock Data.db" charts/spy_growth_chart.png charts/spy_pe_chart.png 2>/dev/null || true
+          git commit -m "One-off: update SPY P/E & implied growth in existing tables (no new tables)" || echo "No changes to commit"
           git push
