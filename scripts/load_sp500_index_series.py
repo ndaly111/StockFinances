@@ -94,9 +94,21 @@ def load_pe_rows(pe_csv_path):
     """
     rows = []
     with open(pe_csv_path, newline="", encoding="utf-8-sig") as f:
-        r = csv.DictReader(f)
+        # Read using DictReader, but if it doesn't find a header, derive it from the first non-blank line.
+        r = csv.DictReader(f, skipinitialspace=True)
         if not r.fieldnames:
-            raise ValueError(f"{pe_csv_path} has no header row")
+            f.seek(0)
+            header = None
+            for line in f:
+                if line.strip():  # find first non-empty line
+                    header = line.strip().lstrip("\ufeff")  # remove BOM if present
+                    break
+            if header is None:
+                return []  # empty file
+            fieldnames = [c.strip() for c in header.split(",")]
+            f.seek(0)
+            r = csv.DictReader(f, fieldnames=fieldnames, skipinitialspace=True)
+            next(r, None)  # skip header row
 
         date_col = _resolve_column(r.fieldnames, "DATE", "Date")
         pe_col = _resolve_column(
@@ -125,9 +137,20 @@ def load_yield_map(yield_csv_path: str) -> Dict[str, float]:
 
     yields: Dict[str, float] = {}
     with open(yield_csv_path, newline="", encoding="utf-8-sig") as f:
-        r = csv.DictReader(f)
+        r = csv.DictReader(f, skipinitialspace=True)
         if not r.fieldnames:
-            raise ValueError(f"{yield_csv_path} has no header row")
+            f.seek(0)
+            header = None
+            for line in f:
+                if line.strip():
+                    header = line.strip().lstrip("\ufeff")
+                    break
+            if header is None:
+                return {}
+            fieldnames = [c.strip() for c in header.split(",")]
+            f.seek(0)
+            r = csv.DictReader(f, fieldnames=fieldnames, skipinitialspace=True)
+            next(r, None)
 
         date_col = _resolve_column(r.fieldnames, "DATE", "Date")
         yield_col = _resolve_column(
