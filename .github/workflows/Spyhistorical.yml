@@ -15,7 +15,8 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v5
-        with-version: "3.11"
+        with:
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -28,19 +29,21 @@ jobs:
           python scripts/load_sp500_index_series.py \
             --db "Stock Data.db" \
             --pe_csv "data/sp500_daily_pe_filled.csv" \
-            --yield_csv "data/DGS10_filtered.cv" \
+            --yield_csv "data/DGS10_filtered.csv"
 
       - name: Generate index charts
-        run:  index_growth_charts.py QQQ
+        run: |
+          python index_growth_charts.py SPY
+          python index_growth_charts.py QQQ
 
       - name: Commit updated database and charts
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add "Stock Data.db" || true
-          git add charts/spy_growth_chart.png charts/spy_pe_chart.png \
-                  charts/spy_growth_summary.html charts/spy_pe_summary.html || true
-          git add charts/qqq_growth_chart.png charts/qqq_pe_chart.png \
-                  charts/qqq_growth_summary.html charts/qqq_pe_summary.html || true
+          git add "Stock Data.db"
+          git add charts/spy_growth_chart.png charts/spy_pe_chart.png || true
+          git add charts/spy_growth_summary.html charts/spy_pe_summary.html || true
+          git add charts/qqq_growth_chart.png charts/qqq_pe_chart.png || true
+          git add charts/qqq_growth_summary.html charts/qqq_pe_summary.html || true
           git commit -m "Auto-update: index PE & implied growth history and charts" || echo "No changes to commit"
           git push
