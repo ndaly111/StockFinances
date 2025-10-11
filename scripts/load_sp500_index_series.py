@@ -110,7 +110,13 @@ def load_pe_rows(pe_csv_path):
             r = csv.DictReader(f, fieldnames=fieldnames, skipinitialspace=True)
             next(r, None)  # skip header row
 
-        date_col = _resolve_column(r.fieldnames, "DATE", "Date")
+        date_col = _resolve_column(
+            r.fieldnames,
+            "DATE",
+            "Date",
+            "observation_date",
+            "Observation Date",
+        )
         pe_col = _resolve_column(
             r.fieldnames,
             "PE",
@@ -152,7 +158,13 @@ def load_yield_map(yield_csv_path: str) -> Dict[str, float]:
             r = csv.DictReader(f, fieldnames=fieldnames, skipinitialspace=True)
             next(r, None)
 
-        date_col = _resolve_column(r.fieldnames, "DATE", "Date")
+        date_col = _resolve_column(
+            r.fieldnames,
+            "DATE",
+            "Date",
+            "observation_date",
+            "Observation Date",
+        )
         yield_col = _resolve_column(
             r.fieldnames,
             "Yield",
