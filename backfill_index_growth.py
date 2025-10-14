@@ -13,12 +13,12 @@ This script performs two major tasks:
    `Treasury_Yield_History` always contains clean, decimal values.
 
 2. Recompute implied growth for every entry in `Index_PE_History`.
-   Implied growth is calculated as `(yield * PE_Ratio) - 1.0`, where
-   `yield` is the most recent 10 ‑year Treasury yield on or prior to the
-   P/E date.  If no historical yield is available for a particular
-   date, a fallback yield is used.  Results are written back into
-   `Index_Growth_History`, keyed by date, ticker and growth type (TTM
-   or Forward).
+   Implied growth is calculated as
+   `((PE_Ratio / 10) ** 0.1) + yield - 1`, where `yield` is the most
+   recent 10 ‑year Treasury yield on or prior to the P/E date.  If no
+   historical yield is available for a particular date, a fallback
+   yield is used.  Results are written back into `Index_Growth_History`,
+   keyed by date, ticker and growth type (TTM or Forward).
 
 Run this script as part of your build pipeline after refreshing P/E
 history but before generating charts or HTML pages.  You can also run
@@ -57,7 +57,8 @@ SELECT
     p.Date,
     p.Ticker,
     p.PE_Type AS Growth_Type,
-    (COALESCE(
+    POWER(p.PE_Ratio / 10.0, 0.1) +
+    COALESCE(
         -- use the latest yield on or before p.Date
         (SELECT TenYr
            FROM Treasury_Yield_History t
@@ -65,9 +66,9 @@ SELECT
           ORDER BY t.Date DESC
           LIMIT 1),
         ?
-     ) * p.PE_Ratio) - 1.0 AS Implied_Growth
+    ) - 1.0 AS Implied_Growth
 FROM Index_PE_History p
-WHERE p.PE_Ratio IS NOT NULL;
+WHERE p.PE_Ratio IS NOT NULL AND p.PE_Ratio > 0;
 """
 
 

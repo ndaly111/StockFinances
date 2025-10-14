@@ -16,8 +16,8 @@ Two sources are used:
   average for QQQ.
 
 The script calculates the implied growth rate with the same formula used
-elsewhere in the repository (``growth = yield * PE - 1``) by merging
-historical ten year treasury yields that already live in
+elsewhere in the repository (``growth = (PE / 10) ** 0.1 + yield - 1``)
+by merging historical ten year treasury yields that already live in
 ``economic_data``.
 
 Running ``populate_index_history.py`` refreshes the two tables and
@@ -210,13 +210,14 @@ def _write_history(
     merged.columns = ["PE", "Yield"]
     merged = merged.replace([np.inf, -np.inf], np.nan).dropna()
 
-    # Skip calculations for days where either series is zero or negative –
-    # these lead to nonsensical implied growth spikes on the charts.
-    merged = merged[(merged["PE"] > 0) & (merged["Yield"] > 0)]
+    # Skip calculations for days where the P/E series is zero or
+    # negative—raising those values to the tenth root is undefined for
+    # our purposes and leads to chart artifacts.
+    merged = merged[merged["PE"] > 0]
     if merged.empty:
         raise RuntimeError(f"No overlapping data for {ticker} to store.")
 
-    merged["Growth"] = merged["Yield"] * merged["PE"] - 1.0
+    merged["Growth"] = (merged["PE"] / 10.0) ** 0.1 + merged["Yield"] - 1.0
     rows = [
         (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["PE"]))
         for idx, row in merged.iterrows()
