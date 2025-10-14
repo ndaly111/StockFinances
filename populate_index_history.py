@@ -209,6 +209,10 @@ def _write_history(
     merged = pd.concat([pe_series, yield_series], axis=1, join="inner").dropna()
     merged.columns = ["PE", "Yield"]
     merged = merged.replace([np.inf, -np.inf], np.nan).dropna()
+
+    # Skip calculations for days where either series is zero or negative –
+    # these lead to nonsensical implied growth spikes on the charts.
+    merged = merged[(merged["PE"] > 0) & (merged["Yield"] > 0)]
     if merged.empty:
         raise RuntimeError(f"No overlapping data for {ticker} to store.")
 
