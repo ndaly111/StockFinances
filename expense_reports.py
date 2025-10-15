@@ -221,13 +221,25 @@ def _cats(df: pd.DataFrame, combo_present: bool):
     return [c for c in cats if c[1] in df.columns]
 
 
+def _nonzero_categories(df: pd.DataFrame, cats: list[tuple[str, str, str]], *, tol: float = 1e-9):
+    """Keep only categories that have a non-trivial value in the frame."""
+
+    keep = []
+    for label, col, colour in cats:
+        series = pd.to_numeric(df[col], errors="coerce").fillna(0)
+        if series.abs().sum() > tol:
+            keep.append((label, col, colour))
+    return keep
+
+
 def _chart_abs(df: pd.DataFrame, tkr: str):
     f      = df.sort_values("year_int")
     x_lab  = f["year_label"].tolist()
     idx    = np.arange(len(f))
     width  = 0.38
-    cats   = _cats(f, f["sga_combined"].notna().any())
-    fig, ax = plt.subplots(figsize=(11, 6))
+    cats_all = _cats(f, f["sga_combined"].notna().any())
+    cats     = _nonzero_categories(f, cats_all)
+    fig, ax = plt.subplots(figsize=(9.5, 5.5))
 
     revenue_vals = f["total_revenue"].fillna(0).astype(float).values
     ax.bar(idx - width / 2, revenue_vals, width=width, color="#4a4a4a", label="Revenue")
@@ -244,7 +256,9 @@ def _chart_abs(df: pd.DataFrame, tkr: str):
     ax.set_xticklabels(x_lab)
     ax.set_title(f"Revenue vs Operating Expenses — {tkr}")
     ax.yaxis.set_major_formatter(FuncFormatter(lambda val, _: _fmt_short(val)))
-    ax.legend(frameon=False, ncol=2)
+    handles, labels = ax.get_legend_handles_labels()
+    if handles:
+        ax.legend(handles, labels, frameon=False, ncol=2)
     plt.tight_layout()
     for name in (
         f"{tkr}_expenses_vs_revenue.png",
@@ -263,14 +277,15 @@ def _chart_pct(df: pd.DataFrame, tkr: str):
     f      = df.sort_values("year_int").loc[
                  lambda d: d["total_revenue"] != 0].copy()
     x      = f["year_label"].tolist()
-    cats   = _cats(f, f["sga_combined"].notna().any())
+    cats_all = _cats(f, f["sga_combined"].notna().any())
+    cats     = _nonzero_categories(f, cats_all)
 
     # add percent columns
     for _, col, _ in cats:
         f[col + "_pct"] = pd.to_numeric(f[col], errors="coerce") \
                           / f["total_revenue"].astype(float) * 100
 
-    fig, ax = plt.subplots(figsize=(11, 4))
+    fig, ax = plt.subplots(figsize=(9.5, 4.2))
     bottom  = np.zeros(len(f), dtype=float)
 
     for label, col, colour in cats:
@@ -290,9 +305,10 @@ def _chart_pct(df: pd.DataFrame, tkr: str):
     ax.set_yticks(np.arange(0, ylim+1, 10))
     ax.set_ylabel("Percent of Revenue")
     ax.set_title(f"Expenses as % of Revenue — {tkr}")
-    ax.legend([c[0] for c in cats],
-              bbox_to_anchor=(1.01, 0.5),
-              loc="center left", frameon=False)
+    if cats:
+        ax.legend([c[0] for c in cats],
+                  bbox_to_anchor=(1.01, 0.5),
+                  loc="center left", frameon=False)
     fig.subplots_adjust(right=0.78, top=0.88)
     plt.tight_layout()
 
