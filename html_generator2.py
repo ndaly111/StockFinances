@@ -115,7 +115,8 @@ td{padding:4px;border:1px solid #8080FF}
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
   <style>
-    td.positive{color:green;} td.negative{color:red;}
+    .positive{color:#2e7d32;font-weight:600;}
+    .negative{color:#c62828;font-weight:600;}
     td.pct::after{content:'%';}
     .center-table{margin:0 auto;width:100%%}
   </style>
