@@ -16,14 +16,17 @@ os.makedirs(OUT_DIR, exist_ok=True)
 # ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
 <style>
-.summary-table{width:100%;border-collapse:collapse;
+.summary-table{border-collapse:collapse;
   font-family:Verdana,Arial,sans-serif;font-size:12px;
-  border:3px solid #003366;}
+  border:3px solid #003366;margin:0 auto;width:auto;
+  max-width:520px;}
 .summary-table th{background:#f2f2f2;padding:4px 6px;
-  border:1px solid #B0B0B0;text-align:center;}
+  border:1px solid #B0B0B0;text-align:center;white-space:nowrap;}
 .summary-table td{padding:4px 6px;border:1px solid #B0B0B0;text-align:center;}
 </style>
 """
+
+YEARS = (1, 2, 3, 5, 10)
 
 # ───────── helpers ─────────────────────────────────────────
 def _series_growth(conn, tk):
@@ -60,26 +63,80 @@ def _pctile(s) -> str:                      # whole-number percentile
 def _pct_fmt(x: float) -> str:              # 0.1923 → '19.23 %'
     return f"{x * 100:.2f} %"
 
-def _row(label, s, pct=False):
-    if s.empty:
-        return dict(Metric=label, Latest="N/A", Avg="N/A", Med="N/A",
-                    Min="N/A", Max="N/A", **{"%ctile": "—"})
-    stats = dict(
-        Metric = label,
-        Latest = s.iloc[-1],
-        Avg    = s.mean(),
-        Med    = s.median(),
-        Min    = s.min(),
-        Max    = s.max(),
-        **{"%ctile": _pctile(s)}
-    )
-    if pct:                                 # convert to XX.XX %
-        for k in ("Latest","Avg","Med","Min","Max"):
-            stats[k] = _pct_fmt(stats[k])
-    else:                                   # numeric table → two decimals
-        for k in ("Latest","Avg","Med","Min","Max"):
-            stats[k] = f"{stats[k]:.2f}"
-    return stats
+def _format_value(val, pct: bool) -> str:
+    try:
+        if pd.isna(val) or not np.isfinite(val):
+            return "N/A"
+    except TypeError:  # pragma: no cover - defensive, val may be str/object
+        return "N/A"
+    return _pct_fmt(val) if pct else f"{val:.2f}"
+
+
+def _rows_by_years(series: pd.Series, pct: bool = False) -> pd.DataFrame:
+    if series.empty:
+        return pd.DataFrame(
+            [
+                dict(
+                    Years=str(yrs),
+                    Current="N/A",
+                    Average="N/A",
+                    Min="N/A",
+                    Max="N/A",
+                    Percentile="—",
+                )
+                for yrs in YEARS
+            ]
+        )
+
+    series = pd.to_numeric(series, errors="coerce").dropna()
+    if series.empty:
+        return pd.DataFrame(
+            [
+                dict(
+                    Years=str(yrs),
+                    Current="N/A",
+                    Average="N/A",
+                    Min="N/A",
+                    Max="N/A",
+                    Percentile="—",
+                )
+                for yrs in YEARS
+            ]
+        )
+
+    latest_val = series.iloc[-1]
+    latest_fmt = _format_value(latest_val, pct)
+    end = series.index.max()
+
+    rows = []
+    for yrs in YEARS:
+        start = end - pd.DateOffset(years=yrs)
+        window = series[series.index >= start].dropna()
+        if window.empty:
+            rows.append(
+                dict(
+                    Years=str(yrs),
+                    Current="N/A",
+                    Average="N/A",
+                    Min="N/A",
+                    Max="N/A",
+                    Percentile="—",
+                )
+            )
+            continue
+
+        rows.append(
+            dict(
+                Years=str(yrs),
+                Current=latest_fmt,
+                Average=_format_value(window.mean(), pct),
+                Min=_format_value(window.min(), pct),
+                Max=_format_value(window.max(), pct),
+                Percentile=_pctile(window),
+            )
+        )
+
+    return pd.DataFrame(rows)
 
 def _chart(series, title, ylab, fname):
     plt.figure()
@@ -100,7 +157,7 @@ def _pct_color(v):                          # green ≤30, red ≥70
 def _build_html(df):
     sty = (df.style
              .hide(axis="index")
-             .map(_pct_color, subset="%ctile")
+             .map(_pct_color, subset="Percentile")
              .set_table_attributes('class="summary-table"'))
     return SUMMARY_CSS + sty.to_html()
 
@@ -142,8 +199,8 @@ def render_index_growth_charts(tk="SPY"):
 
     _save_tables(
         tk,
-        pd.DataFrame([_row("Implied Growth (TTM)", ig_s, pct=True)]),
-        pd.DataFrame([_row("P/E Ratio (TTM)",       pe_s, pct=False)])
+        _rows_by_years(ig_s, pct=True),
+        _rows_by_years(pe_s, pct=False)
     )
 
 # legacy alias
