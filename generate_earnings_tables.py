@@ -129,12 +129,17 @@ def generate_earnings_tables():
     conn.close()
 
     if not dfp.empty:
+        def format_surprise(value: float) -> str:
+            """Return HTML for the surprise value with a colour-coded span."""
+            if pd.isna(value):
+                return "-"
+
+            css_class = "positive" if value > 0 else "negative" if value < 0 else ""
+            formatted = f"{value:+.2f}%"
+            return f'<span class="{css_class}">{formatted}</span>' if css_class else formatted
+
         dfp['Surprise Value'] = pd.to_numeric(dfp['surprise_percent'], errors='coerce')
-        dfp['Surprise HTML']  = dfp['Surprise Value'].apply(
-            lambda x: (
-                f'<span class="{"positive" if x>0 else "negative" if x<0 else ""}">{x:+.2f}%</span>'
-            ) if pd.notna(x) else "-"
-        )
+        dfp['Surprise HTML']  = dfp['Surprise Value'].apply(format_surprise)
 
         note = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
         reporting_html = (
@@ -147,9 +152,15 @@ def generate_earnings_tables():
         misses = dfp[dfp['Surprise Value'] < 0].nsmallest(5, 'Surprise Value')
         summary_html = (
             "<h3>Top 5 Earnings Beats</h3><ul>"
-            + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in beats.iterrows())
+            + "".join(
+                f"<li>{r['ticker']}: {format_surprise(r['Surprise Value'])}</li>"
+                for _, r in beats.iterrows()
+            )
             + "</ul><h3>Top 5 Earnings Misses</h3><ul>"
-            + "".join(f"<li>{r['ticker']}: {r['Surprise Value']:+.2f}%</li>" for _, r in misses.iterrows())
+            + "".join(
+                f"<li>{r['ticker']}: {format_surprise(r['Surprise Value'])}</li>"
+                for _, r in misses.iterrows()
+            )
             + "</ul>"
         )
 
