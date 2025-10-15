@@ -45,10 +45,24 @@ def _fetch_pe(tk):
 
 # ─── Growth calc ──────────────────────────────────────────
 def _growth(ttm_pe, fwd_pe, y):
-    return (
-        y * ttm_pe - 1 if ttm_pe else None,
-        y * fwd_pe - 1 if fwd_pe else None
-    )
+    def solve(pe):
+        if pe is None:
+            return None
+        try:
+            pe = float(pe)
+        except (TypeError, ValueError):
+            return None
+        if pe <= 0:
+            return None
+
+        try:
+            # P/E = (((growth - y) + 1) ** 10) * 10
+            # ⇒ growth = y - 1 + (P/E / 10) ** (1 / 10)
+            return y - 1 + pow(pe / 10, 0.1)
+        except (OverflowError, ValueError):
+            return None
+
+    return (solve(ttm_pe), solve(fwd_pe))
 
 # ─── DB helpers ───────────────────────────────────────────
 def _ensure_tables(conn):
