@@ -31,6 +31,7 @@ from urllib.parse import urljoin
 
 import pandas as pd
 import requests
+from requests import exceptions as req_exc
 from bs4 import BeautifulSoup
 
 REQUEST_TIMEOUT = 20
@@ -44,10 +45,50 @@ def _sec_headers() -> dict:
     SEC requires a descriptive User-Agent with contact info.
     Set env SEC_USER_AGENT in CI:
       SEC_USER_AGENT: StockFinances/1.0 (Contact: you@example.com)
+
+    If no explicit UA is provided we build one automatically, optionally using a
+    contact email exposed via SEC_EMAIL/SEC_CONTACT/Email/EMAIL secrets.
     """
-    ua = os.getenv("SEC_USER_AGENT") or os.getenv("SEC_UA") or ""
-    ua = ua.strip() or "StockFinancesBot/1.0 (contact: you@example.com)"
+    ua = (os.getenv("SEC_USER_AGENT") or os.getenv("SEC_UA") or "").strip()
+    if ua:
+        return {"User-Agent": ua}
+
+    email = (
+        os.getenv("SEC_EMAIL")
+        or os.getenv("SEC_CONTACT")
+        or os.getenv("Email")
+        or os.getenv("EMAIL")
+        or "you@example.com"
+    ).strip()
+    ua = f"StockFinancesBot/1.0 (contact: {email})"
     return {"User-Agent": ua}
+
+
+def _sec_get(url: str, *, timeout: int = REQUEST_TIMEOUT, stream: bool = False):
+    """Wrapper around ``requests.get`` with friendlier SEC-specific errors."""
+
+    headers = _sec_headers()
+    try:
+        resp = requests.get(url, headers=headers, timeout=timeout, stream=stream)
+        resp.raise_for_status()
+        return resp
+    except req_exc.ProxyError as exc:
+        raise RuntimeError(
+            "SEC request blocked by proxy for "
+            f"{url}. Ensure your network allows outbound HTTPS to data.sec.gov or configure the proxy "
+            "credentials correctly."
+        ) from exc
+    except req_exc.HTTPError as exc:
+        status = exc.response.status_code if exc.response is not None else None
+        if status == 403:
+            raise RuntimeError(
+                "SEC returned HTTP 403 for "
+                f"{url}. Provide a descriptive contact email via SEC_USER_AGENT/SEC_UA or check that "
+                "your account is permitted to access the endpoint."
+            ) from exc
+        raise RuntimeError(f"SEC request failed with HTTP {status} for {url}: {exc}") from exc
+    except req_exc.RequestException as exc:
+        raise RuntimeError(f"SEC request failed for {url}: {exc}") from exc
 
 _FALLBACK_CIK = {
     "AAPL": "0000320193",
@@ -73,9 +114,8 @@ def _load_cik_map() -> Dict[str, int]:
 def _resolve_ticker_to_cik_online(ticker: str) -> str:
     t = ticker.upper().strip()
     url = "https://www.sec.gov/files/company_tickers.json"
-    resp = requests.get(url, headers=_sec_headers(), timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+    with _sec_get(url, timeout=30) as resp:
+        data = resp.json()
     for rec in data.values():
         if rec.get("ticker", "").upper() == t:
             return str(rec["cik_str"]).zfill(10)
@@ -126,9 +166,8 @@ def fetch_latest_filings(cik: str) -> Dict[str, Dict[str, str]]:
         '10-Q': {...} }
     """
     url = f"https://data.sec.gov/submissions/CIK{cik}.json"
-    resp = requests.get(url, headers=_sec_headers(), timeout=30)
-    resp.raise_for_status()
-    j = resp.json()
+    with _sec_get(url, timeout=30) as resp:
+        j = resp.json()
 
     forms = j.get("filings", {}).get("recent", {})
     out = {}
@@ -160,8 +199,7 @@ def build_filing_url(cik: str, accession_nodashes: str, primary_doc: str) -> str
 
 def download_file(url: str, out_path: Path):
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with requests.get(url, headers=_sec_headers(), timeout=60, stream=True) as r:
-        r.raise_for_status()
+    with _sec_get(url, timeout=60, stream=True) as r:
         with open(out_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=1 << 15):
                 if chunk:
@@ -594,22 +632,20 @@ def get_segment_data(
 
 def _get_text(url: str) -> Optional[str]:
     try:
-        r = requests.get(url, headers=_sec_headers(), timeout=REQUEST_TIMEOUT)
-        r.raise_for_status()
-        ct = (r.headers.get("content-type") or "").lower()
-        if "html" not in ct and "text" not in ct:
-            return None
-        r.encoding = r.encoding or "utf-8"
-        return r.text
+        with _sec_get(url, timeout=REQUEST_TIMEOUT) as r:
+            ct = (r.headers.get("content-type") or "").lower()
+            if "html" not in ct and "text" not in ct:
+                return None
+            r.encoding = r.encoding or "utf-8"
+            return r.text
     except Exception:
         return None
 
 
 def _company_submissions(cik: str) -> dict:
     url = f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json"
-    r = requests.get(url, headers=_sec_headers(), timeout=REQUEST_TIMEOUT)
-    r.raise_for_status()
-    return r.json()
+    with _sec_get(url, timeout=REQUEST_TIMEOUT) as r:
+        return r.json()
 
 
 def _locate_item2_text(html: str) -> Optional[str]:
