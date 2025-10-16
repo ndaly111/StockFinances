@@ -11,12 +11,11 @@ Reads tickers from tickers.csv and for each ticker:
 2) Writes a compact pivot HTML table per ticker at:
    charts/{TICKER}/{TICKER}_segments_table.html
 
-   - One row per segment
-   - Columns: last 3 fiscal years + TTM, each with Rev & OI side-by-side
+   - Columns grouped by segment (Revenue + Operating Income pairs)
+   - Rows: last 3 fiscal years + TTM, plus a "% of Total (TTM)" mix row
    - Single, consistent unit across the whole table ($K/$M/$B/$T or $)
-   - TTM columns bold
-   - “% of Total (TTM)” mix column
-   - Sorted by TTM Revenue descending
+   - Revenue mix row displays percentages; Operating Income mix cells show em dashes
+   - Segments ordered by latest (TTM) revenue contribution
 
 Data source: sec_segment_data_arelle.get_segment_data(ticker)
 Expected columns: Segment, Year, Revenue, OpIncome
@@ -77,6 +76,9 @@ def _humanize_segment_name(raw: str) -> str:
         return raw
     name = raw.replace("SegmentMember", "")
     name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name).strip()
+    # drop common suffixes that linger after the initial replace
+    name = re.sub(r"\b(Member|Segment)\b", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"\s+", " ", name).strip()
     fixes = {
         "Greater China": "Greater China",
         "Rest Of Asia Pacific": "Rest of Asia Pacific",
@@ -89,9 +91,32 @@ def _humanize_segment_name(raw: str) -> str:
         "Europe": "Europe",
         "Japan": "Japan",
         "China": "China",
+        "Wearables Homeand Accessories": "Wearables Home and Accessories",
     }
     title = " ".join(w if w.isupper() else w.capitalize() for w in name.split())
     return fixes.get(title, title)
+
+
+def _segment_short_label(name: str) -> str:
+    """Create compact labels for pivot-table column headers."""
+    if not isinstance(name, str):
+        return str(name)
+    base = re.sub(r"\b(Member|Segment)\b", "", name, flags=re.IGNORECASE)
+    base = re.sub(r"\s+", " ", base).strip()
+    base = base.replace("Homeand", "Home and")
+    replacements = {
+        "Product": "Prod",
+        "Products": "Prod",
+        "Service": "Services",
+        "Services": "Services",
+        "I Phone": "iPhone",
+        "Iphone": "iPhone",
+        "I Pad": "iPad",
+        "Ipad": "iPad",
+        "Wearables Home And Accessories": "Wearables",
+    }
+    key = " ".join(part.capitalize() if not part.isupper() else part for part in base.split())
+    return replacements.get(key, key)
 
 def _to_float(x):
     if pd.isna(x): return pd.NA
@@ -119,17 +144,17 @@ def _fmt_scaled(x, div, unit) -> str:
         val = float(x) / float(div)
     except Exception:
         return "–"
-    if abs(val) >= 100:
-        fmt = "{:,.0f}" if unit == "$" else "{:.0f}"
-    elif abs(val) >= 10:
+    if abs(val) >= 10:
         fmt = "{:,.1f}" if unit == "$" else "{:.1f}"
+        s = fmt.format(val)
+        if "." in s:
+            s = s.rstrip("0").rstrip(".")
     else:
         fmt = "{:,.2f}" if unit == "$" else "{:.2f}"
-    s = fmt.format(val)
+        s = fmt.format(val)
     if unit == "$":
         return f"${s}"
-    else:
-        return f"{s}{unit[-1]}"
+    return f"{s}{unit[-1]}"
 
 def _last3_plus_ttm(years: List[str]) -> List[str]:
     nums = sorted({int(y) for y in years if str(y).isdigit()})
@@ -261,32 +286,60 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             max_val = pd.concat([rev_p, oi_p]).abs().max().max()
             div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
-            cols: List[Tuple[str, str]] = []
-            for y in [c for c in years_tbl if c != "TTM"]:
-                cols += [(y, "Rev"), (y, "OI")]
-            if "TTM" in years_tbl:
-                cols += [("TTM", "Rev"), ("TTM", "OI")]
+            segment_labels = [(seg, _segment_short_label(seg)) for seg in rev_p.index]
+            column_specs: List[Tuple[str, str, str | None]] = []
+            for seg, label in segment_labels:
+                column_specs.append((label, "Rev", seg))
+                column_specs.append((label, "OI", seg))
+            column_specs.append(("Total", "Rev", None))
+            column_specs.append(("Total", "OI", None))
 
-            out_tbl = pd.DataFrame(index=rev_p.index)
-            for (y, kind) in cols:
-                src = rev_p.get(y) if kind == "Rev" else oi_p.get(y)
-                label = f"{y} {'Rev' if kind=='Rev' else 'OI'} ({unit})"
-                out_tbl[label] = src
+            year_rows: List[dict] = []
+            for year in years_tbl:
+                row: dict[str, object] = {"Year": year}
+                totals = {"Rev": 0.0, "OI": 0.0}
+                totals_present = {"Rev": False, "OI": False}
+                for label, kind, seg in column_specs:
+                    key = f"{label} {kind}"
+                    if seg is None:
+                        continue
+                    src_df = rev_p if kind == "Rev" else oi_p
+                    if year in src_df.columns and seg in src_df.index:
+                        raw_val = src_df.at[seg, year]
+                    else:
+                        raw_val = pd.NA
+                    row[key] = raw_val
+                    if pd.notna(raw_val):
+                        totals[kind] += float(raw_val)
+                        totals_present[kind] = True
+                row["Total Rev"] = totals["Rev"] if totals_present["Rev"] else pd.NA
+                row["Total OI"] = totals["OI"] if totals_present["OI"] else pd.NA
+                year_rows.append(row)
+
+            display_rows: List[dict[str, object]] = []
+            for raw_row in year_rows:
+                disp_row = {"Year": raw_row["Year"]}
+                for label, kind, _ in column_specs:
+                    key = f"{label} {kind}"
+                    disp_row[key] = _fmt_scaled(raw_row.get(key, pd.NA), div, unit)
+                display_rows.append(disp_row)
 
             if pct_series is not None:
-                out_tbl["% of Total (TTM)"] = pct_series
+                pct_row: dict[str, object] = {"Year": "% of Total (TTM)"}
+                for label, kind, seg in column_specs:
+                    key = f"{label} {kind}"
+                    if kind == "Rev":
+                        if seg is None:
+                            pct_row[key] = "100%"
+                        else:
+                            pct_val = pct_series.get(seg)
+                            pct_row[key] = f"{float(pct_val):.1f}%" if pd.notna(pct_val) else "–"
+                    else:
+                        pct_row[key] = "—"
+                display_rows.append(pct_row)
 
-            for c in out_tbl.columns:
-                if c == "% of Total (TTM)":
-                    out_tbl[c] = out_tbl[c].map(lambda x: f"{float(x):.1f}%" if pd.notnull(x) else "–")
-                else:
-                    out_tbl[c] = out_tbl[c].map(lambda x, d=div, u=unit: _fmt_scaled(x, d, u))
-
-            for ttm_col in [c for c in out_tbl.columns if c.startswith("TTM ")]:
-                out_tbl[ttm_col] = out_tbl[ttm_col].map(lambda s: f"<strong>{s}</strong>" if s != "–" else s)
-
-            out_tbl.index.name = "Segment"
-            out_disp = out_tbl.reset_index()
+            col_order = ["Year"] + [f"{label} {kind}" for label, kind, _ in column_specs]
+            out_disp = pd.DataFrame(display_rows, columns=col_order)
 
             css = """
 <style>
@@ -304,8 +357,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
             stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
             caption = (
-                f'<div class="table-note">{VERSION} · {stamp} — Values are shown in a single scale for this table: '
-                f'<b>{unit}</b>. TTM values are <b>bold</b>. “% of Total (TTM)” shows revenue mix.</div>'
+                f'<div class="table-note">{VERSION} · {stamp} — Units: <b>{unit}</b>. '
+                "Rows list fiscal years (last 3 + TTM) with revenue and operating income for each segment; "
+                'the final row shows the TTM revenue mix (operating income columns display “—” where mix is not applicable).</div>'
             )
             html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
             table_content = css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
