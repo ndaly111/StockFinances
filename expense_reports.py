@@ -242,12 +242,28 @@ def _chart_abs(df: pd.DataFrame, tkr: str):
     fig, ax = plt.subplots(figsize=(9.5, 5.5))
 
     revenue_vals = f["total_revenue"].fillna(0).astype(float).values
-    ax.bar(idx - width / 2, revenue_vals, width=width, color="#4a4a4a", label="Revenue")
+    revenue_bars = ax.bar(
+        idx - width / 2,
+        revenue_vals,
+        width=width,
+        color="#155724",
+        label="Revenue",
+    )
 
     bottom = np.zeros(len(f), dtype=float)
+    seg_labels = []
     for lbl, col, colour in cats:
         vals = f[col].fillna(0).astype(float).values
-        ax.bar(idx + width / 2, vals, bottom=bottom, color=colour, width=width, label=lbl)
+        bars = ax.bar(
+            idx + width / 2,
+            vals,
+            bottom=bottom,
+            color=colour,
+            width=width,
+            label=lbl,
+        )
+        for bar, val in zip(bars, vals):
+            seg_labels.append((bar, float(val), colour))
         bottom += vals
 
     ymax = max(bottom.max(), revenue_vals.max()) * 1.1 if len(f) else 1
@@ -259,6 +275,45 @@ def _chart_abs(df: pd.DataFrame, tkr: str):
     handles, labels = ax.get_legend_handles_labels()
     if handles:
         ax.legend(handles, labels, frameon=False, ncol=2)
+    for bar, val, colour in seg_labels:
+        if val <= 0:
+            continue
+        height = bar.get_height()
+        x = bar.get_x() + bar.get_width() / 2
+        base = bar.get_y()
+        if height < ymax * 0.03:
+            y = base + height + ymax * 0.01
+            va = "bottom"
+            clr = "black"
+        else:
+            y = base + height / 2
+            va = "center"
+            clr = _txt_colour(colour)
+        ax.text(
+            x,
+            y,
+            _fmt_short(val),
+            ha="center",
+            va=va,
+            fontsize=8,
+            color=clr,
+        )
+
+    for bar, val in zip(revenue_bars, revenue_vals):
+        if val <= 0:
+            continue
+        x = bar.get_x() + bar.get_width() / 2
+        y = bar.get_height() + ymax * 0.01
+        ax.text(
+            x,
+            y,
+            _fmt_short(val),
+            ha="center",
+            va="bottom",
+            fontsize=8,
+            color="#155724",
+        )
+
     plt.tight_layout()
     for name in (
         f"{tkr}_expenses_vs_revenue.png",
@@ -299,7 +354,6 @@ def _chart_pct(df: pd.DataFrame, tkr: str):
                         color=_txt_colour(colour))
         bottom += vals
 
-    ax.axhline(100, ls="--", lw=1, color="black", zorder=5)
     ylim = np.ceil((bottom.max()*1.1) / 10) * 10
     ax.set_ylim(0, ylim)
     ax.set_yticks(np.arange(0, ylim+1, 10))
