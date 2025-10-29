@@ -29,6 +29,7 @@ from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
 from backfill_index_growth     import backfill_index_growth
+from backfill_index_pe_history import backfill_index_pe_history
 
 # We no longer call the second table generator; chart writer owns the table.
 from generate_segment_charts   import generate_segment_charts_for_ticker
@@ -199,6 +200,8 @@ def mini_main():
 
     financial_data, dashboard_data = {}, []
     treasury = fetch_10_year_treasury_yield()
+    backfill_index_pe_history(years=10)
+    backfill_index_growth()
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
     # below is the inserted code
@@ -256,7 +259,6 @@ def mini_main():
         # their growth pages share the same styled summaries.
         for idx in ("SPY", "QQQ"):
             render_index_growth_charts(idx)
-        backfill_index_growth()
 
         html_generator2(
             tickers,
