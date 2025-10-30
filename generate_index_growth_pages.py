@@ -150,7 +150,32 @@ def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
             if not s.empty and s.median() < 1.0:
                 df[col] = df[col] * 100.0
     keep = [c for c in ["ig", "ig_fwd", "pe", "pe_fwd", "tnx"] if c in df.columns]
-    return df[keep]
+    df = df[keep]
+
+    # Attach EPS if available.
+    eps = _load_eps_series(conn, ticker)
+    if eps is not None:
+        df = df.join(eps, how="outer")
+
+    return df
+
+
+def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Series]:
+    """Return the ETF EPS history as a Series indexed by date."""
+
+    query = (
+        "SELECT Date, EPS FROM Index_EPS_History "
+        "WHERE Ticker=? AND EPS_Type='TTM' ORDER BY Date"
+    )
+    df = pd.read_sql_query(query, conn, params=(ticker,), parse_dates=["Date"])
+    if df.empty:
+        return None
+    eps = pd.to_numeric(df["EPS"], errors="coerce").dropna()
+    if eps.empty:
+        return None
+    series = eps.groupby(df.loc[eps.index, "Date"]).last()
+    series.name = "eps"
+    return series
 
 def _resample_frames(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Return (daily, weekly, monthly) frames using last observation for each period."""
@@ -278,6 +303,17 @@ def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: 
                 x=df.index, y=df["ig_fwd"], name=f"Forward ({tag})", mode="lines",
                 hovertemplate="%{y:.2f}%<extra></extra>",
             ))
+        if "eps" in df.columns:
+            traces.append(
+                go.Scatter(
+                    x=df.index,
+                    y=df["eps"],
+                    name=f"EPS ({tag})",
+                    mode="lines",
+                    hovertemplate="$%{y:.2f}<extra></extra>",
+                    yaxis="y2",
+                )
+            )
         return traces
 
     traces_d = mk_traces(df_d, "Daily")
@@ -313,6 +349,13 @@ def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: 
             type="date",
         ),
         yaxis=dict(title="Implied Growth (%)", side="left"),
+        yaxis2=dict(
+            title="EPS (TTM)",
+            overlaying="y",
+            side="right",
+            tickprefix="$",
+            showgrid=False,
+        ),
         template=None,
         updatemenus=[
             dict(
@@ -383,9 +426,10 @@ def generate_index_growth_pages(db_path: str = DB_PATH) -> None:
     try:
         for ticker in ("SPY", "QQQ"):
             df = _load_series(conn, ticker)
-            # Drop rows where both TTM and Forward implied growth are missing
-            if {"ig", "ig_fwd"}.intersection(df.columns):
-                df = df.dropna(subset=[c for c in ["ig", "ig_fwd"] if c in df.columns], how="all")
+            # Drop rows where all plotted series are missing
+            subset = [c for c in ["ig", "ig_fwd", "eps"] if c in df.columns]
+            if subset:
+                df = df.dropna(subset=subset, how="all")
             _build_one(ticker, df)
     finally:
         conn.close()
