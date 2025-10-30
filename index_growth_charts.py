@@ -49,6 +49,23 @@ def _series_pe(conn, tk):
     df["Date"] = pd.to_datetime(df["Date"])
     return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
 
+
+def _series_eps(conn, tk):
+    """Return EPS (TTM) series for ticker tk."""
+    try:
+        df = pd.read_sql(
+            """SELECT Date, EPS AS val
+                 FROM Index_EPS_History
+                WHERE Ticker=? AND EPS_Type='TTM'
+             ORDER BY Date""",
+            conn,
+            params=(tk,),
+        )
+    except AttributeError:  # pragma: no cover - allows mocked connections in tests
+        return pd.Series(dtype=float)
+    df["Date"] = pd.to_datetime(df["Date"])
+    return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
+
 def _pctile(s) -> str:                      # whole-number percentile
     """Return percentile rank of the latest value in *s* (1-99)."""
     s = pd.to_numeric(s, errors="coerce").dropna()
@@ -176,6 +193,7 @@ def render_index_growth_charts(tk="SPY"):
     with sqlite3.connect(DB_PATH) as conn:
         ig_s = _series_growth(conn, tk)
         pe_s = _series_pe(conn, tk)
+        eps_s = _series_eps(conn, tk)
 
     ig_plot = ig_s
     ig_ylabel = "Implied Growth Rate"
@@ -196,6 +214,9 @@ def render_index_growth_charts(tk="SPY"):
            ig_ylabel, f"{tk.lower()}_growth_chart.png")
     _chart(pe_s, f"{tk} P/E Ratio", "P/E",
            f"{tk.lower()}_pe_chart.png")
+    if not eps_s.empty:
+        _chart(eps_s, f"{tk} EPS (TTM)", "EPS ($)",
+               f"{tk.lower()}_eps_chart.png")
 
     _save_tables(
         tk,

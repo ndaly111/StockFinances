@@ -48,6 +48,8 @@ QQQ_PE_URL = (
     "Project-on-ML-dataset-and-models-for-stock-performance-predictions-"
     "based-on-financial-ratios/master/nasdaq100_metrics_ratios.csv"
 )
+SPY_PRICE_URL = "https://stooq.com/q/d/l/?s=spy.us&i=d"
+QQQ_PRICE_URL = "https://stooq.com/q/d/l/?s=qqq.us&i=d"
 YEARS_DEFAULT = 10
 
 
@@ -173,6 +175,35 @@ def _qqq_series(
     return _to_daily(series, start, end)
 
 
+def _price_series(
+    url: str,
+    start: pd.Timestamp,
+    end: pd.Timestamp,
+    fetch: FetchFunc = _http_fetch,
+) -> pd.Series:
+    """Return a daily close-price series for an ETF between *start* and *end*."""
+
+    text = fetch(url)
+    df = pd.read_csv(io.StringIO(text))
+    if "Date" not in df.columns:
+        raise RuntimeError(f"Price feed for {url} is missing a 'Date' column")
+    if "Close" not in df.columns and "close" not in df.columns:
+        raise RuntimeError(f"Price feed for {url} is missing a 'Close' column")
+
+    close_col = "Close" if "Close" in df.columns else "close"
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    df = df.dropna(subset=["Date", close_col])
+    prices = pd.to_numeric(df[close_col], errors="coerce").dropna()
+    series = (
+        prices
+        .groupby(df.loc[prices.index, "Date"])  # collapse duplicate dates if present
+        .last()
+    )
+    series.name = "Price"
+    trimmed = series.loc[(series.index >= start - pd.DateOffset(days=5)) & (series.index <= end)]
+    return _to_daily(trimmed, start, end)
+
+
 def _load_yields(conn: sqlite3.Connection, start: pd.Timestamp, end: pd.Timestamp) -> pd.Series:
     """Return daily 10y treasury yields (decimal form) between dates."""
 
@@ -203,27 +234,40 @@ def _write_history(
     ticker: str,
     pe_series: pd.Series,
     yield_series: pd.Series,
+    price_series: pd.Series,
 ) -> None:
-    """Upsert P/E and implied growth history for *ticker* into the DB."""
+    """Upsert P/E, implied growth, and EPS history for *ticker* into the DB."""
 
-    merged = pd.concat([pe_series, yield_series], axis=1, join="inner").dropna()
-    merged.columns = ["PE", "Yield"]
+    merged = pd.concat(
+        [
+            pe_series.rename("PE"),
+            yield_series.rename("Yield"),
+            price_series.rename("Price"),
+        ],
+        axis=1,
+        join="inner",
+    ).dropna()
     merged = merged.replace([np.inf, -np.inf], np.nan).dropna()
 
     # Skip calculations for days where the P/E series is zero or
     # negative—raising those values to the tenth root is undefined for
     # our purposes and leads to chart artifacts.
-    merged = merged[merged["PE"] > 0]
+    merged = merged[(merged["PE"] > 0) & (merged["Price"] > 0)]
     if merged.empty:
         raise RuntimeError(f"No overlapping data for {ticker} to store.")
 
     merged["Growth"] = (merged["PE"] / 10.0) ** 0.1 + merged["Yield"] - 1.0
+    merged["EPS"] = merged["Price"] / merged["PE"]
     rows = [
         (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["PE"]))
         for idx, row in merged.iterrows()
     ]
     growth_rows = [
         (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["Growth"]))
+        for idx, row in merged.iterrows()
+    ]
+    eps_rows = [
+        (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["EPS"]))
         for idx, row in merged.iterrows()
     ]
     implied_rows = [
@@ -236,11 +280,26 @@ def _write_history(
 
     cur = conn.cursor()
     cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS Index_EPS_History (
+            Date    TEXT NOT NULL,
+            Ticker  TEXT NOT NULL,
+            EPS_Type TEXT NOT NULL,
+            EPS     REAL,
+            PRIMARY KEY (Date, Ticker, EPS_Type)
+        )
+        """
+    )
+    cur.execute(
         "DELETE FROM Index_PE_History WHERE Ticker=? AND PE_Type='TTM'",
         (ticker,),
     )
     cur.execute(
         "DELETE FROM Index_Growth_History WHERE Ticker=? AND Growth_Type='TTM'",
+        (ticker,),
+    )
+    cur.execute(
+        "DELETE FROM Index_EPS_History WHERE Ticker=? AND EPS_Type='TTM'",
         (ticker,),
     )
     cur.executemany(
@@ -252,6 +311,11 @@ def _write_history(
         "INSERT OR REPLACE INTO Index_Growth_History(Date,Ticker,Growth_Type,Implied_Growth)"
         " VALUES (?,?,?,?)",
         growth_rows,
+    )
+    cur.executemany(
+        "INSERT OR REPLACE INTO Index_EPS_History(Date,Ticker,EPS_Type,EPS)"
+        " VALUES (?,?,?,?)",
+        eps_rows,
     )
 
     if _table_exists(conn, IMPLIED_GROWTH_TABLE):
@@ -291,11 +355,13 @@ def populate_index_history(
 
     spy = _spy_series(start_dt, today_dt, fetch)
     qqq = _qqq_series(start_dt, today_dt, fetch)
+    spy_price = _price_series(SPY_PRICE_URL, start_dt, today_dt, fetch)
+    qqq_price = _price_series(QQQ_PRICE_URL, start_dt, today_dt, fetch)
 
     with sqlite3.connect(db_path) as conn:
         yields = _load_yields(conn, start_dt, today_dt)
-        _write_history(conn, "SPY", spy, yields)
-        _write_history(conn, "QQQ", qqq, yields)
+        _write_history(conn, "SPY", spy, yields, spy_price)
+        _write_history(conn, "QQQ", qqq, yields, qqq_price)
 
 
 if __name__ == "__main__":  # pragma: no cover - manual invocation
