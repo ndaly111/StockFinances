@@ -51,7 +51,6 @@ def write_build_stamp(stamp_path=Path(CHARTS_DIR) / "_build_stamp.txt") -> str:
 def manage_tickers(tickers_file, is_remote=False):
     tickers = ticker_manager.read_tickers(tickers_file)
     tickers = ticker_manager.modify_tickers(tickers, is_remote)
-    tickers = sorted(tickers)
     ticker_manager.write_tickers(tickers, tickers_file)
     return tickers
 
