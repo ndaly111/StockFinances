@@ -69,6 +69,12 @@ def temp_db(tmp_path: Path) -> Path:
                     Growth_Type TEXT,
                     Implied_Growth REAL
                 );
+                CREATE TABLE Index_EPS_History (
+                    Date TEXT,
+                    Ticker TEXT,
+                    EPS_Type TEXT,
+                    EPS REAL
+                );
                 CREATE TABLE Implied_Growth_History (
                     ticker TEXT,
                     growth_type TEXT,
@@ -102,16 +108,20 @@ def test_spy_series_interpolates_daily():
         2024-02-01,4700,155
         """
     )
-    series = pih._spy_series(
+    pe_series, price_series = pih._spy_series(
         pd.Timestamp("2023-12-28"),
         pd.Timestamp("2024-01-05"),
         fetch=lambda _url: csv,
     )
-    assert series.index[0] == pd.Timestamp("2023-12-28")
-    assert series.index[-1] == pd.Timestamp("2024-01-05")
+    assert pe_series.index[0] == pd.Timestamp("2023-12-28")
+    assert pe_series.index[-1] == pd.Timestamp("2024-01-05")
+    assert price_series.index[0] == pd.Timestamp("2023-12-28")
+    assert price_series.index[-1] == pd.Timestamp("2024-01-05")
     # Values should interpolate between month endpoints.
-    assert series.loc["2023-12-28"] == pytest.approx(4500 / 150, rel=1e-2)
-    assert series.loc["2024-01-05"] == pytest.approx(series.loc["2024-01-04"], rel=1e-3)
+    assert pe_series.loc["2023-12-28"] == pytest.approx(4500 / 150, rel=1e-2)
+    assert price_series.loc["2024-01-05"] == pytest.approx(
+        price_series.loc["2024-01-04"], rel=1e-3
+    )
 
 
 def test_qqq_series_uses_yearly_means():
@@ -133,6 +143,25 @@ def test_qqq_series_uses_yearly_means():
     assert series.iloc[0] == pytest.approx((35 + 33) / 2)
 
 
+def test_qqq_price_series_from_daily_feed():
+    csv = dedent(
+        """
+        Date,Open,High,Low,Close,Volume
+        12/27/2023,470,471,469,470,100
+        12/28/2023,471,472,470,471,120
+        12/29/2023,472,473,471,472,130
+        """
+    )
+    series = pih._qqq_price_series(
+        pd.Timestamp("2023-12-28"),
+        pd.Timestamp("2023-12-30"),
+        fetch=lambda _url: csv,
+    )
+    assert list(series.index[[0, -1]]) == [pd.Timestamp("2023-12-28"), pd.Timestamp("2023-12-30")]
+    # Weekend days should forward-fill the last close.
+    assert series.loc["2023-12-30"] == pytest.approx(472.0)
+
+
 def test_populate_index_history_inserts_rows(temp_db: Path):
     spy_csv = dedent(
         """
@@ -150,7 +179,29 @@ def test_populate_index_history_inserts_rows(temp_db: Path):
         """
     )
 
-    fetch = _fake_fetch_factory({pih.SPY_DATA_URL: spy_csv, pih.QQQ_PE_URL: qqq_csv})
+    price_csv = dedent(
+        """
+        Date,Open,High,Low,Close,Volume
+        12/27/2023,470,471,469,470,100
+        12/28/2023,471,472,470,471,120
+        12/29/2023,472,473,471,472,130
+        12/30/2023,472,474,471,473,140
+        12/31/2023,473,475,472,474,150
+        01/01/2024,474,476,473,475,160
+        01/02/2024,475,477,474,476,170
+        01/03/2024,476,478,475,477,180
+        01/04/2024,477,479,476,478,190
+        01/05/2024,478,480,477,479,200
+        """
+    )
+
+    fetch = _fake_fetch_factory(
+        {
+            pih.SPY_DATA_URL: spy_csv,
+            pih.QQQ_PE_URL: qqq_csv,
+            pih.QQQ_PRICE_URL: price_csv,
+        }
+    )
 
     pih.populate_index_history(
         db_path=str(temp_db),
@@ -179,5 +230,11 @@ def test_populate_index_history_inserts_rows(temp_db: Path):
         )
         implied_count = cur.fetchone()[0]
         assert implied_count > 0
+
+        cur.execute(
+            "SELECT COUNT(*) FROM Index_EPS_History WHERE Ticker='QQQ' AND EPS_Type='TTM'"
+        )
+        eps_count = cur.fetchone()[0]
+        assert eps_count > 0
     finally:
         conn.close()

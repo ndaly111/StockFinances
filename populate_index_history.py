@@ -48,6 +48,10 @@ QQQ_PE_URL = (
     "Project-on-ML-dataset-and-models-for-stock-performance-predictions-"
     "based-on-financial-ratios/master/nasdaq100_metrics_ratios.csv"
 )
+QQQ_PRICE_URL = (
+    "https://raw.githubusercontent.com/Jaithrichatgpt/qqq-indicators/main/"
+    "Download%20Data%20-%20FUND_US_XNAS_QQQ.csv"
+)
 YEARS_DEFAULT = 10
 
 
@@ -111,8 +115,8 @@ def _spy_series(
     start: pd.Timestamp,
     end: pd.Timestamp,
     fetch: FetchFunc = _http_fetch,
-) -> pd.Series:
-    """Return daily SPY P/E (TTM) values between *start* and *end*."""
+) -> tuple[pd.Series, pd.Series]:
+    """Return daily SPY P/E (TTM) and price values between *start* and *end*."""
 
     text = fetch(SPY_DATA_URL)
     df = pd.read_csv(io.StringIO(text))
@@ -120,14 +124,24 @@ def _spy_series(
     df = df.dropna(subset=["Date", "SP500", "Earnings"])
     df = df.set_index("Date").sort_index()
 
-    earnings = pd.to_numeric(df["Earnings"], errors="coerce")
+    earnings = pd.to_numeric(df["Earnings"], errors="coerce").replace(0, np.nan)
     price = pd.to_numeric(df["SP500"], errors="coerce")
-    pe = (price / earnings).replace([np.inf, -np.inf], np.nan).dropna()
+    pe = (price / earnings).replace([np.inf, -np.inf], np.nan)
+
+    pe = pe.dropna()
     pe = pe[~pe.index.duplicated(keep="last")]
     pe.name = "PE"
 
-    trimmed = pe.loc[(pe.index >= start - pd.DateOffset(months=1)) & (pe.index <= end)]
-    return _to_daily(trimmed, start, end)
+    price = price.dropna()
+    price = price[~price.index.duplicated(keep="last")]
+    price.name = "Price"
+
+    trimmed_pe = pe.loc[(pe.index >= start - pd.DateOffset(months=1)) & (pe.index <= end)]
+    trimmed_price = price.loc[
+        (price.index >= start - pd.DateOffset(months=1)) & (price.index <= end)
+    ]
+
+    return _to_daily(trimmed_pe, start, end), _to_daily(trimmed_price, start, end)
 
 
 def _qqq_series(
@@ -173,6 +187,31 @@ def _qqq_series(
     return _to_daily(series, start, end)
 
 
+def _qqq_price_series(
+    start: pd.Timestamp,
+    end: pd.Timestamp,
+    fetch: FetchFunc = _http_fetch,
+) -> pd.Series:
+    """Return a daily QQQ close price series between *start* and *end*."""
+
+    text = fetch(QQQ_PRICE_URL)
+    df = pd.read_csv(io.StringIO(text), thousands=",")
+    if "Date" not in df.columns or "Close" not in df.columns:
+        raise RuntimeError("QQQ price feed missing Date/Close columns")
+
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce", format="%m/%d/%Y")
+    df = df.dropna(subset=["Date", "Close"])
+
+    close = pd.to_numeric(df["Close"], errors="coerce").dropna()
+    close = close.groupby(df.loc[close.index, "Date"]).last()
+    close.name = "Price"
+
+    trimmed = close.loc[
+        (close.index >= start - pd.DateOffset(days=5)) & (close.index <= end)
+    ]
+    return _to_daily(trimmed, start, end)
+
+
 def _load_yields(conn: sqlite3.Connection, start: pd.Timestamp, end: pd.Timestamp) -> pd.Series:
     """Return daily 10y treasury yields (decimal form) between dates."""
 
@@ -203,27 +242,40 @@ def _write_history(
     ticker: str,
     pe_series: pd.Series,
     yield_series: pd.Series,
+    price_series: pd.Series,
 ) -> None:
-    """Upsert P/E and implied growth history for *ticker* into the DB."""
+    """Upsert P/E, implied growth, and EPS history for *ticker* into the DB."""
 
-    merged = pd.concat([pe_series, yield_series], axis=1, join="inner").dropna()
-    merged.columns = ["PE", "Yield"]
+    merged = pd.concat(
+        [
+            pe_series.rename("PE"),
+            yield_series.rename("Yield"),
+            price_series.rename("Price"),
+        ],
+        axis=1,
+        join="inner",
+    ).dropna()
     merged = merged.replace([np.inf, -np.inf], np.nan).dropna()
 
     # Skip calculations for days where the P/E series is zero or
     # negative—raising those values to the tenth root is undefined for
     # our purposes and leads to chart artifacts.
-    merged = merged[merged["PE"] > 0]
+    merged = merged[(merged["PE"] > 0) & (merged["Price"] > 0)]
     if merged.empty:
         raise RuntimeError(f"No overlapping data for {ticker} to store.")
 
     merged["Growth"] = (merged["PE"] / 10.0) ** 0.1 + merged["Yield"] - 1.0
+    merged["EPS"] = merged["Price"] / merged["PE"]
     rows = [
         (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["PE"]))
         for idx, row in merged.iterrows()
     ]
     growth_rows = [
         (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["Growth"]))
+        for idx, row in merged.iterrows()
+    ]
+    eps_rows = [
+        (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["EPS"]))
         for idx, row in merged.iterrows()
     ]
     implied_rows = [
@@ -236,11 +288,26 @@ def _write_history(
 
     cur = conn.cursor()
     cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS Index_EPS_History (
+            Date    TEXT NOT NULL,
+            Ticker  TEXT NOT NULL,
+            EPS_Type TEXT NOT NULL,
+            EPS     REAL,
+            PRIMARY KEY (Date, Ticker, EPS_Type)
+        )
+        """
+    )
+    cur.execute(
         "DELETE FROM Index_PE_History WHERE Ticker=? AND PE_Type='TTM'",
         (ticker,),
     )
     cur.execute(
         "DELETE FROM Index_Growth_History WHERE Ticker=? AND Growth_Type='TTM'",
+        (ticker,),
+    )
+    cur.execute(
+        "DELETE FROM Index_EPS_History WHERE Ticker=? AND EPS_Type='TTM'",
         (ticker,),
     )
     cur.executemany(
@@ -252,6 +319,11 @@ def _write_history(
         "INSERT OR REPLACE INTO Index_Growth_History(Date,Ticker,Growth_Type,Implied_Growth)"
         " VALUES (?,?,?,?)",
         growth_rows,
+    )
+    cur.executemany(
+        "INSERT OR REPLACE INTO Index_EPS_History(Date,Ticker,EPS_Type,EPS)"
+        " VALUES (?,?,?,?)",
+        eps_rows,
     )
 
     if _table_exists(conn, IMPLIED_GROWTH_TABLE):
@@ -289,13 +361,14 @@ def populate_index_history(
     today_dt = pd.Timestamp(today or date.today())
     start_dt = today_dt - pd.DateOffset(years=years)
 
-    spy = _spy_series(start_dt, today_dt, fetch)
+    spy_pe, spy_price = _spy_series(start_dt, today_dt, fetch)
     qqq = _qqq_series(start_dt, today_dt, fetch)
+    qqq_price = _qqq_price_series(start_dt, today_dt, fetch)
 
     with sqlite3.connect(db_path) as conn:
         yields = _load_yields(conn, start_dt, today_dt)
-        _write_history(conn, "SPY", spy, yields)
-        _write_history(conn, "QQQ", qqq, yields)
+        _write_history(conn, "SPY", spy_pe, yields, spy_price)
+        _write_history(conn, "QQQ", qqq, yields, qqq_price)
 
 
 if __name__ == "__main__":  # pragma: no cover - manual invocation
