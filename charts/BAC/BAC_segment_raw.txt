@@ -23,7 +23,7 @@ us-gaap:Revenues 2022-12-31    srt:StatementGeographicalAxis:us-gaap:NonUsMember
 us-gaap:Revenues 2024-12-31                                                      1.018870e+11
 us-gaap:Revenues 2023-12-31                                                      9.858100e+10
 us-gaap:Revenues 2022-12-31                                                      9.495000e+10
-us-gaap:Revenues 2025-06-30                                                      2.646300e+10
-us-gaap:Revenues 2024-06-30                                                      2.537700e+10
-us-gaap:Revenues 2025-06-30                                                      5.382900e+10
-us-gaap:Revenues 2024-06-30                                                      5.119500e+10
+us-gaap:Revenues 2025-09-30                                                      2.808800e+10
+us-gaap:Revenues 2024-09-30                                                      2.534500e+10
+us-gaap:Revenues 2025-09-30                                                      8.191700e+10
+us-gaap:Revenues 2024-09-30                                                      7.654000e+10
