@@ -23,27 +23,30 @@ def test_render_index_growth_charts_scales_decimal_series():
         patch.object(igc, "sqlite3") as mock_sqlite,
         patch.object(igc, "_series_growth", return_value=decimal_growth) as mock_growth,
         patch.object(igc, "_series_pe", return_value=pe_series) as mock_pe,
-        patch.object(igc, "_chart") as mock_chart,
+        patch.object(igc, "_build_line_components") as mock_components,
+        patch.object(igc, "_write_chart_assets") as mock_write,
         patch.object(igc, "_save_tables") as mock_save,
     ):
         fake_conn = object()
         mock_sqlite.connect.return_value.__enter__.return_value = fake_conn
 
-        def capture(series, title, ylabel, fname):
-            captured.append((series, title, ylabel, fname))
-            return "ignored.png"
+        def capture(series, title, ylabel, percent_axis=False):
+            captured.append((series, title, ylabel, percent_axis))
+            return ("<script>", "<div></div>")
 
-        mock_chart.side_effect = capture
+        mock_components.side_effect = capture
 
         igc.render_index_growth_charts("TEST")
 
     # Ensure the growth chart received values scaled to the 0-100 range.
     assert captured, "Expected the chart helper to be invoked at least once"
-    growth_series, _, growth_ylabel, _ = captured[0]
+    growth_series, _, growth_ylabel, percent_axis = captured[0]
     pdt.assert_series_equal(growth_series, decimal_growth * 100, check_names=False)
     assert growth_ylabel == "Implied Growth Rate (%)"
+    assert percent_axis is True
 
     # Confirm the helper series functions were invoked with the mocked connection.
     mock_growth.assert_called_once_with(fake_conn, "TEST")
     mock_pe.assert_called_once_with(fake_conn, "TEST")
+    mock_write.assert_called()
     mock_save.assert_called_once()

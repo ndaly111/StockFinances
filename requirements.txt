@@ -4,6 +4,7 @@ scipy
 yfinance
 sec-edgar-downloader
 matplotlib          # still needed for other parts of the site
+bokeh>=3.8.0,<3.9
 jinja2
 pdfkit
 peewee

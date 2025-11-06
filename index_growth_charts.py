@@ -6,9 +6,11 @@
 # • Generates charts + tables under all legacy filenames
 # -----------------------------------------------------------
 
-import os, sqlite3, pandas as pd, numpy as np, matplotlib
-matplotlib.use("Agg")                     # headless / CI backend
-import matplotlib.pyplot as plt
+import os, sqlite3, pandas as pd, numpy as np
+
+from bokeh.embed import components
+from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
+from bokeh.plotting import figure
 
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -155,13 +157,75 @@ def _rows_by_years(series: pd.Series, pct: bool = False) -> pd.DataFrame:
 
     return pd.DataFrame(rows)
 
-def _chart(series, title, ylab, fname):
-    plt.figure()
-    plt.plot(series.index, series.values)
-    plt.title(title); plt.ylabel(ylab)
-    plt.xticks(rotation=45, ha="right"); plt.tight_layout()
-    path = os.path.join(OUT_DIR, fname)
-    plt.savefig(path); plt.close(); return path
+def _build_line_components(
+    series: pd.Series,
+    title: str,
+    ylab: str,
+    percent_axis: bool = False,
+):
+    """Return the (script, div) pair for a Bokeh line chart or ``None``."""
+
+    if series is None or series.empty:
+        return None
+
+    source = ColumnDataSource(
+        data={
+            "date": series.index.to_pydatetime(),
+            "value": series.astype(float).values,
+        }
+    )
+
+    fig = figure(
+        title=title,
+        x_axis_type="datetime",
+        height=320,
+        sizing_mode="stretch_width",
+        toolbar_location="above",
+        tools="pan,wheel_zoom,box_zoom,reset,save",
+    )
+    fig.line("date", "value", source=source, line_width=2, color="#1f77b4")
+    fig.circle("date", "value", source=source, size=5, color="#1f77b4", alpha=0.65)
+
+    hover = HoverTool(
+        tooltips=[
+            ("Date", "@date{%F}"),
+            (
+                "Value",
+                "@value{0.00}" + (" %" if percent_axis else ""),
+            ),
+        ],
+        formatters={"@date": "datetime"},
+        mode="vline",
+    )
+    fig.add_tools(hover)
+    fig.toolbar.autohide = True
+
+    fig.yaxis.axis_label = ylab
+    fig.yaxis.formatter = NumeralTickFormatter(format="0.00")
+    if percent_axis:
+        fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
+
+    script, div = components(fig, wrap_script=False)
+    return script, div
+
+
+def _write_chart_assets(tk_lower: str, name: str, components_pair):
+    """Persist the Bokeh components for *name* (growth, pe, eps, ...)."""
+
+    script_path = os.path.join(OUT_DIR, f"{tk_lower}_{name}_chart.js")
+    div_path = os.path.join(OUT_DIR, f"{tk_lower}_{name}_chart_div.html")
+
+    if not components_pair:
+        script_text = ""
+        div_text = "<div class=\"chart-placeholder\">No data available</div>"
+    else:
+        script_text, div_text = components_pair
+
+    with open(script_path, "w", encoding="utf-8") as f:
+        f.write(script_text)
+
+    with open(div_path, "w", encoding="utf-8") as f:
+        f.write(div_text)
 
 def _pct_color(v):                          # green ≤30, red ≥70
     try:
@@ -210,13 +274,30 @@ def render_index_growth_charts(tk="SPY"):
             ig_plot = ig_s * 100
             ig_ylabel = "Implied Growth Rate (%)"
 
-    _chart(ig_plot, f"{tk} Implied Growth (TTM)",
-           ig_ylabel, f"{tk.lower()}_growth_chart.png")
-    _chart(pe_s, f"{tk} P/E Ratio", "P/E",
-           f"{tk.lower()}_pe_chart.png")
-    if not eps_s.empty:
-        _chart(eps_s, f"{tk} EPS (TTM)", "EPS ($)",
-               f"{tk.lower()}_eps_chart.png")
+    tk_lower = tk.lower()
+
+    ig_components = _build_line_components(
+        ig_plot,
+        f"{tk} Implied Growth (TTM)",
+        ig_ylabel,
+        percent_axis="%" in ig_ylabel,
+    )
+    pe_components = _build_line_components(
+        pe_s,
+        f"{tk} P/E Ratio",
+        "P/E",
+        percent_axis=False,
+    )
+    eps_components = _build_line_components(
+        eps_s,
+        f"{tk} EPS (TTM)",
+        "EPS ($)",
+        percent_axis=False,
+    )
+
+    _write_chart_assets(tk_lower, "growth", ig_components)
+    _write_chart_assets(tk_lower, "pe", pe_components)
+    _write_chart_assets(tk_lower, "eps", eps_components)
 
     _save_tables(
         tk,
