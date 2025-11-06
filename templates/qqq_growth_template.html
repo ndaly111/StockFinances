@@ -2,15 +2,62 @@
 <html lang="en"><head>
   <meta charset="UTF-8"><title>QQQ Growth &amp; P/E History</title>
   <link rel="stylesheet" href="/static/css/retro.css">
+  <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.css">
+  <style>
+    .chart-container{width:100%;min-height:320px;margin:0 auto;}
+    .chart-placeholder{padding:1.5rem;text-align:center;color:#666;font-style:italic;}
+  </style>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.js"></script>
+  <script>
+    async function loadBokehChart(targetId, divUrl, scriptUrl) {
+      const target = document.getElementById(targetId);
+      if (!target) {
+        return;
+      }
+      try {
+        const [divResp, scriptResp] = await Promise.all([
+          fetch(divUrl, {cache: "no-cache"}),
+          fetch(scriptUrl, {cache: "no-cache"}),
+        ]);
+        if (!divResp.ok) {
+          throw new Error(`Failed to load ${divUrl}: ${divResp.status}`);
+        }
+        const divHtml = await divResp.text();
+        target.innerHTML = divHtml;
+
+        if (scriptResp.ok) {
+          const scriptCode = (await scriptResp.text()).trim();
+          if (scriptCode) {
+            const scriptEl = document.createElement("script");
+            scriptEl.type = "text/javascript";
+            scriptEl.text = scriptCode;
+            document.body.appendChild(scriptEl);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        target.innerHTML = '<div class="chart-placeholder">Unable to load chart data.</div>';
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      loadBokehChart("qqq-growth-chart", "../charts/qqq_growth_chart_div.html", "../charts/qqq_growth_chart.js");
+      loadBokehChart("qqq-pe-chart", "../charts/qqq_pe_chart_div.html", "../charts/qqq_pe_chart.js");
+    });
+  </script>
 </head><body><div class="container">
   <h1>QQQ — Implied Growth &amp; P/E Ratio</h1>
 
   <h2>Implied Growth (TTM)</h2>
-  <img src="../charts/qqq_growth_chart.png" alt="QQQ growth chart" style="max-width:100%;">
+  <div id="qqq-growth-chart" class="chart-container">
+    <div class="chart-placeholder">Loading interactive chart…</div>
+  </div>
   {{ qqq_growth_summary | safe }}
 
   <h2>P/E Ratio (TTM)</h2>
-  <img src="../charts/qqq_pe_chart.png" alt="QQQ P/E chart" style="max-width:100%;">
+  <div id="qqq-pe-chart" class="chart-container">
+    <div class="chart-placeholder">Loading interactive chart…</div>
+  </div>
   {{ qqq_pe_summary | safe }}
 
   <p><a href="../index.html">← Back to Dashboard</a></p>
