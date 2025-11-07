@@ -17,36 +17,40 @@ def test_render_index_growth_charts_scales_decimal_series():
     decimal_growth = pd.Series([0.10, 0.25, 0.40], index=dates)
     pe_series = pd.Series([15.0, 16.5, 14.2], index=dates)
 
-    captured = []
-
     with (
         patch.object(igc, "sqlite3") as mock_sqlite,
         patch.object(igc, "_series_growth", return_value=decimal_growth) as mock_growth,
         patch.object(igc, "_series_pe", return_value=pe_series) as mock_pe,
-        patch.object(igc, "_build_line_components") as mock_components,
+        patch.object(igc, "_build_chart_block") as mock_block,
         patch.object(igc, "_write_chart_assets") as mock_write,
         patch.object(igc, "_save_tables") as mock_save,
     ):
         fake_conn = object()
         mock_sqlite.connect.return_value.__enter__.return_value = fake_conn
 
-        def capture(series, title, ylabel, percent_axis=False):
-            captured.append((series, title, ylabel, percent_axis))
-            return ("<script>", "<div></div>")
+        captured = []
 
-        mock_components.side_effect = capture
+        def capture(series, title, ylabel, percent_axis, x_range, callout_text=None):
+            captured.append((series, title, ylabel, percent_axis, x_range, callout_text))
+            return igc.Div(text="test")
+
+        mock_block.side_effect = capture
 
         igc.render_index_growth_charts("TEST")
 
     # Ensure the growth chart received values scaled to the 0-100 range.
     assert captured, "Expected the chart helper to be invoked at least once"
-    growth_series, _, growth_ylabel, percent_axis = captured[0]
+    growth_series, _, growth_ylabel, percent_axis, x_range, callout = captured[0]
     pdt.assert_series_equal(growth_series, decimal_growth * 100, check_names=False)
     assert growth_ylabel == "Implied Growth Rate (%)"
     assert percent_axis is True
+    assert x_range is not None
+    assert callout is not None and "implied growth" in callout.lower()
 
     # Confirm the helper series functions were invoked with the mocked connection.
     mock_growth.assert_called_once_with(fake_conn, "TEST")
     mock_pe.assert_called_once_with(fake_conn, "TEST")
-    mock_write.assert_called()
+    assert mock_write.call_count == 4
+    names = [call.args[1] for call in mock_write.call_args_list]
+    assert names[0] == "valuation_bundle"
     mock_save.assert_called_once()
