@@ -3,11 +3,23 @@
   <meta charset="UTF-8"><title>QQQ Growth &amp; P/E History</title>
   <link rel="stylesheet" href="/static/css/retro.css">
   <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.css">
+  <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.0.min.css">
   <style>
     .chart-container{width:100%;min-height:320px;margin:0 auto;}
     .chart-placeholder{padding:1.5rem;text-align:center;color:#666;font-style:italic;}
+    .chart-bundle{width:100%;min-height:320px;margin:0 auto;}
+    .chart-summary{margin-top:2.5rem;}
+    .chart-summary h2{margin-bottom:0.75rem;}
+    .chart-callout{background:#f4f8ff;border-left:4px solid #1f77b4;margin-top:0.75rem;padding:0.75rem 1rem;font-family:Verdana,Arial,sans-serif;font-size:13px;color:#1a2c47;box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+    .chart-card{border:1px dashed #d0d8ea;padding:1rem;margin:1.5rem 0;background:#fafcff;}
+    .chart-card h3{margin-top:0;margin-bottom:0.75rem;}
+    .chart-range-slider{margin-bottom:1.5rem;}
+    .chart-range-slider .bk-slider-title{font-weight:600;}
+    .chart-range-slider .bk-input{font-size:12px;}
+    .back-link{margin-top:2.5rem;}
   </style>
   <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.0.min.js"></script>
   <script>
     async function loadBokehChart(targetId, divUrl, scriptUrl) {
       const target = document.getElementById(targetId);
@@ -41,19 +53,20 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-      loadBokehChart("qqq-growth-chart", "../charts/qqq_growth_chart_div.html", "../charts/qqq_growth_chart.js");
-      loadBokehChart("qqq-pe-chart", "../charts/qqq_pe_chart_div.html", "../charts/qqq_pe_chart.js");
+      loadBokehChart("qqq-valuation-bundle", "../charts/qqq_valuation_bundle_chart_div.html", "../charts/qqq_valuation_bundle_chart.js");
     });
   </script>
   <style>.container{max-width:none;width:100%;}</style>
 </head><body><div class="container">
   <h1>QQQ — Implied Growth &amp; P/E Ratio</h1>
 
-  <h2>Implied Growth (TTM)</h2>
-  <div id="qqq-growth-chart" class="chart-container">
-    <div class="chart-placeholder">Loading interactive chart…</div>
+  <div id="qqq-valuation-bundle" class="chart-bundle">
+    <div class="chart-placeholder">Loading interactive dashboard…</div>
   </div>
-  
+
+  <section class="chart-summary">
+    <h2>Implied Growth Snapshot</h2>
+    
 <style>
 .summary-table{border-collapse:collapse;
   font-family:Verdana,Arial,sans-serif;font-size:12px;
@@ -64,72 +77,71 @@
 .summary-table td{padding:4px 6px;border:1px solid #B0B0B0;text-align:center;}
 </style>
 <style type="text/css">
-#T_766a1_row0_col5, #T_766a1_row1_col5, #T_766a1_row2_col5, #T_766a1_row3_col5, #T_766a1_row4_col5 {
+#T_e60fb_row0_col5, #T_e60fb_row1_col5, #T_e60fb_row2_col5, #T_e60fb_row3_col5, #T_e60fb_row4_col5 {
   color: #CC0000;
   font-weight: bold;
 }
 </style>
-<table id="T_766a1" class="summary-table">
+<table id="T_e60fb" class="summary-table">
   <thead>
     <tr>
-      <th id="T_766a1_level0_col0" class="col_heading level0 col0" >Years</th>
-      <th id="T_766a1_level0_col1" class="col_heading level0 col1" >Current</th>
-      <th id="T_766a1_level0_col2" class="col_heading level0 col2" >Average</th>
-      <th id="T_766a1_level0_col3" class="col_heading level0 col3" >Min</th>
-      <th id="T_766a1_level0_col4" class="col_heading level0 col4" >Max</th>
-      <th id="T_766a1_level0_col5" class="col_heading level0 col5" >Percentile</th>
+      <th id="T_e60fb_level0_col0" class="col_heading level0 col0" >Years</th>
+      <th id="T_e60fb_level0_col1" class="col_heading level0 col1" >Current</th>
+      <th id="T_e60fb_level0_col2" class="col_heading level0 col2" >Average</th>
+      <th id="T_e60fb_level0_col3" class="col_heading level0 col3" >Min</th>
+      <th id="T_e60fb_level0_col4" class="col_heading level0 col4" >Max</th>
+      <th id="T_e60fb_level0_col5" class="col_heading level0 col5" >Percentile</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td id="T_766a1_row0_col0" class="data row0 col0" >1</td>
-      <td id="T_766a1_row0_col1" class="data row0 col1" >17.25 %</td>
-      <td id="T_766a1_row0_col2" class="data row0 col2" >17.13 %</td>
-      <td id="T_766a1_row0_col3" class="data row0 col3" >16.79 %</td>
-      <td id="T_766a1_row0_col4" class="data row0 col4" >17.73 %</td>
-      <td id="T_766a1_row0_col5" class="data row0 col5" >71</td>
+      <td id="T_e60fb_row0_col0" class="data row0 col0" >1</td>
+      <td id="T_e60fb_row0_col1" class="data row0 col1" >17.27 %</td>
+      <td id="T_e60fb_row0_col2" class="data row0 col2" >17.14 %</td>
+      <td id="T_e60fb_row0_col3" class="data row0 col3" >16.79 %</td>
+      <td id="T_e60fb_row0_col4" class="data row0 col4" >17.73 %</td>
+      <td id="T_e60fb_row0_col5" class="data row0 col5" >71</td>
     </tr>
     <tr>
-      <td id="T_766a1_row1_col0" class="data row1 col0" >2</td>
-      <td id="T_766a1_row1_col1" class="data row1 col1" >17.25 %</td>
-      <td id="T_766a1_row1_col2" class="data row1 col2" >17.13 %</td>
-      <td id="T_766a1_row1_col3" class="data row1 col3" >16.79 %</td>
-      <td id="T_766a1_row1_col4" class="data row1 col4" >17.73 %</td>
-      <td id="T_766a1_row1_col5" class="data row1 col5" >71</td>
+      <td id="T_e60fb_row1_col0" class="data row1 col0" >2</td>
+      <td id="T_e60fb_row1_col1" class="data row1 col1" >17.27 %</td>
+      <td id="T_e60fb_row1_col2" class="data row1 col2" >17.14 %</td>
+      <td id="T_e60fb_row1_col3" class="data row1 col3" >16.79 %</td>
+      <td id="T_e60fb_row1_col4" class="data row1 col4" >17.73 %</td>
+      <td id="T_e60fb_row1_col5" class="data row1 col5" >71</td>
     </tr>
     <tr>
-      <td id="T_766a1_row2_col0" class="data row2 col0" >3</td>
-      <td id="T_766a1_row2_col1" class="data row2 col1" >17.25 %</td>
-      <td id="T_766a1_row2_col2" class="data row2 col2" >17.13 %</td>
-      <td id="T_766a1_row2_col3" class="data row2 col3" >16.79 %</td>
-      <td id="T_766a1_row2_col4" class="data row2 col4" >17.73 %</td>
-      <td id="T_766a1_row2_col5" class="data row2 col5" >71</td>
+      <td id="T_e60fb_row2_col0" class="data row2 col0" >3</td>
+      <td id="T_e60fb_row2_col1" class="data row2 col1" >17.27 %</td>
+      <td id="T_e60fb_row2_col2" class="data row2 col2" >17.14 %</td>
+      <td id="T_e60fb_row2_col3" class="data row2 col3" >16.79 %</td>
+      <td id="T_e60fb_row2_col4" class="data row2 col4" >17.73 %</td>
+      <td id="T_e60fb_row2_col5" class="data row2 col5" >71</td>
     </tr>
     <tr>
-      <td id="T_766a1_row3_col0" class="data row3 col0" >5</td>
-      <td id="T_766a1_row3_col1" class="data row3 col1" >17.25 %</td>
-      <td id="T_766a1_row3_col2" class="data row3 col2" >17.13 %</td>
-      <td id="T_766a1_row3_col3" class="data row3 col3" >16.79 %</td>
-      <td id="T_766a1_row3_col4" class="data row3 col4" >17.73 %</td>
-      <td id="T_766a1_row3_col5" class="data row3 col5" >71</td>
+      <td id="T_e60fb_row3_col0" class="data row3 col0" >5</td>
+      <td id="T_e60fb_row3_col1" class="data row3 col1" >17.27 %</td>
+      <td id="T_e60fb_row3_col2" class="data row3 col2" >17.14 %</td>
+      <td id="T_e60fb_row3_col3" class="data row3 col3" >16.79 %</td>
+      <td id="T_e60fb_row3_col4" class="data row3 col4" >17.73 %</td>
+      <td id="T_e60fb_row3_col5" class="data row3 col5" >71</td>
     </tr>
     <tr>
-      <td id="T_766a1_row4_col0" class="data row4 col0" >10</td>
-      <td id="T_766a1_row4_col1" class="data row4 col1" >17.25 %</td>
-      <td id="T_766a1_row4_col2" class="data row4 col2" >17.13 %</td>
-      <td id="T_766a1_row4_col3" class="data row4 col3" >16.79 %</td>
-      <td id="T_766a1_row4_col4" class="data row4 col4" >17.73 %</td>
-      <td id="T_766a1_row4_col5" class="data row4 col5" >71</td>
+      <td id="T_e60fb_row4_col0" class="data row4 col0" >10</td>
+      <td id="T_e60fb_row4_col1" class="data row4 col1" >17.27 %</td>
+      <td id="T_e60fb_row4_col2" class="data row4 col2" >17.14 %</td>
+      <td id="T_e60fb_row4_col3" class="data row4 col3" >16.79 %</td>
+      <td id="T_e60fb_row4_col4" class="data row4 col4" >17.73 %</td>
+      <td id="T_e60fb_row4_col5" class="data row4 col5" >71</td>
     </tr>
   </tbody>
 </table>
 
+  </section>
 
-  <h2>P/E Ratio (TTM)</h2>
-  <div id="qqq-pe-chart" class="chart-container">
-    <div class="chart-placeholder">Loading interactive chart…</div>
-  </div>
-  
+  <section class="chart-summary">
+    <h2>P/E Ratio Snapshot</h2>
+    
 <style>
 .summary-table{border-collapse:collapse;
   font-family:Verdana,Arial,sans-serif;font-size:12px;
@@ -140,66 +152,67 @@
 .summary-table td{padding:4px 6px;border:1px solid #B0B0B0;text-align:center;}
 </style>
 <style type="text/css">
-#T_1c046_row0_col5, #T_1c046_row1_col5, #T_1c046_row2_col5, #T_1c046_row3_col5, #T_1c046_row4_col5 {
+#T_2d741_row0_col5, #T_2d741_row1_col5, #T_2d741_row2_col5, #T_2d741_row3_col5, #T_2d741_row4_col5 {
   color: #CC0000;
   font-weight: bold;
 }
 </style>
-<table id="T_1c046" class="summary-table">
+<table id="T_2d741" class="summary-table">
   <thead>
     <tr>
-      <th id="T_1c046_level0_col0" class="col_heading level0 col0" >Years</th>
-      <th id="T_1c046_level0_col1" class="col_heading level0 col1" >Current</th>
-      <th id="T_1c046_level0_col2" class="col_heading level0 col2" >Average</th>
-      <th id="T_1c046_level0_col3" class="col_heading level0 col3" >Min</th>
-      <th id="T_1c046_level0_col4" class="col_heading level0 col4" >Max</th>
-      <th id="T_1c046_level0_col5" class="col_heading level0 col5" >Percentile</th>
+      <th id="T_2d741_level0_col0" class="col_heading level0 col0" >Years</th>
+      <th id="T_2d741_level0_col1" class="col_heading level0 col1" >Current</th>
+      <th id="T_2d741_level0_col2" class="col_heading level0 col2" >Average</th>
+      <th id="T_2d741_level0_col3" class="col_heading level0 col3" >Min</th>
+      <th id="T_2d741_level0_col4" class="col_heading level0 col4" >Max</th>
+      <th id="T_2d741_level0_col5" class="col_heading level0 col5" >Percentile</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td id="T_1c046_row0_col0" class="data row0 col0" >1</td>
-      <td id="T_1c046_row0_col1" class="data row0 col1" >34.46</td>
-      <td id="T_1c046_row0_col2" class="data row0 col2" >33.75</td>
-      <td id="T_1c046_row0_col3" class="data row0 col3" >32.33</td>
-      <td id="T_1c046_row0_col4" class="data row0 col4" >35.85</td>
-      <td id="T_1c046_row0_col5" class="data row0 col5" >85</td>
+      <td id="T_2d741_row0_col0" class="data row0 col0" >1</td>
+      <td id="T_2d741_row0_col1" class="data row0 col1" >34.49</td>
+      <td id="T_2d741_row0_col2" class="data row0 col2" >33.76</td>
+      <td id="T_2d741_row0_col3" class="data row0 col3" >32.33</td>
+      <td id="T_2d741_row0_col4" class="data row0 col4" >35.85</td>
+      <td id="T_2d741_row0_col5" class="data row0 col5" >89</td>
     </tr>
     <tr>
-      <td id="T_1c046_row1_col0" class="data row1 col0" >2</td>
-      <td id="T_1c046_row1_col1" class="data row1 col1" >34.46</td>
-      <td id="T_1c046_row1_col2" class="data row1 col2" >33.75</td>
-      <td id="T_1c046_row1_col3" class="data row1 col3" >32.33</td>
-      <td id="T_1c046_row1_col4" class="data row1 col4" >35.85</td>
-      <td id="T_1c046_row1_col5" class="data row1 col5" >85</td>
+      <td id="T_2d741_row1_col0" class="data row1 col0" >2</td>
+      <td id="T_2d741_row1_col1" class="data row1 col1" >34.49</td>
+      <td id="T_2d741_row1_col2" class="data row1 col2" >33.76</td>
+      <td id="T_2d741_row1_col3" class="data row1 col3" >32.33</td>
+      <td id="T_2d741_row1_col4" class="data row1 col4" >35.85</td>
+      <td id="T_2d741_row1_col5" class="data row1 col5" >89</td>
     </tr>
     <tr>
-      <td id="T_1c046_row2_col0" class="data row2 col0" >3</td>
-      <td id="T_1c046_row2_col1" class="data row2 col1" >34.46</td>
-      <td id="T_1c046_row2_col2" class="data row2 col2" >33.75</td>
-      <td id="T_1c046_row2_col3" class="data row2 col3" >32.33</td>
-      <td id="T_1c046_row2_col4" class="data row2 col4" >35.85</td>
-      <td id="T_1c046_row2_col5" class="data row2 col5" >85</td>
+      <td id="T_2d741_row2_col0" class="data row2 col0" >3</td>
+      <td id="T_2d741_row2_col1" class="data row2 col1" >34.49</td>
+      <td id="T_2d741_row2_col2" class="data row2 col2" >33.76</td>
+      <td id="T_2d741_row2_col3" class="data row2 col3" >32.33</td>
+      <td id="T_2d741_row2_col4" class="data row2 col4" >35.85</td>
+      <td id="T_2d741_row2_col5" class="data row2 col5" >89</td>
     </tr>
     <tr>
-      <td id="T_1c046_row3_col0" class="data row3 col0" >5</td>
-      <td id="T_1c046_row3_col1" class="data row3 col1" >34.46</td>
-      <td id="T_1c046_row3_col2" class="data row3 col2" >33.75</td>
-      <td id="T_1c046_row3_col3" class="data row3 col3" >32.33</td>
-      <td id="T_1c046_row3_col4" class="data row3 col4" >35.85</td>
-      <td id="T_1c046_row3_col5" class="data row3 col5" >85</td>
+      <td id="T_2d741_row3_col0" class="data row3 col0" >5</td>
+      <td id="T_2d741_row3_col1" class="data row3 col1" >34.49</td>
+      <td id="T_2d741_row3_col2" class="data row3 col2" >33.76</td>
+      <td id="T_2d741_row3_col3" class="data row3 col3" >32.33</td>
+      <td id="T_2d741_row3_col4" class="data row3 col4" >35.85</td>
+      <td id="T_2d741_row3_col5" class="data row3 col5" >89</td>
     </tr>
     <tr>
-      <td id="T_1c046_row4_col0" class="data row4 col0" >10</td>
-      <td id="T_1c046_row4_col1" class="data row4 col1" >34.46</td>
-      <td id="T_1c046_row4_col2" class="data row4 col2" >33.75</td>
-      <td id="T_1c046_row4_col3" class="data row4 col3" >32.33</td>
-      <td id="T_1c046_row4_col4" class="data row4 col4" >35.85</td>
-      <td id="T_1c046_row4_col5" class="data row4 col5" >85</td>
+      <td id="T_2d741_row4_col0" class="data row4 col0" >10</td>
+      <td id="T_2d741_row4_col1" class="data row4 col1" >34.49</td>
+      <td id="T_2d741_row4_col2" class="data row4 col2" >33.76</td>
+      <td id="T_2d741_row4_col3" class="data row4 col3" >32.33</td>
+      <td id="T_2d741_row4_col4" class="data row4 col4" >35.85</td>
+      <td id="T_2d741_row4_col5" class="data row4 col5" >89</td>
     </tr>
   </tbody>
 </table>
 
+  </section>
 
-  <p><a href="../index.html">← Back to Dashboard</a></p>
+  <p class="back-link"><a href="../index.html">← Back to Dashboard</a></p>
 </div></body></html>

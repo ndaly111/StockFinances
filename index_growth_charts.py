@@ -6,10 +6,26 @@
 # • Generates charts + tables under all legacy filenames
 # -----------------------------------------------------------
 
-import os, sqlite3, pandas as pd, numpy as np
+import datetime as _dt
+import os
+import sqlite3
+
+import numpy as np
+import pandas as pd
 
 from bokeh.embed import components
-from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
+from bokeh.layouts import column
+from bokeh.models import (
+    Band,
+    ColumnDataSource,
+    CustomJS,
+    DateRangeSlider,
+    Div,
+    HoverTool,
+    NumeralTickFormatter,
+    Range1d,
+    Span,
+)
 from bokeh.plotting import figure
 
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
@@ -157,21 +173,132 @@ def _rows_by_years(series: pd.Series, pct: bool = False) -> pd.DataFrame:
 
     return pd.DataFrame(rows)
 
-def _build_line_components(
+def _ten_year_window(series: pd.Series) -> pd.Series:
+    """Return the slice of ``series`` covering the last ten years (or all data)."""
+
+    if series.empty:
+        return series
+
+    end = series.index.max()
+    start = end - pd.DateOffset(years=10)
+    window = series[series.index >= start].dropna()
+    return window if not window.empty else series
+
+
+def _calc_hover_metrics(series: pd.Series) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return (yoy_diff, yoy_pct, zscore) arrays aligned with ``series``."""
+
+    if series.empty:
+        empty = np.full(len(series), np.nan)
+        return empty, empty, empty
+
+    s = series.astype(float)
+    yoy_periods = 252 if len(s) > 252 else max(len(s) - 1, 1)
+    shifted = s.shift(yoy_periods)
+    yoy_diff = (s - shifted).to_numpy(dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        yoy_pct = ((s / shifted) - 1.0).to_numpy(dtype=float) * 100.0
+
+    mean = float(s.mean()) if len(s) else float("nan")
+    std = float(s.std(ddof=0)) if len(s) else float("nan")
+    if std and np.isfinite(std) and std > 0:
+        zscore = ((s - mean) / std).to_numpy(dtype=float)
+    else:
+        zscore = np.full(len(s), np.nan)
+
+    return yoy_diff, yoy_pct, zscore
+
+
+def _summary_sentence(label: str, summary_df: pd.DataFrame) -> str:
+    """Compose a brief textual takeaway from the 10-year summary row."""
+
+    if summary_df.empty:
+        return ""
+
+    pick = summary_df[summary_df["Years"] == "10"]
+    if pick.empty:
+        pick = summary_df.iloc[[-1]]
+
+    row = pick.iloc[0]
+    current = row.get("Current", "N/A")
+    percentile = row.get("Percentile", "—")
+    avg = row.get("Average", "N/A")
+    min_v = row.get("Min", "N/A")
+    max_v = row.get("Max", "N/A")
+    years = row.get("Years", "")
+
+    pct_text = (
+        f"the {percentile}th percentile"
+        if percentile and str(percentile).strip("—")
+        else "an unavailable percentile"
+    )
+    years_text = f"over the past {years} years" if years else "recent history"
+
+    return (
+        f"Current {label} is {current}, placing it in {pct_text} {years_text} "
+        f"(avg {avg}, min {min_v}, max {max_v})."
+    )
+
+
+def _build_chart_block(
     series: pd.Series,
     title: str,
     ylab: str,
-    percent_axis: bool = False,
+    percent_axis: bool,
+    x_range: Range1d | None,
+    callout_text: str | None = None,
 ):
-    """Return the (script, div) pair for a Bokeh line chart or ``None``."""
+    """Return a Bokeh layout block (figure + optional callout)."""
 
-    if series is None or series.empty:
-        return None
+    if series is None or series.dropna().empty:
+        placeholder = Div(
+            text=(
+                f"<div class=\"chart-card\"><h3>{title}</h3>"
+                "<div class=\"chart-placeholder\">No data available.</div></div>"
+            ),
+            sizing_mode="stretch_width",
+        )
+        return placeholder
+
+    series = pd.to_numeric(series, errors="coerce").dropna()
+    if series.empty:
+        placeholder = Div(
+            text=(
+                f"<div class=\"chart-card\"><h3>{title}</h3>"
+                "<div class=\"chart-placeholder\">No data available.</div></div>"
+            ),
+            sizing_mode="stretch_width",
+        )
+        return placeholder
+
+    values = series.astype(float)
+    window = _ten_year_window(values)
+    avg = float(window.mean()) if len(window) else float("nan")
+    q25 = float(window.quantile(0.25)) if len(window) else float("nan")
+    q75 = float(window.quantile(0.75)) if len(window) else float("nan")
+    latest = float(values.iloc[-1])
+
+    yoy_diff, yoy_pct, zscore = _calc_hover_metrics(values)
+
+    def _clean(arr):
+        cleaned = []
+        for val in arr:
+            if val is None or (isinstance(val, float) and not np.isfinite(val)):
+                cleaned.append(None)
+            else:
+                cleaned.append(float(val))
+        return cleaned
 
     source = ColumnDataSource(
         data={
-            "date": series.index.to_pydatetime(),
-            "value": series.astype(float).values,
+            "date": values.index.to_pydatetime(),
+            "value": values.values,
+            "yoy_diff": _clean(yoy_diff),
+            "yoy_pct": _clean(yoy_pct),
+            "zscore": _clean(zscore),
+            "avg": [avg] * len(values),
+            "p25": [q25] * len(values),
+            "p75": [q75] * len(values),
         }
     )
 
@@ -182,17 +309,53 @@ def _build_line_components(
         sizing_mode="stretch_width",
         toolbar_location="above",
         tools="pan,wheel_zoom,box_zoom,reset,save",
+        x_range=x_range,
     )
     fig.line("date", "value", source=source, line_width=2, color="#1f77b4")
     fig.circle("date", "value", source=source, size=5, color="#1f77b4", alpha=0.65)
 
+    band_source = ColumnDataSource(
+        data={
+            "date": values.index.to_pydatetime(),
+            "lower": [q25] * len(values),
+            "upper": [q75] * len(values),
+        }
+    )
+    band = Band(
+        base="date",
+        lower="lower",
+        upper="upper",
+        source=band_source,
+        level="underlay",
+        fill_alpha=0.12,
+        fill_color="#1f77b4",
+    )
+    fig.add_layout(band)
+
+    avg_span = Span(location=avg, dimension="width", line_color="#555555", line_dash="dashed")
+    current_span = Span(
+        location=latest,
+        dimension="width",
+        line_color="#ff8800",
+        line_dash="dotdash",
+        line_width=2,
+    )
+    fig.add_layout(avg_span)
+    fig.add_layout(current_span)
+
+    value_tip = "@value{0.00}" + (" %" if percent_axis else "")
+    yoy_diff_label = "@yoy_diff{0.00}" + (" pts" if percent_axis else "")
+    yoy_pct_label = "@yoy_pct{0.00}%"
+    avg_label = "@avg{0.00}" + (" %" if percent_axis else "")
+
     hover = HoverTool(
         tooltips=[
             ("Date", "@date{%F}"),
-            (
-                "Value",
-                "@value{0.00}" + (" %" if percent_axis else ""),
-            ),
+            ("Value", value_tip),
+            ("YoY Δ", yoy_diff_label),
+            ("YoY %", yoy_pct_label),
+            ("Z-score", "@zscore{0.00}"),
+            ("10y avg", avg_label),
         ],
         formatters={"@date": "datetime"},
         mode="vline",
@@ -205,8 +368,17 @@ def _build_line_components(
     if percent_axis:
         fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
 
-    script, div = components(fig, wrap_script=False)
-    return script, div
+    block_children = [fig]
+    if callout_text:
+        block_children.append(
+            Div(
+                text=f"<p><strong>Takeaway:</strong> {callout_text}</p>",
+                sizing_mode="stretch_width",
+                css_classes=["chart-callout"],
+            )
+        )
+
+    return column(*block_children, sizing_mode="stretch_width", spacing=6)
 
 
 def _write_chart_assets(tk_lower: str, name: str, components_pair):
@@ -259,51 +431,125 @@ def render_index_growth_charts(tk="SPY"):
         pe_s = _series_pe(conn, tk)
         eps_s = _series_eps(conn, tk)
 
-    ig_plot = ig_s
+    ig_plot = ig_s.copy()
     ig_ylabel = "Implied Growth Rate"
+    ig_percent_axis = False
     if not ig_s.empty:
         med = ig_s.median(skipna=True)
         max_abs = ig_s.abs().max()
         if (
-            pd.notna(med) and np.isfinite(med)
+            pd.notna(med)
+            and np.isfinite(med)
             and abs(med) < 1
-            and pd.notna(max_abs) and np.isfinite(max_abs)
+            and pd.notna(max_abs)
+            and np.isfinite(max_abs)
             and max_abs <= 2
         ):
-            # Stored as decimals (e.g., 0.18 for 18%) → scale a copy for plotting.
             ig_plot = ig_s * 100
             ig_ylabel = "Implied Growth Rate (%)"
+            ig_percent_axis = True
+
+    ig_summary = _rows_by_years(ig_s, pct=True)
+    pe_summary = _rows_by_years(pe_s, pct=False)
+    _save_tables(tk, ig_summary, pe_summary)
 
     tk_lower = tk.lower()
 
-    ig_components = _build_line_components(
-        ig_plot,
-        f"{tk} Implied Growth (TTM)",
-        ig_ylabel,
-        percent_axis="%" in ig_ylabel,
-    )
-    pe_components = _build_line_components(
-        pe_s,
-        f"{tk} P/E Ratio",
-        "P/E",
-        percent_axis=False,
-    )
-    eps_components = _build_line_components(
-        eps_s,
-        f"{tk} EPS (TTM)",
-        "EPS ($)",
-        percent_axis=False,
+    non_empty_series = [
+        s.dropna()
+        for s in (ig_plot, pe_s, eps_s)
+        if isinstance(s, pd.Series) and not s.dropna().empty
+    ]
+
+    common_range = None
+    slider = None
+    if non_empty_series:
+        min_date = min(s.index.min() for s in non_empty_series)
+        max_date = max(s.index.max() for s in non_empty_series)
+        start_dt = min_date.to_pydatetime()
+        end_dt = max_date.to_pydatetime()
+        common_range = Range1d(start=start_dt, end=end_dt)
+
+        default_start = end_dt - _dt.timedelta(days=365 * 5)
+        if default_start < start_dt:
+            default_start = start_dt
+        common_range.start = default_start
+
+        slider = DateRangeSlider(
+            title="Focus window",
+            start=start_dt,
+            end=end_dt,
+            value=(default_start, end_dt),
+            sizing_mode="stretch_width",
+            format="%b %Y",
+        )
+        slider.js_on_change(
+            "value",
+            CustomJS(
+                args={"rng": common_range},
+                code="const [start, end] = cb_obj.value; rng.start = start; rng.end = end;",
+            ),
+        )
+
+    blocks = []
+    growth_callout = _summary_sentence("implied growth", ig_summary)
+    blocks.append(
+        _build_chart_block(
+            ig_plot,
+            f"{tk} Implied Growth (TTM)",
+            ig_ylabel,
+            ig_percent_axis,
+            common_range,
+            callout_text=growth_callout,
+        )
     )
 
-    _write_chart_assets(tk_lower, "growth", ig_components)
-    _write_chart_assets(tk_lower, "pe", pe_components)
-    _write_chart_assets(tk_lower, "eps", eps_components)
-
-    _save_tables(
-        tk,
-        _rows_by_years(ig_s, pct=True),
-        _rows_by_years(pe_s, pct=False)
+    pe_callout = _summary_sentence("P/E ratio", pe_summary)
+    blocks.append(
+        _build_chart_block(
+            pe_s,
+            f"{tk} P/E Ratio",
+            "P/E",
+            False,
+            common_range,
+            callout_text=pe_callout,
+        )
     )
+
+    blocks.append(
+        _build_chart_block(
+            eps_s,
+            f"{tk} EPS (TTM)",
+            "EPS ($)",
+            False,
+            common_range,
+        )
+    )
+
+    layout_children = []
+    if slider is not None:
+        slider.css_classes = ["chart-range-slider"]
+        layout_children.append(slider)
+    layout_children.extend(blocks)
+
+    if layout_children:
+        layout = column(*layout_children, sizing_mode="stretch_width", spacing=18)
+        valuation_components = components(layout, wrap_script=False)
+    else:
+        placeholder = Div(
+            text="<div class=\"chart-placeholder\">No chart data available.</div>",
+            sizing_mode="stretch_width",
+        )
+        valuation_components = components(placeholder, wrap_script=False)
+
+    _write_chart_assets(tk_lower, "valuation_bundle", valuation_components)
+
+    placeholder_div = (
+        "<div class=\"chart-placeholder\">This view now lives inside the combined "
+        "valuation dashboard above.</div>"
+    )
+    for legacy in ("growth", "pe", "eps"):
+        _write_chart_assets(tk_lower, legacy, ("", placeholder_div))
 
 # legacy alias
 mini_main = render_index_growth_charts
