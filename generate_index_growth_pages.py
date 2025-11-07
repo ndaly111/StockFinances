@@ -289,29 +289,29 @@ def _stat_lines(df_daily: pd.DataFrame) -> List[go.Scatter]:
         ]
     return traces
 
-def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
+def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
     """Build the Plotly figure for implied growth."""
+
     def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
-        traces = []
+        traces: List[go.Scatter] = []
         if "ig" in df.columns:
-            traces.append(go.Scatter(
-                x=df.index, y=df["ig"], name=f"TTM ({tag})", mode="lines",
-                hovertemplate="%{y:.2f}%<extra></extra>",
-            ))
-        if "ig_fwd" in df.columns:
-            traces.append(go.Scatter(
-                x=df.index, y=df["ig_fwd"], name=f"Forward ({tag})", mode="lines",
-                hovertemplate="%{y:.2f}%<extra></extra>",
-            ))
-        if "eps" in df.columns:
             traces.append(
                 go.Scatter(
                     x=df.index,
-                    y=df["eps"],
-                    name=f"EPS ({tag})",
+                    y=df["ig"],
+                    name=f"TTM ({tag})",
                     mode="lines",
-                    hovertemplate="$%{y:.2f}<extra></extra>",
-                    yaxis="y2",
+                    hovertemplate="%{y:.2f}%<extra></extra>",
+                )
+            )
+        if "ig_fwd" in df.columns:
+            traces.append(
+                go.Scatter(
+                    x=df.index,
+                    y=df["ig_fwd"],
+                    name=f"Forward ({tag})",
+                    mode="lines",
+                    hovertemplate="%{y:.2f}%<extra></extra>",
                 )
             )
         return traces
@@ -325,9 +325,9 @@ def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: 
     n_d, n_w, n_m, n_s = len(traces_d), len(traces_w), len(traces_m), len(stat_lines)
 
     # default visibility: Weekly + stat lines
-    vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_s
-    vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_s
-    vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_s
+    vis_daily = [True] * n_d + [False] * n_w + [False] * n_m + [True] * n_s
+    vis_weekly = [False] * n_d + [True] * n_w + [False] * n_m + [True] * n_s
+    vis_monthly = [False] * n_d + [False] * n_w + [True] * n_m + [True] * n_s
     for i, v in enumerate(vis_weekly):
         fig.data[i].visible = v
 
@@ -338,43 +338,119 @@ def _figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: 
         xaxis=dict(
             title="Date",
             rangeselector=dict(
-                buttons=list([
-                    dict(count=1, label="1M", step="month", stepmode="backward"),
-                    dict(count=3, label="3M", step="month", stepmode="backward"),
-                    dict(count=6, label="6M", step="month", stepmode="backward"),
-                    dict(step="all", label="All"),
-                ])
+                buttons=list(
+                    [
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(step="all", label="All"),
+                    ]
+                )
             ),
             rangeslider=dict(visible=True),
             type="date",
         ),
         yaxis=dict(title="Implied Growth (%)", side="left"),
-        yaxis2=dict(
-            title="EPS (TTM)",
-            overlaying="y",
-            side="right",
-            tickprefix="$",
-            showgrid=False,
-        ),
         template=None,
         updatemenus=[
             dict(
                 type="buttons",
                 direction="right",
-                x=0.0, xanchor="left",
-                y=1.16, yanchor="top",
+                x=0.0,
+                xanchor="left",
+                y=1.16,
+                yanchor="top",
                 buttons=[
-                    dict(label="Daily",   method="update", args=[{"visible": vis_daily},   {}]),
-                    dict(label="Weekly",  method="update", args=[{"visible": vis_weekly},  {}]),
+                    dict(label="Daily", method="update", args=[{"visible": vis_daily}, {}]),
+                    dict(label="Weekly", method="update", args=[{"visible": vis_weekly}, {}]),
                     dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
                 ],
             )
-        ]
+        ],
     )
     return fig
 
-def _page_html(title: str, chart_html: str, timeframe_table_html: str) -> str:
-    """Assemble the full HTML page with chart and stats table."""
+
+def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> Optional[go.Figure]:
+    """Build the Plotly figure for EPS if data is available."""
+
+    def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
+        if "eps" not in df.columns:
+            return []
+        return [
+            go.Scatter(
+                x=df.index,
+                y=df["eps"],
+                name=f"EPS ({tag})",
+                mode="lines",
+                hovertemplate="$%{y:.2f}<extra></extra>",
+            )
+        ]
+
+    traces_d = mk_traces(df_d, "Daily")
+    traces_w = mk_traces(df_w, "Weekly")
+    traces_m = mk_traces(df_m, "Monthly")
+
+    if not any((traces_d, traces_w, traces_m)):
+        return None
+
+    fig = go.Figure(data=traces_d + traces_w + traces_m)
+    n_d, n_w, n_m = len(traces_d), len(traces_w), len(traces_m)
+
+    vis_daily = [True] * n_d + [False] * n_w + [False] * n_m
+    vis_weekly = [False] * n_d + [True] * n_w + [False] * n_m
+    vis_monthly = [False] * n_d + [False] * n_w + [True] * n_m
+    for i, v in enumerate(vis_weekly):
+        fig.data[i].visible = v
+
+    fig.update_layout(
+        title=f"{ticker} — EPS (TTM)",
+        margin=dict(l=50, r=50, t=60, b=40),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.0),
+        xaxis=dict(
+            title="Date",
+            rangeselector=dict(
+                buttons=list(
+                    [
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(step="all", label="All"),
+                    ]
+                )
+            ),
+            rangeslider=dict(visible=True),
+            type="date",
+        ),
+        yaxis=dict(title="EPS (USD)", tickprefix="$"),
+        template=None,
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="right",
+                x=0.0,
+                xanchor="left",
+                y=1.16,
+                yanchor="top",
+                buttons=[
+                    dict(label="Daily", method="update", args=[{"visible": vis_daily}, {}]),
+                    dict(label="Weekly", method="update", args=[{"visible": vis_weekly}, {}]),
+                    dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
+                ],
+            )
+        ],
+    )
+    return fig
+
+def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str], timeframe_table_html: str) -> str:
+    """Assemble the full HTML page with charts and stats table."""
+    eps_section = ""
+    if eps_chart_html:
+        eps_section = f"""
+    <div class=\"chart\">
+      {eps_chart_html}
+    </div>
+    """
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -398,8 +474,9 @@ def _page_html(title: str, chart_html: str, timeframe_table_html: str) -> str:
   <div class="wrap">
     <h1>{title}</h1>
     <div class="chart">
-      {chart_html}
+      {growth_chart_html}
     </div>
+    {eps_section}
     {timeframe_table_html}
     <p class="back"><a href="index.html">← Back to Dashboard</a></p>
   </div>
@@ -413,10 +490,14 @@ def _write_page(out_path: str, html: str) -> None:
 def _build_one(ticker: str, df: pd.DataFrame) -> None:
     """Build a single valuation page for a ticker."""
     df_d, df_w, df_m = _resample_frames(df)
-    fig = _figure(df_d, df_w, df_m, ticker)
-    chart_html = to_html(fig, include_plotlyjs="cdn", full_html=False, default_height="600px")
+    fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
+    chart_growth_html = to_html(fig_growth, include_plotlyjs="cdn", full_html=False, default_height="600px")
+    fig_eps = _eps_figure(df_d, df_w, df_m, ticker)
+    chart_eps_html = None
+    if fig_eps is not None:
+        chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False, default_height="450px")
     tf_table = _timeframe_table_html(df_d)
-    page = _page_html(PAGE_TITLES[ticker], chart_html, tf_table)
+    page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html, tf_table)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
 
