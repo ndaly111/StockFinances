@@ -3,11 +3,23 @@
   <meta charset="UTF-8"><title>QQQ Growth &amp; P/E History</title>
   <link rel="stylesheet" href="/static/css/retro.css">
   <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.css">
+  <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.0.min.css">
   <style>
     .chart-container{width:100%;min-height:320px;margin:0 auto;}
     .chart-placeholder{padding:1.5rem;text-align:center;color:#666;font-style:italic;}
+    .chart-bundle{width:100%;min-height:320px;margin:0 auto;}
+    .chart-summary{margin-top:2.5rem;}
+    .chart-summary h2{margin-bottom:0.75rem;}
+    .chart-callout{background:#f4f8ff;border-left:4px solid #1f77b4;margin-top:0.75rem;padding:0.75rem 1rem;font-family:Verdana,Arial,sans-serif;font-size:13px;color:#1a2c47;box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+    .chart-card{border:1px dashed #d0d8ea;padding:1rem;margin:1.5rem 0;background:#fafcff;}
+    .chart-card h3{margin-top:0;margin-bottom:0.75rem;}
+    .chart-range-slider{margin-bottom:1.5rem;}
+    .chart-range-slider .bk-slider-title{font-weight:600;}
+    .chart-range-slider .bk-input{font-size:12px;}
+    .back-link{margin-top:2.5rem;}
   </style>
   <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.0.min.js"></script>
   <script>
     async function loadBokehChart(targetId, divUrl, scriptUrl) {
       const target = document.getElementById(targetId);
@@ -41,24 +53,25 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-      loadBokehChart("qqq-growth-chart", "../charts/qqq_growth_chart_div.html", "../charts/qqq_growth_chart.js");
-      loadBokehChart("qqq-pe-chart", "../charts/qqq_pe_chart_div.html", "../charts/qqq_pe_chart.js");
+      loadBokehChart("qqq-valuation-bundle", "../charts/qqq_valuation_bundle_chart_div.html", "../charts/qqq_valuation_bundle_chart.js");
     });
   </script>
 </head><body><div class="container">
   <h1>QQQ — Implied Growth &amp; P/E Ratio</h1>
 
-  <h2>Implied Growth (TTM)</h2>
-  <div id="qqq-growth-chart" class="chart-container">
-    <div class="chart-placeholder">Loading interactive chart…</div>
+  <div id="qqq-valuation-bundle" class="chart-bundle">
+    <div class="chart-placeholder">Loading interactive dashboard…</div>
   </div>
-  {{ qqq_growth_summary | safe }}
 
-  <h2>P/E Ratio (TTM)</h2>
-  <div id="qqq-pe-chart" class="chart-container">
-    <div class="chart-placeholder">Loading interactive chart…</div>
-  </div>
-  {{ qqq_pe_summary | safe }}
+  <section class="chart-summary">
+    <h2>Implied Growth Snapshot</h2>
+    {{ qqq_growth_summary | safe }}
+  </section>
 
-  <p><a href="../index.html">← Back to Dashboard</a></p>
+  <section class="chart-summary">
+    <h2>P/E Ratio Snapshot</h2>
+    {{ qqq_pe_summary | safe }}
+  </section>
+
+  <p class="back-link"><a href="../index.html">← Back to Dashboard</a></p>
 </div></body></html>
