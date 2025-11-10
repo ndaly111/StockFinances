@@ -5,11 +5,11 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31         1
                                 us-gaap:OperatingIncomeLoss 2024-12-31      -186038900.0
                                 us-gaap:OperatingIncomeLoss 2023-12-31       -15967400.0
                                 us-gaap:OperatingIncomeLoss 2022-12-31       -23247300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30          883300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30          836900.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30         1704500.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30         1607400.0
-                                us-gaap:OperatingIncomeLoss 2025-06-30       -43508000.0
-                                us-gaap:OperatingIncomeLoss 2024-06-30       -18658500.0
-                                us-gaap:OperatingIncomeLoss 2025-06-30       -83043000.0
-                                us-gaap:OperatingIncomeLoss 2024-06-30      -117011100.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30          972900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30         1010900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30         2677400.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30         2618300.0
+                                us-gaap:OperatingIncomeLoss 2025-09-30       -57658400.0
+                                us-gaap:OperatingIncomeLoss 2024-09-30       -23654700.0
+                                us-gaap:OperatingIncomeLoss 2025-09-30      -140701400.0
+                                us-gaap:OperatingIncomeLoss 2024-09-30      -140665800.0
