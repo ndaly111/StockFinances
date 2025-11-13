@@ -1,9 +1,14 @@
 import sqlite3
+import sys
 from pathlib import Path
 from textwrap import dedent
 
 import pandas as pd
 import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import populate_index_history as pih
 
@@ -234,5 +239,79 @@ def test_populate_index_history_inserts_rows(temp_db: Path):
         )
         eps_count = cur.fetchone()[0]
         assert eps_count > 0
+    finally:
+        conn.close()
+
+
+def test_populate_index_history_prefers_csv_eps(
+    temp_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    spy_csv = dedent(
+        """
+        Date,SP500,Earnings
+        2023-12-01,4500,150
+        2024-01-01,4600,152
+        2024-02-01,4700,155
+        """
+    )
+    qqq_csv = dedent(
+        """
+        symbol,price_to_earnings_ratio_2017,price_to_earnings_ratio_2018,price_to_earnings_ratio_2019,price_to_earnings_ratio_latest
+        AAA,20,22,24,30
+        BBB,18,21,23,29
+        """
+    )
+    price_csv = dedent(
+        """
+        Date,Open,High,Low,Close,Volume
+        2023-12-27,470,471,469,470,100
+        2023-12-28,471,472,470,471,120
+        2023-12-29,472,473,471,472,130
+        2023-12-30,472,474,471,473,140
+        2023-12-31,473,475,472,474,150
+        2024-01-01,474,476,473,475,160
+        2024-01-02,475,477,474,476,170
+        2024-01-03,476,478,475,477,180
+        2024-01-04,477,479,476,478,190
+        2024-01-05,478,480,477,479,200
+        """
+    )
+
+    eps_csv = "Date,EPS\n2023-12-01,8.5\n2024-01-01,9.25\n"
+    eps_path = tmp_path / "spy_eps.csv"
+    eps_path.write_text(eps_csv)
+
+    monkeypatch.setattr(pih, "EPS_DATASETS", {"SPY": (str(eps_path), "EPS")})
+    monkeypatch.setattr(pih, "_EPS_MONTHLY_CACHE", {})
+
+    fetch = _fake_fetch_factory(
+        {
+            pih.SPY_DATA_URL: spy_csv,
+            pih.QQQ_PE_URL: qqq_csv,
+            pih.SPY_PRICE_URL: price_csv,
+            pih.QQQ_PRICE_URL: price_csv,
+        }
+    )
+
+    pih.populate_index_history(
+        db_path=str(temp_db),
+        years=1,
+        today=pd.Timestamp("2024-01-05"),
+        fetch=fetch,
+    )
+
+    conn = sqlite3.connect(temp_db)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT EPS FROM Index_EPS_History
+            WHERE Ticker='SPY' AND EPS_Type='TTM' AND Date='2024-01-01'
+            """
+        )
+        row = cur.fetchone()
+        assert row is not None
+        (eps_val,) = row
+        assert eps_val == pytest.approx(9.25)
     finally:
         conn.close()
