@@ -30,6 +30,7 @@ from __future__ import annotations
 import io
 import sqlite3
 from datetime import date
+from pathlib import Path
 from typing import Callable, Dict
 
 import numpy as np
@@ -54,6 +55,13 @@ YEARS_DEFAULT = 10
 
 
 FetchFunc = Callable[[str], str]
+
+
+EPS_DATASETS: Dict[str, tuple[str, str]] = {
+    "SPY": ("spy_monthly_eps_1970_present.csv", "SPY_EPS"),
+}
+
+_EPS_MONTHLY_CACHE: Dict[str, pd.Series] = {}
 
 
 def _http_fetch(url: str, timeout: int = 30) -> str:
@@ -229,12 +237,74 @@ def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
     return cur.fetchone() is not None
 
 
+def _eps_monthly_series(ticker: str) -> pd.Series:
+    """Return the cached monthly EPS series for *ticker* if available."""
+
+    ticker = ticker.upper()
+    if ticker in _EPS_MONTHLY_CACHE:
+        return _EPS_MONTHLY_CACHE[ticker]
+
+    config = EPS_DATASETS.get(ticker)
+    if not config:
+        return pd.Series(dtype=float)
+
+    rel_path, column = config
+    path = Path(rel_path)
+    if not path.is_absolute():
+        path = Path(__file__).resolve().parent / path
+
+    if not path.exists():
+        return pd.Series(dtype=float)
+
+    df = pd.read_csv(path)
+    if "Date" not in df.columns:
+        raise RuntimeError(f"EPS dataset '{path}' is missing a 'Date' column")
+    if column not in df.columns:
+        raise RuntimeError(
+            f"EPS dataset '{path}' is missing the required '{column}' column"
+        )
+
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    df = df.dropna(subset=["Date", column])
+
+    series = (
+        pd.to_numeric(df[column], errors="coerce")
+        .dropna()
+        .groupby(df["Date"])
+        .mean()
+        .sort_index()
+    )
+
+    _EPS_MONTHLY_CACHE[ticker] = series
+    return series
+
+
+def _load_eps_override(
+    ticker: str, start: pd.Timestamp, end: pd.Timestamp
+) -> pd.Series:
+    """Return a daily EPS series for *ticker* from bundled CSV data if present."""
+
+    monthly = _eps_monthly_series(ticker)
+    if monthly.empty:
+        return pd.Series(dtype=float)
+
+    window = monthly.loc[
+        (monthly.index >= start - pd.DateOffset(months=1))
+        & (monthly.index <= end + pd.DateOffset(months=1))
+    ]
+    if window.empty:
+        window = monthly
+
+    return _to_daily(window, start, end)
+
+
 def _write_history(
     conn: sqlite3.Connection,
     ticker: str,
     pe_series: pd.Series,
     yield_series: pd.Series,
     price_series: pd.Series,
+    eps_override: pd.Series | None = None,
 ) -> None:
     """Upsert P/E, implied growth, and EPS history for *ticker* into the DB."""
 
@@ -258,6 +328,11 @@ def _write_history(
 
     merged["Growth"] = (merged["PE"] / 10.0) ** 0.1 + merged["Yield"] - 1.0
     merged["EPS"] = merged["Price"] / merged["PE"]
+    if eps_override is not None and not eps_override.empty:
+        override = eps_override.reindex(merged.index, method="ffill")
+        if not override.isna().all():
+            mask = override.notna()
+            merged.loc[mask, "EPS"] = override.loc[mask]
     rows = [
         (idx.strftime("%Y-%m-%d"), ticker, "TTM", float(row["PE"]))
         for idx, row in merged.iterrows()
@@ -360,8 +435,22 @@ def populate_index_history(
 
     with sqlite3.connect(db_path) as conn:
         yields = _load_yields(conn, start_dt, today_dt)
-        _write_history(conn, "SPY", spy, yields, spy_price)
-        _write_history(conn, "QQQ", qqq, yields, qqq_price)
+        _write_history(
+            conn,
+            "SPY",
+            spy,
+            yields,
+            spy_price,
+            eps_override=_load_eps_override("SPY", start_dt, today_dt),
+        )
+        _write_history(
+            conn,
+            "QQQ",
+            qqq,
+            yields,
+            qqq_price,
+            eps_override=_load_eps_override("QQQ", start_dt, today_dt),
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover - manual invocation
