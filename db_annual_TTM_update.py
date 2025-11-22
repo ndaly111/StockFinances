@@ -9,8 +9,8 @@ from datetime import datetime
 
 # ───── CONFIG ─────
 DB_PATH     = "Stock Data.db"   # same style as other scripts
-TICKER      = "AAA" #replace ticker with AAA so you dont break the db
-SPLIT_RATIO = 0               # 50-for-1 split
+TICKER      = "NFLX" #replace ticker with AAA so you dont break the db
+SPLIT_RATIO = 10               # 50-for-1 split
 # ──────────────────
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
