@@ -155,6 +155,11 @@ td{padding:4px;border:1px solid #8080FF}
 
   <header><h1>Financial Overview</h1></header>
 
+  <div id="daily-market-summary" class="center-table">
+    <h2>Daily Market Summary</h2>
+    {{ daily_market_summary | safe }}
+  </div>
+
   <div id="spy-qqq-growth" class="center-table">
     <h2>SPY vs QQQ Overview</h2>
     {{ spy_qqq_growth | safe }}
@@ -446,8 +451,16 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
                 f.write(inject_retro(rendered))
 
-def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
-                     earnings_past="", earnings_upcoming="", economic_html=""):
+def create_home_page(
+    tickers,
+    dashboard_html,
+    avg_vals,
+    spy_qqq_html,
+    earnings_past="",
+    earnings_upcoming="",
+    economic_html="",
+    market_summary_html="",
+):
     tpl = env.get_template("home_template.html")
     rendered = tpl.render(
         tickers=tickers,
@@ -456,14 +469,21 @@ def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
         spy_qqq_growth=spy_qqq_html,
         earnings_past=earnings_past,
         earnings_upcoming=earnings_upcoming,
-        economic_data=economic_html
+        economic_data=economic_html,
+        daily_market_summary=market_summary_html,
     )
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
 
 # ───────── orchestrator ────────────────────────────────────
-def html_generator2(tickers, financial_data, full_dashboard_html,
-                    avg_values, spy_qqq_growth_html=""):
+def html_generator2(
+    tickers,
+    financial_data,
+    full_dashboard_html,
+    avg_values,
+    spy_qqq_growth_html="",
+    daily_market_summary_html="",
+):
     ensure_templates_exist()
     create_home_page(
         tickers,
@@ -472,7 +492,8 @@ def html_generator2(tickers, financial_data, full_dashboard_html,
         spy_qqq_growth_html,
         get_file_or_placeholder("charts/earnings_past.html"),
         get_file_or_placeholder("charts/earnings_upcoming.html"),
-        get_file_or_placeholder("charts/economic_data.html", "No economic data available.")
+        get_file_or_placeholder("charts/economic_data.html", "No economic data available."),
+        daily_market_summary_html
     )
     prepare_and_generate_ticker_pages(tickers)
     render_spy_qqq_growth_pages()
