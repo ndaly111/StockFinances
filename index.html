@@ -9,6 +9,12 @@
     .negative{color:#c62828;font-weight:600;}
     td.pct::after{content:'%';}
     .center-table{margin:0 auto;width:100%%}
+    .daily-summary-shell{max-width:1120px;margin:0 auto 18px;padding:10px 12px;border:2px inset #C0C0C0;border-radius:10px;background:#f8f8ff;box-shadow:2px 2px 0 #8080FF}
+    .daily-summary-shell summary{font-size:1.05rem;font-weight:700;cursor:pointer;list-style:none;color:#cc0000;text-shadow:1px 1px #000080}
+    .daily-summary-shell summary::-webkit-details-marker{display:none}
+    .daily-summary-note{margin:6px 0 10px;color:#000080;font-size:0.95rem;text-align:center}
+    .daily-summary-iframe{width:100%;height:420px;max-height:520px;min-height:360px;border:2px solid #8080FF;background:#FFFFFF;border-radius:6px;box-shadow:1px 1px 0 #000080}
+    @media (max-width:768px){.daily-summary-iframe{height:360px}}
   </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -246,8 +252,13 @@
   <header><h1>Financial Overview</h1></header>
 
   <div id="daily-market-summary" class="center-table">
-    <h2>Daily Market Summary</h2>
-    <iframe src="daily-market-summary.html" title="Daily Market Summary" style="width:100%;height:740px;border:2px inset #C0C0C0;background:#FFFFFF" loading="lazy"></iframe><p style="text-align:right;margin-top:6px;"><a href="daily-market-summary.html">Open full summary</a></p>
+    <div class="daily-summary-shell">
+      <details open>
+        <summary>Daily Market Summary</summary>
+        <p class="daily-summary-note">Auto-updates each weekday. Tap “Open full summary” for a wider view.</p>
+        <iframe src="daily-market-summary.html" title="Daily Market Summary" class="daily-summary-iframe" loading="lazy"></iframe><p class="daily-summary-note" style="text-align:right;margin-top:6px;"><a href="daily-market-summary.html">Open full summary</a></p>
+      </details>
+    </div>
   </div>
 
   <div id="spy-qqq-growth" class="center-table">
