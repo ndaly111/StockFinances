@@ -112,9 +112,9 @@ def build_html(
     Construct the full HTML page for the daily market summary.
     """
     # Split headlines into sections.
-    positives = []
-    negatives = []
-    neutrals = []
+    positives: List[Dict[str, str]] = []
+    negatives: List[Dict[str, str]] = []
+    neutrals: List[Dict[str, str]] = []
 
     for item in headlines:
         classification = classify_headline(item["title"])
@@ -126,7 +126,7 @@ def build_html(
             neutrals.append(item)
 
     def render_index_summary() -> str:
-        parts = []
+        parts: List[str] = []
         for ticker, name in INDEX_TICKERS.items():
             info = index_moves.get(ticker)
             if not info:
@@ -138,17 +138,19 @@ def build_html(
                     f"<li><strong>{html.escape(name)}</strong>: "
                     f"{last_close:,.2f} ({sign}{pct:.2f}%)</li>"
                 )
-        return "<ul>\n" + "\n".join(parts) + "\n</ul>"
+        return "<ul class=\"index-grid\">\n" + "\n".join(parts) + "\n</ul>"
 
     def render_headline_list(items: List[Dict[str, str]]) -> str:
         if not items:
-            return "<p>No notable items from the feed.</p>"
+            return "<p class=\"empty-state\">No headlines available (feed temporarily unavailable).</p>"
         lis = []
         for item in items:
             title = html.escape(item["title"])
             link = html.escape(item["link"] or "#")
-            lis.append(f'<li><a href="{link}" target="_blank" rel="noopener noreferrer">{title}</a></li>')
-        return "<ul>\n" + "\n".join(lis) + "\n</ul>"
+            lis.append(
+                f'<li>· <a href="{link}" target="_blank" rel="noopener noreferrer">{title}</a></li>'
+            )
+        return "<ul class=\"headline-list\">\n" + "\n".join(lis) + "\n</ul>"
 
     html_page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -157,48 +159,76 @@ def build_html(
   <title>Daily US Stock Market Summary – {html.escape(date_str)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    :root {{
+      --panel-bg: #ffffff;
+      --panel-border: #b8b8ff;
+      --panel-shadow: #8080ff;
+      --text: #000080;
+      --heading: #cc0000;
+      --muted: #333366;
+    }}
     body {{
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem 3rem;
-      line-height: 1.6;
-      background-color: #f7f7f9;
-      color: #222;
+      font-family: Verdana, Geneva, sans-serif;
+      background: #f0f0ff;
+      color: var(--text);
+      margin: 0 auto;
+      max-width: 980px;
+      padding: 18px;
+    }}
+    h1, h2 {{
+      color: var(--heading);
+      text-shadow: 1px 1px var(--text);
+      margin: 8px 0;
     }}
     h1 {{
-      font-size: 1.9rem;
-      margin-bottom: 0.3rem;
+      font-size: 1.6rem;
     }}
     h2 {{
-      margin-top: 1.6rem;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
     }}
     .date {{
-      color: #555;
-      margin-bottom: 1.5rem;
+      color: var(--muted);
+      margin: 2px 0 12px;
+      font-size: 0.95rem;
     }}
-    section {{
-      background: #fff;
-      border-radius: 10px;
-      padding: 1rem 1.2rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    .panel {{
+      background: var(--panel-bg);
+      border: 2px solid var(--panel-border);
+      box-shadow: 2px 2px 0 var(--panel-shadow);
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
     }}
-    ul {{
-      padding-left: 1.3rem;
+    .panel h2 {{ margin-top: 0; }}
+    .headline-list {{
+      list-style: none;
+      padding-left: 0;
+      margin: 8px 0 0;
     }}
+    .headline-list li {{ margin: 6px 0; }}
     a {{
-      color: #0055cc;
+      color: #0000cc;
       text-decoration: none;
     }}
-    a:hover {{
-      text-decoration: underline;
+    a:hover {{ text-decoration: underline; }}
+    .index-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 6px 14px;
+      padding: 0;
+      margin: 6px 0 4px;
+      list-style: none;
+    }}
+    .index-grid li {{ margin: 0; }}
+    .empty-state {{
+      margin: 6px 0;
+      color: var(--muted);
+      font-style: italic;
     }}
     .disclaimer {{
       font-size: 0.8rem;
-      color: #666;
-      margin-top: 1.5rem;
+      color: var(--muted);
+      margin-top: 14px;
     }}
   </style>
 </head>
@@ -206,23 +236,23 @@ def build_html(
   <h1>Daily U.S. Stock Market Summary</h1>
   <p class="date">{html.escape(date_str)}</p>
 
-  <section>
+  <section class="panel">
     <h2>Index Snapshot</h2>
     {render_index_summary()}
-    <p>This compares today’s close with the prior trading day.</p>
+    <p class="empty-state">Today’s close vs. the prior trading day.</p>
   </section>
 
-  <section>
+  <section class="panel">
     <h2>What’s going well</h2>
     {render_headline_list(positives)}
   </section>
 
-  <section>
+  <section class="panel">
     <h2>Areas of caution</h2>
     {render_headline_list(negatives)}
   </section>
 
-  <section>
+  <section class="panel">
     <h2>What to watch</h2>
     {render_headline_list(neutrals)}
   </section>
