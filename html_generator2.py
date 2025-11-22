@@ -119,6 +119,12 @@ td{padding:4px;border:1px solid #8080FF}
     .negative{color:#c62828;font-weight:600;}
     td.pct::after{content:'%';}
     .center-table{margin:0 auto;width:100%%}
+    .daily-summary-shell{max-width:1120px;margin:0 auto 18px;padding:10px 12px;border:2px inset #C0C0C0;border-radius:10px;background:#f8f8ff;box-shadow:2px 2px 0 #8080FF}
+    .daily-summary-shell summary{font-size:1.05rem;font-weight:700;cursor:pointer;list-style:none;color:#cc0000;text-shadow:1px 1px #000080}
+    .daily-summary-shell summary::-webkit-details-marker{display:none}
+    .daily-summary-note{margin:6px 0 10px;color:#000080;font-size:0.95rem;text-align:center}
+    .daily-summary-iframe{width:100%;height:420px;max-height:520px;min-height:360px;border:2px solid #8080FF;background:#FFFFFF;border-radius:6px;box-shadow:1px 1px 0 #000080}
+    @media (max-width:768px){.daily-summary-iframe{height:360px}}
   </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -156,8 +162,13 @@ td{padding:4px;border:1px solid #8080FF}
   <header><h1>Financial Overview</h1></header>
 
   <div id="daily-market-summary" class="center-table">
-    <h2>Daily Market Summary</h2>
-    {{ daily_market_summary | safe }}
+    <div class="daily-summary-shell">
+      <details open>
+        <summary>Daily Market Summary</summary>
+        <p class="daily-summary-note">Auto-updates each weekday. Tap “Open full summary” for a wider view.</p>
+        {{ daily_market_summary | safe }}
+      </details>
+    </div>
   </div>
 
   <div id="spy-qqq-growth" class="center-table">
