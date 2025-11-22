@@ -119,6 +119,12 @@ td{padding:4px;border:1px solid #8080FF}
     .negative{color:#c62828;font-weight:600;}
     td.pct::after{content:'%';}
     .center-table{margin:0 auto;width:100%%}
+    .daily-summary-shell{max-width:1120px;margin:0 auto 18px;padding:10px 12px;border:2px inset #C0C0C0;border-radius:10px;background:#f8f8ff;box-shadow:2px 2px 0 #8080FF}
+    .daily-summary-shell summary{font-size:1.05rem;font-weight:700;cursor:pointer;list-style:none;color:#cc0000;text-shadow:1px 1px #000080}
+    .daily-summary-shell summary::-webkit-details-marker{display:none}
+    .daily-summary-note{margin:6px 0 10px;color:#000080;font-size:0.95rem;text-align:center}
+    .daily-summary-iframe{width:100%;height:420px;max-height:520px;min-height:360px;border:2px solid #8080FF;background:#FFFFFF;border-radius:6px;box-shadow:1px 1px 0 #000080}
+    @media (max-width:768px){.daily-summary-iframe{height:360px}}
   </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -154,6 +160,16 @@ td{padding:4px;border:1px solid #8080FF}
   </nav>
 
   <header><h1>Financial Overview</h1></header>
+
+  <div id="daily-market-summary" class="center-table">
+    <div class="daily-summary-shell">
+      <details open>
+        <summary>Daily Market Summary</summary>
+        <p class="daily-summary-note">Auto-updates each weekday. Tap “Open full summary” for a wider view.</p>
+        {{ daily_market_summary | safe }}
+      </details>
+    </div>
+  </div>
 
   <div id="spy-qqq-growth" class="center-table">
     <h2>SPY vs QQQ Overview</h2>
@@ -446,8 +462,16 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
             with open(f"pages/{t}_page.html", "w", encoding="utf-8") as f:
                 f.write(inject_retro(rendered))
 
-def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
-                     earnings_past="", earnings_upcoming="", economic_html=""):
+def create_home_page(
+    tickers,
+    dashboard_html,
+    avg_vals,
+    spy_qqq_html,
+    earnings_past="",
+    earnings_upcoming="",
+    economic_html="",
+    market_summary_html="",
+):
     tpl = env.get_template("home_template.html")
     rendered = tpl.render(
         tickers=tickers,
@@ -456,14 +480,21 @@ def create_home_page(tickers, dashboard_html, avg_vals, spy_qqq_html,
         spy_qqq_growth=spy_qqq_html,
         earnings_past=earnings_past,
         earnings_upcoming=earnings_upcoming,
-        economic_data=economic_html
+        economic_data=economic_html,
+        daily_market_summary=market_summary_html,
     )
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
 
 # ───────── orchestrator ────────────────────────────────────
-def html_generator2(tickers, financial_data, full_dashboard_html,
-                    avg_values, spy_qqq_growth_html=""):
+def html_generator2(
+    tickers,
+    financial_data,
+    full_dashboard_html,
+    avg_values,
+    spy_qqq_growth_html="",
+    daily_market_summary_html="",
+):
     ensure_templates_exist()
     create_home_page(
         tickers,
@@ -472,7 +503,8 @@ def html_generator2(tickers, financial_data, full_dashboard_html,
         spy_qqq_growth_html,
         get_file_or_placeholder("charts/earnings_past.html"),
         get_file_or_placeholder("charts/earnings_upcoming.html"),
-        get_file_or_placeholder("charts/economic_data.html", "No economic data available.")
+        get_file_or_placeholder("charts/economic_data.html", "No economic data available."),
+        daily_market_summary_html
     )
     prepare_and_generate_ticker_pages(tickers)
     render_spy_qqq_growth_pages()

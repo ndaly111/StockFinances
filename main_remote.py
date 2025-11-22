@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import ticker_manager
+from generate_market_summary import generate_market_summary
 from generate_economic_data    import generate_economic_data
 from annual_and_ttm_update     import annual_and_ttm_update, get_db_connection
 from html_generator            import create_html_for_tickers
@@ -199,6 +200,10 @@ def mini_main():
 
     financial_data, dashboard_data = {}, []
     treasury = fetch_10_year_treasury_yield()
+    market_summary_embed = (
+        '<p class="daily-summary-note" style="text-align:center;">Daily market summary unavailable. '
+        '<a href="daily-market-summary.html">View latest generated file</a></p>'
+    )
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
     # below is the inserted code
@@ -258,12 +263,26 @@ def mini_main():
             render_index_growth_charts(idx)
         backfill_index_growth()
 
+        try:
+            generate_market_summary()
+            market_summary_embed = (
+                '<iframe src="daily-market-summary.html" '
+                'title="Daily Market Summary" class="daily-summary-iframe" '
+                'loading="lazy"></iframe>'
+                '<p class="daily-summary-note" style="text-align:right;margin-top:8px;">'
+                '<a href="daily-market-summary.html">Open full summary</a>'
+                '</p>'
+            )
+        except Exception as exc:
+            print(f"[WARN] Daily market summary generation failed: {exc}")
+
         html_generator2(
             tickers,
             financial_data,
             full_html,
             avg_vals,
-            spy_qqq_html
+            spy_qqq_html,
+            daily_market_summary_html=market_summary_embed
         )
     finally:
         conn.close()
