@@ -20,8 +20,14 @@ import xml.etree.ElementTree as ET
 
 OUTPUT_PATH = "daily-market-summary.html"
 
-# Yahoo Finance US markets RSS feed – used just to grab headlines.
-RSS_URL = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EGSPC&region=US&lang=en-US"
+# Yahoo Finance US markets RSS feeds – used just to grab headlines.
+# The primary endpoint occasionally rate limits or blocks requests, so we
+# maintain a small set of fallbacks to keep the dashboard populated.
+RSS_URLS = [
+    "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EGSPC&region=US&lang=en-US",
+    "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EDJI&region=US&lang=en-US",
+    "https://finance.yahoo.com/news/rssindex",
+]
 
 INDEX_TICKERS = {
     "^GSPC": "S&P 500",
@@ -60,30 +66,49 @@ def get_index_change(ticker: str) -> Optional[Tuple[float, float]]:
         return None
 
 
-def fetch_rss_items(url: str, max_items: int = 10) -> List[Dict[str, str]]:
-    """
-    Fetch RSS feed and return up to max_items items with title + link.
-    """
-    items: List[Dict[str, str]] = []
-    try:
-        resp = requests.get(url, timeout=15)
-        resp.raise_for_status()
-        root = ET.fromstring(resp.text)
+def fetch_rss_items(urls: List[str], max_items: int = 10) -> List[Dict[str, str]]:
+    """Fetch RSS feeds and return up to ``max_items`` items.
 
-        for item in root.findall(".//item")[:max_items]:
-            title_el = item.find("title")
-            link_el = item.find("link")
-            title = title_el.text if title_el is not None else ""
-            link = link_el.text if link_el is not None else ""
-            if title:
-                items.append(
-                    {
-                        "title": title.strip(),
-                        "link": link.strip(),
-                    }
-                )
-    except Exception as e:
-        print(f"Error fetching RSS: {e}", file=sys.stderr)
+    The Yahoo Finance RSS endpoints will occasionally respond with a 403 when
+    accessed without a browser user agent. We send a modern UA header and walk
+    through a handful of feed URLs until we collect enough headlines. Any
+    per-feed errors are logged to stderr but do not abort processing so we can
+    still render partial results.
+    """
+
+    items: List[Dict[str, str]] = []
+    seen_titles = set()
+    headers = {"User-Agent": "Mozilla/5.0 (market-summary script)"}
+
+    for url in urls:
+        if len(items) >= max_items:
+            break
+
+        try:
+            resp = requests.get(url, timeout=15, headers=headers)
+            resp.raise_for_status()
+            root = ET.fromstring(resp.text)
+
+            for item in root.findall(".//item"):
+                if len(items) >= max_items:
+                    break
+
+                title_el = item.find("title")
+                link_el = item.find("link")
+                title = title_el.text if title_el is not None else ""
+                link = link_el.text if link_el is not None else ""
+                normalized_title = title.strip()
+
+                if normalized_title and normalized_title not in seen_titles:
+                    items.append(
+                        {
+                            "title": normalized_title,
+                            "link": link.strip(),
+                        }
+                    )
+                    seen_titles.add(normalized_title)
+        except Exception as e:
+            print(f"Error fetching RSS from {url}: {e}", file=sys.stderr)
 
     return items
 
@@ -285,7 +310,7 @@ def generate_market_summary(output_path: str = OUTPUT_PATH) -> str:
         index_moves[ticker] = get_index_change(ticker)
 
     # 2) Fetch headlines
-    headlines = fetch_rss_items(RSS_URL, max_items=12)
+    headlines = fetch_rss_items(RSS_URLS, max_items=12)
 
     # 3) Build HTML
     html_content = build_html(date_str, index_moves, headlines)
