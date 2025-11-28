@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# minor commit update to trigger commit
+
 """
 generate_segment_charts.py
 -----------------------------------
