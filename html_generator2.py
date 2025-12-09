@@ -2,7 +2,8 @@
 # html_generator2.py – retro fix: economic data + segment carousel/table + dividend
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
-import os, sqlite3, pandas as pd, yfinance as yf
+import os, sqlite3, pandas as pd, yfinance as yf, requests
+import xml.etree.ElementTree as ET
 
 DB_PATH = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
@@ -46,6 +47,48 @@ def get_file_with_fallback(paths, ph: str = "No data available") -> str:
         except FileNotFoundError:
             continue
     return ph
+
+
+def fetch_company_headlines(ticker: str, max_items: int = 6):
+    """Return a list of headline dicts for the given ticker.
+
+    Attempts a handful of Yahoo Finance RSS endpoints with a browser-like
+    User-Agent to avoid feed blocking. Any per-feed errors are logged but do
+    not abort processing so we can still render partial results.
+    """
+
+    urls = [
+        f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US",
+        f"https://finance.yahoo.com/rss/search?p={ticker}",
+    ]
+
+    items = []
+    seen_titles = set()
+    headers = {"User-Agent": "Mozilla/5.0 (ticker headlines fetcher)"}
+
+    for url in urls:
+        if len(items) >= max_items:
+            break
+
+        try:
+            resp = requests.get(url, timeout=12, headers=headers)
+            resp.raise_for_status()
+            root = ET.fromstring(resp.text)
+            for item in root.findall(".//item"):
+                if len(items) >= max_items:
+                    break
+                title_el = item.find("title")
+                link_el = item.find("link")
+                title = (title_el.text or "").strip()
+                link = (link_el.text or "").strip()
+                if not title or title in seen_titles:
+                    continue
+                items.append({"title": title, "link": link})
+                seen_titles.add(title)
+        except Exception as exc:
+            print(f"[WARN] Unable to fetch headlines for {ticker} from {url}: {exc}")
+
+    return items
 
 # Inject retro CSS + container override
 def inject_retro(html: str) -> str:
@@ -411,6 +454,7 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
             d = {
                 "ticker":                        t,
                 "company_name":                  get_company_short_name(t, cur),
+                "headlines":                     fetch_company_headlines(t),
 
                 # HTML fragments (read contents)
                 "ticker_info":                   get_file_or_placeholder(f"{charts_dir_fs}/{t}_ticker_info.html"),
