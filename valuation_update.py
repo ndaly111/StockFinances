@@ -222,7 +222,7 @@ def fetch_stock_data(ticker):
     stock = yf.Ticker(ticker)
     current_price = get_current_price(stock)
     forward_eps   = stock.info.get("forwardEps")
-    pe_ratio      = stock.info.get("tralingPE")
+    pe_ratio      = stock.info.get("trailingPE") or stock.info.get("trailingPe")
     ps_ratio      = stock.info.get("priceToSalesTrailing12Months")
     fwd_pe        = current_price / forward_eps if (forward_eps and current_price) else None
     return current_price, pe_ratio, ps_ratio, fwd_pe
@@ -231,16 +231,93 @@ def fetch_stock_data(ticker):
 # ---------------------------------------------------------------------------
 #  HTML valuation tables
 # ---------------------------------------------------------------------------
+def _pct_span(val):
+    color = "green" if val >= 0 else "red"
+    return f"<span style=\"color: {color}\">{val:.1f}%</span>"
+
+
 def generate_valuation_tables(ticker, combined, growth_values, treasury_yield,
                               current_price, nicks_fair_pe,
                               finviz_fair_pe, nicks_fair_ps):
 
-    # Format snapshot values
-    current_price_formatted = f"${current_price:.2f}"
-    treasury_yield_formatted = f"{treasury_yield:.1f}%"
+    os.makedirs("charts", exist_ok=True)
 
-    # Build the table as before (omitted for brevity)
-    # …
+    def _fmt_growth(value, label):
+        return f"{label}:&nbsp;{value:.0f}%" if pd.notna(value) else None
+
+    # Snapshot / summary table -------------------------------------------------
+    estimates = [
+        _fmt_growth(growth_values.get("nicks_growth_rate").iloc[0], "Nicks&nbsp;Growth"),
+        _fmt_growth(growth_values.get("projected_profit_margin").iloc[0], "Nick's&nbsp;Expected&nbsp;Margin"),
+        _fmt_growth(growth_values.get("FINVIZ_5yr_gwth").iloc[0], "FINVIZ&nbsp;Growth"),
+    ]
+    estimates = "<br>".join([e for e in estimates if e]) or "N/A"
+
+    fair_pe_parts = []
+    if pd.notna(nicks_fair_pe):
+        fair_pe_parts.append(f"Nicks:&nbsp;{nicks_fair_pe:.0f}")
+    if pd.notna(finviz_fair_pe):
+        fair_pe_parts.append(f"Finviz:&nbsp;{finviz_fair_pe:.0f}")
+    fair_value_pe = "<br>".join(fair_pe_parts) or "N/A"
+
+    fair_value_ps = (f"Nick's: {nicks_fair_ps:.3f}"
+                     if pd.notna(nicks_fair_ps) else "N/A")
+
+    rev_per_share = combined.get("Revenue_Per_Share")
+    revenue_share = rev_per_share.iloc[0] if rev_per_share is not None else None
+    current_ps = (current_price / revenue_share
+                  if revenue_share and not pd.isna(revenue_share) else None)
+    eps_val = combined.get("EPS").iloc[0]
+    current_pe = (current_price / eps_val if eps_val and eps_val > 0 else None)
+
+    info_df = pd.DataFrame([
+        {
+            "Share Price": f"${current_price:.2f}",
+            "Treasury Yield": f"{treasury_yield:.1f}%",
+            "Estimates": estimates,
+            "Fair Value (P/E)": fair_value_pe,
+            "Fair Value (P/S)": fair_value_ps,
+            "Current P/S": f"{current_ps:.1f}" if current_ps else "-",
+            "Current P/E": f"{current_pe:.1f}" if current_pe else "-",
+        }
+    ])
+
+    info_path = f"charts/{ticker}_valuation_info.html"
+    info_df.to_html(info_path, index=False, escape=False, classes=["table", "table-striped"])
+
+    # Detailed valuation table -------------------------------------------------
+    rows = []
+    for _, row in combined.iterrows():
+        basis_value = row.get("Basis_Value")
+        basis_type = row.get("Basis_Type")
+        if pd.isna(basis_value):
+            continue
+
+        basis_label = f"${basis_value:.2f} {basis_type}"
+
+        def _fmt_val(val):
+            return f"${val:.2f}" if pd.notna(val) else "-"
+
+        def _fmt_pct(val):
+            if pd.isna(val):
+                return "-"
+            pct = (val / current_price - 1) * 100
+            return _pct_span(pct)
+
+        rows.append({
+            "Basis": basis_label,
+            "Year": row.get("Year"),
+            "Nicks Valuation": _fmt_val(row.get("Nicks_Valuation")),
+            "Nicks vs Share Price": _fmt_pct(row.get("Nicks_Valuation")),
+            "Finviz Valuation": _fmt_val(row.get("Finviz_Valuation")),
+            "Finviz vs Share Price": _fmt_pct(row.get("Finviz_Valuation")),
+        })
+
+    val_df = pd.DataFrame(rows)
+    val_path = f"charts/{ticker}_valuation_table.html"
+    val_df.to_html(val_path, index=False, escape=False, classes=["table", "table-striped"])
+
+    return info_path, val_path
 
 # ---------------------------------------------------------------------------
 #  ** RESTORED ** process_update_growth_csv
