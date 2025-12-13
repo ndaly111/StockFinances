@@ -68,12 +68,13 @@ def get_index_change(ticker: str) -> Optional[Tuple[float, float]]:
 
 
 def fetch_news_items(max_items: int = 10) -> List[Dict[str, str]]:
-    """Fetch market headlines from NewsAPI.
+    """Fetch market headlines from NewsAPI (licensed provider).
 
     A valid NewsAPI key must be provided through the ``NEWSAPI_API_KEY``
     environment variable. Requests use the official REST API instead of RSS to
     comply with provider terms and avoid the earlier unauthenticated scraping
-    approach.
+    approach. Headlines include per-article source names to satisfy attribution
+    requirements.
     """
 
     api_key = os.getenv(NEWSAPI_API_KEY_ENV)
@@ -101,9 +102,13 @@ def fetch_news_items(max_items: int = 10) -> List[Dict[str, str]]:
 
                 title = (article.get("title") or "").strip()
                 link = (article.get("url") or "").strip()
+                source = ""
+                source_obj = article.get("source") or {}
+                if isinstance(source_obj, dict):
+                    source = (source_obj.get("name") or "").strip()
 
                 if title and title not in seen_titles:
-                    items.append({"title": title, "link": link})
+                    items.append({"title": title, "link": link, "source": source})
                     seen_titles.add(title)
         except Exception as e:
             print(f"Error fetching NewsAPI feed from {url}: {e}", file=sys.stderr)
@@ -170,8 +175,10 @@ def build_html(
         for item in items:
             title = html.escape(item["title"])
             link = html.escape(item["link"] or "#")
+            source = html.escape(item.get("source") or "")
+            source_label = f" <span class=\"source\">({source})</span>" if source else ""
             lis.append(
-                f'<li>· <a href="{link}" target="_blank" rel="noopener noreferrer">{title}</a></li>'
+                f'<li>· <a href="{link}" target="_blank" rel="noopener noreferrer">{title}</a>{source_label}</li>'
             )
         return "<ul class=\"headline-list\">\n" + "\n".join(lis) + "\n</ul>"
 
@@ -234,6 +241,11 @@ def build_html(
       text-decoration: none;
     }}
     a:hover {{ text-decoration: underline; }}
+    .source {{
+      color: var(--muted);
+      font-size: 0.9em;
+      margin-left: 4px;
+    }}
     .index-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -282,8 +294,10 @@ def build_html(
 
   <p class="disclaimer">
     This page is generated automatically using index data (via Yahoo Finance)
-    and market-news headlines provided by NewsAPI.org (attribution required).
-    It is for informational purposes only and is not investment advice.
+    and licensed market-news headlines delivered by NewsAPI.org. Headlines are
+    shown with their original publisher names, and the page is "powered by
+    NewsAPI.org" in accordance with provider attribution terms. It is for
+    informational purposes only and is not investment advice.
   </p>
 </body>
 </html>
