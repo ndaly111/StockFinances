@@ -1,9 +1,12 @@
 #start of balance_sheet_data_fetcher.py
 
-import yfinance as yf
-import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
+
+import pandas as pd
+
+from config import get_fmp_api_key
+from data_providers import FMPDataProvider, DataProviderError
 
 DB_PATH = 'stock data.db'
 TICKER = 'AAPL'  # Example ticker
@@ -111,31 +114,16 @@ def is_balance_sheet_data_outdated(balance_sheet_data):
         return False
 
 
-def fetch_balance_sheet_data_from_yahoo(ticker):
-    print("balance sheet data fetcher 5 | fetch balance sheet data from yahoo")
-    stock = yf.Ticker(ticker)
-    balance_sheet_df = stock.quarterly_balance_sheet
-    print("---checking if balance sheet data is empty")
-    if balance_sheet_df.empty:
-        print("---balance sheet data is empty for ticker:", ticker)
+def fetch_balance_sheet_data_from_provider(ticker, provider=None):
+    print("balance sheet data fetcher 5 | fetch balance sheet data from licensed provider")
+    provider = provider or FMPDataProvider(api_key=get_fmp_api_key())
+
+    try:
+        balance_sheet_data = provider.fetch_balance_sheet(ticker)
+    except DataProviderError as exc:
+        print(f"Provider error for {ticker}: {exc}")
         return None
 
-    print("---getting most recent quarter's data")
-    latest_bs_data = balance_sheet_df.iloc[:, 0]
-    date_of_last_reported_quarter = balance_sheet_df.columns[0].strftime('%Y-%m-%d')
-    print(f"---date of last reported quarter: {date_of_last_reported_quarter}")
-
-    print("---extracting required fields")
-    balance_sheet_data = {
-        'Symbol': ticker,
-        'Date_of_Last_Reported_Quarter': date_of_last_reported_quarter,
-        'Cash': latest_bs_data.get('Cash And Cash Equivalents', None),
-        'Total_Assets': latest_bs_data.get('Total Assets', None),
-        'Total_Liabilities': latest_bs_data.get('Total Liabilities Net Minority Interest', None),
-        'Debt': latest_bs_data.get('Total Debt', None),
-        'Equity': latest_bs_data.get('Stockholders Equity', None),
-        'Last_Updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    }
     print(f"---extracted balance sheet data: {balance_sheet_data}")
     return balance_sheet_data
 
@@ -212,7 +200,7 @@ def balance_sheet_data_fetcher():
     balance_sheet_data = fetch_balance_sheet_data(TICKER, cursor)
 
     if check_missing_balance_sheet_data(TICKER, cursor) or is_balance_sheet_data_outdated(balance_sheet_data):
-        new_balance_sheet_data = fetch_balance_sheet_data_from_yahoo(TICKER)
+        new_balance_sheet_data = fetch_balance_sheet_data_from_provider(TICKER)
 
         required_keys = ['Cash', 'Total_Assets', 'Total_Liabilities', 'Debt', 'Equity']
         if new_balance_sheet_data and all(
