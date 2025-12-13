@@ -1,6 +1,7 @@
 #start of html_generator.py
 
 from jinja2 import Environment, FileSystemLoader
+import logging
 import os
 import pandas as pd
 import yfinance as yf
@@ -12,18 +13,18 @@ env = Environment(loader=FileSystemLoader(os.path.dirname(os.path.abspath(__file
 # gate to match Aug 10 rollback
 VERSION = "SEGMENTS v2025-08-10b"
 
+logger = logging.getLogger(__name__)
+
 
 def format_to_millions(value):
     """Format a numeric value into millions with a dollar sign and commas."""
-    print("html_generator 1 format to millions")
     try:
-        print("html generator 1 formatting to millions", value)
-        print("---value", value)
-        # Assume value is already a float representing the total amount (not in millions)
         value_in_millions = value / 1e6  # Convert to millions
         formatted_value = f"${value_in_millions:,.0f}M"
+        logger.debug("Formatted value %s to %s", value, formatted_value)
         return formatted_value
-    except ValueError:
+    except (TypeError, ValueError):
+        logger.debug("Unable to format value %s to millions; returning 'N/A'", value)
         return "N/A"
 
 
@@ -55,10 +56,11 @@ def prepare_financial_data(df):
 
 
 def ensure_template_exists(template_path, template_content):
-    print("html generator 3 ensuring template exists")
+    logger.debug("Ensuring template exists at %s", template_path)
     if not os.path.exists(template_path):
         with open(template_path, 'w') as file:
             file.write(template_content)
+        logger.info("Created default template at %s", template_path)
 
 
 
@@ -88,11 +90,9 @@ template_html_content = """
             margin: 20px auto; /* Center horizontally */
             padding: 10px 0; /* Padding to prevent content touching the edges */
             scroll-snap-type: x mandatory; /* Enables snap scrolling on the x-axis */
-            scroll-snap-type: x mandatory; /* Enables snap scrolling on the x-axis with a mandatory behavior */
             display: flex; /* Use flex display to manage child elements */
             flex-direction: row; /* Arrange items in a row */
             gap: 20px; /* This can replace margin-right on carousel-item for spacing between items */
-        }
         }
         .carousel-item {
             display: inline-block; /* Display items in a line */
@@ -190,16 +190,16 @@ template_html_content = """
 </body>
 </html>
 """
-print("html generator 4 defined template.html")
+logger.debug("Template HTML definition loaded.")
 
 # Path to your template file
 template_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template.html')
-print("html generator 5 defined template path")
+logger.debug("Template path resolved to %s", template_file_path)
 
 
 # Ensure the template exists before rendering
 ensure_template_exists(template_file_path, template_html_content)
-print("html generator 6 ensuring templat exists")
+logger.debug("Verified template exists at %s", template_file_path)
 
 
 
@@ -239,9 +239,7 @@ def calculate_and_format_changes(df):
 
 
 def print_dataframe_to_console(df, message):
-    print("html generator 8 print dataframe to console")
-    print(f"\n{message}:\n")
-    print(df)
+    logger.debug("%s:\n%s", message, df)
 
 
 def get_file_content_or_placeholder(file_path, placeholder="No data available", is_binary=False):
@@ -264,7 +262,7 @@ def get_file_content_or_placeholder(file_path, placeholder="No data available", 
 # Function to create HTML content
 def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, html_file='index.html'):
     charts_output_dir = "charts/"
-    print("HTML generator 9 creating HTML for tickers")
+    logger.debug("Creating HTML for %d tickers", len(current_tickers))
     # Ensure charts_output_dir ends with a slash
     charts_output_dir = charts_output_dir.rstrip('/') + '/'
 
@@ -277,11 +275,11 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     )
 
     # Debug print to check nav_links content
-    print("Navigation links:", nav_links)
+    logger.debug("Generated navigation links for %d tickers", len(sorted_tickers))
     # Load the template
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('template.html')
-    print("---loading HTML template")
+    logger.debug("Loading HTML template")
 
     # Define your table styles
     table_styles = """
@@ -369,7 +367,7 @@ def create_html_for_tickers(current_tickers, financial_data, charts_output_dir, 
     with open(html_file, 'w') as file:
         file.write(html_content)
 
-    print(f"HTML content has been written to {html_file}")
+    logger.info("HTML content has been written to %s", html_file)
 
     return html_content
 
