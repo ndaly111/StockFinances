@@ -61,7 +61,7 @@ def establish_database_connection(db_path):
     # Ensure schema once and return a ready connection
     return get_db_connection(db_path)
 
-def log_average_valuations(avg_values, tickers_file):
+def log_average_valuations(avg_values, tickers_file, cursor, commit: bool = False):
     if tickers_file != "tickers.csv":
         return
     req = ("Nicks_TTM_Value_Average","Nicks_Forward_Value_Average","Finviz_TTM_Value_Average")
@@ -69,29 +69,28 @@ def log_average_valuations(avg_values, tickers_file):
         print("[WARNING] Missing keys in avg_values; skipping DB insert.")
         return
     today = datetime.now().strftime("%Y-%m-%d")
-    with sqlite3.connect(DB_PATH) as conn:
-        cur = conn.cursor()
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS AverageValuations (
-            date DATE PRIMARY KEY,
-            avg_ttm_valuation REAL,
-            avg_forward_valuation REAL,
-            avg_finviz_valuation REAL
-        );
-        """)
-        cur.execute("SELECT 1 FROM AverageValuations WHERE date = ?", (today,))
-        if not cur.fetchone():
-            cur.execute("""
-            INSERT INTO AverageValuations
-              (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
-            VALUES (?, ?, ?, ?);
-            """, (
-                today,
-                avg_values["Nicks_TTM_Value_Average"],
-                avg_values["Nicks_Forward_Value_Average"],
-                avg_values["Finviz_TTM_Value_Average"]
-            ))
-            conn.commit()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS AverageValuations (
+        date DATE PRIMARY KEY,
+        avg_ttm_valuation REAL,
+        avg_forward_valuation REAL,
+        avg_finviz_valuation REAL
+    );
+    """)
+    cursor.execute("SELECT 1 FROM AverageValuations WHERE date = ?", (today,))
+    if not cursor.fetchone():
+        cursor.execute("""
+        INSERT INTO AverageValuations
+          (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
+        VALUES (?, ?, ?, ?);
+        """, (
+            today,
+            avg_values["Nicks_TTM_Value_Average"],
+            avg_values["Nicks_Forward_Value_Average"],
+            avg_values["Finviz_TTM_Value_Average"]
+        ))
+        if commit:
+            cursor.connection.commit()
 
 def balancesheet_chart(ticker, charts_output_dir=CHARTS_DIR):
     data = fetch_bs_for_chart(ticker)
@@ -227,7 +226,7 @@ def mini_main():
             cursor = conn.cursor()
 
             # 1) Core financial data
-            annual_and_ttm_update(ticker, cursor)
+            annual_and_ttm_update(ticker, cursor, commit=False)
             scrape_forward_data(ticker)
             generate_forecast_charts_and_tables(ticker, DB_PATH, str(charts_output_dir))
 
@@ -247,6 +246,7 @@ def mini_main():
             conn.commit()
             return ticker_dashboard, not ok
         except Exception as e:
+            conn.rollback()
             print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
             return ticker_dashboard, True
         finally:
@@ -273,7 +273,8 @@ def mini_main():
     generate_all_summaries()
 
     full_html, avg_vals = generate_dashboard_table(dashboard_data)
-    log_average_valuations(avg_vals, TICKERS_FILE_PATH)
+    with get_db_connection(DB_PATH) as conn:
+        log_average_valuations(avg_vals, TICKERS_FILE_PATH, conn.cursor())
     spy_qqq_html = index_growth(treasury)
     generate_earnings_tables()
     # Generate index growth charts for both SPY and QQQ so that

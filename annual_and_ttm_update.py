@@ -196,8 +196,23 @@ def _is_ttm_fresh(tkr: str, cur: sqlite3.Cursor, freshness_hours: int = 24) -> b
     return False
 
 # ───────────────────────── main entry ─────────────────────────
-def annual_and_ttm_update(tkr: str, cur: sqlite3.Cursor, force_refresh: bool = False):
-    """Update annual and TTM data for ``tkr`` using an existing cursor."""
+def annual_and_ttm_update(
+    tkr: str, cur: sqlite3.Cursor, force_refresh: bool = False, commit: bool = True
+):
+    """Update annual and TTM data for ``tkr`` using an existing cursor.
+
+    Parameters
+    ----------
+    tkr: str
+        Stock ticker symbol.
+    cur: sqlite3.Cursor
+        Cursor tied to an open transaction. Caller controls connection lifetime.
+    force_refresh: bool
+        When True, bypasses freshness checks for the TTM pull.
+    commit: bool
+        If True (default), commits at the end of the operation. Set to False when
+        batching multiple ticker updates within a single transaction.
+    """
 
     # Annual (only if none exist)
     cur.execute("SELECT 1 FROM Annual_Data WHERE Symbol=? LIMIT 1", (tkr,))
@@ -214,8 +229,8 @@ def annual_and_ttm_update(tkr: str, cur: sqlite3.Cursor, force_refresh: bool = F
     else:
         logging.info("[%s] TTM fetch skipped (fresh)", tkr)
 
-    # Commit changes but leave connection management to caller
-    cur.connection.commit()
+    if commit:
+        cur.connection.commit()
     logging.info("[%s] annual+TTM update complete", tkr)
 
 # stand-alone sanity test
