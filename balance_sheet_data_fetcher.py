@@ -128,6 +128,33 @@ def fetch_balance_sheet_data_from_provider(ticker, provider=None):
     return balance_sheet_data
 
 
+def fetch_balance_sheet_data_from_yahoo(ticker, provider=None):
+    print("balance sheet data fetcher 5b | fetch balance sheet data from yahoo")
+    # Reuse the provider-based fetch logic to maintain a single mapping/validation path.
+    balance_sheet_data = fetch_balance_sheet_data_from_provider(ticker, provider)
+
+    if balance_sheet_data is None:
+        return None
+
+    required_keys = {
+        'Symbol',
+        'Date_of_Last_Reported_Quarter',
+        'Cash',
+        'Total_Assets',
+        'Total_Liabilities',
+        'Debt',
+        'Equity',
+        'Last_Updated',
+    }
+
+    if not required_keys.issubset(balance_sheet_data.keys()):
+        missing = required_keys.difference(balance_sheet_data.keys())
+        print(f"Missing expected balance sheet fields from Yahoo provider response: {missing}")
+        return None
+
+    return balance_sheet_data
+
+
 def store_fetched_balance_sheet_data(cursor, balance_sheet_data):
     print("balance sheet data fetcher 6 Storing Fetched balance sheet data")
     sql_statement = """
