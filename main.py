@@ -1,6 +1,7 @@
 # start of main
 import os
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import ticker_manager
 from datetime import datetime
 from annual_and_ttm_update import annual_and_ttm_update, get_db_connection
@@ -221,6 +222,52 @@ def fetch_10_year_treasury_yield():
         return "N/A"
 
 
+def process_ticker(ticker, treasury_yield):
+    print("main loop start")
+    print(f"Processing ticker: {ticker}")
+
+    ticker_dashboard_entry = []
+    ticker_charts_dir = os.path.join(charts_output_dir, ticker)
+    os.makedirs(ticker_charts_dir, exist_ok=True)
+
+    conn = establish_database_connection(db_path)
+    if conn is None:
+        return None
+
+    try:
+        cursor = conn.cursor()
+
+        # Existing data fetching and processing
+        annual_and_ttm_update(ticker, cursor)
+
+        # Fetch and update balance sheet data
+        fetch_and_update_balance_sheet_data(ticker, cursor)
+        print("---m fetch and update balance sheet data")
+
+        # Generate balance sheet chart and table
+        balancesheet_chart(ticker, ticker_charts_dir)
+        print("---m generate balance sheet chart and table")
+
+        combined_df = scrape_and_prepare_data(ticker)
+        print("---m combined df")
+
+        if not combined_df.empty:
+            store_in_database(combined_df, ticker, db_path, table_name)
+
+        # Generate HTML report after all tickers have been processed
+        generate_forecast_charts_and_tables(ticker, db_path, ticker_charts_dir)
+
+        prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
+
+        generate_html_table(prepared_data, ticker)
+
+        valuation_update(ticker, cursor, treasury_yield, marketcap, ticker_dashboard_entry)
+
+        return ticker_dashboard_entry[0] if ticker_dashboard_entry else None
+    finally:
+        conn.close()
+
+
 # Main function (remaining code)
 def main():
     print("main start")
@@ -232,57 +279,28 @@ def main():
     sorted_tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=False)
     print("---main loop 1 sorted tickers")
 
-    conn = establish_database_connection(db_path)
-    if conn is None:
-        return
+    process_update_growth_csv(file_path, db_path)
 
-    try:
-        cursor = conn.cursor()
-        print("cursor", cursor)
-        process_update_growth_csv(file_path, db_path)
-        for ticker in sorted_tickers:
-            print("main loop start")
-            print(f"Processing ticker: {ticker}")
+    with ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(process_ticker, ticker, treasury_yield): ticker
+            for ticker in sorted_tickers
+        }
 
-            # Existing data fetching and processing
-            annual_and_ttm_update(ticker, cursor)
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                dashboard_data.append(result)
 
-            # Fetch and update balance sheet data
-            fetch_and_update_balance_sheet_data(ticker, cursor)
-            print("---m fetch and update balance sheet data")
+    # Generate the dashboard table HTML
+    full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
 
-            # Generate balance sheet chart and table
-            balancesheet_chart(ticker, charts_output_dir)
-            print("---m generate balance sheet chart and table")
+    # Log average valuations to the database
+    log_average_valuations(avg_values)
 
-            combined_df = scrape_and_prepare_data(ticker)
-            print("---m combined df")
-
-            if not combined_df.empty:
-                store_in_database(combined_df, ticker, db_path, table_name)
-
-            # Generate HTML report after all tickers have been processed
-            generate_forecast_charts_and_tables(ticker, db_path, charts_output_dir)
-
-            prepared_data, marketcap = prepare_data_for_display(ticker, treasury_yield)
-
-            generate_html_table(prepared_data, ticker)
-
-            valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard_data)
-
-        # Generate the dashboard table HTML
-        full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
-
-        # Log average valuations to the database
-        log_average_valuations(avg_values)
-
-        print("generating HTML2")
-        # Call html_generator2 function after all tickers have been processed
-        html_generator2(sorted_tickers, financial_data, full_dashboard_html, avg_values)
-
-    finally:
-        if conn:
-            conn.close()
+    print("generating HTML2")
+    # Call html_generator2 function after all tickers have been processed
+    html_generator2(sorted_tickers, financial_data, full_dashboard_html, avg_values)
 
 
 if __name__ == "__main__":
