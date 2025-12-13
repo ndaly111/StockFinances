@@ -1,6 +1,5 @@
 # start of main
 import os
-import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import ticker_manager
 from datetime import datetime
@@ -86,7 +85,7 @@ def establish_database_connection(db_path):
 
 
 # Add the log_average_valuations function
-def log_average_valuations(avg_values):
+def log_average_valuations(avg_values, cursor, commit: bool = False):
     if TICKERS_FILE_PATH != 'tickers.csv':
         print("Skipping average valuation update, as TICKERS_FILE_PATH is not 'tickers aapl.csv'.")
         return
@@ -97,34 +96,32 @@ def log_average_valuations(avg_values):
 
     current_date = datetime.now().strftime('%Y-%m-%d')
 
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
+    # Create the table if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS AverageValuations (
+            id INTEGER PRIMARY KEY,
+            date DATE,
+            avg_ttm_valuation REAL,
+            avg_forward_valuation REAL,
+            avg_finviz_valuation REAL
+        );
+    ''')
 
-        # Create the table if it doesn't exist
+    # Check if a record already exists for the current date
+    cursor.execute('''
+        SELECT 1 FROM AverageValuations WHERE date = ?;
+    ''', (current_date,))
+    if cursor.fetchone():
+        print(f"Average valuations for {current_date} already recorded. Skipping.")
+    else:
+        # Insert the new average values
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS AverageValuations (
-                id INTEGER PRIMARY KEY,
-                date DATE,
-                avg_ttm_valuation REAL,
-                avg_forward_valuation REAL,
-                avg_finviz_valuation REAL
-            );
-        ''')
-
-        # Check if a record already exists for the current date
-        cursor.execute('''
-            SELECT 1 FROM AverageValuations WHERE date = ?;
-        ''', (current_date,))
-        if cursor.fetchone():
-            print(f"Average valuations for {current_date} already recorded. Skipping.")
-        else:
-            # Insert the new average values
-            cursor.execute('''
-                INSERT INTO AverageValuations (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
-                VALUES (?, ?, ?, ?);
-            ''', (current_date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation))
-            conn.commit()
-            print(f"Inserted average valuations for {current_date} into AverageValuations.")
+            INSERT INTO AverageValuations (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
+            VALUES (?, ?, ?, ?);
+        ''', (current_date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation))
+        if commit:
+            cursor.connection.commit()
+        print(f"Inserted average valuations for {current_date} into AverageValuations.")
 
 
 def balancesheet_chart(ticker, charts_output_dir):
@@ -238,7 +235,7 @@ def process_ticker(ticker, treasury_yield):
         cursor = conn.cursor()
 
         # Existing data fetching and processing
-        annual_and_ttm_update(ticker, cursor)
+        annual_and_ttm_update(ticker, cursor, commit=False)
 
         # Fetch and update balance sheet data
         fetch_and_update_balance_sheet_data(ticker, cursor)
@@ -263,7 +260,11 @@ def process_ticker(ticker, treasury_yield):
 
         valuation_update(ticker, cursor, treasury_yield, marketcap, ticker_dashboard_entry)
 
+        conn.commit()
         return ticker_dashboard_entry[0] if ticker_dashboard_entry else None
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
@@ -296,7 +297,8 @@ def main():
     full_dashboard_html, avg_values = generate_dashboard_table(dashboard_data)
 
     # Log average valuations to the database
-    log_average_valuations(avg_values)
+    with get_db_connection(os.path.abspath(db_path)) as conn:
+        log_average_valuations(avg_values, conn.cursor())
 
     print("generating HTML2")
     # Call html_generator2 function after all tickers have been processed
