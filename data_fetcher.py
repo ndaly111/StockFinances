@@ -1,10 +1,12 @@
 #start of data_fetcher.py
 
-import yfinance as yf
+from datetime import datetime, timedelta
+
 import pandas as pd
 import sqlite3
-from datetime import datetime, timedelta
-import os
+
+from config import ALLOW_YAHOO_STORAGE, get_fmp_api_key
+from data_providers import FMPDataProvider, DataProviderError
 
 
 
@@ -143,46 +145,34 @@ def check_null_fields_annual(ticker, ticker_data):
 
 
 
-def fetch_annual_data_from_yahoo(ticker):
-    print("data_fetcher 6(new) fetch annual data from yahoo")
+def fetch_annual_data_from_provider(ticker, provider=None):
+    print("data_fetcher 6(new) fetch annual data from licensed provider")
+    provider = provider or FMPDataProvider(api_key=get_fmp_api_key())
     try:
-        print("---trying to fetch annual data")
-        stock = yf.Ticker(ticker)
-        financials = stock.financials
-        print("---collected stock variable and financials",stock,financials)
-
-        if financials.empty:
-            print(f"No financial data available for {ticker}.")
+        raw_records = provider.fetch_annual_financials(ticker)
+        if not raw_records:
+            print(f"No financial data available for {ticker} from provider.")
             return pd.DataFrame()
 
-        financials = financials.T  # Transpose to get dates as rows
-        print("---transpose financials",financials)
-        financials['Date'] = financials.index  # Keep the full date
-        print("---financials date")
-
-        # Define a mapping of Yahoo Finance column names to your database column names
+        financials = pd.DataFrame(raw_records)
         column_mapping = {
-            'Total Revenue': 'Revenue',
-            'Net Income': 'Net_Income',
-            'Basic EPS': 'EPS'
+            'Revenue': 'Revenue',
+            'Net_Income': 'Net_Income',
+            'EPS': 'EPS',
+            'Date': 'Date'
         }
-        print("---mapping columns")
 
-        # Check and rename the columns as per the mapping
-        renamed_columns = {yahoo: db for yahoo, db in column_mapping.items() if yahoo in financials.columns}
-        print("---renaming columns from yahoo to the db")
-        if len(renamed_columns) < len(column_mapping):
-            missing_columns = set(column_mapping.values()) - set(renamed_columns.values())
+        missing_columns = [db_col for db_col in ['Revenue', 'Net_Income', 'EPS', 'Date'] if db_col not in financials.columns]
+        if missing_columns:
             print(f"Missing required columns for {ticker}: {missing_columns}")
             return pd.DataFrame()
 
-        financials.rename(columns=renamed_columns, inplace=True)
-        print("---financials renamed")
-
-
+        financials = financials[list(column_mapping.keys())]
+        financials.rename(columns=column_mapping, inplace=True)
+        print("---financials fetched and columns aligned to database schema")
         return financials
-    except Exception as e:
-        print(f"Error fetching data from Yahoo Finance for {ticker}: {e}")
+    except DataProviderError as e:
+        print(f"Provider error fetching data for {ticker}: {e}")
         return pd.DataFrame()
 
 
@@ -337,9 +327,14 @@ def is_ttm_data_blank(ttm_data):
         return False
 
 
-import yfinance as yf
-
 def fetch_ttm_data_from_yahoo(ticker):
+    if not ALLOW_YAHOO_STORAGE:
+        raise RuntimeError(
+            "Yahoo-derived data ingestion is disabled. Set ALLOW_YAHOO_STORAGE=true to explicitly allow it."
+        )
+
+    import yfinance as yf
+
     stock = yf.Ticker(ticker)
     ttm_financials = stock.quarterly_financials
     if ttm_financials is None or ttm_financials.empty:
@@ -370,6 +365,9 @@ def fetch_ttm_data_from_yahoo(ticker):
 def store_ttm_data(ticker, ttm_data, cursor):
     print("Storing TTM data")
     print(f"Storing updated TTM data for {ticker}")
+
+    if not ALLOW_YAHOO_STORAGE:
+        raise RuntimeError("Yahoo-derived data storage is disabled. Set ALLOW_YAHOO_STORAGE=true to override.")
 
     # Prepare the data tuple for the SQL query
     ttm_values = (
@@ -435,22 +433,11 @@ def prompt_and_update_partial_entries(ticker, cursor, is_remote=False):
                     params.append(response)
 
             if eps is None:
-                stock = yf.Ticker(symbol)
-                info = stock.info
-                trailing_eps = info.get('trailingEps')
-
-                if trailing_eps is not None:
-                    print(f"Fetched trailing EPS for {symbol}: {trailing_eps}")
-                    eps = trailing_eps  # Use the fetched trailing EPS
+                response = input(
+                    f"Please enter the EPS for {symbol} in {date} (or type 'skip' to leave unchanged): ")
+                if response.lower() != 'skip':
                     updates.append("EPS = ?")
-                    params.append(eps)
-                else:
-                    # Prompt for manual input if trailing EPS is not available
-                    response = input(
-                        f"Please enter the EPS for {symbol} in {date} (or type 'skip' to leave unchanged): ")
-                    if response.lower() != 'skip':
-                        updates.append("EPS = ?")
-                        params.append(response)
+                    params.append(response)
 
             if updates:
                 update_query = f"UPDATE Annual_Data SET {', '.join(updates)} WHERE Symbol = ? AND Date = ?"
