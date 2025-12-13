@@ -241,11 +241,32 @@ td{padding:4px;border:1px solid #8080FF}
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
   <link rel="stylesheet" href="/static/css/retro.css">
+  <style>
+    .news-headlines{border:2px inset #C0C0C0;background:#FFFFFF;padding:10px;box-shadow:1px 1px 0 #8080FF;}
+    .news-headlines ul{list-style:none;padding-left:0;margin:0;}
+    .news-headlines li{margin:6px 0;font-size:0.95rem;}
+    .news-headlines a{font-weight:600;}
+  </style>
 </head><body><div class="container">
   <h1>{{ ticker_data.company_name }} — {{ ticker_data.ticker }}</h1>
 
   <div class="chart-block">
     {{ ticker_data.ticker_info | safe }}
+  </div>
+
+  <div class="chart-block">
+    <h2>Latest Headlines</h2>
+    <div class="news-headlines">
+      {% if ticker_data.headlines %}
+      <ul class="headline-list">
+        {% for item in ticker_data.headlines %}
+        <li>· <a href="{{ item.link }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No headlines available right now.</p>
+      {% endif %}
+    </div>
   </div>
 
   <div class="chart-block">
@@ -329,6 +350,7 @@ td{padding:4px;border:1px solid #8080FF}
 
   <p class="chart-block"><a href="../index.html">← Back</a></p>
 </div></body></html>"""
+
     create_template("templates/ticker_template.html", ticker_tpl)
 
 # ───────── dashboard builder  (exported to main_remote.py) ─

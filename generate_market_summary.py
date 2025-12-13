@@ -9,25 +9,26 @@ call it from a GitHub Actions workflow.
 
 import datetime as dt
 import html
+import os
 import sys
 from typing import List, Tuple, Dict, Optional
 
 import requests
 import yfinance as yf
-import xml.etree.ElementTree as ET
 
 # === Settings ===
 
 OUTPUT_PATH = "daily-market-summary.html"
 
-# Yahoo Finance US markets RSS feeds – used just to grab headlines.
-# The primary endpoint occasionally rate limits or blocks requests, so we
-# maintain a small set of fallbacks to keep the dashboard populated.
-RSS_URLS = [
-    "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EGSPC&region=US&lang=en-US",
-    "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EDJI&region=US&lang=en-US",
-    "https://finance.yahoo.com/news/rssindex",
+# Licensed market-news provider endpoints (NewsAPI).
+# Requires a NewsAPI key provided via the ``NEWSAPI_API_KEY`` environment variable.
+# See https://newsapi.org/docs/terms for attribution requirements (the rendered
+# HTML includes a provider credit; do not remove it).
+NEWSAPI_ENDPOINTS = [
+    "https://newsapi.org/v2/top-headlines?country=us&category=business",
+    "https://newsapi.org/v2/everything?q=stock%20market&sortBy=publishedAt&language=en",
 ]
+NEWSAPI_API_KEY_ENV = "NEWSAPI_API_KEY"
 
 INDEX_TICKERS = {
     "^GSPC": "S&P 500",
@@ -66,49 +67,51 @@ def get_index_change(ticker: str) -> Optional[Tuple[float, float]]:
         return None
 
 
-def fetch_rss_items(urls: List[str], max_items: int = 10) -> List[Dict[str, str]]:
-    """Fetch RSS feeds and return up to ``max_items`` items.
+def fetch_news_items(max_items: int = 10) -> List[Dict[str, str]]:
+    """Fetch market headlines from NewsAPI (licensed provider).
 
-    The Yahoo Finance RSS endpoints will occasionally respond with a 403 when
-    accessed without a browser user agent. We send a modern UA header and walk
-    through a handful of feed URLs until we collect enough headlines. Any
-    per-feed errors are logged to stderr but do not abort processing so we can
-    still render partial results.
+    A valid NewsAPI key must be provided through the ``NEWSAPI_API_KEY``
+    environment variable. Requests use the official REST API instead of RSS to
+    comply with provider terms and avoid the earlier unauthenticated scraping
+    approach. Headlines include per-article source names to satisfy attribution
+    requirements.
     """
+
+    api_key = os.getenv(NEWSAPI_API_KEY_ENV)
+    if not api_key:
+        print(f"Missing {NEWSAPI_API_KEY_ENV} (required for NewsAPI headlines)", file=sys.stderr)
+        return []
 
     items: List[Dict[str, str]] = []
     seen_titles = set()
-    headers = {"User-Agent": "Mozilla/5.0 (market-summary script)"}
+    headers = {"X-Api-Key": api_key}
 
-    for url in urls:
+    for url in NEWSAPI_ENDPOINTS:
         if len(items) >= max_items:
             break
 
         try:
             resp = requests.get(url, timeout=15, headers=headers)
             resp.raise_for_status()
-            root = ET.fromstring(resp.text)
+            payload = resp.json()
+            articles = payload.get("articles") or []
 
-            for item in root.findall(".//item"):
+            for article in articles:
                 if len(items) >= max_items:
                     break
 
-                title_el = item.find("title")
-                link_el = item.find("link")
-                title = title_el.text if title_el is not None else ""
-                link = link_el.text if link_el is not None else ""
-                normalized_title = title.strip()
+                title = (article.get("title") or "").strip()
+                link = (article.get("url") or "").strip()
+                source = ""
+                source_obj = article.get("source") or {}
+                if isinstance(source_obj, dict):
+                    source = (source_obj.get("name") or "").strip()
 
-                if normalized_title and normalized_title not in seen_titles:
-                    items.append(
-                        {
-                            "title": normalized_title,
-                            "link": link.strip(),
-                        }
-                    )
-                    seen_titles.add(normalized_title)
+                if title and title not in seen_titles:
+                    items.append({"title": title, "link": link, "source": source})
+                    seen_titles.add(title)
         except Exception as e:
-            print(f"Error fetching RSS from {url}: {e}", file=sys.stderr)
+            print(f"Error fetching NewsAPI feed from {url}: {e}", file=sys.stderr)
 
     return items
 
@@ -172,8 +175,10 @@ def build_html(
         for item in items:
             title = html.escape(item["title"])
             link = html.escape(item["link"] or "#")
+            source = html.escape(item.get("source") or "")
+            source_label = f" <span class=\"source\">({source})</span>" if source else ""
             lis.append(
-                f'<li>· <a href="{link}" target="_blank" rel="noopener noreferrer">{title}</a></li>'
+                f'<li>· <a href="{link}" target="_blank" rel="noopener noreferrer">{title}</a>{source_label}</li>'
             )
         return "<ul class=\"headline-list\">\n" + "\n".join(lis) + "\n</ul>"
 
@@ -236,6 +241,11 @@ def build_html(
       text-decoration: none;
     }}
     a:hover {{ text-decoration: underline; }}
+    .source {{
+      color: var(--muted);
+      font-size: 0.9em;
+      margin-left: 4px;
+    }}
     .index-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -284,8 +294,10 @@ def build_html(
 
   <p class="disclaimer">
     This page is generated automatically using index data (via Yahoo Finance)
-    and public market-news headlines. It is for informational purposes only and
-    is not investment advice.
+    and licensed market-news headlines delivered by NewsAPI.org. Headlines are
+    shown with their original publisher names, and the page is "powered by
+    NewsAPI.org" in accordance with provider attribution terms. It is for
+    informational purposes only and is not investment advice.
   </p>
 </body>
 </html>
@@ -310,7 +322,7 @@ def generate_market_summary(output_path: str = OUTPUT_PATH) -> str:
         index_moves[ticker] = get_index_change(ticker)
 
     # 2) Fetch headlines
-    headlines = fetch_rss_items(RSS_URLS, max_items=12)
+    headlines = fetch_news_items(max_items=12)
 
     # 3) Build HTML
     html_content = build_html(date_str, index_moves, headlines)

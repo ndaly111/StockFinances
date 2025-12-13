@@ -6,7 +6,7 @@
 #  • TTM row is written with INSERT OR REPLACE (robust to any PK/UNIQUE flags)
 # ---------------------------------------------------------------------------
 import logging, os, sqlite3, time
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import lru_cache
 
 import numpy as np
@@ -149,9 +149,70 @@ def _store_ttm(tkr: str, d: dict, cur: sqlite3.Cursor):
         d.get("Quarter"),
     ))
 
+# ───────────────────────── TTM freshness check ─────────────────────
+def _latest_completed_quarter_end(today: datetime | None = None) -> datetime:
+    today = today or datetime.utcnow()
+    month = today.month
+    quarter = (month - 1) // 3 + 1
+
+    if quarter == 1:
+        year, quarter = today.year - 1, 4
+    else:
+        year, quarter = today.year, quarter - 1
+
+    quarter_end_month_day = {1: (3, 31), 2: (6, 30), 3: (9, 30), 4: (12, 31)}
+    month, day = quarter_end_month_day[quarter]
+    return datetime(year, month, day)
+
+
+def _is_ttm_fresh(tkr: str, cur: sqlite3.Cursor, freshness_hours: int = 24) -> bool:
+    cur.execute("SELECT Quarter, Last_Updated FROM TTM_Data WHERE Symbol=?", (tkr,))
+    row = cur.fetchone()
+    if not row:
+        return False
+
+    quarter_str, last_updated_str = row
+
+    # 1) recent pull (time-based)
+    if last_updated_str:
+        try:
+            last_updated = datetime.fromisoformat(str(last_updated_str))
+            if last_updated >= datetime.utcnow() - timedelta(hours=freshness_hours):
+                logging.info("[%s] TTM is fresh (updated within %s hours)", tkr, freshness_hours)
+                return True
+        except Exception:
+            logging.warning("[%s] Unable to parse Last_Updated=%s", tkr, last_updated_str)
+
+    # 2) latest completed quarter already recorded
+    if quarter_str:
+        try:
+            quarter_dt = datetime.fromisoformat(str(quarter_str))
+            if quarter_dt.date() >= _latest_completed_quarter_end().date():
+                logging.info("[%s] TTM quarter %s is current; skipping fetch", tkr, quarter_str)
+                return True
+        except Exception:
+            logging.warning("[%s] Unable to parse Quarter=%s", tkr, quarter_str)
+
+    return False
+
 # ───────────────────────── main entry ─────────────────────────
-def annual_and_ttm_update(tkr: str, cur: sqlite3.Cursor):
-    """Update annual and TTM data for ``tkr`` using an existing cursor."""
+def annual_and_ttm_update(
+    tkr: str, cur: sqlite3.Cursor, force_refresh: bool = False, commit: bool = True
+):
+    """Update annual and TTM data for ``tkr`` using an existing cursor.
+
+    Parameters
+    ----------
+    tkr: str
+        Stock ticker symbol.
+    cur: sqlite3.Cursor
+        Cursor tied to an open transaction. Caller controls connection lifetime.
+    force_refresh: bool
+        When True, bypasses freshness checks for the TTM pull.
+    commit: bool
+        If True (default), commits at the end of the operation. Set to False when
+        batching multiple ticker updates within a single transaction.
+    """
 
     # Annual (only if none exist)
     cur.execute("SELECT 1 FROM Annual_Data WHERE Symbol=? LIMIT 1", (tkr,))
@@ -161,12 +222,15 @@ def annual_and_ttm_update(tkr: str, cur: sqlite3.Cursor):
             _store_annual(tkr, df, cur)
 
     # TTM (overwrite with latest every run)
-    ttm = _fetch_ttm(tkr)
-    if ttm:
-        _store_ttm(tkr, ttm, cur)
+    if force_refresh or not _is_ttm_fresh(tkr, cur):
+        ttm = _fetch_ttm(tkr)
+        if ttm:
+            _store_ttm(tkr, ttm, cur)
+    else:
+        logging.info("[%s] TTM fetch skipped (fresh)", tkr)
 
-    # Commit changes but leave connection management to caller
-    cur.connection.commit()
+    if commit:
+        cur.connection.commit()
     logging.info("[%s] annual+TTM update complete", tkr)
 
 # stand-alone sanity test
