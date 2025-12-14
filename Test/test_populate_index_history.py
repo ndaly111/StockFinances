@@ -118,8 +118,8 @@ def test_spy_series_interpolates_daily():
         pd.Timestamp("2024-01-05"),
         fetch=lambda _url: csv,
     )
-    assert series.index[0] == pd.Timestamp("2023-12-28")
-    assert series.index[-1] == pd.Timestamp("2024-01-05")
+    assert series.index[0] == pd.Timestamp("2023-12-28", tz="UTC")
+    assert series.index[-1] == pd.Timestamp("2024-01-05", tz="UTC")
     # Values should interpolate between month endpoints.
     assert series.loc["2023-12-28"] == pytest.approx(4500 / 150, rel=1e-2)
     assert series.loc["2024-01-05"] == pytest.approx(series.loc["2024-01-04"], rel=1e-3)
@@ -139,7 +139,7 @@ def test_qqq_series_uses_yearly_means():
         fetch=lambda _url: csv,
     )
     assert not series.empty
-    assert series.index[0] == pd.Timestamp("2023-12-28")
+    assert series.index[0] == pd.Timestamp("2023-12-28", tz="UTC")
     # The first portion of the series reflects the ``_latest`` estimate.
     assert series.iloc[0] == pytest.approx((35 + 33) / 2)
 
@@ -159,7 +159,10 @@ def test_price_series_from_stooq_like_feed():
         pd.Timestamp("2023-12-30"),
         fetch=lambda _url: csv,
     )
-    assert list(series.index[[0, -1]]) == [pd.Timestamp("2023-12-28"), pd.Timestamp("2023-12-30")]
+    assert list(series.index[[0, -1]]) == [
+        pd.Timestamp("2023-12-28", tz="UTC"),
+        pd.Timestamp("2023-12-30", tz="UTC"),
+    ]
     # Weekend days should forward-fill the last close.
     assert series.loc["2023-12-30"] == pytest.approx(472.0)
 

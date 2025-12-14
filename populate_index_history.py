@@ -64,6 +64,27 @@ EPS_DATASETS: Dict[str, tuple[str, str]] = {
 _EPS_MONTHLY_CACHE: Dict[str, pd.Series] = {}
 
 
+def _as_utc(ts: pd.Timestamp) -> pd.Timestamp:
+    """Return ``ts`` converted to midnight UTC."""
+
+    dt = pd.to_datetime(ts, utc=True)
+    return dt.normalize()
+
+
+def _ensure_utc_index(series: pd.Series | pd.DataFrame) -> pd.Series | pd.DataFrame:
+    """Return a copy of ``series`` with a UTC-normalized DatetimeIndex."""
+
+    if series.empty:
+        series = series.copy()
+        series.index = pd.DatetimeIndex([], tz="UTC")
+        return series
+
+    ser = series.copy()
+    ser.index = pd.to_datetime(ser.index, utc=True).normalize()
+    ser.index.name = "Date"
+    return ser
+
+
 def _http_fetch(url: str, timeout: int = 30) -> str:
     """Return the UTF-8 text for *url* or raise a descriptive error."""
 
@@ -97,9 +118,12 @@ def _to_daily(series: pd.Series, start: pd.Timestamp, end: pd.Timestamp) -> pd.S
     """Interpolate *series* to a daily frequency between *start* and *end*."""
 
     if series.empty:
-        return series
+        return _ensure_utc_index(series)
 
-    base = series.sort_index()
+    start = _as_utc(start)
+    end = _as_utc(end)
+
+    base = _ensure_utc_index(series.sort_index())
     # Ensure boundary values are present so interpolation covers the window.
     if start < base.index.min():
         base = pd.concat([pd.Series(base.iloc[0], index=[start]), base])
@@ -124,6 +148,9 @@ def _spy_series(
 ) -> pd.Series:
     """Return daily SPY P/E (TTM) values between *start* and *end*."""
 
+    start = _as_utc(start)
+    end = _as_utc(end)
+
     text = fetch(SPY_DATA_URL)
     df = pd.read_csv(io.StringIO(text))
     df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
@@ -134,6 +161,7 @@ def _spy_series(
     price = pd.to_numeric(df["SP500"], errors="coerce")
     pe = (price / earnings).replace([np.inf, -np.inf], np.nan).dropna()
     pe = pe[~pe.index.duplicated(keep="last")]
+    pe = _ensure_utc_index(pe)
     pe.name = "PE"
 
     trimmed = pe.loc[(pe.index >= start - pd.DateOffset(months=1)) & (pe.index <= end)]
@@ -146,6 +174,9 @@ def _qqq_series(
     fetch: FetchFunc = _http_fetch,
 ) -> pd.Series:
     """Return a daily QQQ P/E (TTM) series between *start* and *end*."""
+
+    start = _as_utc(start)
+    end = _as_utc(end)
 
     text = fetch(QQQ_PE_URL)
     df = pd.read_csv(io.StringIO(text))
@@ -180,7 +211,7 @@ def _qqq_series(
     dates = [pd.Timestamp(year=year, month=7, day=1) for year in years]
     series = pd.Series([year_map[y] for y in years], index=dates, name="PE")
 
-    return _to_daily(series, start, end)
+    return _to_daily(_ensure_utc_index(series), start, end)
 
 
 def _price_series(
@@ -190,6 +221,9 @@ def _price_series(
     fetch: FetchFunc = _http_fetch,
 ) -> pd.Series:
     """Return a daily close-price series for an ETF between *start* and *end*."""
+
+    start = _as_utc(start)
+    end = _as_utc(end)
 
     text = fetch(url)
     df = pd.read_csv(io.StringIO(text))
@@ -208,6 +242,7 @@ def _price_series(
         .last()
     )
     series.name = "Price"
+    series = _ensure_utc_index(series)
     trimmed = series.loc[(series.index >= start - pd.DateOffset(days=5)) & (series.index <= end)]
     return _to_daily(trimmed, start, end)
 
@@ -222,7 +257,7 @@ def _load_yields(conn: sqlite3.Connection, start: pd.Timestamp, end: pd.Timestam
     df = pd.read_sql_query(query, conn, params=(start.date(), end.date()))
     if df.empty:
         raise RuntimeError("No DGS10 yield data available in economic_data table.")
-    df["Date"] = pd.to_datetime(df["Date"])
+    df["Date"] = pd.to_datetime(df["Date"], utc=True).dt.normalize()
     df = df.dropna(subset=["value"])
     yields = pd.to_numeric(df["value"], errors="coerce").dropna() / 100.0
     series = yields.groupby(df["Date"]).mean()
@@ -284,9 +319,14 @@ def _load_eps_override(
 ) -> pd.Series:
     """Return a daily EPS series for *ticker* from bundled CSV data if present."""
 
+    start = _as_utc(start)
+    end = _as_utc(end)
+
     monthly = _eps_monthly_series(ticker)
     if monthly.empty:
         return pd.Series(dtype=float)
+
+    monthly = _ensure_utc_index(monthly)
 
     window = monthly.loc[
         (monthly.index >= start - pd.DateOffset(months=1))
@@ -318,6 +358,7 @@ def _write_history(
         join="inner",
     ).dropna()
     merged = merged.replace([np.inf, -np.inf], np.nan).dropna()
+    merged = _ensure_utc_index(merged)
 
     # Skip calculations for days where the P/E series is zero or
     # negative—raising those values to the tenth root is undefined for
@@ -425,7 +466,7 @@ def populate_index_history(
     if years <= 0:
         raise ValueError("years must be positive")
 
-    today_dt = pd.Timestamp(today or date.today())
+    today_dt = _as_utc(pd.Timestamp(today or date.today()))
     start_dt = today_dt - pd.DateOffset(years=years)
 
     spy = _spy_series(start_dt, today_dt, fetch)
