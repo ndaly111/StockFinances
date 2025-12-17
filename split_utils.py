@@ -377,6 +377,101 @@ def reconcile_split_events(
     return sorted(reconciled, key=lambda r: r["date"])
 
 
+def plan_split_adjustments(
+    ticker: str,
+    merged_events: List[Dict[str, object]],
+    status_map: Dict[str, object],
+) -> List[Dict[str, object]]:
+    """
+    Build a human-readable split-adjustment plan.
+
+    ``merged_events`` should contain dictionaries with at least ``date``,
+    ``ratio``, ``source``, and ``status`` keys (such as the output of
+    :func:`reconcile_split_events`). ``status_map`` can carry:
+
+    - ``annual_periods`` (or ``annual_dates``/``annual_period_ends``): iterable
+      of fiscal year-end dates.
+    - ``ttm_period`` (or ``ttm_date``): the latest TTM/quarterly period date.
+    - ``event_status`` (or ``statuses``): optional overrides keyed by ISO date
+      string.
+    """
+
+    status_map = status_map or {}
+
+    def _coerce_date(raw: object) -> date | None:
+        if isinstance(raw, date):
+            return raw
+        try:
+            return datetime.fromisoformat(str(raw)).date()
+        except Exception:
+            return None
+
+    def _coerce_ratio(raw: object) -> float | None:
+        try:
+            return float(raw)
+        except Exception:
+            return None
+
+    annual_periods: List[date] = []
+    for key in ("annual_periods", "annual_dates", "annual_period_ends"):
+        for raw in status_map.get(key, []) or []:
+            coerced = _coerce_date(raw)
+            if coerced:
+                annual_periods.append(coerced)
+    annual_periods = sorted(set(annual_periods))
+
+    ttm_period = _coerce_date(status_map.get("ttm_period") or status_map.get("ttm_date"))
+    status_overrides: Dict[str, str] = status_map.get("event_status") or status_map.get("statuses") or {}
+
+    def _first_post_split_period(event_date: date) -> date:
+        candidates: List[date] = [period for period in annual_periods if period > event_date]
+        if ttm_period and ttm_period > event_date:
+            candidates.append(ttm_period)
+        if candidates:
+            return min(candidates)
+        return event_date
+
+    plan: List[Dict[str, object]] = []
+    sorted_events = sorted(
+        merged_events,
+        key=lambda evt: _coerce_date(evt.get("date")) or date.min,
+    )
+
+    for event in sorted_events:
+        event_date = _coerce_date(event.get("date"))
+        if not event_date:
+            logging.warning("[%s] Skipping split event without a valid date: %s", ticker, event)
+            continue
+
+        ratio_value = _coerce_ratio(event.get("ratio"))
+        apply_before = _first_post_split_period(event_date)
+        affected_years = sorted({period.year for period in annual_periods if period < apply_before})
+
+        iso_date = event_date.isoformat()
+        status_value = status_overrides.get(iso_date) or event.get("status") or "pending"
+        latest_year = affected_years[-1] if affected_years else "n/a"
+        logging.info(
+            "[%s] apply ratio %s to rows before %s (affecting fiscal years ≤ %s)",
+            ticker,
+            ratio_value,
+            apply_before.isoformat(),
+            latest_year,
+        )
+
+        plan.append(
+            {
+                "date": iso_date,
+                "ratio": ratio_value,
+                "apply_before": apply_before.isoformat(),
+                "affected_years": affected_years,
+                "source": event.get("source") or "unknown",
+                "status": status_value,
+            }
+        )
+
+    return plan
+
+
 def assess_split_adjustment_status(
     ticker: str,
     cur: sqlite3.Cursor,
