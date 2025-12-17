@@ -9,6 +9,7 @@ operate on split-adjusted data.
 from __future__ import annotations
 
 import logging
+import math
 import os
 import sqlite3
 from datetime import datetime, date
@@ -123,6 +124,71 @@ def _latest_financial_date(ticker: str, cur: sqlite3.Cursor) -> date | None:
     if not candidates:
         return None
     return max(candidates)
+
+
+def load_eps_series(
+    ticker: str, cur: sqlite3.Cursor, min_years: int, include_ttm: bool = True
+) -> List[Tuple[date, float, str]]:
+    """
+    Load a time-ordered EPS series from annual and optional TTM/quarterly data.
+
+    Returns a list of tuples: (period_end_date, eps, label) where ``label`` is
+    ``"annual"`` for fiscal-year figures and ``"ttm"`` for TTM/quarterly data.
+    """
+
+    def _coerce_date(raw: object) -> date | None:
+        try:
+            return datetime.fromisoformat(str(raw)).date()
+        except Exception:
+            return None
+
+    def _coerce_eps(raw: object) -> float | None:
+        try:
+            value = float(raw)
+        except Exception:
+            return None
+        if value == 0 or math.isnan(value):
+            return None
+        return value
+
+    annual_rows: List[Tuple[date, float, str]] = []
+    cur.execute("SELECT Date, EPS FROM Annual_Data WHERE Symbol=? ORDER BY Date DESC", (ticker,))
+    for raw_date, raw_eps in cur.fetchall():
+        eps_val = _coerce_eps(raw_eps)
+        dt_val = _coerce_date(raw_date)
+        if eps_val is None or dt_val is None:
+            continue
+        annual_rows.append((dt_val, eps_val, "annual"))
+        if len(annual_rows) >= min_years:
+            break
+
+    if not annual_rows:
+        logging.info("[%s] No annual EPS rows available for last %d years", ticker, min_years)
+    elif len(annual_rows) < min_years:
+        logging.info(
+            "[%s] Only %d annual EPS rows found (requested %d)", ticker, len(annual_rows), min_years
+        )
+
+    ttm_rows: List[Tuple[date, float, str]] = []
+    if include_ttm:
+        cur.execute("SELECT TTM_EPS, Quarter FROM TTM_Data WHERE Symbol=?", (ticker,))
+        ttm_row = cur.fetchone()
+        if not ttm_row:
+            logging.info("[%s] No TTM row present when loading EPS series", ticker)
+        else:
+            eps_val = _coerce_eps(ttm_row[0])
+            dt_val = _coerce_date(ttm_row[1])
+            if eps_val is None or dt_val is None:
+                logging.info("[%s] TTM row present but missing EPS or date", ticker)
+            else:
+                ttm_rows.append((dt_val, eps_val, "ttm"))
+
+    combined = sorted(annual_rows + ttm_rows, key=lambda r: r[0])
+    if combined:
+        logging.debug("[%s] Loaded %d EPS data points", ticker, len(combined))
+    else:
+        logging.info("[%s] No EPS data points available", ticker)
+    return combined
 
 
 def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
