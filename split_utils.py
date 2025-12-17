@@ -233,6 +233,56 @@ def infer_split_candidates(
     return candidates
 
 
+def merge_candidate_events(
+    candidates: List[Tuple[date, float, Tuple[str, str]]],
+    merge_window_days: int = 180,
+    tolerance: float = 0.03,
+) -> List[Tuple[date, float, List[Tuple[str, str]]]]:
+    """
+    Merge nearby candidate split events that represent the same ratio.
+
+    Adjacent candidate records with similar ratios (within ``tolerance``) whose
+    boundary dates fall within ``merge_window_days`` are combined into a single
+    event. The merged event's date is anchored to the earliest boundary after
+    the jump, and all contributing period label pairs are retained for
+    traceability.
+    """
+
+    if tolerance <= 0:
+        raise ValueError("tolerance must be positive")
+    if merge_window_days < 0:
+        raise ValueError("merge_window_days cannot be negative")
+
+    if not candidates:
+        return []
+
+    def _ratios_match(a: float, b: float) -> bool:
+        return abs(a - b) <= tolerance
+
+    sorted_candidates = sorted(candidates, key=lambda r: r[0])
+    merged: List[Tuple[date, float, List[Tuple[str, str]]]] = []
+
+    anchor_date, current_ratio, first_periods = sorted_candidates[0]
+    last_boundary = anchor_date
+    period_pairs: List[Tuple[str, str]] = [first_periods]
+
+    for cand_date, cand_ratio, cand_periods in sorted_candidates[1:]:
+        within_window = (cand_date - last_boundary).days <= merge_window_days
+        if within_window and _ratios_match(cand_ratio, current_ratio):
+            if cand_periods not in period_pairs:
+                period_pairs.append(cand_periods)
+            last_boundary = cand_date
+            continue
+
+        merged.append((anchor_date, current_ratio, period_pairs))
+        anchor_date, current_ratio = cand_date, cand_ratio
+        last_boundary = cand_date
+        period_pairs = [cand_periods]
+
+    merged.append((anchor_date, current_ratio, period_pairs))
+    return merged
+
+
 def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
     """
     Detect new splits and adjust stored per-share values.
