@@ -183,8 +183,10 @@ def _matches_expected(observed: float | None, expected: float, tolerance: float)
 def _recommendation(recorded: bool, eps_status: str) -> str:
     if eps_status == "adjusted":
         return "skip" if recorded else "verify"
+    if eps_status == "unadjusted":
+        return "apply split"
     if eps_status == "mismatch":
-        return "apply split" if not recorded else "verify"
+        return "verify"
     return "verify"
 
 
@@ -213,12 +215,20 @@ def _analyze_event(
     if observed_ratio is None:
         eps_status = "inconclusive"
         note = "Insufficient EPS continuity to assess adjustment."
-    elif _matches_expected(observed_ratio, ratio, tolerance):
+    elif _matches_expected(observed_ratio, 1.0, tolerance):
         eps_status = "adjusted"
-        note = f"Observed EPS ratio ~{observed_ratio:.2f} vs expected {ratio:.2f}. {evidence}".strip()
+        note = f"Observed EPS ratio ~{observed_ratio:.2f}, suggesting prior split adjustment. {evidence}".strip()
+    elif _matches_expected(observed_ratio, ratio, tolerance):
+        eps_status = "unadjusted"
+        note = (
+            f"Observed EPS ratio ~{observed_ratio:.2f} aligns with split ratio {ratio:.2f}; data likely unadjusted. "
+            f"{evidence}".strip()
+        )
     else:
         eps_status = "mismatch"
-        note = f"Observed EPS ratio {observed_ratio:.2f} differs from expected {ratio:.2f}. {evidence}".strip()
+        note = (
+            f"Observed EPS ratio {observed_ratio:.2f} differs from both 1.0 and expected {ratio:.2f}. {evidence}".strip()
+        )
 
     recommendation = _recommendation(recorded, eps_status)
     return AuditResult(
