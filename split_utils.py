@@ -191,6 +191,48 @@ def load_eps_series(
     return combined
 
 
+def infer_split_candidates(
+    series: List[Tuple[date, float, str]], tolerance: float = 0.03
+) -> List[Tuple[date, float, Tuple[str, str]]]:
+    """Detect likely split ratios by examining adjacent EPS values.
+
+    The input ``series`` should contain (date, eps, label) tuples. Adjacent
+    entries are compared in chronological order, considering only pairs where
+    both EPS values are non-zero and share the same sign. When the absolute
+    ratio between neighboring EPS values approximates a common split factor,
+    a candidate is emitted with the later date in the pair.
+    """
+
+    if tolerance <= 0:
+        raise ValueError("tolerance must be positive")
+
+    common_ratios: List[float] = [2, 3, 4, 5, 10, 20, 25, 50]
+    candidates: List[Tuple[date, float, Tuple[str, str]]] = []
+
+    sorted_series = sorted(series, key=lambda r: r[0])
+    for prev, nxt in zip(sorted_series, sorted_series[1:]):
+        prev_date, prev_eps, prev_label = prev
+        next_date, next_eps, next_label = nxt
+
+        if prev_eps == 0 or next_eps == 0:
+            continue
+
+        if prev_eps * next_eps < 0:
+            continue
+
+        ratio = abs(prev_eps) / abs(next_eps)
+
+        if abs(ratio - 1.0) <= tolerance:
+            continue
+
+        for common_ratio in common_ratios:
+            if abs(ratio - common_ratio) <= tolerance:
+                candidates.append((next_date, common_ratio, (prev_label, next_label)))
+                break
+
+    return candidates
+
+
 def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
     """
     Detect new splits and adjust stored per-share values.
