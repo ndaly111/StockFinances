@@ -7,12 +7,25 @@ import sqlite3
 
 from config import ALLOW_YAHOO_STORAGE, get_fmp_api_key
 from data_providers import FMPDataProvider, DataProviderError
+from split_utils import apply_split_adjustments, ensure_splits_table
 
+
+def _ensure_split_alignment(ticker: str, cursor: sqlite3.Cursor) -> None:
+    """Ensure split events are recorded and prior rows are split-adjusted."""
+    try:
+        ensure_splits_table(cursor)
+        adjusted = apply_split_adjustments(ticker, cursor)
+        if adjusted:
+            print(f"[{ticker}] Applied split adjustments before data fetch.")
+    except Exception as exc:
+        print(f"[{ticker}] Split check failed: {exc}")
 
 
 def fetch_ticker_data(ticker, cursor):
     print("data_fetcher 1(new) fetching ticker data")
     try:
+        _ensure_split_alignment(ticker, cursor)
+
         cursor.execute("PRAGMA table_info(Annual_Data)")
         columns = [col[1] for col in cursor.fetchall()]  # Get column names
         print("---getting column names",columns)
@@ -238,6 +251,8 @@ def handle_ttm_duplicates(ticker, cursor):
 def fetch_ttm_data(ticker, cursor):
     print("data fetcher (new)0 Fetching TTM data for ticker")
     try:
+        _ensure_split_alignment(ticker, cursor)
+
         # Fetch the column names for TTM_Data table
         cursor.execute("PRAGMA table_info(TTM_Data)")
         columns = [col[1] for col in cursor.fetchall()]  # Get column names

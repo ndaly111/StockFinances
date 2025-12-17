@@ -16,6 +16,8 @@ import requests
 import yfinance as yf
 from bs4 import BeautifulSoup
 
+from split_utils import apply_split_adjustments, ensure_splits_table
+
 # ---------------------------------------------------------------------------
 #  Safe price helper
 # ---------------------------------------------------------------------------
@@ -124,6 +126,11 @@ def fetch_financial_valuation_data(ticker, db_path):
     current_price = get_current_price(stock)
 
     with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        ensure_splits_table(cursor)
+        if apply_split_adjustments(ticker, cursor):
+            print(f"[{ticker}] Split adjustments applied before valuation pull.")
+
         ttm = pd.read_sql_query(
             """
             SELECT 'TTM' AS Year, TTM_Revenue AS Revenue, TTM_EPS AS EPS
