@@ -51,6 +51,11 @@ class AuditResult:
     recorded: bool
     adjustment_present: bool
     observed_ratio: float | None
+    before_date: date | None
+    before_eps: float | None
+    after_date: date | None
+    after_eps: float | None
+    after_source: str
     eps_status: str
     recommendation: str
     note: str
@@ -200,7 +205,9 @@ def _analyze_event(
     tolerance: float,
 ) -> AuditResult:
     before, after = _nearest_eps(annual_points, split_date)
-    evidence = ""
+    after_source = "n/a"
+    if after is not None:
+        after_source = "annual"
     if (
         after is None
         and ttm_snapshot
@@ -209,7 +216,8 @@ def _analyze_event(
         and ttm_snapshot.quarter >= split_date
     ):
         after = AnnualEpsPoint(ttm_snapshot.quarter, ttm_snapshot.eps)
-        evidence = "TTM fallback"
+        after_source = "ttm"
+
     observed_ratio = _eps_ratio(before.eps if before else None, after.eps if after else None)
 
     if observed_ratio is None:
@@ -217,18 +225,26 @@ def _analyze_event(
         note = "Insufficient EPS continuity to assess adjustment."
     elif _matches_expected(observed_ratio, 1.0, tolerance):
         eps_status = "adjusted"
-        note = f"Observed EPS ratio ~{observed_ratio:.2f}, suggesting prior split adjustment. {evidence}".strip()
+        note = f"Observed EPS ratio ~{observed_ratio:.2f}, suggesting prior split adjustment."
     elif _matches_expected(observed_ratio, ratio, tolerance):
         eps_status = "unadjusted"
         note = (
-            f"Observed EPS ratio ~{observed_ratio:.2f} aligns with split ratio {ratio:.2f}; data likely unadjusted. "
-            f"{evidence}".strip()
+            f"Observed EPS ratio ~{observed_ratio:.2f} aligns with split ratio {ratio:.2f}; data likely unadjusted."
         )
     else:
         eps_status = "mismatch"
-        note = (
-            f"Observed EPS ratio {observed_ratio:.2f} differs from both 1.0 and expected {ratio:.2f}. {evidence}".strip()
-        )
+        note = f"Observed EPS ratio {observed_ratio:.2f} differs from both 1.0 and expected {ratio:.2f}."
+
+    detail_bits = []
+    if before:
+        detail_bits.append(f"before {before.as_of.isoformat()}={before.eps:.4f}")
+    else:
+        detail_bits.append("before missing")
+    if after:
+        detail_bits.append(f"after ({after_source}) {after.as_of.isoformat()}={after.eps:.4f}")
+    else:
+        detail_bits.append("after missing")
+    note = f"{note} [{'; '.join(detail_bits)}]"
 
     recommendation = _recommendation(recorded, eps_status)
     return AuditResult(
@@ -238,6 +254,11 @@ def _analyze_event(
         recorded=recorded,
         adjustment_present=eps_status == "adjusted",
         observed_ratio=observed_ratio,
+        before_date=before.as_of if before else None,
+        before_eps=before.eps if before else None,
+        after_date=after.as_of if after else None,
+        after_eps=after.eps if after else None,
+        after_source=after_source,
         eps_status=eps_status,
         recommendation=recommendation,
         note=note,
@@ -252,6 +273,11 @@ def _write_csv(path: Path, rows: Sequence[AuditResult]) -> None:
         "Recorded In DB",
         "Adjustment Present",
         "Observed EPS Ratio",
+        "Before EPS Date",
+        "Before EPS",
+        "After EPS Date",
+        "After EPS",
+        "After Source",
         "EPS Status",
         "Recommendation",
         "Notes",
@@ -268,6 +294,11 @@ def _write_csv(path: Path, rows: Sequence[AuditResult]) -> None:
                     "yes" if row.recorded else "no",
                     "yes" if row.adjustment_present else "no",
                     f"{row.observed_ratio:.4f}" if row.observed_ratio is not None else "",
+                    row.before_date.isoformat() if row.before_date else "",
+                    f"{row.before_eps:.4f}" if row.before_eps is not None else "",
+                    row.after_date.isoformat() if row.after_date else "",
+                    f"{row.after_eps:.4f}" if row.after_eps is not None else "",
+                    row.after_source,
                     row.eps_status,
                     row.recommendation,
                     row.note,
@@ -283,6 +314,11 @@ def _write_html(path: Path, rows: Sequence[AuditResult]) -> None:
         "Recorded In DB",
         "Adjustment Present",
         "Observed EPS Ratio",
+        "Before EPS Date",
+        "Before EPS",
+        "After EPS Date",
+        "After EPS",
+        "After Source",
         "EPS Status",
         "Recommendation",
         "Notes",
@@ -311,6 +347,11 @@ def _write_html(path: Path, rows: Sequence[AuditResult]) -> None:
             f.write(f"<td>{'yes' if row.recorded else 'no'}</td>")
             f.write(f"<td class='{status_class}'>{'yes' if row.adjustment_present else 'no'}</td>")
             f.write(f"<td>{'' if row.observed_ratio is None else f'{row.observed_ratio:.4f}'}</td>")
+            f.write(f"<td>{row.before_date.isoformat() if row.before_date else ''}</td>")
+            f.write(f"<td>{'' if row.before_eps is None else f'{row.before_eps:.4f}'}</td>")
+            f.write(f"<td>{row.after_date.isoformat() if row.after_date else ''}</td>")
+            f.write(f"<td>{'' if row.after_eps is None else f'{row.after_eps:.4f}'}</td>")
+            f.write(f"<td>{row.after_source}</td>")
             f.write(f"<td>{row.eps_status}</td>")
             f.write(f"<td>{row.recommendation}</td>")
             f.write(f"<td>{row.note}</td>")
