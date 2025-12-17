@@ -15,7 +15,7 @@ import sqlite3
 from collections import defaultdict
 from datetime import datetime, date
 from functools import lru_cache
-from typing import Iterable, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
 import yfinance as yf
@@ -375,6 +375,163 @@ def reconcile_split_events(
             )
 
     return sorted(reconciled, key=lambda r: r["date"])
+
+
+def assess_split_adjustment_status(
+    ticker: str,
+    cur: sqlite3.Cursor,
+    *,
+    tolerance: float = 0.03,
+    merge_window_days: int = 180,
+    date_window_days: int = 45,
+    min_years: int = 10,
+) -> Tuple[str, List[Dict[str, object]]]:
+    """
+    Determine whether stored EPS figures are split-adjusted for a ticker.
+
+    Returns a tuple of ``(status, evidence)`` where ``status`` is one of
+    ``"adjusted"``, ``"unadjusted"``, or ``"mismatch/inconclusive"`` and
+    ``evidence`` lists the neighboring EPS ratios inspected around each
+    provider or inferred split date for auditability.
+    """
+
+    if tolerance <= 0:
+        raise ValueError("tolerance must be positive")
+    if merge_window_days < 0:
+        raise ValueError("merge_window_days cannot be negative")
+    if date_window_days < 0:
+        raise ValueError("date_window_days cannot be negative")
+
+    eps_series = load_eps_series(ticker, cur, min_years=min_years)
+    ordered_series = sorted(eps_series, key=lambda r: r[0])
+
+    if len(ordered_series) < 2:
+        return "mismatch/inconclusive", [
+            {
+                "issue": "insufficient_eps_points",
+                "points_found": len(ordered_series),
+                "note": "At least two EPS observations are required to compute ratios.",
+            }
+        ]
+
+    def _neighbor_ratio(anchor: date) -> Tuple[Optional[float], Optional[Tuple[date, float, str]], Optional[Tuple[date, float, str]]]:
+        before = None
+        after = None
+        for dt_val, eps_val, label in ordered_series:
+            if dt_val <= anchor:
+                before = (dt_val, eps_val, label)
+            if dt_val > anchor:
+                after = (dt_val, eps_val, label)
+                break
+
+        if not before or not after:
+            return None, before, after
+
+        prev_eps = before[1]
+        next_eps = after[1]
+        if prev_eps == 0 or next_eps == 0 or prev_eps * next_eps < 0:
+            return None, before, after
+
+        return abs(prev_eps) / abs(next_eps), before, after
+
+    def _is_ratio_adjusted(ratio_value: Optional[float]) -> bool:
+        return ratio_value is not None and abs(ratio_value - 1.0) <= tolerance
+
+    inferred_events = merge_candidate_events(
+        infer_split_candidates(ordered_series, tolerance=tolerance),
+        merge_window_days=merge_window_days,
+        tolerance=tolerance,
+    )
+    provider_events = fetch_split_history(ticker)
+
+    matched_provider_indices: set[int] = set()
+    evidence: List[Dict[str, object]] = []
+    has_unmatched_inferred = False
+    has_ratio_jump = False
+    has_unknown = False
+
+    for inferred_date, inferred_ratio, inferred_periods in inferred_events:
+        provider_match_index: Optional[int] = None
+        for idx, (provider_date, provider_ratio, _source) in enumerate(provider_events):
+            if idx in matched_provider_indices:
+                continue
+            date_close = abs((provider_date - inferred_date).days) <= date_window_days
+            ratio_close = abs(provider_ratio - inferred_ratio) <= tolerance
+            if date_close and ratio_close:
+                provider_match_index = idx
+                break
+
+        if provider_match_index is None:
+            has_unmatched_inferred = True
+            event_date = inferred_date
+            provider_ratio = None
+            provider_source = None
+        else:
+            matched_provider_indices.add(provider_match_index)
+            event_date, provider_ratio, provider_source = provider_events[provider_match_index]
+
+        neighbor_ratio, before, after = _neighbor_ratio(event_date)
+        classification = "adjusted" if _is_ratio_adjusted(neighbor_ratio) else "jump" if neighbor_ratio else "unknown"
+
+        if classification == "jump":
+            has_ratio_jump = True
+        elif classification == "unknown":
+            has_unknown = True
+
+        evidence.append(
+            {
+                "event_date": event_date,
+                "event_kind": "inferred_only" if provider_match_index is None else "provider_match",
+                "provider_ratio": provider_ratio,
+                "provider_source": provider_source,
+                "inferred_ratio": inferred_ratio,
+                "inferred_periods": inferred_periods,
+                "neighbor_ratio": neighbor_ratio,
+                "neighbor_periods": {
+                    "before": before,
+                    "after": after,
+                },
+                "classification": classification,
+            }
+        )
+
+    for idx, (provider_date, provider_ratio, provider_source) in enumerate(provider_events):
+        if idx in matched_provider_indices:
+            continue
+
+        neighbor_ratio, before, after = _neighbor_ratio(provider_date)
+        classification = "adjusted" if _is_ratio_adjusted(neighbor_ratio) else "jump" if neighbor_ratio else "unknown"
+        if classification == "jump":
+            has_ratio_jump = True
+        elif classification == "unknown":
+            has_unknown = True
+
+        evidence.append(
+            {
+                "event_date": provider_date,
+                "event_kind": "provider_only",
+                "provider_ratio": provider_ratio,
+                "provider_source": provider_source,
+                "inferred_ratio": None,
+                "inferred_periods": None,
+                "neighbor_ratio": neighbor_ratio,
+                "neighbor_periods": {
+                    "before": before,
+                    "after": after,
+                },
+                "classification": classification,
+            }
+        )
+
+    status: str
+    if has_unmatched_inferred or has_ratio_jump:
+        status = "unadjusted"
+    elif evidence and not has_unknown:
+        status = "adjusted"
+    else:
+        status = "mismatch/inconclusive"
+
+    return status, sorted(evidence, key=lambda row: row.get("event_date") or date.min)
 
 
 def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
