@@ -7,6 +7,8 @@ import matplotlib.ticker as mtick
 import os
 from datetime import datetime
 
+from split_utils import apply_split_adjustments, ensure_splits_table
+
 
 
 
@@ -42,6 +44,10 @@ def chart_needs_update(chart_path, last_data_update, ttm_update=False, annual_up
 
 def prepare_data_for_charts(ticker, cursor):
     print("chart generator 4 preparing data for charts")
+    ensure_splits_table(cursor)
+    if apply_split_adjustments(ticker, cursor):
+        print(f"[{ticker}] Split adjustments applied prior to chart generation.")
+
     # Fetch annual data including Last_Updated
     cursor.execute("SELECT Date, Revenue, Net_Income, EPS, Last_Updated FROM Annual_Data WHERE Symbol = ? ORDER BY Date", (ticker,))
     annual_data = cursor.fetchall()
