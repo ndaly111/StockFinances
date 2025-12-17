@@ -12,6 +12,7 @@ import logging
 import math
 import os
 import sqlite3
+from collections import defaultdict
 from datetime import datetime, date
 from functools import lru_cache
 from typing import Iterable, List, Tuple
@@ -281,6 +282,99 @@ def merge_candidate_events(
 
     merged.append((anchor_date, current_ratio, period_pairs))
     return merged
+
+
+def reconcile_split_events(
+    ticker: str,
+    inferred_events: List[Tuple[date, float, List[Tuple[str, str]]]],
+    tolerance: float = 0.03,
+    date_window_days: int = 30,
+) -> List[dict]:
+    """
+    Align inferred split events with provider history.
+
+    Each inferred event is reconciled against provider-sourced history from
+    :func:`fetch_split_history`. When a provider event falls within the
+    ``date_window_days`` window of an inferred event and the ratios match within
+    ``tolerance``, the provider's date and ratio are preferred and the event is
+    marked ``provider_match``. Otherwise, the inferred event is retained and
+    marked ``inferred_only``.
+    """
+
+    if tolerance <= 0:
+        raise ValueError("tolerance must be positive")
+    if date_window_days < 0:
+        raise ValueError("date_window_days cannot be negative")
+
+    def _ratio_bucket(val: float) -> int:
+        return int(round(val / tolerance))
+
+    provider_events = fetch_split_history(ticker)
+    provider_index: dict[int, List[Tuple[date, float, str]]] = defaultdict(list)
+    for provider_event in provider_events:
+        provider_index[_ratio_bucket(provider_event[1])].append(provider_event)
+
+    def _ratios_match(candidate_ratio: float, provider_ratio: float) -> bool:
+        return abs(candidate_ratio - provider_ratio) <= tolerance
+
+    def _find_best_provider_match(
+        inferred_date: date, inferred_ratio: float
+    ) -> Tuple[date, float, str] | None:
+        bucket = _ratio_bucket(inferred_ratio)
+        best_match: Tuple[date, float, str] | None = None
+        best_distance: int | None = None
+
+        for bucket_key in (bucket - 1, bucket, bucket + 1):
+            for provider_date, provider_ratio, provider_source in provider_index.get(
+                bucket_key, []
+            ):
+                if not _ratios_match(inferred_ratio, provider_ratio):
+                    continue
+                day_distance = abs((provider_date - inferred_date).days)
+                if day_distance > date_window_days:
+                    continue
+                if best_distance is None or day_distance < best_distance:
+                    best_match = (provider_date, provider_ratio, provider_source)
+                    best_distance = day_distance
+        return best_match
+
+    reconciled: List[dict] = []
+    for inferred_date, inferred_ratio, inferred_periods in inferred_events:
+        provider_match = _find_best_provider_match(inferred_date, inferred_ratio)
+
+        if provider_match:
+            provider_date, provider_ratio, provider_source = provider_match
+            reconciled.append(
+                {
+                    "date": provider_date,
+                    "ratio": provider_ratio,
+                    "source": provider_source,
+                    "status": "provider_match",
+                    "inferred_date": inferred_date,
+                    "inferred_ratio": inferred_ratio,
+                    "inferred_periods": inferred_periods,
+                    "provider_date": provider_date,
+                    "provider_ratio": provider_ratio,
+                    "provider_source": provider_source,
+                }
+            )
+        else:
+            reconciled.append(
+                {
+                    "date": inferred_date,
+                    "ratio": inferred_ratio,
+                    "source": "inferred",
+                    "status": "inferred_only",
+                    "inferred_date": inferred_date,
+                    "inferred_ratio": inferred_ratio,
+                    "inferred_periods": inferred_periods,
+                    "provider_date": None,
+                    "provider_ratio": None,
+                    "provider_source": None,
+                }
+            )
+
+    return sorted(reconciled, key=lambda r: r["date"])
 
 
 def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
