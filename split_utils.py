@@ -629,9 +629,215 @@ def assess_split_adjustment_status(
     return status, sorted(evidence, key=lambda row: row.get("event_date") or date.min)
 
 
-def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
+def _load_fiscal_periods(ticker: str, cur: sqlite3.Cursor) -> Tuple[List[date], Optional[date]]:
+    annual_periods: List[date] = []
+    cur.execute("SELECT Date FROM Annual_Data WHERE Symbol=? ORDER BY Date", (ticker,))
+    for (raw_date,) in cur.fetchall():
+        try:
+            annual_periods.append(datetime.fromisoformat(str(raw_date)).date())
+        except Exception:
+            continue
+
+    ttm_period: Optional[date] = None
+    cur.execute("SELECT Quarter FROM TTM_Data WHERE Symbol=?", (ticker,))
+    row = cur.fetchone()
+    if row:
+        try:
+            ttm_period = datetime.fromisoformat(str(row[0])).date()
+        except Exception:
+            ttm_period = None
+
+    return annual_periods, ttm_period
+
+
+def _eps_inference_plan(
+    ticker: str,
+    cur: sqlite3.Cursor,
+    provider_history: Optional[List[Tuple[date, float, str]]],
+    *,
+    tolerance: float = 0.03,
+    merge_window_days: int = 180,
+    date_window_days: int = 45,
+    min_years: int = 10,
+) -> Dict[str, object]:
+    provider_history = provider_history or fetch_split_history(ticker)
+
+    annual_periods, ttm_period = _load_fiscal_periods(ticker, cur)
+
+    eps_series = load_eps_series(ticker, cur, min_years=min_years)
+    inferred_candidates = merge_candidate_events(
+        infer_split_candidates(eps_series, tolerance=tolerance),
+        merge_window_days=merge_window_days,
+        tolerance=tolerance,
+    )
+    reconciled_events = reconcile_split_events(
+        ticker,
+        inferred_candidates,
+        tolerance=tolerance,
+        date_window_days=date_window_days,
+    )
+
+    status, evidence = assess_split_adjustment_status(
+        ticker,
+        cur,
+        tolerance=tolerance,
+        merge_window_days=merge_window_days,
+        date_window_days=date_window_days,
+        min_years=min_years,
+    )
+
+    status_overrides: Dict[str, str] = {}
+    for ev in evidence:
+        event_date = ev.get("event_date")
+        classification = ev.get("classification")
+        if not event_date or classification is None:
+            continue
+        if ev.get("event_kind") not in {"inferred_only", "provider_match"}:
+            continue
+
+        iso_date = event_date.isoformat()
+        if classification == "jump":
+            status_overrides[iso_date] = "unadjusted"
+        else:
+            status_overrides[iso_date] = classification
+
+    plan = plan_split_adjustments(
+        ticker,
+        reconciled_events,
+        status_map={
+            "annual_periods": annual_periods,
+            "ttm_period": ttm_period,
+            "event_status": status_overrides,
+        },
+    )
+
+    adjustable_events = [event for event in plan if event.get("status") == "unadjusted"]
+
+    return {
+        "status": status,
+        "evidence": evidence,
+        "reconciled_events": reconciled_events,
+        "plan": plan,
+        "adjustable_events": adjustable_events,
+        "ttm_period": ttm_period,
+    }
+
+
+def _apply_inferred_adjustments(
+    ticker: str,
+    cur: sqlite3.Cursor,
+    adjustable_events: List[Dict[str, object]],
+    ttm_period: Optional[date],
+) -> bool:
+    if not adjustable_events:
+        return False
+
+    applied = False
+    sorted_events = sorted(
+        adjustable_events,
+        key=lambda ev: datetime.fromisoformat(str(ev.get("apply_before"))) if ev.get("apply_before") else date.max,
+    )
+
+    for event in sorted_events:
+        ratio = event.get("ratio")
+        apply_before = event.get("apply_before")
+        if ratio is None or apply_before is None:
+            continue
+
+        try:
+            ratio_value = float(ratio)
+            apply_before_date = datetime.fromisoformat(str(apply_before)).date()
+        except Exception:
+            continue
+
+        if ratio_value <= 0:
+            continue
+
+        cur.execute(
+            """
+            UPDATE Annual_Data
+               SET EPS = EPS / ?,
+                   Last_Updated = CURRENT_TIMESTAMP
+             WHERE Symbol=? AND Date < ?;
+            """,
+            (ratio_value, ticker, apply_before_date.isoformat()),
+        )
+        applied = True
+
+    if ttm_period:
+        ttm_adjust_ratio = 1.0
+        earliest_event_date: Optional[date] = None
+        for event in sorted_events:
+            ratio = event.get("ratio")
+            event_date_raw = event.get("date")
+            try:
+                event_date = datetime.fromisoformat(str(event_date_raw)).date()
+                ratio_value = float(ratio) if ratio is not None else None
+            except Exception:
+                continue
+
+            if ratio_value is None or ratio_value <= 0 or event_date >= ttm_period:
+                continue
+
+            ttm_adjust_ratio *= ratio_value
+            if earliest_event_date is None or event_date < earliest_event_date:
+                earliest_event_date = event_date
+
+        if ttm_adjust_ratio != 1.0 and earliest_event_date:
+            cur.execute(
+                "SELECT TTM_EPS, Shares_Outstanding, Quarter, Last_Updated FROM TTM_Data WHERE Symbol=?",
+                (ticker,),
+            )
+            ttm_row = cur.fetchone()
+            if ttm_row and ttm_row[2]:
+                try:
+                    ttm_quarter = datetime.fromisoformat(str(ttm_row[2])).date()
+                except Exception:
+                    ttm_quarter = None
+                try:
+                    ttm_last_updated = (
+                        datetime.fromisoformat(str(ttm_row[3])).date() if ttm_row[3] else None
+                    )
+                except Exception:
+                    ttm_last_updated = None
+
+                should_adjust_ttm = (
+                    ttm_quarter is not None
+                    and ttm_quarter < earliest_event_date
+                    and (ttm_last_updated is None or ttm_last_updated < earliest_event_date)
+                )
+
+                if should_adjust_ttm:
+                    new_eps = ttm_row[0] / ttm_adjust_ratio if ttm_row[0] is not None else None
+                    new_shares = ttm_row[1] * ttm_adjust_ratio if ttm_row[1] is not None else None
+                    cur.execute(
+                        """
+                        UPDATE TTM_Data
+                           SET TTM_EPS = ?,
+                               Shares_Outstanding = ?,
+                               Last_Updated = CURRENT_TIMESTAMP
+                         WHERE Symbol=?;
+                        """,
+                        (new_eps, new_shares, ticker),
+                    )
+                    applied = True
+
+    return applied
+
+
+def apply_split_adjustments(
+    ticker: str,
+    cur: sqlite3.Cursor,
+    *,
+    use_eps_inference: bool = False,
+    inference_options: Optional[Dict[str, object]] = None,
+) -> bool:
     """
     Detect new splits and adjust stored per-share values.
+
+    When ``use_eps_inference`` is enabled, EPS-based inference is consulted
+    before provider updates to merge inferred/provider events and, when
+    necessary, apply adjustments ahead of recording the split history.
 
     Returns True when adjustments were applied.
     """
@@ -642,15 +848,70 @@ def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
         return False
 
     split_history = fetch_split_history(ticker)
-    if not split_history:
-        return False
-
     cur.execute("SELECT Date FROM Splits WHERE Symbol=?", (ticker,))
     recorded_dates = {row[0] for row in cur.fetchall()}
 
     now_iso = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
-    # Upsert all known events with refreshed Last_Checked
-    for dt, ratio, source in split_history:
+    adjustments_applied = False
+    inference_result: Optional[Dict[str, object]] = None
+    inference_adjusted_dates: set[str] = set()
+
+    if use_eps_inference:
+        inference_kwargs = inference_options or {}
+        inference_result = _eps_inference_plan(
+            ticker,
+            cur,
+            split_history,
+            tolerance=float(inference_kwargs.get("tolerance", 0.03)),
+            merge_window_days=int(inference_kwargs.get("merge_window_days", 180)),
+            date_window_days=int(inference_kwargs.get("date_window_days", 45)),
+            min_years=int(inference_kwargs.get("min_years", 10)),
+        )
+
+        logging.info(
+            "[%s] EPS inference status: %s (events=%d)",
+            ticker,
+            inference_result.get("status"),
+            len(inference_result.get("reconciled_events") or []),
+        )
+
+        adjustable_events = inference_result.get("adjustable_events") or []
+        if inference_result.get("status") == "unadjusted" and adjustable_events:
+            applied = _apply_inferred_adjustments(
+                ticker,
+                cur,
+                adjustable_events,
+                inference_result.get("ttm_period"),
+            )
+            adjustments_applied = adjustments_applied or applied
+            inference_adjusted_dates = {event.get("date") for event in adjustable_events if event.get("date")}
+            logging.info(
+                "[%s] EPS inference applied adjustments: %s (dates=%s)",
+                ticker,
+                applied,
+                sorted(inference_adjusted_dates),
+            )
+        else:
+            logging.info("[%s] EPS inference found no unadjusted events", ticker)
+
+    events_to_record: Dict[date, Tuple[float, str]] = {dt: (ratio, source) for dt, ratio, source in split_history}
+    if inference_result:
+        for event in inference_result.get("reconciled_events") or []:
+            event_date = event.get("date")
+            try:
+                ratio_value = float(event.get("ratio"))
+            except Exception:
+                continue
+
+            source_value = event.get("source") or "inferred"
+            status_value = event.get("status")
+            if status_value == "provider_match" and source_value:
+                source_value = f"{source_value}+inferred"
+
+            if isinstance(event_date, date):
+                events_to_record[event_date] = (ratio_value, source_value)
+
+    for dt, (ratio, source) in events_to_record.items():
         cur.execute(
             """
             INSERT INTO Splits(Symbol, Date, Ratio, Source, Last_Checked)
@@ -666,66 +927,69 @@ def apply_split_adjustments(ticker: str, cur: sqlite3.Cursor) -> bool:
     pending_events = [
         (dt, ratio, source)
         for dt, ratio, source in split_history
-        if dt.isoformat() not in recorded_dates and dt > latest_data_date
+        if dt.isoformat() not in recorded_dates
+        and dt.isoformat() not in inference_adjusted_dates
+        and dt > latest_data_date
     ]
 
-    if not pending_events:
-        cur.connection.commit()
-        return False
+    if pending_events:
+        pending_events.sort(key=lambda r: r[0])
+        cumulative_ratio = 1.0
+        for _, ratio, _ in pending_events:
+            if ratio:
+                cumulative_ratio *= ratio
 
-    pending_events.sort(key=lambda r: r[0])
-    cumulative_ratio = 1.0
-    for _, ratio, _ in pending_events:
-        if ratio:
-            cumulative_ratio *= ratio
+        earliest_split_date = pending_events[0][0].isoformat()
 
-    earliest_split_date = pending_events[0][0].isoformat()
-
-    cur.execute(
-        """
-        UPDATE Annual_Data
-           SET EPS = EPS / ?,
-               Last_Updated = CURRENT_TIMESTAMP
-         WHERE Symbol=? AND Date < ?;
-        """,
-        (cumulative_ratio, ticker, earliest_split_date),
-    )
-
-    cur.execute(
-        "SELECT TTM_EPS, Shares_Outstanding, Quarter, Last_Updated FROM TTM_Data WHERE Symbol=?",
-        (ticker,),
-    )
-    ttm_row = cur.fetchone()
-    if ttm_row and ttm_row[2]:
-        try:
-            ttm_quarter = datetime.fromisoformat(str(ttm_row[2])).date()
-        except Exception:
-            ttm_quarter = None
-        try:
-            ttm_last_updated = datetime.fromisoformat(str(ttm_row[3])).date() if ttm_row[3] else None
-        except Exception:
-            ttm_last_updated = None
-
-        should_adjust_ttm = (
-            ttm_quarter is not None
-            and ttm_quarter < pending_events[0][0]
-            and (ttm_last_updated is None or ttm_last_updated < pending_events[0][0])
+        cur.execute(
+            """
+            UPDATE Annual_Data
+               SET EPS = EPS / ?,
+                   Last_Updated = CURRENT_TIMESTAMP
+             WHERE Symbol=? AND Date < ?;
+            """,
+            (cumulative_ratio, ticker, earliest_split_date),
         )
 
-        if should_adjust_ttm:
-            new_eps = ttm_row[0] / cumulative_ratio if ttm_row[0] is not None else None
-            new_shares = ttm_row[1] * cumulative_ratio if ttm_row[1] is not None else None
-            cur.execute(
-                """
-                UPDATE TTM_Data
-                   SET TTM_EPS = ?,
-                       Shares_Outstanding = ?,
-                       Last_Updated = CURRENT_TIMESTAMP
-                 WHERE Symbol=?;
-                """,
-                (new_eps, new_shares, ticker),
+        cur.execute(
+            "SELECT TTM_EPS, Shares_Outstanding, Quarter, Last_Updated FROM TTM_Data WHERE Symbol=?",
+            (ticker,),
+        )
+        ttm_row = cur.fetchone()
+        if ttm_row and ttm_row[2]:
+            try:
+                ttm_quarter = datetime.fromisoformat(str(ttm_row[2])).date()
+            except Exception:
+                ttm_quarter = None
+            try:
+                ttm_last_updated = datetime.fromisoformat(str(ttm_row[3])).date() if ttm_row[3] else None
+            except Exception:
+                ttm_last_updated = None
+
+            should_adjust_ttm = (
+                ttm_quarter is not None
+                and ttm_quarter < pending_events[0][0]
+                and (ttm_last_updated is None or ttm_last_updated < pending_events[0][0])
             )
 
+            if should_adjust_ttm:
+                new_eps = ttm_row[0] / cumulative_ratio if ttm_row[0] is not None else None
+                new_shares = ttm_row[1] * cumulative_ratio if ttm_row[1] is not None else None
+                cur.execute(
+                    """
+                    UPDATE TTM_Data
+                       SET TTM_EPS = ?,
+                           Shares_Outstanding = ?,
+                           Last_Updated = CURRENT_TIMESTAMP
+                     WHERE Symbol=?;
+                    """,
+                    (new_eps, new_shares, ticker),
+                )
+
+        logging.info("[%s] Applied cumulative split ratio %.4f", ticker, cumulative_ratio)
+        adjustments_applied = True
+    else:
+        logging.info("[%s] No provider-based split adjustments pending", ticker)
+
     cur.connection.commit()
-    logging.info("[%s] Applied cumulative split ratio %.4f", ticker, cumulative_ratio)
-    return True
+    return adjustments_applied
