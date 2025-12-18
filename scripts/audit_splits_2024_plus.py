@@ -59,6 +59,8 @@ class AuditResult:
     eps_status: str
     recommendation: str
     note: str
+    affected_years: List[int]
+    affected_years_range: str
 
 
 def _parse_args() -> argparse.Namespace:
@@ -185,6 +187,26 @@ def _matches_expected(observed: float | None, expected: float, tolerance: float)
     return abs(observed - expected) / expected <= tolerance
 
 
+def _format_years_range(years: List[int]) -> str:
+    if not years:
+        return ""
+
+    buckets: List[List[int]] = []
+    for yr in sorted(years):
+        if buckets and yr == buckets[-1][-1] + 1:
+            buckets[-1].append(yr)
+        else:
+            buckets.append([yr])
+
+    parts: List[str] = []
+    for bucket in buckets:
+        if len(bucket) == 1:
+            parts.append(str(bucket[0]))
+        else:
+            parts.append(f"{bucket[0]}–{bucket[-1]}")
+    return ", ".join(parts)
+
+
 def _recommendation(recorded: bool, eps_status: str) -> str:
     if eps_status == "adjusted":
         return "skip" if recorded else "verify"
@@ -247,6 +269,24 @@ def _analyze_event(
     note = f"{note} [{'; '.join(detail_bits)}]"
 
     recommendation = _recommendation(recorded, eps_status)
+    candidates: List[date] = []
+    if after and after.as_of > split_date:
+        candidates.append(after.as_of)
+    if ttm_snapshot and ttm_snapshot.quarter and ttm_snapshot.quarter > split_date:
+        candidates.append(ttm_snapshot.quarter)
+    first_post_split = min(candidates) if candidates else split_date
+
+    affected_years = sorted({point.as_of.year for point in annual_points if point.as_of < first_post_split})
+    affected_years_range = _format_years_range(affected_years)
+
+    logging.info(
+        "[%s] split %s ratio %.4f affects fiscal years: %s",
+        ticker,
+        split_date.isoformat(),
+        ratio,
+        affected_years_range or "none",
+    )
+
     return AuditResult(
         ticker=ticker,
         split_date=split_date,
@@ -262,6 +302,8 @@ def _analyze_event(
         eps_status=eps_status,
         recommendation=recommendation,
         note=note,
+        affected_years=affected_years,
+        affected_years_range=affected_years_range,
     )
 
 
@@ -281,6 +323,7 @@ def _write_csv(path: Path, rows: Sequence[AuditResult]) -> None:
         "EPS Status",
         "Recommendation",
         "Notes",
+        "Affected Years",
     ]
     with path.open("w", newline="") as f:
         writer = csv.writer(f)
@@ -302,6 +345,7 @@ def _write_csv(path: Path, rows: Sequence[AuditResult]) -> None:
                     row.eps_status,
                     row.recommendation,
                     row.note,
+                    row.affected_years_range,
                 ]
             )
 
@@ -322,6 +366,7 @@ def _write_html(path: Path, rows: Sequence[AuditResult]) -> None:
         "EPS Status",
         "Recommendation",
         "Notes",
+        "Affected Years",
     ]
     with path.open("w") as f:
         f.write("<!doctype html><html><head><meta charset='utf-8'>")
@@ -355,6 +400,7 @@ def _write_html(path: Path, rows: Sequence[AuditResult]) -> None:
             f.write(f"<td>{row.eps_status}</td>")
             f.write(f"<td>{row.recommendation}</td>")
             f.write(f"<td>{row.note}</td>")
+            f.write(f"<td>{row.affected_years_range}</td>")
             f.write("</tr>")
         f.write("</tbody></table></body></html>")
 

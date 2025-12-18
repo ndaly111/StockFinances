@@ -149,6 +149,7 @@ def test_plan_split_adjustments_uses_fiscal_boundaries_and_overrides():
             "ratio": 2.0,
             "apply_before": "2023-12-31",
             "affected_years": [2021, 2022],
+            "affected_years_range": "2021–2022",
             "source": "yfinance",
             "status": "pending_adjustment",
         }
@@ -168,6 +169,46 @@ def test_plan_split_adjustments_includes_ttm_boundary():
 
     assert plan[0]["apply_before"] == "2024-03-31"
     assert plan[0]["affected_years"] == [2021, 2022, 2023]
+    assert plan[0]["affected_years_range"] == "2021–2023"
+
+
+def test_plan_split_adjustments_inferred_uses_first_post_split_period():
+    merged_events = [
+        {"date": date(2022, 6, 30), "ratio": 2.5, "source": "inferred", "status": "inferred_only"}
+    ]
+    status_map = {
+        "annual_periods": [date(2020, 12, 31), date(2021, 12, 31), date(2022, 12, 31), date(2023, 12, 31)],
+        "ttm_period": None,
+    }
+
+    plan = plan_split_adjustments("FOO", merged_events, status_map)
+
+    assert plan[0]["affected_years"] == [2020, 2021]
+    assert plan[0]["affected_years_range"] == "2020–2021"
+
+
+def test_plan_split_adjustments_multiple_events_get_distinct_ranges():
+    merged_events = [
+        {"date": date(2022, 1, 15), "ratio": 2.0, "source": "yfinance", "status": "provider_match"},
+        {"date": date(2023, 7, 1), "ratio": 3.0, "source": "inferred", "status": "inferred_only"},
+    ]
+    status_map = {
+        "annual_periods": [
+            date(2019, 12, 31),
+            date(2020, 12, 31),
+            date(2021, 12, 31),
+            date(2022, 12, 31),
+            date(2023, 12, 31),
+        ],
+        "ttm_period": date(2024, 3, 31),
+    }
+
+    plan = plan_split_adjustments("BAR", merged_events, status_map)
+
+    assert plan[0]["affected_years"] == [2019, 2020, 2021]
+    assert plan[0]["affected_years_range"] == "2019–2021"
+    assert plan[1]["affected_years"] == [2019, 2020, 2021, 2022]
+    assert plan[1]["affected_years_range"] == "2019–2022"
 
 
 def test_assess_status_adjusted(monkeypatch):

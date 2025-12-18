@@ -516,6 +516,25 @@ def plan_split_adjustments(
 
     status_map = status_map or {}
 
+    def _format_years_range(years: List[int]) -> str:
+        if not years:
+            return ""
+
+        buckets: List[List[int]] = []
+        for yr in sorted(years):
+            if buckets and yr == buckets[-1][-1] + 1:
+                buckets[-1].append(yr)
+            else:
+                buckets.append([yr])
+
+        parts: List[str] = []
+        for bucket in buckets:
+            if len(bucket) == 1:
+                parts.append(str(bucket[0]))
+            else:
+                parts.append(f"{bucket[0]}–{bucket[-1]}")
+        return ", ".join(parts)
+
     def _coerce_date(raw: object) -> date | None:
         if isinstance(raw, date):
             return raw
@@ -541,13 +560,13 @@ def plan_split_adjustments(
     ttm_period = _coerce_date(status_map.get("ttm_period") or status_map.get("ttm_date"))
     status_overrides: Dict[str, str] = status_map.get("event_status") or status_map.get("statuses") or {}
 
-    def _first_post_split_period(event_date: date) -> date:
-        candidates: List[date] = [period for period in annual_periods if period > event_date]
-        if ttm_period and ttm_period > event_date:
+    def _first_post_split_period(split_boundary: date) -> date:
+        candidates: List[date] = [period for period in annual_periods if period > split_boundary]
+        if ttm_period and ttm_period > split_boundary:
             candidates.append(ttm_period)
         if candidates:
             return min(candidates)
-        return event_date
+        return split_boundary
 
     plan: List[Dict[str, object]] = []
     sorted_events = sorted(
@@ -564,16 +583,16 @@ def plan_split_adjustments(
         ratio_value = _coerce_ratio(event.get("ratio"))
         apply_before = _first_post_split_period(event_date)
         affected_years = sorted({period.year for period in annual_periods if period < apply_before})
+        affected_years_range = _format_years_range(affected_years)
 
         iso_date = event_date.isoformat()
         status_value = status_overrides.get(iso_date) or event.get("status") or "pending"
-        latest_year = affected_years[-1] if affected_years else "n/a"
         logging.info(
-            "[%s] apply ratio %s to rows before %s (affecting fiscal years ≤ %s)",
+            "[%s] apply ratio %s to rows before first post-split period %s (affecting fiscal years: %s)",
             ticker,
             ratio_value,
             apply_before.isoformat(),
-            latest_year,
+            affected_years_range or "none",
         )
 
         plan.append(
@@ -582,6 +601,7 @@ def plan_split_adjustments(
                 "ratio": ratio_value,
                 "apply_before": apply_before.isoformat(),
                 "affected_years": affected_years,
+                "affected_years_range": affected_years_range,
                 "source": event.get("source") or "unknown",
                 "status": status_value,
             }
@@ -644,7 +664,7 @@ def assess_split_adjustment_status(
         if not before or not after:
             return None, before, after
 
-        ratio_value = _compute_ratio(before[1], after[1], min_ratio=min_ratio, max_ratio=max_ratio)
+        ratio_value = _compute_ratio(before[1], after[1], min_ratio=0.0, max_ratio=max_ratio)
         return ratio_value, before, after
 
     def _is_ratio_adjusted(ratio_value: Optional[float]) -> bool:
@@ -665,6 +685,7 @@ def assess_split_adjustment_status(
     has_unmatched_inferred = False
     has_ratio_jump = False
     has_unknown = bool(inconclusive_candidates)
+    has_adjusted_evidence = False
 
     for inc in inconclusive_candidates:
         evidence.append(
@@ -709,6 +730,8 @@ def assess_split_adjustment_status(
             has_ratio_jump = True
         elif classification == "unknown":
             has_unknown = True
+        elif classification == "adjusted":
+            has_adjusted_evidence = True
 
         evidence.append(
             {
@@ -737,6 +760,8 @@ def assess_split_adjustment_status(
             has_ratio_jump = True
         elif classification == "unknown":
             has_unknown = True
+        elif classification == "adjusted":
+            has_adjusted_evidence = True
 
         evidence.append(
             {
@@ -754,6 +779,27 @@ def assess_split_adjustment_status(
                 "classification": classification,
             }
         )
+
+    if has_adjusted_evidence:
+        has_unknown = False
+    elif inconclusive_candidates:
+        has_unmatched_inferred = True
+        if not any(ev.get("event_kind") == "inferred_only" for ev in evidence):
+            strongest_inc = max(inconclusive_candidates, key=lambda inc: inc.get("ratio") or 0)
+            evidence.append(
+                {
+                    "event_date": strongest_inc.get("date"),
+                    "event_kind": "inferred_only",
+                    "provider_ratio": None,
+                    "provider_source": None,
+                    "inferred_ratio": strongest_inc.get("ratio"),
+                    "inferred_periods": strongest_inc.get("periods"),
+                    "neighbor_ratio": None,
+                    "neighbor_periods": None,
+                    "classification": "unknown",
+                    "reason": strongest_inc.get("reason"),
+                }
+            )
 
     status: str
     if has_unmatched_inferred or has_ratio_jump:
