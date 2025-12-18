@@ -8,6 +8,7 @@ operate on split-adjusted data.
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import math
@@ -16,6 +17,7 @@ import sqlite3
 from collections import defaultdict
 from datetime import datetime, date
 from functools import lru_cache
+from statistics import median
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
@@ -65,6 +67,40 @@ def _coerce_ratio(raw_ratio: float | int | str | None) -> float | None:
     except Exception:
         return None
     return ratio if ratio > 0 else None
+
+
+def _coerce_eps(raw_eps: object) -> float | None:
+    try:
+        value = float(raw_eps)
+    except Exception:
+        return None
+    if math.isnan(value) or math.isinf(value):
+        return None
+    return value
+
+
+def _compute_ratio(
+    prev_eps: object, next_eps: object, *, min_ratio: float, max_ratio: float
+) -> float | None:
+    prev_val = _coerce_eps(prev_eps)
+    next_val = _coerce_eps(next_eps)
+    if prev_val is None or next_val is None:
+        return None
+    if prev_val == 0 or next_val == 0:
+        return None
+    if prev_val * next_val < 0:
+        return None
+
+    ratio = abs(prev_val) / abs(next_val)
+    if math.isnan(ratio) or math.isinf(ratio):
+        return None
+    return max(min_ratio, min(ratio, max_ratio))
+
+
+def _ratio_close(observed: float | None, expected: float, tolerance: float) -> bool:
+    if observed is None or expected == 0:
+        return False
+    return abs(observed - expected) / expected <= tolerance
 
 
 def _from_yfinance(ticker: str) -> List[Tuple[date, float, str]]:
@@ -212,57 +248,120 @@ def load_eps_series(
 
 
 def infer_split_candidates(
-    series: List[Tuple[date, float, str]], tolerance: float = 0.03
-) -> List[Tuple[date, float, Tuple[str, str]]]:
+    series: List[Tuple[date, float, str]],
+    tolerance: float = 0.25,
+    min_ratio: float = 1.5,
+    max_ratio: float = 100.0,
+) -> Tuple[List[Tuple[date, float, Tuple[str, str]]], List[Dict[str, object]]]:
     """Detect likely split ratios by examining adjacent EPS values.
 
     The input ``series`` should contain (date, eps, label) tuples. Adjacent
     entries are compared in chronological order, considering only pairs where
-    both EPS values are non-zero and share the same sign. When the absolute
-    ratio between neighboring EPS values approximates a common split factor,
-    a candidate is emitted with the later date in the pair.
+    both EPS values are non-zero, not missing, and share the same sign. When
+    the ratio between neighboring EPS values approximates a common split
+    factor and is corroborated by neighboring boundaries, a candidate is
+    emitted with the later date in the pair.
+
+    Returns a tuple of ``(confirmed_candidates, inconclusive_boundaries)``,
+    where confirmed candidates mirror the historical return shape and
+    inconclusive entries document noisy boundaries that lacked support.
     """
 
     if tolerance <= 0:
         raise ValueError("tolerance must be positive")
+    if min_ratio <= 1:
+        raise ValueError("min_ratio must be greater than 1")
+    if max_ratio <= min_ratio:
+        raise ValueError("max_ratio must exceed min_ratio")
 
     common_ratios: List[float] = [2, 3, 4, 5, 10, 20, 25, 50]
-    candidates: List[Tuple[date, float, Tuple[str, str]]] = []
+    confirmed: List[Tuple[date, float, Tuple[str, str]]] = []
+    inconclusive: List[Dict[str, object]] = []
 
     sorted_series = sorted(series, key=lambda r: r[0])
-    for prev, nxt in zip(sorted_series, sorted_series[1:]):
+
+    def _nearest_common_ratio(ratio_value: float) -> float | None:
+        nearest: float | None = None
+        for common_ratio in common_ratios:
+            if not _ratio_close(ratio_value, common_ratio, tolerance):
+                continue
+            if nearest is None or abs(ratio_value - common_ratio) < abs(ratio_value - nearest):
+                nearest = common_ratio
+        return nearest
+
+    boundary_observations: List[Dict[str, object]] = []
+    for idx, (prev, nxt) in enumerate(zip(sorted_series, sorted_series[1:])):
         prev_date, prev_eps, prev_label = prev
         next_date, next_eps, next_label = nxt
 
-        if prev_eps == 0 or next_eps == 0:
+        ratio_value = _compute_ratio(prev_eps, next_eps, min_ratio=min_ratio, max_ratio=max_ratio)
+        if ratio_value is None:
+            continue
+        if _ratio_close(ratio_value, 1.0, tolerance):
             continue
 
-        if prev_eps * next_eps < 0:
+        boundary_observations.append(
+            {
+                "index": idx,
+                "date": next_date,
+                "ratio": ratio_value,
+                "periods": (prev_label, next_label),
+                "nearest_common": _nearest_common_ratio(ratio_value),
+            }
+        )
+
+    for obs in boundary_observations:
+        if not obs["nearest_common"]:
+            inconclusive.append(
+                {
+                    "date": obs["date"],
+                    "ratio": obs["ratio"],
+                    "periods": obs["periods"],
+                    "reason": "no_common_ratio_match",
+                }
+            )
             continue
 
-        ratio = abs(prev_eps) / abs(next_eps)
+        neighbor_block = [
+            cand
+            for cand in boundary_observations
+            if abs(int(cand["index"]) - int(obs["index"])) <= 1
+        ]
+        supporting = [
+            cand
+            for cand in neighbor_block
+            if cand.get("nearest_common")
+            and _ratio_close(float(cand["ratio"]), float(obs["nearest_common"]), tolerance)
+        ]
 
-        if abs(ratio - 1.0) <= tolerance:
-            continue
+        if len(supporting) >= 2:
+            median_ratio = median([float(cand["ratio"]) for cand in supporting])
+            normalized_ratio = _nearest_common_ratio(median_ratio) or float(obs["nearest_common"])
+            confirmed.append((obs["date"], normalized_ratio, obs["periods"]))
+        else:
+            inconclusive.append(
+                {
+                    "date": obs["date"],
+                    "ratio": obs["ratio"],
+                    "periods": obs["periods"],
+                    "reason": "insufficient_neighbor_support",
+                }
+            )
 
-        for common_ratio in common_ratios:
-            if abs(ratio - common_ratio) <= tolerance:
-                candidates.append((next_date, common_ratio, (prev_label, next_label)))
-                break
-
-    return candidates
+    return confirmed, inconclusive
 
 
 def merge_candidate_events(
     candidates: List[Tuple[date, float, Tuple[str, str]]],
     merge_window_days: int = 180,
-    tolerance: float = 0.03,
+    tolerance: float = 0.25,
 ) -> List[Tuple[date, float, List[Tuple[str, str]]]]:
     """
     Merge nearby candidate split events that represent the same ratio.
 
-    Adjacent candidate records with similar ratios (within ``tolerance``) whose
-    boundary dates fall within ``merge_window_days`` are combined into a single
+    Adjacent candidate records with similar ratios (within ``tolerance`` of the
+    expected ratio) whose boundary dates fall within ``merge_window_days`` are
+    combined into a single
     event. The merged event's date is anchored to the earliest boundary after
     the jump, and all contributing period label pairs are retained for
     traceability.
@@ -277,7 +376,7 @@ def merge_candidate_events(
         return []
 
     def _ratios_match(a: float, b: float) -> bool:
-        return abs(a - b) <= tolerance
+        return _ratio_close(a, b, tolerance)
 
     sorted_candidates = sorted(candidates, key=lambda r: r[0])
     merged: List[Tuple[date, float, List[Tuple[str, str]]]] = []
@@ -306,7 +405,7 @@ def merge_candidate_events(
 def reconcile_split_events(
     ticker: str,
     inferred_events: List[Tuple[date, float, List[Tuple[str, str]]]],
-    tolerance: float = 0.03,
+    tolerance: float = 0.25,
     date_window_days: int = 30,
 ) -> List[dict]:
     """
@@ -334,7 +433,7 @@ def reconcile_split_events(
         provider_index[_ratio_bucket(provider_event[1])].append(provider_event)
 
     def _ratios_match(candidate_ratio: float, provider_ratio: float) -> bool:
-        return abs(candidate_ratio - provider_ratio) <= tolerance
+        return _ratio_close(candidate_ratio, provider_ratio, tolerance)
 
     def _find_best_provider_match(
         inferred_date: date, inferred_ratio: float
@@ -495,10 +594,12 @@ def assess_split_adjustment_status(
     ticker: str,
     cur: sqlite3.Cursor,
     *,
-    tolerance: float = 0.03,
+    tolerance: float = 0.25,
     merge_window_days: int = 180,
     date_window_days: int = 45,
     min_years: int = 10,
+    min_ratio: float = 1.5,
+    max_ratio: float = 100.0,
 ) -> Tuple[str, List[Dict[str, object]]]:
     """
     Determine whether stored EPS figures are split-adjusted for a ticker.
@@ -528,7 +629,9 @@ def assess_split_adjustment_status(
             }
         ]
 
-    def _neighbor_ratio(anchor: date) -> Tuple[Optional[float], Optional[Tuple[date, float, str]], Optional[Tuple[date, float, str]]]:
+    def _neighbor_ratio(
+        anchor: date,
+    ) -> Tuple[Optional[float], Optional[Tuple[date, float, str]], Optional[Tuple[date, float, str]]]:
         before = None
         after = None
         for dt_val, eps_val, label in ordered_series:
@@ -541,18 +644,17 @@ def assess_split_adjustment_status(
         if not before or not after:
             return None, before, after
 
-        prev_eps = before[1]
-        next_eps = after[1]
-        if prev_eps == 0 or next_eps == 0 or prev_eps * next_eps < 0:
-            return None, before, after
-
-        return abs(prev_eps) / abs(next_eps), before, after
+        ratio_value = _compute_ratio(before[1], after[1], min_ratio=min_ratio, max_ratio=max_ratio)
+        return ratio_value, before, after
 
     def _is_ratio_adjusted(ratio_value: Optional[float]) -> bool:
-        return ratio_value is not None and abs(ratio_value - 1.0) <= tolerance
+        return _ratio_close(ratio_value, 1.0, tolerance)
 
+    inferred_candidates, inconclusive_candidates = infer_split_candidates(
+        ordered_series, tolerance=tolerance, min_ratio=min_ratio, max_ratio=max_ratio
+    )
     inferred_events = merge_candidate_events(
-        infer_split_candidates(ordered_series, tolerance=tolerance),
+        inferred_candidates,
         merge_window_days=merge_window_days,
         tolerance=tolerance,
     )
@@ -562,7 +664,23 @@ def assess_split_adjustment_status(
     evidence: List[Dict[str, object]] = []
     has_unmatched_inferred = False
     has_ratio_jump = False
-    has_unknown = False
+    has_unknown = bool(inconclusive_candidates)
+
+    for inc in inconclusive_candidates:
+        evidence.append(
+            {
+                "event_date": inc.get("date"),
+                "event_kind": "inconclusive_candidate",
+                "provider_ratio": None,
+                "provider_source": None,
+                "inferred_ratio": inc.get("ratio"),
+                "inferred_periods": inc.get("periods"),
+                "neighbor_ratio": None,
+                "neighbor_periods": None,
+                "classification": "inconclusive",
+                "reason": inc.get("reason"),
+            }
+        )
 
     for inferred_date, inferred_ratio, inferred_periods in inferred_events:
         provider_match_index: Optional[int] = None
@@ -570,7 +688,7 @@ def assess_split_adjustment_status(
             if idx in matched_provider_indices:
                 continue
             date_close = abs((provider_date - inferred_date).days) <= date_window_days
-            ratio_close = abs(provider_ratio - inferred_ratio) <= tolerance
+            ratio_close = _ratio_close(provider_ratio, inferred_ratio, tolerance)
             if date_close and ratio_close:
                 provider_match_index = idx
                 break
@@ -674,18 +792,23 @@ def _eps_inference_plan(
     cur: sqlite3.Cursor,
     provider_history: Optional[List[Tuple[date, float, str]]],
     *,
-    tolerance: float = 0.03,
+    tolerance: float = 0.25,
     merge_window_days: int = 180,
     date_window_days: int = 45,
     min_years: int = 10,
+    min_ratio: float = 1.5,
+    max_ratio: float = 100.0,
 ) -> Dict[str, object]:
     provider_history = provider_history or fetch_split_history(ticker)
 
     annual_periods, ttm_period = _load_fiscal_periods(ticker, cur)
 
     eps_series = load_eps_series(ticker, cur, min_years=min_years)
+    inferred_candidates_list, inconclusive_candidates = infer_split_candidates(
+        eps_series, tolerance=tolerance, min_ratio=min_ratio, max_ratio=max_ratio
+    )
     inferred_candidates = merge_candidate_events(
-        infer_split_candidates(eps_series, tolerance=tolerance),
+        inferred_candidates_list,
         merge_window_days=merge_window_days,
         tolerance=tolerance,
     )
@@ -703,6 +826,8 @@ def _eps_inference_plan(
         merge_window_days=merge_window_days,
         date_window_days=date_window_days,
         min_years=min_years,
+        min_ratio=min_ratio,
+        max_ratio=max_ratio,
     )
 
     status_overrides: Dict[str, str] = {}
@@ -739,6 +864,7 @@ def _eps_inference_plan(
         "plan": plan,
         "adjustable_events": adjustable_events,
         "ttm_period": ttm_period,
+        "inconclusive_candidates": inconclusive_candidates,
     }
 
 
@@ -937,6 +1063,75 @@ def _record_split_inference_log(
         )
 
 
+def _parse_cli_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Inspect EPS-based split inference without applying changes.")
+    parser.add_argument("ticker", help="Ticker symbol to analyze (e.g., AAPL).")
+    parser.add_argument(
+        "--db-path",
+        default="Stock Data.db",
+        help="SQLite database path containing Annual_Data/TTM_Data tables (default: Stock Data.db).",
+    )
+    parser.add_argument(
+        "--tolerance",
+        type=float,
+        default=0.25,
+        help="Relative tolerance for matching split ratios (default: 0.25 = 25%%).",
+    )
+    parser.add_argument(
+        "--merge-window-days",
+        type=int,
+        default=180,
+        help="Window (in days) to merge nearby inferred split boundaries (default: 180).",
+    )
+    parser.add_argument(
+        "--date-window-days",
+        type=int,
+        default=45,
+        help="Window (in days) for reconciling inferred splits with provider history (default: 45).",
+    )
+    parser.add_argument(
+        "--min-years",
+        type=int,
+        default=10,
+        help="Minimum years of EPS history required to attempt inference (default: 10).",
+    )
+    parser.add_argument(
+        "--min-ratio",
+        type=float,
+        default=1.5,
+        help="Lower bound when clamping observed EPS ratios (default: 1.5).",
+    )
+    parser.add_argument(
+        "--max-ratio",
+        type=float,
+        default=100.0,
+        help="Upper bound when clamping observed EPS ratios (default: 100).",
+    )
+    return parser.parse_args()
+
+
+def _cli_main() -> None:
+    args = _parse_cli_args()
+    conn = sqlite3.connect(args.db_path)
+    try:
+        cur = conn.cursor()
+        ensure_splits_table(cur)
+        result = _eps_inference_plan(
+            args.ticker.upper(),
+            cur,
+            None,
+            tolerance=args.tolerance,
+            merge_window_days=args.merge_window_days,
+            date_window_days=args.date_window_days,
+            min_years=args.min_years,
+            min_ratio=args.min_ratio,
+            max_ratio=args.max_ratio,
+        )
+        print(json.dumps(result, default=str, indent=2))
+    finally:
+        conn.close()
+
+
 def apply_split_adjustments(
     ticker: str,
     cur: sqlite3.Cursor,
@@ -975,10 +1170,12 @@ def apply_split_adjustments(
             ticker,
             cur,
             split_history,
-            tolerance=float(inference_kwargs.get("tolerance", 0.03)),
+            tolerance=float(inference_kwargs.get("tolerance", 0.25)),
             merge_window_days=int(inference_kwargs.get("merge_window_days", 180)),
             date_window_days=int(inference_kwargs.get("date_window_days", 45)),
             min_years=int(inference_kwargs.get("min_years", 10)),
+            min_ratio=float(inference_kwargs.get("min_ratio", 1.5)),
+            max_ratio=float(inference_kwargs.get("max_ratio", 100.0)),
         )
 
         logging.info(
@@ -1109,3 +1306,7 @@ def apply_split_adjustments(
 
     cur.connection.commit()
     return adjustments_applied
+
+
+if __name__ == "__main__":
+    _cli_main()
