@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+from split_utils import apply_split_adjustments, ensure_splits_table
+
 DB_PATH   = "Stock Data.db"
 CHART_DIR = "charts"
 os.makedirs(CHART_DIR, exist_ok=True)
@@ -72,6 +74,8 @@ def get_db_connection(db_path: str) -> sqlite3.Connection:
 
     cur.execute("CREATE INDEX IF NOT EXISTS idx_annual_symbol ON Annual_Data(Symbol)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_ttm_symbol    ON TTM_Data(Symbol)")
+
+    ensure_splits_table(cur)
     conn.commit()
     return conn
 
@@ -228,6 +232,9 @@ def annual_and_ttm_update(
             _store_ttm(tkr, ttm, cur)
     else:
         logging.info("[%s] TTM fetch skipped (fresh)", tkr)
+
+    # Apply any newly reported splits so downstream consumers see split-adjusted EPS
+    apply_split_adjustments(tkr, cur)
 
     if commit:
         cur.connection.commit()

@@ -142,6 +142,7 @@ def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
     df = pd.read_sql_query(sql, conn, params=params, parse_dates=["date"])
     if df.empty:
         raise RuntimeError(f"Table '{table}' has no rows for {ticker}.")
+    df["date"] = pd.to_datetime(df["date"], utc=True).dt.normalize()
     df = df.drop_duplicates(subset=["date"]).set_index("date").sort_index()
     # Convert implied growth columns to percent if stored as decimals
     for col in ["ig", "ig_fwd"]:
@@ -170,6 +171,7 @@ def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Serie
     df = pd.read_sql_query(query, conn, params=(ticker,), parse_dates=["Date"])
     if df.empty:
         return None
+    df["Date"] = pd.to_datetime(df["Date"], utc=True).dt.normalize()
     eps = pd.to_numeric(df["EPS"], errors="coerce").dropna()
     if eps.empty:
         return None

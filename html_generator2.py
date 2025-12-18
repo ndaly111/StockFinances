@@ -296,8 +296,8 @@ td{padding:4px;border:1px solid #8080FF}
   <div class="chart-block">
     <h2>Expenses</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.expense_chart_path }}" alt="Revenue vs Expenses">
-    <img class="chart-img chart-block" src="{{ ticker_data.expense_percent_chart_path }}" alt="Expenses % of Revenue">
     <div class="table-wrap">{{ ticker_data.expense_abs_html | safe }}</div>
+    <img class="chart-img chart-block" src="{{ ticker_data.expense_percent_chart_path }}" alt="Expenses % of Revenue">
     <div class="table-wrap">{{ ticker_data.expense_yoy_html | safe }}</div>
     <div class="table-wrap">{{ ticker_data.unmapped_expense_html | safe }}</div>
   </div>
