@@ -8,6 +8,7 @@ operate on split-adjusted data.
 
 from __future__ import annotations
 
+import json
 import logging
 import math
 import os
@@ -38,6 +39,24 @@ def ensure_splits_table(cur: sqlite3.Cursor) -> None:
         """
     )
     cur.execute("CREATE INDEX IF NOT EXISTS idx_splits_symbol_date ON Splits(Symbol, Date)")
+
+
+def ensure_split_inference_log_table(cur: sqlite3.Cursor) -> None:
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS Split_Inference_Log(
+            Symbol TEXT,
+            Boundary_Date TEXT,
+            Ratio REAL,
+            Source TEXT,
+            Evidence TEXT,
+            Created_At TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_split_inference_log_symbol_date ON Split_Inference_Log(Symbol, Boundary_Date)"
+    )
 
 
 def _coerce_ratio(raw_ratio: float | int | str | None) -> float | None:
@@ -825,6 +844,99 @@ def _apply_inferred_adjustments(
     return applied
 
 
+def _record_split_inference_log(
+    ticker: str,
+    cur: sqlite3.Cursor,
+    inference_result: Optional[Dict[str, object]],
+    inference_adjustments_applied: bool,
+) -> None:
+    if inference_result is None:
+        return
+
+    ensure_split_inference_log_table(cur)
+
+    def _normalize(value: object) -> object:
+        if isinstance(value, (date, datetime)):
+            return value.isoformat()
+        if isinstance(value, (list, tuple)):
+            return [_normalize(v) for v in value]
+        if isinstance(value, dict):
+            return {k: _normalize(v) for k, v in value.items()}
+        return value
+
+    evidence_by_date: Dict[str, object] = {}
+    for ev in inference_result.get("evidence") or []:
+        ev_date = ev.get("event_date")
+        if isinstance(ev_date, (date, datetime)):
+            ev_key = ev_date.isoformat()
+        elif ev_date:
+            ev_key = str(ev_date)
+        else:
+            continue
+        evidence_by_date[ev_key] = _normalize(ev)
+
+    reconciled_by_date: Dict[str, object] = {}
+    for ev in inference_result.get("reconciled_events") or []:
+        ev_date = ev.get("date")
+        if isinstance(ev_date, (date, datetime)):
+            ev_key = ev_date.isoformat()
+        elif ev_date:
+            ev_key = str(ev_date)
+        else:
+            continue
+        reconciled_by_date[ev_key] = _normalize(ev)
+
+    plan_events = inference_result.get("plan") or []
+    if not plan_events:
+        plan_events = [
+            {
+                "date": None,
+                "ratio": None,
+                "source": "inference",
+                "status": inference_result.get("status"),
+                "apply_before": None,
+                "affected_years": [],
+            }
+        ]
+
+    for plan_event in plan_events:
+        boundary_date = plan_event.get("date")
+        if isinstance(boundary_date, (date, datetime)):
+            boundary_iso = boundary_date.isoformat()
+        elif boundary_date:
+            boundary_iso = str(boundary_date)
+        else:
+            boundary_iso = None
+
+        try:
+            ratio_value = float(plan_event.get("ratio")) if plan_event.get("ratio") is not None else None
+        except Exception:
+            ratio_value = None
+
+        source_value = plan_event.get("source") or "inferred"
+
+        evidence_payload = {
+            "inference_status": inference_result.get("status"),
+            "plan_event": _normalize(plan_event),
+            "reconciled_event": reconciled_by_date.get(boundary_iso),
+            "evidence": evidence_by_date.get(boundary_iso),
+            "inference_adjustments_applied": inference_adjustments_applied,
+        }
+
+        try:
+            evidence_json = json.dumps(evidence_payload, default=str)
+        except Exception:
+            evidence_json = "{}"
+
+        cur.execute(
+            """
+            INSERT INTO Split_Inference_Log(Symbol, Boundary_Date, Ratio, Source, Evidence, Created_At)
+            VALUES(?,?,?,?,?,CURRENT_TIMESTAMP);
+            """,
+            (ticker, boundary_iso, ratio_value, source_value, evidence_json),
+        )
+
+
 def apply_split_adjustments(
     ticker: str,
     cur: sqlite3.Cursor,
@@ -855,6 +967,7 @@ def apply_split_adjustments(
     adjustments_applied = False
     inference_result: Optional[Dict[str, object]] = None
     inference_adjusted_dates: set[str] = set()
+    inference_applied = False
 
     if use_eps_inference:
         inference_kwargs = inference_options or {}
@@ -884,6 +997,7 @@ def apply_split_adjustments(
                 inference_result.get("ttm_period"),
             )
             adjustments_applied = adjustments_applied or applied
+            inference_applied = inference_applied or applied
             inference_adjusted_dates = {event.get("date") for event in adjustable_events if event.get("date")}
             logging.info(
                 "[%s] EPS inference applied adjustments: %s (dates=%s)",
@@ -893,6 +1007,8 @@ def apply_split_adjustments(
             )
         else:
             logging.info("[%s] EPS inference found no unadjusted events", ticker)
+
+        _record_split_inference_log(ticker, cur, inference_result, inference_applied)
 
     events_to_record: Dict[date, Tuple[float, str]] = {dt: (ratio, source) for dt, ratio, source in split_history}
     if inference_result:
