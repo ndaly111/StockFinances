@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Audit split events since 2024 against stored EPS and recorded split metadata.
+Audit split events over a configurable multi-year window against stored EPS and recorded split metadata.
 
 The report highlights tickers where split-driven EPS adjustments appear missing
 or mismatched so operators can run the split-adjustment utility in a targeted
@@ -19,16 +19,20 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+import requests
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.append(str(REPO_ROOT))
 
 from split_utils import ensure_splits_table, fetch_split_history
+from config import get_fmp_api_key
 
 DEFAULT_DB_PATH = "Stock Data.db"
-DEFAULT_START_DATE = date(2024, 1, 1)
-DEFAULT_CSV = "split_audit_2024_plus.csv"
-DEFAULT_HTML = "split_audit_2024_plus.html"
+DEFAULT_START_DATE = date(2020, 1, 1)
+DEFAULT_END_DATE = date.today()
+DEFAULT_CSV = "split_audit.csv"
+DEFAULT_HTML = "split_audit.html"
 
 
 @dataclass
@@ -56,6 +60,12 @@ class AuditResult:
     after_date: date | None
     after_eps: float | None
     after_source: str
+    provider_before_date: date | None
+    provider_before_eps: float | None
+    provider_after_date: date | None
+    provider_after_eps: float | None
+    provider_after_source: str
+    provider_observed_ratio: float | None
     eps_status: str
     recommendation: str
     note: str
@@ -64,12 +74,17 @@ class AuditResult:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Audit split adjustments since 2024.")
+    parser = argparse.ArgumentParser(description="Audit split adjustments over a multi-year window.")
     parser.add_argument("--db-path", default=DEFAULT_DB_PATH, help="SQLite database path to inspect.")
     parser.add_argument(
         "--start-date",
         default=DEFAULT_START_DATE.isoformat(),
-        help="Earliest split date to include (YYYY-MM-DD, default: 2024-01-01).",
+        help=f"Earliest split date to include (YYYY-MM-DD, default: {DEFAULT_START_DATE.isoformat()}).",
+    )
+    parser.add_argument(
+        "--end-date",
+        default=DEFAULT_END_DATE.isoformat(),
+        help=f"Latest split date to include (YYYY-MM-DD, default: {DEFAULT_END_DATE.isoformat()}).",
     )
     parser.add_argument(
         "--tickers",
@@ -141,10 +156,13 @@ def _load_ttm(cur: sqlite3.Cursor, tickers: Iterable[str]) -> Dict[str, TtmSnaps
     return ttm_map
 
 
-def _load_recorded_splits(cur: sqlite3.Cursor, start_date: date) -> Dict[str, Dict[date, float]]:
+def _load_recorded_splits(cur: sqlite3.Cursor, start_date: date, end_date: date) -> Dict[str, Dict[date, float]]:
     ensure_splits_table(cur)
     recorded: Dict[str, Dict[date, float]] = {}
-    cur.execute("SELECT Symbol, Date, Ratio FROM Splits WHERE Date >= ?;", (start_date.isoformat(),))
+    cur.execute(
+        "SELECT Symbol, Date, Ratio FROM Splits WHERE Date BETWEEN ? AND ?;",
+        (start_date.isoformat(), end_date.isoformat()),
+    )
     for symbol, raw_date, ratio in cur.fetchall():
         dt = _as_date(raw_date)
         val = _as_float(ratio)
@@ -152,6 +170,45 @@ def _load_recorded_splits(cur: sqlite3.Cursor, start_date: date) -> Dict[str, Di
             continue
         recorded.setdefault(symbol, {})[dt] = val
     return recorded
+
+
+def _fetch_provider_eps(ticker: str, start_date: date, end_date: date) -> List[AnnualEpsPoint]:
+    try:
+        api_key = get_fmp_api_key()
+    except Exception as exc:
+        logging.warning("[%s] Skipping provider EPS fetch: %s", ticker, exc)
+        return []
+
+    url = f"https://financialmodelingprep.com/api/v3/income-statement/{ticker}"
+    params = {"period": "annual", "limit": 80, "apikey": api_key}
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+        payload = resp.json()
+    except Exception as exc:
+        logging.warning("[%s] Unable to fetch provider EPS: %s", ticker, exc)
+        return []
+
+    points: List[AnnualEpsPoint] = []
+    for row in payload or []:
+        dt = _as_date(row.get("date"))
+        eps_val = _as_float(row.get("eps") if isinstance(row, dict) else None)
+        if eps_val is None and isinstance(row, dict):
+            eps_val = _as_float(row.get("epsdiluted"))
+        if dt is None or eps_val is None:
+            continue
+        if dt < start_date or dt > end_date:
+            continue
+        points.append(AnnualEpsPoint(dt, eps_val))
+    points.sort(key=lambda p: p.as_of)
+    return points
+
+
+def _load_provider_eps(tickers: Iterable[str], start_date: date, end_date: date) -> Dict[str, List[AnnualEpsPoint]]:
+    provider_map: Dict[str, List[AnnualEpsPoint]] = {}
+    for ticker in tickers:
+        provider_map[ticker] = _fetch_provider_eps(ticker, start_date, end_date)
+    return provider_map
 
 
 def _nearest_eps(points: Sequence[AnnualEpsPoint], split_date: date) -> Tuple[AnnualEpsPoint | None, AnnualEpsPoint | None]:
@@ -224,6 +281,7 @@ def _analyze_event(
     recorded: bool,
     annual_points: Sequence[AnnualEpsPoint],
     ttm_snapshot: TtmSnapshot | None,
+    provider_points: Sequence[AnnualEpsPoint],
     tolerance: float,
 ) -> AuditResult:
     before, after = _nearest_eps(annual_points, split_date)
@@ -241,21 +299,40 @@ def _analyze_event(
         after_source = "ttm"
 
     observed_ratio = _eps_ratio(before.eps if before else None, after.eps if after else None)
+    provider_before, provider_after = _nearest_eps(provider_points, split_date)
+    provider_after_source = "n/a"
+    if provider_after is not None:
+        provider_after_source = "annual"
+    provider_ratio = _eps_ratio(
+        provider_before.eps if provider_before else None, provider_after.eps if provider_after else None
+    )
 
-    if observed_ratio is None:
-        eps_status = "inconclusive"
-        note = "Insufficient EPS continuity to assess adjustment."
-    elif _matches_expected(observed_ratio, 1.0, tolerance):
-        eps_status = "adjusted"
-        note = f"Observed EPS ratio ~{observed_ratio:.2f}, suggesting prior split adjustment."
-    elif _matches_expected(observed_ratio, ratio, tolerance):
-        eps_status = "unadjusted"
-        note = (
-            f"Observed EPS ratio ~{observed_ratio:.2f} aligns with split ratio {ratio:.2f}; data likely unadjusted."
-        )
+    def _classify(r: float | None) -> str | None:
+        if _matches_expected(r, 1.0, tolerance):
+            return "adjusted"
+        if _matches_expected(r, ratio, tolerance):
+            return "unadjusted"
+        return None
+
+    eps_status = _classify(observed_ratio) or _classify(provider_ratio)
+    if eps_status is None:
+        if observed_ratio is None and provider_ratio is None:
+            eps_status = "inconclusive"
+            note = "Insufficient EPS continuity to assess adjustment."
+        else:
+            eps_status = "mismatch"
+            ratio_for_note = observed_ratio if observed_ratio is not None else provider_ratio
+            note = (
+                f"Observed EPS ratio {ratio_for_note:.2f} differs from both 1.0 and expected {ratio:.2f}."
+                if ratio_for_note is not None
+                else "Unable to align EPS ratios with expected split adjustment."
+            )
+    elif eps_status == "adjusted":
+        ref_ratio = observed_ratio if _classify(observed_ratio) == "adjusted" else provider_ratio
+        note = f"Observed EPS ratio ~{ref_ratio:.2f}, suggesting prior split adjustment."
     else:
-        eps_status = "mismatch"
-        note = f"Observed EPS ratio {observed_ratio:.2f} differs from both 1.0 and expected {ratio:.2f}."
+        ref_ratio = observed_ratio if _classify(observed_ratio) == "unadjusted" else provider_ratio
+        note = f"Observed EPS ratio ~{ref_ratio:.2f} aligns with split ratio {ratio:.2f}; data likely unadjusted."
 
     detail_bits = []
     if before:
@@ -266,6 +343,16 @@ def _analyze_event(
         detail_bits.append(f"after ({after_source}) {after.as_of.isoformat()}={after.eps:.4f}")
     else:
         detail_bits.append("after missing")
+    if provider_before:
+        detail_bits.append(f"provider before {provider_before.as_of.isoformat()}={provider_before.eps:.4f}")
+    else:
+        detail_bits.append("provider before missing")
+    if provider_after:
+        detail_bits.append(
+            f"provider after ({provider_after_source}) {provider_after.as_of.isoformat()}={provider_after.eps:.4f}"
+        )
+    else:
+        detail_bits.append("provider after missing")
     note = f"{note} [{'; '.join(detail_bits)}]"
 
     recommendation = _recommendation(recorded, eps_status)
@@ -274,6 +361,8 @@ def _analyze_event(
         candidates.append(after.as_of)
     if ttm_snapshot and ttm_snapshot.quarter and ttm_snapshot.quarter > split_date:
         candidates.append(ttm_snapshot.quarter)
+    if provider_after and provider_after.as_of > split_date:
+        candidates.append(provider_after.as_of)
     first_post_split = min(candidates) if candidates else split_date
 
     affected_years = sorted({point.as_of.year for point in annual_points if point.as_of < first_post_split})
@@ -299,6 +388,12 @@ def _analyze_event(
         after_date=after.as_of if after else None,
         after_eps=after.eps if after else None,
         after_source=after_source,
+        provider_before_date=provider_before.as_of if provider_before else None,
+        provider_before_eps=provider_before.eps if provider_before else None,
+        provider_after_date=provider_after.as_of if provider_after else None,
+        provider_after_eps=provider_after.eps if provider_after else None,
+        provider_after_source=provider_after_source,
+        provider_observed_ratio=provider_ratio,
         eps_status=eps_status,
         recommendation=recommendation,
         note=note,
@@ -315,11 +410,17 @@ def _write_csv(path: Path, rows: Sequence[AuditResult]) -> None:
         "Recorded In DB",
         "Adjustment Present",
         "Observed EPS Ratio",
+        "Provider EPS Ratio",
         "Before EPS Date",
         "Before EPS",
         "After EPS Date",
         "After EPS",
         "After Source",
+        "Provider Before EPS Date",
+        "Provider Before EPS",
+        "Provider After EPS Date",
+        "Provider After EPS",
+        "Provider After Source",
         "EPS Status",
         "Recommendation",
         "Notes",
@@ -337,11 +438,17 @@ def _write_csv(path: Path, rows: Sequence[AuditResult]) -> None:
                     "yes" if row.recorded else "no",
                     "yes" if row.adjustment_present else "no",
                     f"{row.observed_ratio:.4f}" if row.observed_ratio is not None else "",
+                    f"{row.provider_observed_ratio:.4f}" if row.provider_observed_ratio is not None else "",
                     row.before_date.isoformat() if row.before_date else "",
                     f"{row.before_eps:.4f}" if row.before_eps is not None else "",
                     row.after_date.isoformat() if row.after_date else "",
                     f"{row.after_eps:.4f}" if row.after_eps is not None else "",
                     row.after_source,
+                    row.provider_before_date.isoformat() if row.provider_before_date else "",
+                    f"{row.provider_before_eps:.4f}" if row.provider_before_eps is not None else "",
+                    row.provider_after_date.isoformat() if row.provider_after_date else "",
+                    f"{row.provider_after_eps:.4f}" if row.provider_after_eps is not None else "",
+                    row.provider_after_source,
                     row.eps_status,
                     row.recommendation,
                     row.note,
@@ -350,7 +457,7 @@ def _write_csv(path: Path, rows: Sequence[AuditResult]) -> None:
             )
 
 
-def _write_html(path: Path, rows: Sequence[AuditResult]) -> None:
+def _write_html(path: Path, rows: Sequence[AuditResult], start_date: date, end_date: date) -> None:
     headers = [
         "Ticker",
         "Split Date",
@@ -358,27 +465,34 @@ def _write_html(path: Path, rows: Sequence[AuditResult]) -> None:
         "Recorded In DB",
         "Adjustment Present",
         "Observed EPS Ratio",
+        "Provider EPS Ratio",
         "Before EPS Date",
         "Before EPS",
         "After EPS Date",
         "After EPS",
         "After Source",
+        "Provider Before EPS Date",
+        "Provider Before EPS",
+        "Provider After EPS Date",
+        "Provider After EPS",
+        "Provider After Source",
         "EPS Status",
         "Recommendation",
         "Notes",
         "Affected Years",
     ]
+    window_label = f"{start_date.isoformat()} to {end_date.isoformat()}"
     with path.open("w") as f:
         f.write("<!doctype html><html><head><meta charset='utf-8'>")
-        f.write("<title>Split Audit (2024+)</title>")
+        f.write(f"<title>Split Audit {window_label}</title>")
         f.write(
             "<style>body{font-family:Arial,sans-serif;margin:1.5rem;}table{border-collapse:collapse;width:100%;}"
             "th,td{border:1px solid #ddd;padding:8px;}th{background:#f4f4f4;text-align:left;}tr:nth-child(even){background:#fafafa;}"
             ".warn{color:#c45800;font-weight:bold;}.ok{color:#1b6a1b;font-weight:bold;}"
             "</style></head><body>"
         )
-        f.write("<h1>Split Audit (2024+)</h1>")
-        f.write(f"<p>Total events: {len(rows)}</p>")
+        f.write(f"<h1>Split Audit</h1>")
+        f.write(f"<p>Total events: {len(rows)} | Window: {window_label}</p>")
         f.write("<table><thead><tr>")
         for h in headers:
             f.write(f"<th>{h}</th>")
@@ -392,11 +506,17 @@ def _write_html(path: Path, rows: Sequence[AuditResult]) -> None:
             f.write(f"<td>{'yes' if row.recorded else 'no'}</td>")
             f.write(f"<td class='{status_class}'>{'yes' if row.adjustment_present else 'no'}</td>")
             f.write(f"<td>{'' if row.observed_ratio is None else f'{row.observed_ratio:.4f}'}</td>")
+            f.write(f"<td>{'' if row.provider_observed_ratio is None else f'{row.provider_observed_ratio:.4f}'}</td>")
             f.write(f"<td>{row.before_date.isoformat() if row.before_date else ''}</td>")
             f.write(f"<td>{'' if row.before_eps is None else f'{row.before_eps:.4f}'}</td>")
             f.write(f"<td>{row.after_date.isoformat() if row.after_date else ''}</td>")
             f.write(f"<td>{'' if row.after_eps is None else f'{row.after_eps:.4f}'}</td>")
             f.write(f"<td>{row.after_source}</td>")
+            f.write(f"<td>{row.provider_before_date.isoformat() if row.provider_before_date else ''}</td>")
+            f.write(f"<td>{'' if row.provider_before_eps is None else f'{row.provider_before_eps:.4f}'}</td>")
+            f.write(f"<td>{row.provider_after_date.isoformat() if row.provider_after_date else ''}</td>")
+            f.write(f"<td>{'' if row.provider_after_eps is None else f'{row.provider_after_eps:.4f}'}</td>")
+            f.write(f"<td>{row.provider_after_source}</td>")
             f.write(f"<td>{row.eps_status}</td>")
             f.write(f"<td>{row.recommendation}</td>")
             f.write(f"<td>{row.note}</td>")
@@ -413,19 +533,30 @@ def main() -> None:
         start_date = datetime.fromisoformat(args.start_date).date()
     except Exception as exc:
         raise SystemExit(f"Invalid start date '{args.start_date}'. Expected YYYY-MM-DD.") from exc
+    try:
+        end_date = datetime.fromisoformat(args.end_date).date()
+    except Exception as exc:
+        raise SystemExit(f"Invalid end date '{args.end_date}'. Expected YYYY-MM-DD.") from exc
+    if end_date < start_date:
+        raise SystemExit("End date must be on or after the start date.")
 
     conn = sqlite3.connect(args.db_path)
     cur = conn.cursor()
     tickers = _load_tickers(cur, args.tickers)
     annual_eps = _load_annual_eps(cur, tickers)
     ttm_map = _load_ttm(cur, tickers)
-    recorded_splits = _load_recorded_splits(cur, start_date)
+    recorded_splits = _load_recorded_splits(cur, start_date, end_date)
+    provider_eps = _load_provider_eps(tickers, start_date, end_date)
 
     results: List[AuditResult] = []
 
     def _provider_splits(tkr: str) -> List[Tuple[date, float]]:
         try:
-            return [(dt, ratio) for dt, ratio, _ in fetch_split_history(tkr) if dt and ratio and dt >= start_date]
+            return [
+                (dt, ratio)
+                for dt, ratio, _ in fetch_split_history(tkr)
+                if dt and ratio and start_date <= dt <= end_date
+            ]
         except Exception as exc:
             logging.warning("Failed to fetch splits for %s: %s", tkr, exc)
             return []
@@ -443,6 +574,7 @@ def main() -> None:
                 recorded,
                 annual_eps.get(ticker, []),
                 ttm_map.get(ticker),
+                provider_eps.get(ticker, []),
                 args.tolerance,
             )
             results.append(result)
@@ -454,7 +586,7 @@ def main() -> None:
     csv_path = Path(args.output_csv)
     html_path = Path(args.output_html)
     _write_csv(csv_path, results)
-    _write_html(html_path, results)
+    _write_html(html_path, results, start_date, end_date)
 
     outstanding = sum(1 for r in results if r.recommendation != "skip")
     logging.info("Wrote CSV summary to %s", csv_path.resolve())
