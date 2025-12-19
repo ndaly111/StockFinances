@@ -1288,7 +1288,7 @@ def apply_split_adjustments(
         for dt, ratio, source in split_history
         if dt.isoformat() not in recorded_dates
         and dt.isoformat() not in inference_adjusted_dates
-        and dt > latest_data_date
+        and dt <= latest_data_date
     ]
 
     if pending_events:
