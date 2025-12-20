@@ -15,7 +15,6 @@ LOGO_BASE_URL = "https://raw.githubusercontent.com/ryanmcdermott/nfl-logos/maste
 
 LogoFormat = Literal["png", "svg"]
 
-
 def epa_csv_url(season: int) -> str:
     """Build the nflfastR play-by-play CSV URL for a season.
 
@@ -26,7 +25,6 @@ def epa_csv_url(season: int) -> str:
         Fully qualified HTTPS URL for the gzipped CSV file.
     """
     return f"{EPA_BASE_URL}/play_by_play_{season}.csv.gz"
-
 
 def logo_url(team_abbr: str, fmt: LogoFormat = "png") -> str:
     """Build the URL for a team logo asset.
@@ -40,7 +38,6 @@ def logo_url(team_abbr: str, fmt: LogoFormat = "png") -> str:
     """
     normalized_team = team_abbr.lower()
     return f"{LOGO_BASE_URL}/{fmt}/{normalized_team}.{fmt}"
-
 
 def download_file(url: str, destination: Path) -> Path:
     """Download a remote asset to a destination path.
@@ -63,7 +60,6 @@ def download_file(url: str, destination: Path) -> Path:
 
     return destination
 
-
 def download_epa_csv(season: int, target_dir: Path | None = None) -> Path:
     """Download a season's nflfastR play-by-play CSV.
 
@@ -78,20 +74,14 @@ def download_epa_csv(season: int, target_dir: Path | None = None) -> Path:
     directory = target_dir or Path("data")
     url = epa_csv_url(season)
     destination = directory / f"play_by_play_{season}.csv.gz"
-    # Try to download the published play-by-play file.  If the file doesn't exist yet
-    # (for example, if the season is still in progress), fall back to scraping
-    # play-by-play data for the season so far using nfl_data_py.  Any errors
-    # thrown by the scraper are re-raised as the original FileNotFoundError so
-    # callers get a consistent error type when data truly cannot be retrieved.
+
     try:
         return download_file(url, destination)
     except FileNotFoundError as exc:
-        # Attempt to scrape in-progress data; if that fails, propagate the 404
         try:
             return download_epa_csv_in_progress(season, target_dir)
         except Exception:
             raise FileNotFoundError(f"Remote file not found at {url}") from exc
-
 
 def download_team_logo(
     team_abbr: str,
@@ -113,11 +103,6 @@ def download_team_logo(
     url = logo_url(team_abbr, fmt)
     destination = directory / f"{team_abbr.lower()}.{fmt}"
     return download_file(url, destination)
-
-
-# -----------------------------------------------------------------------------
-# In-progress season support
-# -----------------------------------------------------------------------------
 
 def download_epa_csv_in_progress(
     season: int, target_dir: Path | None = None
@@ -146,8 +131,6 @@ def download_epa_csv_in_progress(
     try:
         from nfl_data_py import import_data
     except Exception as exc:
-        # Defer importing nfl_data_py until runtime so it doesn't become a hard
-        # dependency unless this fallback is needed.
         raise ImportError(
             "nfl_data_py is required to scrape in-progress data. "
             "Add it to your environment or requirements.txt"
@@ -156,13 +139,10 @@ def download_epa_csv_in_progress(
     directory = target_dir or Path("data")
     destination = directory / f"play_by_play_{season}.csv.gz"
 
-    # Informative message for logs/CI output
     print(f"Scraping in-progress play-by-play data for {season}...")
 
-    # Import all available plays for the season so far
     df = import_data.import_pbp_data([season])
 
-    # Ensure the parent directory exists and write the data
     destination.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(destination, index=False, compression="gzip")
 
