@@ -1,0 +1,27 @@
+name: NFL EPA fetch
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 2" # Weekly on Tuesdays at 6:00 UTC
+
+jobs:
+  fetch-epa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run EPA fetcher
+        run: |
+          python nflstats/main.py --year 2025

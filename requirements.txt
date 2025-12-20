@@ -17,3 +17,5 @@ html5lib
 plotly>=5.19
 arelle
 
+
+nfl_data_py>=0.3.0
