@@ -410,7 +410,7 @@ def _pct_color(v):                          # green ≤30, red ≥70
 def _build_html(df):
     sty = (df.style
              .hide(axis="index")
-             .map(_pct_color, subset="Percentile")
+             .applymap(_pct_color, subset="Percentile")
              .set_table_attributes('class="summary-table"'))
     return SUMMARY_CSS + sty.to_html()
 
