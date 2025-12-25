@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # main_remote.py – 2025-08-27  (segments first; canonical table path)
 import sqlite3, pandas as pd, yfinance as yf, math, os, subprocess, sys
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -61,7 +60,7 @@ def establish_database_connection(db_path):
     # Ensure schema once and return a ready connection
     return get_db_connection(db_path)
 
-def log_average_valuations(avg_values, tickers_file, cursor, commit: bool = False):
+def log_average_valuations(avg_values, tickers_file):
     if tickers_file != "tickers.csv":
         return
     req = ("Nicks_TTM_Value_Average","Nicks_Forward_Value_Average","Finviz_TTM_Value_Average")
@@ -69,34 +68,35 @@ def log_average_valuations(avg_values, tickers_file, cursor, commit: bool = Fals
         print("[WARNING] Missing keys in avg_values; skipping DB insert.")
         return
     today = datetime.now().strftime("%Y-%m-%d")
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS AverageValuations (
-        date DATE PRIMARY KEY,
-        avg_ttm_valuation REAL,
-        avg_forward_valuation REAL,
-        avg_finviz_valuation REAL
-    );
-    """)
-    cursor.execute("SELECT 1 FROM AverageValuations WHERE date = ?", (today,))
-    if not cursor.fetchone():
-        cursor.execute("""
-        INSERT INTO AverageValuations
-          (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
-        VALUES (?, ?, ?, ?);
-        """, (
-            today,
-            avg_values["Nicks_TTM_Value_Average"],
-            avg_values["Nicks_Forward_Value_Average"],
-            avg_values["Finviz_TTM_Value_Average"]
-        ))
-        if commit:
-            cursor.connection.commit()
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS AverageValuations (
+            date DATE PRIMARY KEY,
+            avg_ttm_valuation REAL,
+            avg_forward_valuation REAL,
+            avg_finviz_valuation REAL
+        );
+        """)
+        cur.execute("SELECT 1 FROM AverageValuations WHERE date = ?", (today,))
+        if not cur.fetchone():
+            cur.execute("""
+            INSERT INTO AverageValuations
+              (date, avg_ttm_valuation, avg_forward_valuation, avg_finviz_valuation)
+            VALUES (?, ?, ?, ?);
+            """, (
+                today,
+                avg_values["Nicks_TTM_Value_Average"],
+                avg_values["Nicks_Forward_Value_Average"],
+                avg_values["Finviz_TTM_Value_Average"]
+            ))
+            conn.commit()
 
-def balancesheet_chart(ticker, charts_output_dir=CHARTS_DIR):
+def balancesheet_chart(ticker):
     data = fetch_bs_for_chart(ticker)
     if data is None:
         return
-    plot_chart(data, charts_output_dir, ticker)
+    plot_chart(data, CHARTS_DIR, ticker)
 
     debt   = data.get("Total_Debt")
     equity = data.get("Total_Equity")
@@ -109,7 +109,7 @@ def balancesheet_chart(ticker, charts_output_dir=CHARTS_DIR):
         data["Debt_to_Equity_Ratio"] = None
     else:
         data["Debt_to_Equity_Ratio"] = debt / equity
-    create_and_save_table(data, charts_output_dir, ticker)
+    create_and_save_table(data, CHARTS_DIR, ticker)
 
 def fetch_and_update_balance_sheet_data(ticker, cursor):
     current = fetch_balance_sheet_data(ticker, cursor)
@@ -209,102 +209,84 @@ def mini_main():
     # below is the inserted code
     maybe_load_sp500_index_series(DB_PATH)
     # above is the inserted code
-    process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
-
-    missing_segments: list[str] = []
-
-    def process_ticker(ticker: str):
-        ticker_dashboard: list[list[str]] = []
-        charts_output_dir = Path(CHARTS_DIR) / ticker
-        charts_output_dir.mkdir(parents=True, exist_ok=True)
-
-        conn = establish_database_connection(DB_PATH)
-        if not conn:
-            return ticker_dashboard, False
-
-        try:
-            cursor = conn.cursor()
-
-            # 1) Core financial data
-            annual_and_ttm_update(ticker, cursor, commit=False)
-            scrape_forward_data(ticker)
-            generate_forecast_charts_and_tables(ticker, DB_PATH, str(charts_output_dir))
-
-            # 2) Balance sheet
-            fetch_and_update_balance_sheet_data(ticker, cursor)
-            balancesheet_chart(ticker, charts_output_dir)
-
-            # 3) Segments (run within loop so no separate pass/pause)
-            ok = build_segments_for_ticker(ticker)
-
-            # 4) Valuation + reporting
-            prepared, mktcap = prepare_data_for_display(ticker, treasury)
-            generate_html_table(prepared, ticker)
-            valuation_update(ticker, cursor, treasury, mktcap, ticker_dashboard)
-            generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
-
-            conn.commit()
-            return ticker_dashboard, not ok
-        except Exception as e:
-            conn.rollback()
-            print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
-            return ticker_dashboard, True
-        finally:
-            conn.close()
-
-    with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as executor:
-        future_to_ticker = {executor.submit(process_ticker, ticker): ticker for ticker in tickers}
-        for future in as_completed(future_to_ticker):
-            ticker = future_to_ticker[future]
-            try:
-                dashboard_rows, segments_missing = future.result()
-                dashboard_data.extend(dashboard_rows)
-                if segments_missing:
-                    missing_segments.append(ticker)
-            except Exception as exc:
-                print(f"[WARN] Processing failed for {ticker}: {exc}")
-                missing_segments.append(ticker)
-
-    if missing_segments:
-        msg = "Missing segment tables for: " + ", ".join(sorted(set(missing_segments)))
-        print(f"[WARN] {msg}")
-
-    eps_dividend_generator()
-    generate_all_summaries()
-
-    full_html, avg_vals = generate_dashboard_table(dashboard_data)
-    with get_db_connection(DB_PATH) as conn:
-        log_average_valuations(avg_vals, TICKERS_FILE_PATH, conn.cursor())
-    spy_qqq_html = index_growth(treasury)
-    generate_earnings_tables()
-    # Generate index growth charts for both SPY and QQQ so that
-    # their growth pages share the same styled summaries.
-    for idx in ("SPY", "QQQ"):
-        render_index_growth_charts(idx)
-    backfill_index_growth()
+    conn = establish_database_connection(DB_PATH)
+    if not conn:
+        return
 
     try:
-        generate_market_summary()
-        market_summary_embed = (
-            '<iframe src="daily-market-summary.html" '
-            'title="Daily Market Summary" '
-            'style="width:100%;height:740px;border:2px inset #C0C0C0;'
-            'background:#FFFFFF" loading="lazy"></iframe>'
-            '<p style="text-align:right;margin-top:6px;">'
-            '<a href="daily-market-summary.html">Open full summary</a>'
-            '</p>'
-        )
-    except Exception as exc:
-        print(f"[WARN] Daily market summary generation failed: {exc}")
+        cursor = conn.cursor()
+        process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
-    html_generator2(
-        tickers,
-        financial_data,
-        full_html,
-        avg_vals,
-        spy_qqq_html,
-        daily_market_summary_html=market_summary_embed
-    )
+        missing_segments = []
+
+        for ticker in tickers:
+            print(f"[main] Processing {ticker}")
+            try:
+                # 1) Core financial data
+                annual_and_ttm_update(ticker, cursor)
+                scrape_forward_data(ticker)
+                generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
+
+                # 2) Balance sheet
+                fetch_and_update_balance_sheet_data(ticker, cursor)
+                balancesheet_chart(ticker)
+
+                # 3) Segments (run within loop so no separate pass/pause)
+                ok = build_segments_for_ticker(ticker)
+                if not ok:
+                    missing_segments.append(ticker)
+
+                # 4) Valuation + reporting
+                prepared, mktcap = prepare_data_for_display(ticker, treasury)
+                generate_html_table(prepared, ticker)
+                valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
+                generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
+
+            except Exception as e:
+                print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
+                continue
+
+        if missing_segments:
+            msg = "Missing segment tables for: " + ", ".join(missing_segments)
+            print(f"[WARN] {msg}")
+
+        eps_dividend_generator()
+        generate_all_summaries()
+
+        full_html, avg_vals = generate_dashboard_table(dashboard_data)
+        log_average_valuations(avg_vals, TICKERS_FILE_PATH)
+        spy_qqq_html = index_growth(treasury)
+        generate_earnings_tables()
+        # Generate index growth charts for both SPY and QQQ so that
+        # their growth pages share the same styled summaries.
+        for idx in ("SPY", "QQQ"):
+            render_index_growth_charts(idx)
+        backfill_index_growth()
+
+        try:
+            generate_market_summary()
+            market_summary_embed = (
+                '<iframe src="daily-market-summary.html" '
+                'title="Daily Market Summary" '
+                'style="width:100%;height:740px;border:2px inset #C0C0C0;'
+                'background:#FFFFFF" loading="lazy"></iframe>'
+                '<p style="text-align:right;margin-top:6px;">'
+                '<a href="daily-market-summary.html">Open full summary</a>'
+                '</p>'
+            )
+        except Exception as exc:
+            print(f"[WARN] Daily market summary generation failed: {exc}")
+
+        html_generator2(
+            tickers,
+            financial_data,
+            full_html,
+            avg_vals,
+            spy_qqq_html,
+            daily_market_summary_html=market_summary_embed
+        )
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     mini_main()
