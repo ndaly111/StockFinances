@@ -100,6 +100,18 @@ def format_value(value):
         return f"${value / 1_000_000:,.0f}M"
     return value
 
+
+def styler_map_compat(styler, func, subset=None, **kwargs):
+    """Apply a styling function using Styler.map when available.
+
+    Pandas <2.1 lacks :meth:`Styler.map`, so fall back to ``applymap``
+    to keep compatibility with the GitHub Actions runner environment.
+    """
+
+    if hasattr(styler, "map"):
+        return styler.map(func, subset=subset, **kwargs)
+    return styler.applymap(func, subset=subset, **kwargs)
+
 # Apply coloring based on Debt_to_Equity_Ratio value
 def create_and_save_table(data, output_dir, ticker):
     print("balance sheet chart 3 creating table")
@@ -124,8 +136,13 @@ def create_and_save_table(data, output_dir, ticker):
         except ValueError:
             return ''
 
-    # Calculate Debt to Equity Ratio
-    debt_to_equity_ratio = data['Total_Debt'] / data['Total_Equity']
+    # Calculate Debt to Equity Ratio (guard against missing/zero equity)
+    equity = data.get('Total_Equity')
+    debt = data.get('Total_Debt')
+    if equity in (None, 0) or debt is None or pd.isna(equity) or pd.isna(debt):
+        debt_to_equity_ratio = None
+    else:
+        debt_to_equity_ratio = debt / equity
 
     # Prepare the data for DataFrame
     data_for_df = {
@@ -136,18 +153,25 @@ def create_and_save_table(data, output_dir, ticker):
             f"${data['Total_Liabilities'] / 1_000_000:,.0f}M",
             f"${data['Total_Debt'] / 1_000_000:,.0f}M",
             f"${data['Total_Equity'] / 1_000_000:,.0f}M",
-            f"{debt_to_equity_ratio:,.2f}"
+            "N/A" if debt_to_equity_ratio is None else f"{debt_to_equity_ratio:,.2f}"
         ]
     }
 
     # Create DataFrame
     df = pd.DataFrame(data_for_df)
 
-    # Apply color formatting to Debt to Equity Ratio column
-    styled_df = df.style.map(color_debt_to_equity_ratio, subset=['Value'])
-
-    # Convert DataFrame to HTML
-    html_content = styled_df.to_html(index=False)
+    try:
+        # Apply color formatting to Debt to Equity Ratio column
+        styled_df = styler_map_compat(
+            df.style,
+            color_debt_to_equity_ratio,
+            subset=['Value']
+        )
+        # Convert DataFrame to HTML
+        html_content = styled_df.to_html(index=False)
+    except Exception as exc:
+        print(f"[WARN] Styling balance sheet table for {ticker} failed: {exc}")
+        html_content = df.to_html(index=False)
 
     # Save the styled DataFrame to an HTML file
     html_file_path = os.path.join(output_dir, f"{ticker}_balance_sheet_table.html")
