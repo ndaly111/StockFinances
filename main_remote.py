@@ -92,6 +92,28 @@ def log_average_valuations(avg_values, tickers_file):
             ))
             conn.commit()
 
+
+def verify_dashboard_table(table_path=None):
+    """Ensure the dashboard table was generated correctly.
+
+    CI should fail loudly if the sortable dashboard table is missing or
+    empty so downstream deployments do not silently publish a broken page.
+    """
+
+    table_path = Path(table_path) if table_path is not None else Path(CHARTS_DIR) / "dashboard.html"
+
+    if not table_path.exists() or not table_path.is_file():
+        raise RuntimeError(f"Dashboard table not found at {table_path}")
+
+    html = table_path.read_text(encoding="utf-8").lower()
+    row_count = html.count("<tr")
+    table_present = "<table" in html
+    if not table_present or row_count <= 1:
+        raise RuntimeError(
+            "Dashboard table is empty or malformed: "
+            f"<table present={table_present}, rows={row_count}"
+        )
+
 def balancesheet_chart(ticker):
     data = fetch_bs_for_chart(ticker)
     if data is None:
@@ -285,6 +307,7 @@ def mini_main():
             spy_qqq_html,
             daily_market_summary_html=market_summary_embed
         )
+        verify_dashboard_table()
     finally:
         conn.close()
 
