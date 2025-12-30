@@ -1,37 +1,49 @@
-                    Concept  PeriodEnd                                                       Dims       Value
-           us-gaap:Revenues 2024-09-24                                                            142315000.0
-           us-gaap:Revenues 2023-09-26                                                            138160000.0
-           us-gaap:Revenues 2024-09-24                                                            142315000.0
-           us-gaap:Revenues 2023-09-26                                                            138160000.0
-us-gaap:OperatingIncomeLoss 2024-09-24                                                              1380000.0
-us-gaap:OperatingIncomeLoss 2023-09-26                                                               963000.0
-us-gaap:OperatingIncomeLoss 2024-09-24 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   -231000.0
-us-gaap:OperatingIncomeLoss 2023-09-26 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember  -1342000.0
-us-gaap:OperatingIncomeLoss 2024-09-24 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   1611000.0
-us-gaap:OperatingIncomeLoss 2023-09-26 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   2305000.0
-us-gaap:OperatingIncomeLoss 2024-09-24                                                              1380000.0
-us-gaap:OperatingIncomeLoss 2023-09-26                                                               963000.0
-           us-gaap:Revenues 2025-07-01                                                             37025000.0
-           us-gaap:Revenues 2024-06-25                                                             37950000.0
-           us-gaap:Revenues 2025-07-01                                                            107637000.0
-           us-gaap:Revenues 2024-06-25                                                            106554000.0
-           us-gaap:Revenues 2025-07-01                                                             37025000.0
-           us-gaap:Revenues 2024-06-25                                                             37950000.0
-           us-gaap:Revenues 2025-07-01                                                            107637000.0
-           us-gaap:Revenues 2024-06-25                                                            106554000.0
-us-gaap:OperatingIncomeLoss 2025-07-01                                                              1233000.0
-us-gaap:OperatingIncomeLoss 2024-06-25                                                              1228000.0
-us-gaap:OperatingIncomeLoss 2025-07-01                                                               796000.0
-us-gaap:OperatingIncomeLoss 2024-06-25                                                              1498000.0
-us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   1139000.0
-us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember    388000.0
-us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   1272000.0
-us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember      7000.0
-us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember     94000.0
-us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember    840000.0
-us-gaap:OperatingIncomeLoss 2025-07-01 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   -476000.0
-us-gaap:OperatingIncomeLoss 2024-06-25 us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   1491000.0
-us-gaap:OperatingIncomeLoss 2025-07-01                                                              1233000.0
-us-gaap:OperatingIncomeLoss 2024-06-25                                                              1228000.0
-us-gaap:OperatingIncomeLoss 2025-07-01                                                               796000.0
-us-gaap:OperatingIncomeLoss 2024-06-25                                                              1498000.0
+                    Concept  PeriodEnd                                                                                                                                                                                           Dims       Value
+           us-gaap:Revenues 2025-09-30              srt:ProductOrServiceAxis:gtim:RestaurantSalesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember  39229000.0
+           us-gaap:Revenues 2025-09-30              srt:ProductOrServiceAxis:gtim:RestaurantSalesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember 101385000.0
+           us-gaap:Revenues 2025-09-30           srt:ProductOrServiceAxis:gtim:RestaurantSalesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember 140614000.0
+           us-gaap:Revenues 2025-09-30    srt:ProductOrServiceAxis:gtim:FranchiseAndOtherRevenuesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember    191000.0
+           us-gaap:Revenues 2025-09-30    srt:ProductOrServiceAxis:gtim:FranchiseAndOtherRevenuesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember    825000.0
+           us-gaap:Revenues 2025-09-30 srt:ProductOrServiceAxis:gtim:FranchiseAndOtherRevenuesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember   1016000.0
+           us-gaap:Revenues 2025-09-30                                                                   srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember  39420000.0
+           us-gaap:Revenues 2025-09-30                                                                   srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember 102210000.0
+           us-gaap:Revenues 2025-09-30                                                                srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember 141630000.0
+           us-gaap:Revenues 2024-09-24              srt:ProductOrServiceAxis:gtim:RestaurantSalesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember  38016000.0
+           us-gaap:Revenues 2024-09-24              srt:ProductOrServiceAxis:gtim:RestaurantSalesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember 103539000.0
+           us-gaap:Revenues 2024-09-24           srt:ProductOrServiceAxis:gtim:RestaurantSalesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember 141555000.0
+           us-gaap:Revenues 2024-09-24    srt:ProductOrServiceAxis:gtim:FranchiseAndOtherRevenuesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember    455000.0
+           us-gaap:Revenues 2024-09-24    srt:ProductOrServiceAxis:gtim:FranchiseAndOtherRevenuesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember    367000.0
+           us-gaap:Revenues 2024-09-24 srt:ProductOrServiceAxis:gtim:FranchiseAndOtherRevenuesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:us-gaap:CorporateMember      3000.0
+           us-gaap:Revenues 2024-09-24 srt:ProductOrServiceAxis:gtim:FranchiseAndOtherRevenuesMember; srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember    825000.0
+           us-gaap:Revenues 2024-09-24                                                                   srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember  38471000.0
+           us-gaap:Revenues 2024-09-24                                                                   srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember 103906000.0
+           us-gaap:Revenues 2024-09-24                                                                srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:us-gaap:CorporateMember      3000.0
+           us-gaap:Revenues 2024-09-24                                                                srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember 142380000.0
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                                                                                                   330000.0
+us-gaap:OperatingIncomeLoss 2024-09-24                                                                                                                                                                                                  1380000.0
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember    330000.0
+us-gaap:OperatingIncomeLoss 2024-09-24                                                                srt:TitleOfIndividualAxis:gtim:ChiefOperatingDecisionMakerMember; us-gaap:StatementBusinessSegmentsAxis:gtim:ConsolidatedMember   1380000.0
+           us-gaap:Revenues 2025-07-01                                                                                                                                                                                                 37025000.0
+           us-gaap:Revenues 2024-06-25                                                                                                                                                                                                 37950000.0
+           us-gaap:Revenues 2025-07-01                                                                                                                                                                                                107637000.0
+           us-gaap:Revenues 2024-06-25                                                                                                                                                                                                106554000.0
+           us-gaap:Revenues 2025-07-01                                                                                                                                                                                                 37025000.0
+           us-gaap:Revenues 2024-06-25                                                                                                                                                                                                 37950000.0
+           us-gaap:Revenues 2025-07-01                                                                                                                                                                                                107637000.0
+           us-gaap:Revenues 2024-06-25                                                                                                                                                                                                106554000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                                                                                  1233000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                                                                                  1228000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                                                                                   796000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                                                                                  1498000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   1139000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember    388000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember   1272000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:BadDaddysMember      7000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember     94000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember    840000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   -476000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                     us-gaap:StatementBusinessSegmentsAxis:gtim:GoodTimesMember   1491000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                                                                                  1233000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                                                                                  1228000.0
+us-gaap:OperatingIncomeLoss 2025-07-01                                                                                                                                                                                                   796000.0
+us-gaap:OperatingIncomeLoss 2024-06-25                                                                                                                                                                                                  1498000.0
