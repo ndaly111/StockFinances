@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFL Matchups</title>
+  <link rel="stylesheet" href="static/css/retro.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-shell { max-width: 1180px; margin: 0 auto; padding: 12px 16px 32px; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; background: #f7f7ff; border: 2px inset #c0c0c0; padding: 10px 12px; box-shadow: 1px 1px 0 #8080ff; }
+    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .controls label { font-weight: 700; color: #000080; }
+    .controls select, .controls button { border: 2px outset #c0c0c0; background: #fff; padding: 4px 6px; font-weight: 700; color: #000080; }
+    .controls button { cursor: pointer; }
+    .panel { background: #ffffff; border: 2px inset #c0c0c0; margin-top: 12px; padding: 12px; box-shadow: 2px 2px 0 #8080ff; }
+    .panel h2 { margin-top: 0; }
+    .meta { color: #000080; font-size: 0.95rem; margin-top: 4px; }
+    .message { margin: 10px 0; padding: 10px 12px; background: #f2f6ff; border: 1px dashed #8080ff; color: #000080; }
+    .matchup-card { border: 1px solid #c0c0c0; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; background: #fafafa; box-shadow: 1px 1px 0 #c0c0c0; }
+    .matchup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .team { display: flex; gap: 8px; align-items: center; }
+    .team .logo { width: 44px; height: 44px; border-radius: 50%; background: #e0e7ff; color: #000080; display: grid; place-items: center; font-weight: 700; border: 1px solid #8080ff; }
+    .team .name { font-weight: 700; color: #000080; }
+    .team .record { color: #000; font-size: 0.9rem; }
+    .metrics { font-variant-numeric: tabular-nums; color: #000; }
+    .pill { display: inline-block; padding: 3px 7px; border-radius: 999px; font-weight: 700; margin-bottom: 4px; border: 1px solid #8080ff; background: #e0e7ff; color: #000080; }
+    .pill.offense { background: #d4edda; border-color: #2e7d32; color: #1b5e20; }
+    .pill.defense { background: #e0f0ff; border-color: #1565c0; color: #0d47a1; }
+    .pill.neutral { background: #fff3cd; border-color: #f0ad4e; color: #8a6d3b; }
+    .pill.missing { background: #f8d7da; border-color: #c62828; color: #8a1c1c; }
+    .viz { margin-top: 6px; }
+    .viz-track { position: relative; height: 10px; border-radius: 999px; background: #dce4ff; border: 1px solid #8080ff; }
+    .viz-line { position: absolute; top: 50%; height: 4px; transform: translateY(-50%); border-radius: 999px; opacity: 0.9; }
+    .viz-dot { position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 999px; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18); }
+    .viz-dot.off { background: #2e7d32; }
+    .viz-dot.def { background: #1565c0; }
+    .viz-axis { display: flex; justify-content: space-between; font-size: 0.78rem; color: #000080; margin-top: 4px; }
+    .odds { color: #000; font-size: 0.95rem; display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .odds .odds-meta { flex-basis: 100%; font-size: 0.9rem; color: #000080; }
+    .secondary-text { color: #000080; font-size: 0.9rem; }
+    @media (max-width: 900px) { .matchup-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <div class="top-bar">
+      <div>
+        <h1>NFL Matchups</h1>
+        <div class="meta" id="meta">Loading EPA data…</div>
+      </div>
+      <div class="controls">
+        <label>Season <select id="seasonSelect"></select></label>
+        <label>Week <select id="weekSelect"></select></label>
+        <label>Mode
+          <select id="modeSelect">
+            <option value="raw">Raw EPA</option>
+            <option value="sos">Opponent-adjusted</option>
+          </select>
+        </label>
+        <button id="refreshBtn">Refresh data</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Game list</h2>
+      <div class="secondary-text">Edge is computed as Off EPA/play minus opponent DEF EPA/play (defense is strength; higher is better defense).</div>
+      <div id="messages"></div>
+      <div id="matchups"></div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const useFixture = params.get('fixture') === '1';
+    const defMode = (params.get('def') || 'strength').toLowerCase();
+    const DEF_EPA_IS_ALLOWED = defMode === 'allowed'; // if source def_epa_pp is EPA allowed (lower = better)
+    const epaPath = useFixture ? 'data/fixtures/epa_sample.json' : 'data/epa.json';
+    const oddsPath = useFixture ? 'data/fixtures/odds_sample.json' : 'data/odds.json';
+    const MIN_PLAYS = useFixture ? 50 : 150;
+
+    let games = [];
+    let oddsPayload = { odds: [] };
+    let dataMeta = {};
+
+    async function fetchJSON(path) {
+      const res = await fetch(path, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Failed to load ${path}`);
+      return res.json();
+    }
+
+    function normalizeGames(payload) {
+      if (Array.isArray(payload?.games)) {
+        return payload.games.filter((g) => Array.isArray(g?.teams) && g.teams.length === 2);
+      }
+
+      if (payload?.seasons && typeof payload.seasons === 'object') {
+        const collected = [];
+        Object.entries(payload.seasons).forEach(([seasonKey, seasonVal]) => {
+          const seasonNum = Number(seasonKey);
+
+          if (seasonVal?.weeks && typeof seasonVal.weeks === 'object') {
+            Object.entries(seasonVal.weeks).forEach(([weekKey, weekGames]) => {
+              const weekNum = Number(weekKey);
+              (weekGames || []).forEach((g) => {
+                if (Array.isArray(g?.teams) && g.teams.length === 2) {
+                  collected.push({ ...g, season: g.season ?? seasonNum, week: g.week ?? weekNum });
+                }
+              });
+            });
+          }
+
+          if (Array.isArray(seasonVal?.games)) {
+            const grouped = new Map();
+            seasonVal.games.forEach((row) => {
+              if (!row || row.team === undefined || row.game_id === undefined) return;
+              const weekVal = Number(row.week);
+              const seasonValNum = Number(row.season ?? seasonNum);
+              if (!Number.isFinite(weekVal)) return;
+
+              const key = `${seasonValNum}-${weekVal}-${row.game_id}`;
+              if (!grouped.has(key)) {
+                grouped.set(key, { game_id: row.game_id, season: seasonValNum, week: weekVal, teams: [] });
+              }
+              const bucket = grouped.get(key);
+              const teamId = row.team;
+              const already = new Set(bucket.teams.map((t) => t.team));
+              if (!already.has(teamId)) {
+                bucket.teams.push(row);
+              }
+            });
+
+            grouped.forEach((game) => {
+              if (Array.isArray(game.teams) && game.teams.length === 2 && Number.isFinite(game.week)) {
+                collected.push(game);
+              }
+            });
+          }
+        });
+        return collected;
+      }
+      return [];
+    }
+
+    function defStrength(val) {
+      return Number.isFinite(val) ? (DEF_EPA_IS_ALLOWED ? -val : val) : null;
+    }
+
+    function normalizeOdds(payload) {
+      if (Array.isArray(payload?.odds)) return payload;
+      return { odds: [] };
+    }
+
+    function formatNumber(val, digits = 3) {
+      if (!Number.isFinite(val)) return '—';
+      return Number(val).toFixed(digits);
+    }
+
+    function roundHalf(x) { return Math.round(x * 2) / 2; }
+    function clamp(val, lo, hi) { return Math.min(hi, Math.max(lo, val)); }
+
+    function percentileSorted(sorted, p) {
+      if (!sorted.length) return null;
+      const idx = (sorted.length - 1) * p;
+      const lo = Math.floor(idx);
+      const hi = Math.ceil(idx);
+      if (lo === hi) return sorted[lo];
+      const w = idx - lo;
+      return sorted[lo] * (1 - w) + sorted[hi] * w;
+    }
+
+    function computeCorrelation(xs, ys) {
+      if (xs.length !== ys.length || xs.length < 2) return null;
+      const n = xs.length;
+      const meanX = xs.reduce((a, b) => a + b, 0) / n;
+      const meanY = ys.reduce((a, b) => a + b, 0) / n;
+      let num = 0;
+      let denX = 0;
+      let denY = 0;
+      for (let i = 0; i < n; i += 1) {
+        const dx = xs[i] - meanX;
+        const dy = ys[i] - meanY;
+        num += dx * dy;
+        denX += dx * dx;
+        denY += dy * dy;
+      }
+      const denom = Math.sqrt(denX * denY);
+      if (denom === 0) return null;
+      return num / denom;
+    }
+
+    function computeLeagueScale(ratings, mode) {
+      const vals = [];
+      Object.values(ratings || {}).forEach((r) => {
+        const o = mode === 'sos' ? r.adjOffEPA : r.offEPA;
+        const d = mode === 'sos' ? r.adjDefEPA : r.defEPA;
+        if (Number.isFinite(o)) vals.push(o);
+        if (Number.isFinite(d)) vals.push(d);
+      });
+      if (vals.length < 2) return { min: -0.25, max: 0.25, label: 'default' };
+      vals.sort((a, b) => a - b);
+      const lo = percentileSorted(vals, 0.05);
+      const hi = percentileSorted(vals, 0.95);
+      const span = Math.max(hi - lo, 0.01);
+      const pad = span * 0.06;
+      return { min: lo - pad, max: hi + pad, label: 'p05-p95' };
+    }
+
+    function toPct(val, scale) {
+      if (!Number.isFinite(val)) return null;
+      const denom = (scale.max - scale.min) || 1;
+      return clamp((val - scale.min) / denom, 0, 1) * 100;
+    }
+
+    function vizLineColor(tone) {
+      if (tone === 'defense') return '#1565c0';
+      if (tone === 'neutral') return '#f0ad4e';
+      return '#2e7d32';
+    }
+
+    function buildDumbbell(offVal, defVal, scale, tone) {
+      const wrap = document.createElement('div');
+      wrap.className = 'viz';
+
+      const track = document.createElement('div');
+      track.className = 'viz-track';
+
+      const offPct = toPct(offVal, scale);
+      const defPct = toPct(defVal, scale);
+
+      const seg = document.createElement('div');
+      seg.className = 'viz-line';
+      seg.style.background = vizLineColor(tone);
+      if (offPct !== null && defPct !== null) {
+        const left = Math.min(offPct, defPct);
+        const right = Math.max(offPct, defPct);
+        seg.style.left = `${left}%`;
+        seg.style.width = `${Math.max(0.5, right - left)}%`;
+      } else {
+        seg.style.opacity = '0';
+        seg.style.width = '0';
+      }
+      track.appendChild(seg);
+
+      if (offPct !== null) {
+        const dot = document.createElement('div');
+        dot.className = 'viz-dot off';
+        dot.style.left = `${offPct}%`;
+        dot.title = `Off EPA/play: ${formatNumber(offVal)}`;
+        track.appendChild(dot);
+      }
+      if (defPct !== null) {
+        const dot = document.createElement('div');
+        dot.className = 'viz-dot def';
+        dot.style.left = `${defPct}%`;
+        dot.title = `Def EPA/play: ${formatNumber(defVal)}`;
+        track.appendChild(dot);
+      }
+
+      wrap.appendChild(track);
+
+      const axis = document.createElement('div');
+      axis.className = 'viz-axis';
+      axis.innerHTML = `<span>Low</span><span class="center">EPA/play scale</span><span>High</span>`;
+      wrap.appendChild(axis);
+      return wrap;
+    }
+
+    function addTeamTotals(entry, row) {
+      if (Number.isFinite(row.off_epa_pp) && Number.isFinite(row.off_plays)) {
+        entry.offSum += row.off_epa_pp * row.off_plays;
+        entry.offPlays += row.off_plays;
+      }
+      if (Number.isFinite(row.def_epa_pp) && Number.isFinite(row.def_plays)) {
+        const defVal = defStrength(row.def_epa_pp);
+        entry.defSum += defVal * row.def_plays;
+        entry.defPlays += row.def_plays;
+      }
+      if (Number.isFinite(row.points_for) && Number.isFinite(row.points_against) && Number(row.points_for) >= 0 && Number(row.points_against) >= 0) {
+        entry.pfSum += Number(row.points_for);
+        entry.paSum += Number(row.points_against);
+        entry.scoredGames += 1;
+      }
+    }
+
+    function computeTeamAggregates(season, beforeWeek) {
+      const aggregates = {};
+      let leagueOffSum = 0;
+      let leagueOffPlays = 0;
+      let leagueDefSum = 0;
+      let leagueDefPlays = 0;
+
+      const addGame = (teamRow, opponentRow) => {
+        if (!aggregates[teamRow.team]) {
+          aggregates[teamRow.team] = {
+            offSum: 0, offPlays: 0, defSum: 0, defPlays: 0, games: 0,
+            pfSum: 0, paSum: 0, scoredGames: 0,
+            oppDefSum: 0, oppDefPlays: 0,
+            oppOffSum: 0, oppOffPlays: 0,
+          };
+        }
+        const entry = aggregates[teamRow.team];
+        entry.games += 1;
+        addTeamTotals(entry, teamRow);
+
+        if (Number.isFinite(opponentRow?.def_epa_pp) && Number.isFinite(teamRow.off_plays)) {
+          const oppDefVal = defStrength(opponentRow.def_epa_pp);
+          entry.oppDefSum += oppDefVal * teamRow.off_plays;
+          entry.oppDefPlays += teamRow.off_plays;
+        }
+        if (Number.isFinite(opponentRow?.off_epa_pp) && Number.isFinite(teamRow.def_plays)) {
+          entry.oppOffSum += opponentRow.off_epa_pp * teamRow.def_plays;
+          entry.oppOffPlays += teamRow.def_plays;
+        }
+      };
+
+      games.forEach((game) => {
+        if (Number(game.season) !== Number(season)) return;
+        if (Number(game.week) >= Number(beforeWeek)) return;
+        const [teamA, teamB] = game.teams || [];
+        if (!teamA || !teamB) return;
+        addGame(teamA, teamB);
+        addGame(teamB, teamA);
+      });
+
+      const ratings = {};
+      Object.entries(aggregates).forEach(([team, entry]) => {
+        const offEPA = entry.offPlays > 0 ? entry.offSum / entry.offPlays : null;
+        const defEPA = entry.defPlays > 0 ? entry.defSum / entry.defPlays : null;
+        const avgOppDefEPA = entry.oppDefPlays > 0 ? entry.oppDefSum / entry.oppDefPlays : null;
+        const avgOppOffEPA = entry.oppOffPlays > 0 ? entry.oppOffSum / entry.oppOffPlays : null;
+        const playsPerGame = entry.games > 0 ? entry.offPlays / entry.games : null;
+        const avgPF = entry.scoredGames > 0 ? entry.pfSum / entry.scoredGames : null;
+        const avgPA = entry.scoredGames > 0 ? entry.paSum / entry.scoredGames : null;
+        ratings[team] = { offEPA, defEPA, offPlays: entry.offPlays, defPlays: entry.defPlays, games: entry.games, playsPerGame, avgPF, avgPA, avgOppDefEPA, avgOppOffEPA };
+
+        if (Number.isFinite(offEPA) && entry.offPlays > 0) {
+          leagueOffSum += offEPA * entry.offPlays;
+          leagueOffPlays += entry.offPlays;
+        }
+        if (Number.isFinite(defEPA) && entry.defPlays > 0) {
+          leagueDefSum += defEPA * entry.defPlays;
+          leagueDefPlays += entry.defPlays;
+        }
+      });
+
+      const leagueAvgOffEPA = leagueOffPlays > 0 ? leagueOffSum / leagueOffPlays : null;
+      const leagueAvgDefEPA = leagueDefPlays > 0 ? leagueDefSum / leagueDefPlays : null;
+
+      return { ratings, leagueAvgOffEPA, leagueAvgDefEPA };
+    }
+
+    function computeSOSAdjustedRatings(baseRatings, leagueAvgOffEPA, leagueAvgDefEPA) {
+      const adjusted = {};
+      Object.entries(baseRatings).forEach(([team, rating]) => {
+        const hasInputs = [rating.offEPA, rating.defEPA, rating.avgOppDefEPA, rating.avgOppOffEPA, leagueAvgOffEPA, leagueAvgDefEPA].every(Number.isFinite);
+        adjusted[team] = {
+          ...rating,
+          adjOffEPA: hasInputs ? rating.offEPA + rating.avgOppDefEPA - leagueAvgDefEPA : null,
+          adjDefEPA: hasInputs ? rating.defEPA + rating.avgOppOffEPA - leagueAvgOffEPA : null,
+        };
+      });
+      return adjusted;
+    }
+
+    function computeModelLine(teamA, teamB, ratings, mode) {
+      const a = ratings?.[teamA] || {};
+      const b = ratings?.[teamB] || {};
+      const aOff = mode === 'sos' ? a.adjOffEPA : a.offEPA;
+      const aDef = mode === 'sos' ? a.adjDefEPA : a.defEPA;
+      const bOff = mode === 'sos' ? b.adjOffEPA : b.offEPA;
+      const bDef = mode === 'sos' ? b.adjDefEPA : b.defEPA;
+
+      const aNet = (Number.isFinite(aOff) && Number.isFinite(aDef)) ? (aOff + aDef) : null;
+      const bNet = (Number.isFinite(bOff) && Number.isFinite(bDef)) ? (bOff + bDef) : null;
+
+      const plays = (Number.isFinite(a.playsPerGame) && Number.isFinite(b.playsPerGame))
+        ? (a.playsPerGame + b.playsPerGame) / 2
+        : 65;
+
+      let spreadText = '—';
+      if (Number.isFinite(aNet) && Number.isFinite(bNet)) {
+        const margin = (aNet - bNet) * plays;
+        const fav = margin >= 0 ? teamA : teamB;
+        const pts = roundHalf(Math.abs(margin));
+        spreadText = `${fav} -${pts.toFixed(1)}`;
+      }
+
+      let totalText = '—';
+      if (Number.isFinite(a.avgPF) && Number.isFinite(a.avgPA) && Number.isFinite(b.avgPF) && Number.isFinite(b.avgPA)) {
+        const predA = (a.avgPF + b.avgPA) / 2;
+        const predB = (b.avgPF + a.avgPA) / 2;
+        totalText = (predA + predB).toFixed(1);
+      }
+
+      return { spreadText, totalText };
+    }
+
+    function detailLine(label, value, plays) {
+      const vol = Number.isFinite(plays) ? `${plays} plays` : 'n/a plays';
+      return `${label}: ${formatNumber(value)} (${vol})`;
+    }
+
+    function toneFromEdge(edge) {
+      if (!Number.isFinite(edge)) return 'neutral';
+      if (edge > 0.05) return 'offense';
+      if (edge < -0.05) return 'defense';
+      return 'neutral';
+    }
+
+    function hasEnoughData(value, plays) {
+      return Number.isFinite(value) && Number.isFinite(plays) && plays >= MIN_PLAYS;
+    }
+
+    function buildTeamRow(team, opponent, ratings, mode, leagueScale) {
+      const card = document.createElement('div');
+      card.className = 'matchup-card';
+
+      const header = document.createElement('div');
+      header.className = 'matchup-row';
+
+      const left = document.createElement('div');
+      const leftTeam = document.createElement('div');
+      leftTeam.className = 'team';
+      leftTeam.innerHTML = `<div class="logo">${team.team}</div><div><div class="name">${team.team}</div><div class="record">Week ${team.week}</div></div>`;
+
+      const rightTeam = document.createElement('div');
+      rightTeam.className = 'team';
+      rightTeam.innerHTML = `<div class="logo">${opponent.team}</div><div><div class="name">${opponent.team}</div><div class="record">Week ${opponent.week}</div></div>`;
+
+      const teamMetrics = document.createElement('div');
+      teamMetrics.className = 'metrics';
+      const offEPA = (mode === 'sos' ? ratings?.[team.team]?.adjOffEPA : ratings?.[team.team]?.offEPA) ?? null;
+      const defEPA = (mode === 'sos' ? ratings?.[team.team]?.adjDefEPA : ratings?.[team.team]?.defEPA) ?? null;
+      const oppDefEPA = (mode === 'sos' ? ratings?.[opponent.team]?.adjDefEPA : ratings?.[opponent.team]?.defEPA) ?? null;
+
+      const hasEdgeInputs = hasEnoughData(offEPA, ratings?.[team.team]?.offPlays) && hasEnoughData(oppDefEPA, ratings?.[opponent.team]?.defPlays);
+      const edge = hasEdgeInputs ? offEPA - oppDefEPA : null;
+      const tone = toneFromEdge(edge);
+
+      const pill = document.createElement('span');
+      pill.className = `pill ${hasEdgeInputs ? tone : 'missing'}`;
+      pill.textContent = hasEdgeInputs ? (tone === 'offense' ? 'Offense edge' : (tone === 'defense' ? 'Defense edge' : 'No clear edge')) : 'Insufficient data';
+
+      const detail = document.createElement('div');
+      detail.innerHTML = [
+        detailLine('Off EPA/play', offEPA, ratings?.[team.team]?.offPlays),
+        detailLine('Def EPA/play (higher = better defense)', defEPA, ratings?.[team.team]?.defPlays),
+        `Edge vs ${opponent.team} defense: ${formatNumber(edge)}`,
+      ].join('<br>');
+
+      teamMetrics.appendChild(pill);
+      teamMetrics.appendChild(buildDumbbell(offEPA, defEPA, leagueScale, hasEdgeInputs ? tone : 'neutral'));
+      teamMetrics.appendChild(detail);
+
+      left.appendChild(leftTeam);
+      left.appendChild(teamMetrics);
+
+      const oppMetrics = document.createElement('div');
+      oppMetrics.className = 'metrics';
+      const oppOffEPA = (mode === 'sos' ? ratings?.[opponent.team]?.adjOffEPA : ratings?.[opponent.team]?.offEPA) ?? null;
+      const oppDefEPA2 = oppDefEPA;
+      const myDefEPA = (mode === 'sos' ? ratings?.[team.team]?.adjDefEPA : ratings?.[team.team]?.defEPA) ?? null;
+
+      const oppHasEdge = hasEnoughData(oppOffEPA, ratings?.[opponent.team]?.offPlays) && hasEnoughData(myDefEPA, ratings?.[team.team]?.defPlays);
+      const oppEdge = oppHasEdge ? oppOffEPA - myDefEPA : null;
+      const oppTone = toneFromEdge(oppEdge);
+
+      const oppPill = document.createElement('span');
+      oppPill.className = `pill ${oppHasEdge ? oppTone : 'missing'}`;
+      oppPill.textContent = oppHasEdge ? (oppTone === 'offense' ? 'Offense edge' : (oppTone === 'defense' ? 'Defense edge' : 'No clear edge')) : 'Insufficient data';
+
+      const oppDetail = document.createElement('div');
+      oppDetail.innerHTML = [
+        detailLine('Off EPA/play', oppOffEPA, ratings?.[opponent.team]?.offPlays),
+        detailLine('Def EPA/play (higher = better defense)', oppDefEPA2, ratings?.[opponent.team]?.defPlays),
+        `Edge vs ${team.team} defense: ${formatNumber(oppEdge)}`,
+      ].join('<br>');
+
+      oppMetrics.appendChild(oppPill);
+      oppMetrics.appendChild(buildDumbbell(oppOffEPA, oppDefEPA2, leagueScale, oppHasEdge ? oppTone : 'neutral'));
+      oppMetrics.appendChild(oppDetail);
+
+      rightTeam.appendChild(oppMetrics);
+
+      header.appendChild(left);
+      header.appendChild(rightTeam);
+      card.appendChild(header);
+
+      return card;
+    }
+
+    function buildOddsRow(game, ratings, mode, ratingWeekText) {
+      const odds = getOdds(game.game_id, game.season, game.week);
+      const oddsRow = document.createElement('div');
+      oddsRow.className = 'odds';
+      const spreadNum = Number(odds?.spread);
+      const totalNum = Number(odds?.total);
+      const hasMarket = odds?.spread_team && Number.isFinite(spreadNum) && Number.isFinite(totalNum);
+      if (hasMarket) {
+        const spreadValue = `${odds.spread_team} ${spreadNum > 0 ? '+' : ''}${spreadNum}`;
+        const totalValue = totalNum.toFixed(1);
+        const metaParts = [];
+        if (odds?.source) metaParts.push(`Lines: ${odds.source}`);
+        if (odds?.updated_at) metaParts.push(`updated ${odds.updated_at}`);
+        const metaText = metaParts.length ? metaParts.join(' · ') : '';
+        oddsRow.innerHTML = `<span>Spread: ${spreadValue}</span><span>O/U: ${totalValue}</span>${metaText ? `<span class="odds-meta">${metaText}</span>` : ''}`;
+      } else {
+        const teamA = game.teams?.[0]?.team;
+        const teamB = game.teams?.[1]?.team;
+        const model = (teamA && teamB) ? computeModelLine(teamA, teamB, ratings, mode) : { spreadText: '—', totalText: '—' };
+        oddsRow.innerHTML = `<span>Model spread: ${model.spreadText}</span><span>Model total: ${model.totalText}</span><span class="odds-meta">Model uses EPA + prior scoring through Week ${ratingWeekText}</span>`;
+      }
+      return oddsRow;
+    }
+
+    function getOdds(gameId, season, week) {
+      return (oddsPayload?.odds || []).find((o) => o.game_id === gameId && Number(o.season) === Number(season) && Number(o.week) === Number(week));
+    }
+
+    function populateSelectors() {
+      const seasons = Array.from(new Set(games.map((g) => Number(g.season)))).sort((a, b) => b - a);
+      const seasonSelect = document.getElementById('seasonSelect');
+      seasonSelect.innerHTML = seasons.map((s) => `<option value="${s}">${s}</option>`).join('');
+      const latest = seasons[0];
+      const weeks = Array.from(new Set(games.filter((g) => Number(g.season) === Number(latest)).map((g) => Number(g.week)))).sort((a, b) => a - b);
+      const weekSelect = document.getElementById('weekSelect');
+      weekSelect.innerHTML = weeks.map((w) => `<option value="${w}">${w}</option>`).join('');
+      if (weeks.length) weekSelect.value = weeks[weeks.length - 1];
+    }
+
+    function render() {
+      const season = Number(document.getElementById('seasonSelect').value);
+      const week = Number(document.getElementById('weekSelect').value);
+      const mode = document.getElementById('modeSelect').value;
+      const msgBox = document.getElementById('messages');
+      msgBox.innerHTML = '';
+      const messages = [];
+      const matchups = document.getElementById('matchups');
+      matchups.innerHTML = '';
+
+      const seasonGames = games.filter((g) => Number(g.season) === season && Number(g.week) === week);
+      if (!seasonGames.length) {
+        msgBox.innerHTML = '<div class="message">No games available for this selection.</div>';
+        return;
+      }
+
+      const ratingCutoffWeek = week - 1;
+      const ratingWeekText = ratingCutoffWeek >= 0 ? ratingCutoffWeek : 0;
+      const { ratings: baseRatings, leagueAvgOffEPA, leagueAvgDefEPA } = computeTeamAggregates(season, week);
+      const ratings = mode === 'sos' ? computeSOSAdjustedRatings(baseRatings, leagueAvgOffEPA, leagueAvgDefEPA) : baseRatings;
+      const leagueScale = computeLeagueScale(ratings, mode);
+
+      const corrPairs = Object.values(baseRatings).filter((r) => Number.isFinite(r.defEPA) && Number.isFinite(r.avgPA));
+      const corr = computeCorrelation(
+        corrPairs.map((r) => r.defEPA),
+        corrPairs.map((r) => r.avgPA),
+      );
+
+      const weeksLabel = Array.from(new Set(games.filter((g) => Number(g.season) === season).map((g) => Number(g.week)))).sort((a, b) => a - b).join(', ');
+      const metaEl = document.getElementById('meta');
+      const weekDescriptor = week === 1 ? 'through Week 0 (no prior games)' : `through Week ${ratingWeekText}`;
+      const defModeText = DEF_EPA_IS_ALLOWED ? 'Defense metric: allowed (inverted to strength)' : 'Defense metric: strength';
+      const metaBits = [
+        `Weeks available: ${weeksLabel}`,
+        `Ratings use games ${weekDescriptor} (${mode === 'sos' ? 'opponent-adjusted' : 'raw'} EPA/play)`,
+      ];
+      const buildMeta = [];
+      if (dataMeta.generated_at) buildMeta.push(`Data: ${dataMeta.generated_at}`);
+      if (dataMeta.git_sha) buildMeta.push(`${String(dataMeta.git_sha).slice(0, 7)}`);
+      const metaSuffix = buildMeta.length ? ` · ${buildMeta.join(' · ')}` : '';
+      metaEl.textContent = `${metaBits.join('. ')}. Edge = OffEPA - OppDefEPA (defense higher=better; ${defModeText}). Scale: ${leagueScale.min.toFixed(3)} to ${leagueScale.max.toFixed(3)} (${leagueScale.label}).${metaSuffix}`;
+
+      seasonGames.forEach((game) => {
+        const card = buildTeamRow(game.teams[0], game.teams[1], ratings, mode, leagueScale);
+        card.appendChild(buildOddsRow(game, ratings, mode, ratingWeekText));
+        matchups.appendChild(card);
+      });
+
+      if (corr !== null && corr > 0) {
+        messages.push(`<div class="message">Defense sign may be inverted; check DEF_EPA_IS_ALLOWED setting. Correlation(defEPA strength vs avg points allowed) = ${corr.toFixed(3)}.</div>`);
+      }
+      if (week === 1) {
+        messages.push('<div class="message">Week 1 selected: ratings use prior weeks only, so most teams will show insufficient data.</div>');
+      } else if (oddsPayload && !(oddsPayload.odds || []).some((o) => Number(o.season) === Number(season) && Number(o.week) === Number(week))) {
+        messages.push('<div class="message">Market lines unavailable; showing model estimates.</div>');
+      }
+      msgBox.innerHTML = messages.join('');
+    }
+
+    async function refreshData() {
+      const btn = document.getElementById('refreshBtn');
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Refreshing…';
+      try {
+        const [epaData, oddsData] = await Promise.all([
+          fetchJSON(epaPath),
+          fetchJSON(oddsPath).catch(() => ({ odds: [] })),
+        ]);
+        games = normalizeGames(epaData);
+        dataMeta = {
+          generated_at: epaData?.generated_at,
+          git_sha: epaData?.git_sha,
+        };
+        oddsPayload = normalizeOdds(oddsData);
+        populateSelectors();
+        render();
+      } catch (err) {
+        document.getElementById('messages').innerHTML = `<div class="message">${err.message}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', refreshData);
+    document.getElementById('seasonSelect').addEventListener('change', render);
+    document.getElementById('weekSelect').addEventListener('change', render);
+    document.getElementById('modeSelect').addEventListener('change', render);
+
+    refreshData();
+  </script>
+</body>
+</html>
