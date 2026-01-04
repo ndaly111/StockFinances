@@ -75,6 +75,12 @@ def _ensure_tables(conn):
         Date TEXT, Ticker TEXT, PE_Type TEXT, PE_Ratio REAL,
         PRIMARY KEY (Date,Ticker,PE_Type)
       );
+      CREATE TABLE IF NOT EXISTS Index_EPS_History (
+        Date TEXT, Ticker TEXT, EPS_Type TEXT, EPS REAL,
+        PRIMARY KEY (Date,Ticker,EPS_Type)
+      );
+      CREATE INDEX IF NOT EXISTS idx_Index_EPS_History_ticker_type_date
+          ON Index_EPS_History (Ticker, EPS_Type, Date);
     """)
 
 def _log_today(y):
@@ -83,6 +89,18 @@ def _log_today(y):
         _ensure_tables(conn); cur = conn.cursor()
         for tk in IDXES:
             ttm_pe, fwd_pe = _fetch_pe(tk)
+            price = None
+            try:
+                price = yf.Ticker(tk).info.get("regularMarketPrice")
+            except Exception:
+                price = None
+            if price is None:
+                try:
+                    hist = yf.Ticker(tk).history(period="5d", auto_adjust=False, actions=False)
+                    if not hist.empty:
+                        price = float(hist["Close"].iloc[-1])
+                except Exception:
+                    price = None
             ttm_g, fwd_g   = _growth(ttm_pe, fwd_pe, y)
 
             if ttm_g is not None:
@@ -98,6 +116,19 @@ def _log_today(y):
             if fwd_pe is not None:
                 cur.execute("INSERT OR REPLACE INTO Index_PE_History VALUES (?,?, 'Forward', ?)",
                             (today, tk, fwd_pe))
+
+            if price is not None and ttm_pe is not None:
+                try:
+                    price_f = float(price)
+                    ttm_pe_f = float(ttm_pe)
+                    if price_f > 0 and ttm_pe_f > 0:
+                        eps = price_f / ttm_pe_f
+                        cur.execute(
+                            "INSERT OR REPLACE INTO Index_EPS_History VALUES (?,?, 'TTM', ?)",
+                            (today, tk, eps),
+                        )
+                except Exception:
+                    pass
         conn.commit()
 
 # ─── Helper: percentile without SciPy ─────────────────────
