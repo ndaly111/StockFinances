@@ -195,6 +195,75 @@ def maybe_load_sp500_index_series(db_path: str = DB_PATH) -> None:
         print(f"[SP500 loader] Loader script failed with exit code {exc.returncode}")
 
 
+def maybe_backfill_index_eps(db_path: str = DB_PATH) -> None:
+    """Backfill EPS only when the history is missing or incomplete."""
+
+    script_path = Path("scripts") / "backfill_index_eps.py"
+    if not script_path.exists():
+        print(f"[index EPS] Backfill script missing at {script_path}")
+        return
+
+    tolerance_days = 14
+
+    def _min_max(cur, ticker: str, table: str, type_col: str, type_val: str):
+        cur.execute(
+            f"SELECT MIN(Date), MAX(Date) FROM {table} WHERE Ticker=? AND {type_col}=?",
+            (ticker, type_val),
+        )
+        return cur.fetchone()
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='Index_EPS_History'"
+            )
+            eps_exists = cur.fetchone()[0] > 0
+
+            pe_ranges = {}
+            eps_ranges = {}
+            for tk in ("SPY", "QQQ"):
+                pe_ranges[tk] = _min_max(cur, tk, "Index_PE_History", "PE_Type", "TTM")
+                if eps_exists:
+                    eps_ranges[tk] = _min_max(cur, tk, "Index_EPS_History", "EPS_Type", "TTM")
+    except sqlite3.Error as exc:
+        print(f"[index EPS] Unable to inspect DB: {exc}")
+        return
+
+    def _to_date(val):
+        return datetime.strptime(val, "%Y-%m-%d").date() if val else None
+
+    def _needs_backfill(pe_pair, eps_pair):
+        pe_min, pe_max = map(_to_date, pe_pair)
+        eps_min, eps_max = map(_to_date, eps_pair) if eps_pair else (None, None)
+
+        if pe_min is None or pe_max is None:
+            return False
+        if eps_min is None or eps_max is None:
+            return True
+
+        if (eps_min - pe_min).days > tolerance_days:
+            return True
+        if (pe_max - eps_max).days > tolerance_days:
+            return True
+        return False
+
+    missing = [
+        tk
+        for tk, pe_rng in pe_ranges.items()
+        if pe_rng and _needs_backfill(pe_rng, eps_ranges.get(tk))
+    ]
+
+    if not eps_exists or missing:
+        print("[index EPS] Backfilling EPS history for:", missing or "all")
+        try:
+            subprocess.run([sys.executable, str(script_path), "--db", db_path], check=True)
+        except subprocess.CalledProcessError as exc:
+            print(f"[index EPS] Backfill failed with exit code {exc.returncode}")
+    else:
+        print("[index EPS] EPS history present; backfill skipped.")
+
+
 # ───────────────────────────────────────────────────────────
 # Segments: charts + table (canonical)
 # ───────────────────────────────────────────────────────────
@@ -278,6 +347,7 @@ def mini_main():
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
+        maybe_backfill_index_eps(DB_PATH)
         generate_earnings_tables()
         # Generate index growth charts for both SPY and QQQ so that
         # their growth pages share the same styled summaries.
