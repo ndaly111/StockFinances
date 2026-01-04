@@ -247,6 +247,7 @@ def _build_chart_block(
     percent_axis: bool,
     x_range: Range1d | None,
     callout_text: str | None = None,
+    log_axis: bool = False,
 ):
     """Return a Bokeh layout block (figure + optional callout)."""
 
@@ -261,6 +262,8 @@ def _build_chart_block(
         return placeholder
 
     series = pd.to_numeric(series, errors="coerce").dropna()
+    if log_axis:
+        series = series[series > 0]
     if series.empty:
         placeholder = Div(
             text=(
@@ -305,6 +308,7 @@ def _build_chart_block(
     fig = figure(
         title=title,
         x_axis_type="datetime",
+        y_axis_type="log" if log_axis else "linear",
         height=320,
         sizing_mode="stretch_width",
         toolbar_location="above",
@@ -431,6 +435,9 @@ def render_index_growth_charts(tk="SPY"):
         pe_s = _series_pe(conn, tk)
         eps_s = _series_eps(conn, tk)
 
+    eps_s = pd.to_numeric(eps_s, errors="coerce")
+    eps_s = eps_s[eps_s > 0].dropna()
+
     ig_plot = ig_s.copy()
     ig_ylabel = "Implied Growth Rate"
     ig_percent_axis = False
@@ -523,6 +530,7 @@ def render_index_growth_charts(tk="SPY"):
             "EPS ($)",
             False,
             common_range,
+            log_axis=True,
         )
     )
 
