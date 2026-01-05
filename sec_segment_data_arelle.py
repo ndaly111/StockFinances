@@ -146,6 +146,22 @@ OPINC_TAGS = [
     "us-gaap:OperatingIncomeLoss",
 ]
 
+
+def _classify_period(duration_days: Optional[int]) -> str | None:
+    """Classify a period based on its duration in days."""
+
+    if duration_days is None:
+        return None
+    try:
+        d = int(duration_days)
+    except Exception:
+        return None
+    if 330 <= d <= 380:
+        return "FY"
+    if 75 <= d <= 110:
+        return "Q"
+    return None
+
 # Regex helpers
 # Previously we only captured dimensions whose qualified name contained
 # “segment”.  Apple (and many other filers) report product level data using
@@ -190,6 +206,42 @@ def fetch_latest_filings(cik: str) -> Dict[str, Dict[str, str]]:
     return out
 
 
+def fetch_recent_filings(cik: str, form_type: str, limit: int = 4) -> List[Dict[str, str]]:
+    """Return metadata for the most recent ``limit`` filings of ``form_type``."""
+
+    url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+    with _sec_get(url, timeout=30) as resp:
+        j = resp.json()
+
+    recent = j.get("filings", {}).get("recent", {})
+    forms = recent.get("form", []) or []
+    report_dates = recent.get("reportDate", []) or []
+    accs = recent.get("accessionNumber", []) or []
+    docs = recent.get("primaryDocument", []) or []
+    filed = recent.get("filingDate", []) or []
+
+    out: List[Dict[str, str]] = []
+    for i, f in enumerate(forms):
+        if f != form_type:
+            continue
+        accession = (accs[i] or "").replace("-", "") if i < len(accs) else ""
+        doc = docs[i] if i < len(docs) else ""
+        filed_date = filed[i] if i < len(filed) else ""
+        report_date = report_dates[i] if i < len(report_dates) else ""
+        if accession and doc:
+            out.append(
+                {
+                    "accession": accession,
+                    "document": doc,
+                    "filed": filed_date,
+                    "reportDate": report_date,
+                }
+            )
+        if len(out) >= limit:
+            break
+    return out
+
+
 def build_filing_url(cik: str, accession_nodashes: str, primary_doc: str) -> str:
     # Example:
     # https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm
@@ -197,8 +249,15 @@ def build_filing_url(cik: str, accession_nodashes: str, primary_doc: str) -> str
     return base
 
 
+def _ix_cache_path(ticker: str, form: str, accession: str) -> Path:
+    safe_form = form.lower().replace("-", "")
+    return Path(".cache_ix") / f"{ticker}_{safe_form}_{accession}.htm"
+
+
 def download_file(url: str, out_path: Path):
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    if out_path.exists() and out_path.stat().st_size > 0:
+        return
     with _sec_get(url, timeout=60, stream=True) as r:
         with open(out_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=1 << 15):
@@ -213,7 +272,9 @@ def download_file(url: str, out_path: Path):
 def _parse_contexts_ixbrl(soup: BeautifulSoup) -> Dict[str, dict]:
     """
     Returns contextId -> {
-        'period_end': datetime,
+        'period_start': datetime | None,
+        'period_end': datetime | None,
+        'duration_days': int | None,
         'dims': {dimension_qname: member_qname}
     }
     """
@@ -231,20 +292,36 @@ def _parse_contexts_ixbrl(soup: BeautifulSoup) -> Dict[str, dict]:
             continue
 
         # period end
+        period_start = None
         period_end = None
         # <xbrli:period><xbrli:endDate>YYYY-MM-DD</xbrli:endDate>...
+        start_tag = ctx.find(lambda t: t.name and t.name.endswith("startDate"))
         end_tag = ctx.find(lambda t: t.name and t.name.endswith("endDate"))
         instant_tag = ctx.find(lambda t: t.name and t.name.endswith("instant"))
         date_text = None
+        start_text = None
+        if start_tag and start_tag.text:
+            start_text = start_tag.text.strip()
         if end_tag and end_tag.text:
             date_text = end_tag.text.strip()
         elif instant_tag and instant_tag.text:
             date_text = instant_tag.text.strip()
+        if start_text:
+            try:
+                period_start = datetime.strptime(start_text, "%Y-%m-%d")
+            except Exception:
+                period_start = None
         if date_text:
             try:
                 period_end = datetime.strptime(date_text, "%Y-%m-%d")
             except Exception:
                 period_end = None
+        duration_days = None
+        if period_start and period_end:
+            try:
+                duration_days = (period_end - period_start).days
+            except Exception:
+                duration_days = None
 
         # explicit dims
         dims = {}
@@ -256,7 +333,12 @@ def _parse_contexts_ixbrl(soup: BeautifulSoup) -> Dict[str, dict]:
                 if dim and val:
                     dims[dim] = val
 
-        contexts[cid] = {"period_end": period_end, "dims": dims}
+        contexts[cid] = {
+            "period_start": period_start,
+            "period_end": period_end,
+            "duration_days": duration_days,
+            "dims": dims,
+        }
     return contexts
 
 
@@ -338,7 +420,10 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
                 rows.append({
                     "Segment": segment_label,
                     "AxisType": axis_type,
-                    "PeriodEnd": ctx["period_end"],
+                    "PeriodStart": ctx.get("period_start"),
+                    "PeriodEnd": ctx.get("period_end"),
+                    "DurationDays": ctx.get("duration_days"),
+                    "PeriodType": _classify_period(ctx.get("duration_days")),
                     "Value": val,
                 })
 
@@ -357,21 +442,25 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
         return pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"]), rev_used, op_used
 
     # sum by segment + axis + period
-    rev_g = (
-        rev_df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)["Value"].sum()
-        if not rev_df.empty
-        else pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Value"])
-    )
-    rev_g.rename(columns={"Value": "Revenue"}, inplace=True)
+    def _agg(df: pd.DataFrame, value_col: str, out_col: str) -> pd.DataFrame:
+        if df.empty:
+            return pd.DataFrame(columns=["Segment", "AxisType", "PeriodStart", "PeriodEnd", "DurationDays", "PeriodType", out_col])
+        g = (
+            df.groupby(["Segment", "AxisType", "PeriodStart", "PeriodEnd", "DurationDays", "PeriodType"], as_index=False)[value_col]
+            .sum()
+        )
+        g.rename(columns={value_col: out_col}, inplace=True)
+        return g
 
-    op_g = (
-        op_df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)["Value"].sum()
-        if not op_df.empty
-        else pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Value"])
-    )
-    op_g.rename(columns={"Value": "OpIncome"}, inplace=True)
+    rev_g = _agg(rev_df, "Value", "Revenue")
+    op_g = _agg(op_df, "Value", "OpIncome")
 
-    df = pd.merge(rev_g, op_g, on=["Segment", "AxisType", "PeriodEnd"], how="outer")
+    df = pd.merge(
+        rev_g,
+        op_g,
+        on=["Segment", "AxisType", "PeriodStart", "PeriodEnd", "DurationDays", "PeriodType"],
+        how="outer",
+    )
     df = df.sort_values(["PeriodEnd", "AxisType", "Segment"]).reset_index(drop=True)
     return df, (rev_used or ""), (op_used or "")
 
@@ -409,7 +498,10 @@ def collect_all_segment_facts(ix_path: Path) -> pd.DataFrame:
             rows.append(
                 {
                     "Concept": cname,
-                    "PeriodEnd": ctx["period_end"],
+                    "PeriodStart": ctx.get("period_start"),
+                    "PeriodEnd": ctx.get("period_end"),
+                    "DurationDays": ctx.get("duration_days"),
+                    "PeriodType": _classify_period(ctx.get("duration_days")),
                     "Dims": dim_str,
                     "Value": val,
                 }
@@ -421,48 +513,130 @@ def collect_all_segment_facts(ix_path: Path) -> pd.DataFrame:
     return df
 
 
+def parse_ixbrl_totals(ix_path: Path) -> pd.DataFrame:
+    """Collect consolidated revenue and operating income without segment dimensions."""
+
+    html = ix_path.read_text(encoding="utf-8", errors="ignore")
+    soup = BeautifulSoup(html, "xml")
+    contexts = _parse_contexts_ixbrl(soup)
+
+    rows = []
+    for cname, col in [(REV_TAGS, "Revenue"), (OPINC_TAGS, "OpIncome")]:
+        metric_rows = []
+        for concept in cname:
+            facts = soup.find_all("nonFraction", attrs={"name": concept})
+            if not facts:
+                continue
+            for fact in facts:
+                ctx_id = fact.get("contextRef")
+                if not ctx_id or ctx_id not in contexts:
+                    continue
+                ctx = contexts[ctx_id]
+                dims = ctx.get("dims") or {}
+                if any(_SEGMENT_DIM_RE.search(d) for d in dims.keys()):
+                    # only consolidated facts (no segment-like dims)
+                    continue
+                val = _scale_and_sign(
+                    fact.text,
+                    fact.get("decimals"),
+                    fact.get("scale"),
+                    fact.get("sign"),
+                )
+                if val is None:
+                    continue
+                metric_rows.append(
+                    {
+                        "Concept": concept,
+                        "Metric": col,
+                        "PeriodStart": ctx.get("period_start"),
+                        "PeriodEnd": ctx.get("period_end"),
+                        "DurationDays": ctx.get("duration_days"),
+                        "PeriodType": _classify_period(ctx.get("duration_days")),
+                        col: val,
+                    }
+                )
+            if metric_rows:
+                break
+        rows.extend(metric_rows)
+
+    if not rows:
+        return pd.DataFrame(columns=["PeriodStart", "PeriodEnd", "DurationDays", "PeriodType", "Revenue", "OpIncome"])
+
+    df = pd.DataFrame(rows)
+    # pivot by metric
+    rev_df = df[df["Metric"] == "Revenue"][
+        ["PeriodStart", "PeriodEnd", "DurationDays", "PeriodType", "Revenue"]
+    ].copy()
+    op_df = df[df["Metric"] == "OpIncome"][
+        ["PeriodStart", "PeriodEnd", "DurationDays", "PeriodType", "OpIncome"]
+    ].copy()
+    merged = rev_df.merge(
+        op_df,
+        on=["PeriodStart", "PeriodEnd", "DurationDays", "PeriodType"],
+        how="outer",
+    )
+    merged = merged.dropna(subset=["PeriodEnd"])
+    merged["Year"] = merged["PeriodEnd"].dt.year
+    return merged
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # TTM and public API
 # ──────────────────────────────────────────────────────────────────────────────
 
+
+def _select_current_quarter_rows(df: pd.DataFrame, report_date: str | None) -> pd.DataFrame:
+    """Return only the current-quarter rows from a single 10-Q filing."""
+
+    if df is None or df.empty:
+        return df
+    q = df[df.get("PeriodType") == "Q"].copy()
+    if q.empty:
+        return q
+
+    if report_date:
+        try:
+            rd = datetime.strptime(report_date, "%Y-%m-%d")
+            q2 = q[q["PeriodEnd"].dt.date == rd.date()]
+            if not q2.empty:
+                return q2
+        except Exception:
+            pass
+
+    max_end = q["PeriodEnd"].max()
+    return q[q["PeriodEnd"] == max_end]
+
+
 def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    TTM ≈ latest FY + latest Q - same Q of prior FY, per segment.
-    Requires PeriodEnd present (use before dropping it).
-    """
-    if fy_df.empty or q_df.empty:
-        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
+    """TTM = sum of the last 4 distinct quarters (as reported)."""
 
-    latest_q_date = q_df["PeriodEnd"].max()
-    if pd.isna(latest_q_date):
-        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
+    if q_df.empty:
+        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome", "PeriodType"])
 
-    # derive “same quarter last year” by month/day offset of ~1 year
-    prior_year_same_q_date = latest_q_date.replace(year=latest_q_date.year - 1)
+    quarters = q_df[q_df.get("PeriodType") == "Q"].copy()
+    if quarters.empty:
+        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome", "PeriodType"])
 
-    fy_last = fy_df[fy_df["PeriodEnd"] == fy_df["PeriodEnd"].max()]
-    q_latest = q_df[q_df["PeriodEnd"] == latest_q_date]
-    q_prev = q_df[q_df["PeriodEnd"] == prior_year_same_q_date]
+    rows = []
+    for (seg, axis), g in quarters.groupby(["Segment", "AxisType"]):
+        g = g.sort_values("PeriodEnd").dropna(subset=["PeriodEnd"])
+        if len(g) < 4:
+            continue
+        latest_four = g.tail(4)
+        rev_sum = latest_four["Revenue"].sum(min_count=1)
+        oi_sum = latest_four["OpIncome"].sum(min_count=1)
+        rows.append(
+            {
+                "Segment": seg,
+                "AxisType": axis,
+                "Year": "TTM",
+                "Revenue": rev_sum,
+                "OpIncome": oi_sum,
+                "PeriodType": "TTM",
+            }
+        )
 
-    def _sum_cols(g: pd.DataFrame) -> pd.DataFrame:
-        if g.empty:
-            return pd.DataFrame(columns=["Segment", "AxisType", "Revenue", "OpIncome"])
-        s = g.groupby(["Segment", "AxisType"], as_index=False)[["Revenue", "OpIncome"]].sum()
-        return s
-
-    ttm = _sum_cols(fy_last).merge(_sum_cols(q_latest), on=["Segment", "AxisType"], how="outer", suffixes=("_FY", "_Q"))
-    ttm = ttm.merge(_sum_cols(q_prev), on=["Segment", "AxisType"], how="left")
-    ttm.rename(columns={"Revenue": "Revenue_prevQ", "OpIncome": "OpIncome_prevQ"}, inplace=True)
-
-    # Fill NaNs with 0 for arithmetic
-    for col in ["Revenue_FY", "OpIncome_FY", "Revenue_Q", "OpIncome_Q", "Revenue_prevQ", "OpIncome_prevQ"]:
-        if col in ttm.columns:
-            ttm[col] = ttm[col].fillna(0.0)
-
-    ttm["Revenue"] = ttm["Revenue_FY"] + ttm["Revenue_Q"] - ttm["Revenue_prevQ"]
-    ttm["OpIncome"] = ttm["OpIncome_FY"] + ttm["OpIncome_Q"] - ttm["OpIncome_prevQ"]
-    ttm["Year"] = "TTM"
-    return ttm[["Segment", "AxisType", "Year", "Revenue", "OpIncome"]]
+    return pd.DataFrame(rows, columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome", "PeriodType"])
 
 
 def get_segment_data(
@@ -493,7 +667,7 @@ def get_segment_data(
     cik = resolve_ticker_to_cik(ticker)
     filings = fetch_latest_filings(cik)
     ten_k = filings.get("10-K")
-    ten_q = filings.get("10-Q")
+    ten_qs = fetch_recent_filings(cik, "10-Q", limit=4)
 
     rev_used = ""
     op_used = ""
@@ -501,12 +675,12 @@ def get_segment_data(
 
     # Download iXBRL HTMLs and parse
     with pd.option_context("display.width", 200):
-        k_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"])
-        q_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"])
+        k_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodStart", "PeriodEnd", "DurationDays", "PeriodType", "Revenue", "OpIncome"])
+        q_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodStart", "PeriodEnd", "DurationDays", "PeriodType", "Revenue", "OpIncome"])
 
         if ten_k:
             url_k = build_filing_url(cik, ten_k["accession"], ten_k["document"])
-            k_path = Path(".cache_ix") / f"{ticker}_10k.htm"
+            k_path = _ix_cache_path(ticker, "10-K", ten_k["accession"])
             download_file(url_k, k_path)
             k_raw, k_rev_used, k_op_used = parse_ixbrl_segments(k_path)
             if not k_raw.empty:
@@ -516,17 +690,23 @@ def get_segment_data(
             if dump_raw:
                 raw_facts.append(collect_all_segment_facts(k_path))
 
-        if ten_q:
-            url_q = build_filing_url(cik, ten_q["accession"], ten_q["document"])
-            q_path = Path(".cache_ix") / f"{ticker}_10q.htm"
+        q_dfs: List[pd.DataFrame] = []
+        for q_meta in ten_qs:
+            url_q = build_filing_url(cik, q_meta["accession"], q_meta["document"])
+            q_path = _ix_cache_path(ticker, "10-Q", q_meta["accession"])
             download_file(url_q, q_path)
             q_raw, q_rev_used, q_op_used = parse_ixbrl_segments(q_path)
             if not q_raw.empty:
                 rev_used = rev_used or q_rev_used
                 op_used = op_used or q_op_used
-                q_df = q_raw
+                q_curr = _select_current_quarter_rows(q_raw, q_meta.get("reportDate"))
+                if not q_curr.empty:
+                    q_dfs.append(q_curr)
             if dump_raw:
                 raw_facts.append(collect_all_segment_facts(q_path))
+
+        if q_dfs:
+            q_df = pd.concat(q_dfs, ignore_index=True)
 
     if dump_raw:
         raw_df = (
@@ -576,31 +756,32 @@ def get_segment_data(
     def _roll(df: pd.DataFrame) -> pd.DataFrame:
         if df.empty:
             return df
-        g = df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]].sum()
+        g = (
+            df.groupby(
+                ["Segment", "AxisType", "PeriodStart", "PeriodEnd", "DurationDays", "PeriodType"],
+                as_index=False,
+            )[["Revenue", "OpIncome"]]
+            .sum()
+        )
         g["Year"] = g["PeriodEnd"].dt.year
         return g
 
     k_roll = _roll(k_y)
     q_roll = _roll(q_y)
 
-    # Keep last 3 fiscal-year ends from 10-K side (if present), else from 10-Q
-    source_for_years = k_roll if not k_roll.empty else q_roll
-    years = sorted(source_for_years["Year"].unique())[-3:] if not source_for_years.empty else []
-    fy = source_for_years[source_for_years["Year"].isin(years)][["Segment", "AxisType", "Year", "Revenue", "OpIncome"]].copy()
+    fy_candidates = k_roll if not k_roll.empty else q_roll
+    fy = fy_candidates[fy_candidates.get("PeriodType") == "FY"]
+    years = sorted(fy["Year"].dropna().unique())[-3:] if not fy.empty else []
+    fy = fy[fy["Year"].isin(years)][["Segment", "AxisType", "Year", "Revenue", "OpIncome", "PeriodType"]].copy()
 
-    # Compute TTM if we have both annual + quarterly dates
-    ttm = (
-        compute_segment_ttm(k_df if not k_df.empty else q_df, q_df)
-        if not q_df.empty
-        else pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
-    )
+    ttm = compute_segment_ttm(k_df if not k_df.empty else q_df, q_df)
 
     out = pd.concat([fy, ttm], ignore_index=True)
     if out.empty:
-        out = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType"])
+        out = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType", "PeriodType"])
     else:
         # Sum duplicates (same Segment-Year-Axis)
-        out = out.groupby(["Segment", "AxisType", "Year"], as_index=False)[["Revenue", "OpIncome"]].sum()
+        out = out.groupby(["Segment", "AxisType", "Year", "PeriodType"], as_index=False)[["Revenue", "OpIncome"]].sum()
         def _yrkey(y):
             return 9999 if y == "TTM" else int(y)
         out["__k"] = out["Year"].map(_yrkey)
@@ -610,7 +791,7 @@ def get_segment_data(
             .reset_index(drop=True)
         )
 
-    out = out[["Segment", "Year", "Revenue", "OpIncome", "AxisType"]]
+    out = out[["Segment", "Year", "Revenue", "OpIncome", "AxisType", "PeriodType"]]
 
     out.attrs["revenue_concept"] = rev_used
     out.attrs["op_income_concept"] = op_used
@@ -624,6 +805,39 @@ def get_segment_data(
         pass  # fail-open: do not break runs due to overrides
 
     return out
+
+
+def get_company_totals(ticker: str) -> pd.DataFrame:
+    """Return consolidated revenue and operating income (no segment dimensions)."""
+
+    cik = resolve_ticker_to_cik(ticker)
+    filings = fetch_latest_filings(cik)
+    ten_k = filings.get("10-K")
+    ten_q = filings.get("10-Q")
+
+    frames = []
+    if ten_k:
+        url_k = build_filing_url(cik, ten_k["accession"], ten_k["document"])
+        k_path = _ix_cache_path(ticker, "10-K", ten_k["accession"])
+        download_file(url_k, k_path)
+        frames.append(parse_ixbrl_totals(k_path))
+    if ten_q:
+        url_q = build_filing_url(cik, ten_q["accession"], ten_q["document"])
+        q_path = _ix_cache_path(ticker, "10-Q", ten_q["accession"])
+        download_file(url_q, q_path)
+        frames.append(parse_ixbrl_totals(q_path))
+
+    if not frames:
+        return pd.DataFrame(columns=["Year", "Revenue", "OpIncome", "PeriodType"])
+
+    df = pd.concat(frames, ignore_index=True)
+    if df.empty:
+        return pd.DataFrame(columns=["Year", "Revenue", "OpIncome", "PeriodType"])
+
+    df = df.sort_values(["PeriodEnd"], ascending=False)
+    # keep last observation per year/period type
+    df = df.drop_duplicates(subset=["Year", "PeriodType"], keep="first")
+    return df[["Year", "Revenue", "OpIncome", "PeriodType"]]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
