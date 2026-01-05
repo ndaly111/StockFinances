@@ -35,7 +35,7 @@ import matplotlib
 matplotlib.use("Agg")  # headless-safe for CI
 import matplotlib.pyplot as plt
 
-from sec_segment_data_arelle import get_segment_data
+from sec_segment_data_arelle import get_segment_data, get_company_totals
 try:
     from sec_segment_data_arelle import dump_item2_axis_ranking
 except Exception:
@@ -125,6 +125,72 @@ def _to_float(x):
     try: return float(s)
     except: return pd.NA
 
+
+def axis_has_meaningful_oi(df_axis: pd.DataFrame) -> bool:
+    if df_axis is None or df_axis.empty:
+        return False
+    oi = df_axis.get("OpIncome")
+    if oi is None:
+        return False
+    if oi.isna().all():
+        return False
+    if (oi.fillna(0) == 0).all():
+        return False
+    return True
+
+
+def _coverage(df_axis: pd.DataFrame, totals: dict, year: str | int) -> float | None:
+    try:
+        y_int = int(year)
+    except Exception:
+        return None
+    company = totals.get(y_int)
+    if not company:
+        return None
+    yr = df_axis["Year"].astype(str)
+    rev_total = df_axis[(yr == str(year)) & (df_axis.get("PeriodType") == "FY")]["Revenue"].sum(min_count=1)
+    if pd.isna(rev_total) or company.get("Revenue") in (None, 0):
+        return None
+    return float(rev_total) / float(company["Revenue"])
+
+ROLLUP_HINTS = ["total", "all", "consolidated", "elimination", "eliminations", "corporate", "unallocated"]
+
+
+def prune_overlapping_segments(df_axis: pd.DataFrame, company_rev_latest: float, tol_high: float = 1.25) -> pd.DataFrame:
+    if df_axis is None or df_axis.empty or pd.isna(company_rev_latest) or company_rev_latest == 0:
+        return df_axis
+    fy_rows = df_axis[df_axis.get("PeriodType") == "FY"].copy()
+    fy_years = [int(y) for y in fy_rows["Year"].unique() if str(y).isdigit()]
+    if not fy_years:
+        return df_axis
+    latest_year = max(fy_years)
+    latest_df = fy_rows[fy_rows["Year"] == str(latest_year)]
+    if latest_df.empty:
+        return df_axis
+    rev_latest = latest_df.groupby("Segment")["Revenue"].sum(min_count=1)
+    rev_latest = rev_latest.dropna()
+    sum_rev = rev_latest.sum()
+    if pd.isna(sum_rev) or sum_rev <= company_rev_latest * tol_high:
+        return df_axis
+
+    segments_to_consider = list(rev_latest.index)
+    def is_rollup(name: str) -> bool:
+        low = name.lower()
+        if any(h in low for h in ROLLUP_HINTS):
+            return True
+        if low.startswith("product") and len(segments_to_consider) >= 3:
+            return True
+        return False
+
+    ordered = sorted(segments_to_consider, key=lambda s: (not is_rollup(s), -rev_latest[s]))
+    current_segments = set(segments_to_consider)
+    while sum_rev > company_rev_latest * tol_high and ordered:
+        seg = ordered.pop(0)
+        current_segments.discard(seg)
+        sum_rev = rev_latest[list(current_segments)].sum()
+
+    return df_axis[df_axis["Segment"].isin(current_segments)]
+
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     """Pick a single divisor + unit label for the *whole* table."""
     if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
@@ -211,28 +277,72 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         except Exception:
             pass
 
-    axes = []
-    used_segments = set()
+    totals_df = get_company_totals(ticker)
+    totals_fy = totals_df[totals_df.get("PeriodType") == "FY"].copy()
+    totals_map = {
+        int(r["Year"]): {"Revenue": r.get("Revenue"), "OpIncome": r.get("OpIncome"), "PeriodType": r.get("PeriodType")}
+        for _, r in totals_fy.iterrows()
+        if pd.notna(r.get("Year"))
+    }
+
+    axes_ranked = []
     for axis_type, sub in df.groupby("AxisType"):
-        segs = set(sub["Segment"])
-        segs = segs - used_segments
+        segs = sorted(set(sub["Segment"]))
         if len(segs) <= 1:
             continue
-        used_segments.update(segs)
-        axes.append((axis_type, sub[sub["Segment"].isin(segs)].copy()))
-    axes = axes[:2]
+        years_fy = sorted({int(y) for y in sub[sub.get("PeriodType") == "FY"]["Year"] if str(y).isdigit()})
+        latest_year = years_fy[-1] if years_fy else None
+        company_rev_latest = totals_map.get(latest_year, {}).get("Revenue") if latest_year else None
+        cov_before = _coverage(sub, totals_map, latest_year) if latest_year else None
+        pruned_df = sub.copy()
+        if company_rev_latest is not None:
+            pruned_df = prune_overlapping_segments(sub.copy(), company_rev_latest)
+        cov_after = _coverage(pruned_df, totals_map, latest_year) if latest_year else cov_before
+        oi_ok = axis_has_meaningful_oi(sub)
+        member_penalty = -2 * max(0, len(segs) - 15)
+        score = 0
+        score += 10 * min(len(years_fy), 3)
+        score += 5 if oi_ok else 0
+        cov_for_score = cov_after if cov_after is not None else cov_before
+        if cov_for_score is not None:
+            if cov_for_score > 1.10:
+                score -= 10 * (cov_for_score - 1.10)
+            if cov_for_score < 0.80:
+                score -= 10 * (0.80 - cov_for_score)
+        score += member_penalty
+        axes_ranked.append(
+            {
+                "AxisType": axis_type,
+                "df": sub.copy(),
+                "df_pruned": pruned_df.copy(),
+                "score": score,
+                "coverage": cov_after,
+                "latest_year": latest_year,
+                "oi_ok": oi_ok,
+            }
+        )
+
+    axes_ranked = sorted(axes_ranked, key=lambda r: r["score"], reverse=True)[:2]
 
     for idx in range(1, 3):
         axis_label = f"axis{idx}"
-        if idx <= len(axes):
-            _, df_axis = axes[idx - 1]
+        if idx <= len(axes_ranked):
+            axis_info = axes_ranked[idx - 1]
+            df_axis = axis_info.get("df_pruned", axis_info["df"]).copy()
+
+            latest_year = axis_info.get("latest_year")
+
+            oi_present = axis_has_meaningful_oi(df_axis)
             all_vals = pd.concat([df_axis["Revenue"].dropna(), df_axis["OpIncome"].dropna()], ignore_index=True)
             if all_vals.empty:
                 min_y, max_y = 0.0, 0.0
             else:
                 min_y, max_y = float(all_vals.min()), float(all_vals.max())
-                if min_y > 0: min_y = 0.0
-                if max_y < 0: max_y = 0.0
+                if min_y > 0:
+                    min_y = 0.0
+                if max_y < 0:
+                    max_y = 0.0
+            div_plot, unit_plot = _choose_scale(max(abs(min_y), abs(max_y)))
             spread = max_y - min_y
             margin = spread * 0.1 if spread else 1.0
             min_y_plot, max_y_plot = min_y - margin, max_y + margin
@@ -243,34 +353,41 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
             for seg in segments:
                 seg_df = df_axis[df_axis["Segment"] == seg]
-                revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
-                op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-                revenues_b = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
-                op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
+                revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum(min_count=1) for y in years_all]
+                op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum(min_count=1) for y in years_all]
+                revenues_b = [float(v) / div_plot if pd.notna(v) else float("nan") for v in revenues]
+                op_incomes_b = [float(v) / div_plot if pd.notna(v) else float("nan") for v in op_incomes]
 
                 fig, ax = plt.subplots(figsize=(8, 5))
                 x_indices = list(range(len(years_all)))
                 bar_width = 0.35
                 ax.bar([x - bar_width / 2 for x in x_indices], revenues_b, width=bar_width, label="Revenue")
-                ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
+                if oi_present:
+                    ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
                 ax.set_xticks(x_indices)
                 ax.set_xticklabels(years_all)
-                ax.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
-                ax.set_ylabel("Value ($B)")
+                ax.set_ylim(min_y_plot / div_plot, max_y_plot / div_plot)
+                ax.set_ylabel(f"Value ({unit_plot})")
                 ax.set_title(seg)
                 ax.yaxis.grid(True, linestyle="--", alpha=0.5)
-                ax.legend(loc="upper left")
+                if oi_present:
+                    ax.legend(loc="upper left")
                 plt.tight_layout()
                 fig_path = out_dir / f"{axis_label}_{ticker}_{seg.replace('/', '_').replace(' ', '_')}.png"
                 plt.savefig(fig_path)
                 plt.close(fig)
 
             def pv(col):
-                p = df_axis[df_axis["Year"].isin(years_tbl)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
-                return p.reindex(columns=[y for y in years_tbl if y in p.columns])
+                base = df_axis[df_axis["Year"].isin(years_tbl)].copy()
+                grouped = (
+                    base.groupby(["Segment", "Year"])[col]
+                    .sum(min_count=1)
+                    .unstack("Year")
+                )
+                return grouped.reindex(columns=[y for y in years_tbl if y in grouped.columns])
 
             rev_p = pv("Revenue")
-            oi_p  = pv("OpIncome")
+            oi_p = pv("OpIncome") if oi_present else pd.DataFrame(index=rev_p.index)
 
             sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
             if sort_col:
@@ -283,17 +400,12 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 if total_ttm and total_ttm != 0:
                     pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
-            max_val = pd.concat([rev_p, oi_p]).abs().max().max()
-            div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
-
             segment_labels = [(seg, _segment_short_label(seg)) for seg in rev_p.index]
             column_specs: List[Tuple[str, str, str | None]] = []
             for seg, label in segment_labels:
                 column_specs.append((label, "Rev", seg))
-                column_specs.append((label, "OI", seg))
-            column_specs.append(("Total", "Rev", None))
-            column_specs.append(("Total", "OI", None))
-
+                if oi_present:
+                    column_specs.append((label, "OI", seg))
             year_rows: List[dict] = []
             for year in years_tbl:
                 row: dict[str, object] = {"Year": year}
@@ -312,9 +424,36 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                     if pd.notna(raw_val):
                         totals[kind] += float(raw_val)
                         totals_present[kind] = True
-                row["Total Rev"] = totals["Rev"] if totals_present["Rev"] else pd.NA
-                row["Total OI"] = totals["OI"] if totals_present["OI"] else pd.NA
+                row["Segments Sum Rev"] = totals["Rev"] if totals_present["Rev"] else pd.NA
+                if oi_present:
+                    row["Segments Sum OI"] = totals["OI"] if totals_present["OI"] else pd.NA
+
+                company_totals = None
+                try:
+                    company_totals = totals_map.get(int(year))
+                except Exception:
+                    company_totals = None
+                row["Company Rev"] = company_totals.get("Revenue") if company_totals else pd.NA
+                if oi_present:
+                    row["Company OI"] = company_totals.get("OpIncome") if company_totals else pd.NA
+                if company_totals and company_totals.get("Revenue") not in (None, 0) and pd.notna(row.get("Segments Sum Rev")):
+                    row["Coverage"] = float(row["Segments Sum Rev"]) / float(company_totals["Revenue"])
+                else:
+                    row["Coverage"] = pd.NA
                 year_rows.append(row)
+
+            # Choose units based on all numeric cells, including company totals and segment sums
+            vals: List[float] = []
+            for r in year_rows:
+                for k, v in r.items():
+                    if k in ("Year", "Coverage") or pd.isna(v):
+                        continue
+                    try:
+                        vals.append(abs(float(v)))
+                    except Exception:
+                        continue
+            max_val = max(vals) if vals else 0.0
+            div, unit = _choose_scale(max_val)
 
             display_rows: List[dict[str, object]] = []
             for raw_row in year_rows:
@@ -322,6 +461,14 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 for label, kind, _ in column_specs:
                     key = f"{label} {kind}"
                     disp_row[key] = _fmt_scaled(raw_row.get(key, pd.NA), div, unit)
+                disp_row["Segments Sum Rev"] = _fmt_scaled(raw_row.get("Segments Sum Rev", pd.NA), div, unit)
+                if oi_present:
+                    disp_row["Segments Sum OI"] = _fmt_scaled(raw_row.get("Segments Sum OI", pd.NA), div, unit)
+                disp_row["Company Rev"] = _fmt_scaled(raw_row.get("Company Rev", pd.NA), div, unit)
+                if oi_present:
+                    disp_row["Company OI"] = _fmt_scaled(raw_row.get("Company OI", pd.NA), div, unit)
+                cov_val = raw_row.get("Coverage")
+                disp_row["Coverage"] = f"{cov_val*100:.1f}%" if pd.notna(cov_val) else "—"
                 display_rows.append(disp_row)
 
             if pct_series is not None:
@@ -336,9 +483,23 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                             pct_row[key] = f"{float(pct_val):.1f}%" if pd.notna(pct_val) else "–"
                     else:
                         pct_row[key] = "—"
+                pct_row["Segments Sum Rev"] = "100%"
+                if oi_present:
+                    pct_row["Segments Sum OI"] = "—"
+                pct_row["Company Rev"] = "—"
+                if oi_present:
+                    pct_row["Company OI"] = "—"
+                pct_row["Coverage"] = "—"
                 display_rows.append(pct_row)
 
             col_order = ["Year"] + [f"{label} {kind}" for label, kind, _ in column_specs]
+            col_order += ["Segments Sum Rev"]
+            if oi_present:
+                col_order.append("Segments Sum OI")
+            col_order.append("Company Rev")
+            if oi_present:
+                col_order.append("Company OI")
+            col_order.append("Coverage")
             out_disp = pd.DataFrame(display_rows, columns=col_order)
 
             css = """
@@ -356,10 +517,21 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 """.strip()
 
             stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            cov_now = _coverage(df_axis, totals_map, latest_year) if latest_year else None
+            coverage_note = ""
+            if cov_now is not None:
+                coverage_pct = round(cov_now * 100, 1)
+                overlap_flag = " Overlapping categories remain." if cov_now > 1.10 else ""
+                coverage_note = f" Coverage (latest FY): {coverage_pct}% of company revenue.{overlap_flag}"
+            oi_note = " Operating income columns appear only when filers disclose non-zero values."
             caption = (
                 f'<div class="table-note">{VERSION} · {stamp} — Units: <b>{unit}</b>. '
-                "Rows list fiscal years (last 3 + TTM) with revenue and operating income for each segment; "
-                'the final row shows the TTM revenue mix (operating income columns display “—” where mix is not applicable).</div>'
+                "Rows list fiscal years (last 3 + TTM) with revenue"
+                + (" and operating income" if oi_present else "")
+                + " for each segment; the final row shows the TTM revenue mix."
+                + oi_note
+                + coverage_note
+                + "</div>"
             )
             html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
             table_content = css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"
@@ -383,7 +555,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 encoding="utf-8",
             )
 
+
 # ─────────────────────────── CLI wrapper ───────────────────────────
+
 
 def main():
     parser = argparse.ArgumentParser(description="Generate segment charts and tables for a list of tickers.")
