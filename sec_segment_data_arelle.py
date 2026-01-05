@@ -427,42 +427,46 @@ def collect_all_segment_facts(ix_path: Path) -> pd.DataFrame:
 
 def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame:
     """
-    TTM ≈ latest FY + latest Q - same Q of prior FY, per segment.
-    Requires PeriodEnd present (use before dropping it).
+    TTM ≈ sum of the most recent four quarters per segment.
+
+    We combine quarterly rows from both the latest 10-Q and the most recent
+    10-K, then pick the trailing four periods per segment/axis. This ensures
+    the latest fiscal Q4 (which comes from the 10-K) is included once a
+    company has filed its annual report.
     """
-    if fy_df.empty or q_df.empty:
+    if fy_df.empty and q_df.empty:
         return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
 
-    latest_q_date = q_df["PeriodEnd"].max()
-    if pd.isna(latest_q_date):
+    quarters = pd.concat([q_df, fy_df], ignore_index=True)
+    if quarters.empty:
         return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
 
-    # derive “same quarter last year” by month/day offset of ~1 year
-    prior_year_same_q_date = latest_q_date.replace(year=latest_q_date.year - 1)
+    quarters = quarters.dropna(subset=["PeriodEnd"])
+    if quarters.empty:
+        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
 
-    fy_last = fy_df[fy_df["PeriodEnd"] == fy_df["PeriodEnd"].max()]
-    q_latest = q_df[q_df["PeriodEnd"] == latest_q_date]
-    q_prev = q_df[q_df["PeriodEnd"] == prior_year_same_q_date]
+    quarters = (
+        quarters.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]]
+        .sum()
+    )
 
-    def _sum_cols(g: pd.DataFrame) -> pd.DataFrame:
-        if g.empty:
-            return pd.DataFrame(columns=["Segment", "AxisType", "Revenue", "OpIncome"])
-        s = g.groupby(["Segment", "AxisType"], as_index=False)[["Revenue", "OpIncome"]].sum()
-        return s
+    rows = []
+    for (seg, axis), g in quarters.groupby(["Segment", "AxisType"]):
+        g = g.sort_values("PeriodEnd")
+        if len(g) < 4:
+            continue
+        latest_four = g.tail(4)
+        rows.append(
+            {
+                "Segment": seg,
+                "AxisType": axis,
+                "Year": "TTM",
+                "Revenue": latest_four["Revenue"].sum(),
+                "OpIncome": latest_four["OpIncome"].sum(),
+            }
+        )
 
-    ttm = _sum_cols(fy_last).merge(_sum_cols(q_latest), on=["Segment", "AxisType"], how="outer", suffixes=("_FY", "_Q"))
-    ttm = ttm.merge(_sum_cols(q_prev), on=["Segment", "AxisType"], how="left")
-    ttm.rename(columns={"Revenue": "Revenue_prevQ", "OpIncome": "OpIncome_prevQ"}, inplace=True)
-
-    # Fill NaNs with 0 for arithmetic
-    for col in ["Revenue_FY", "OpIncome_FY", "Revenue_Q", "OpIncome_Q", "Revenue_prevQ", "OpIncome_prevQ"]:
-        if col in ttm.columns:
-            ttm[col] = ttm[col].fillna(0.0)
-
-    ttm["Revenue"] = ttm["Revenue_FY"] + ttm["Revenue_Q"] - ttm["Revenue_prevQ"]
-    ttm["OpIncome"] = ttm["OpIncome_FY"] + ttm["OpIncome_Q"] - ttm["OpIncome_prevQ"]
-    ttm["Year"] = "TTM"
-    return ttm[["Segment", "AxisType", "Year", "Revenue", "OpIncome"]]
+    return pd.DataFrame(rows, columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
 
 
 def get_segment_data(
