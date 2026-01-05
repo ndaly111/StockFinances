@@ -182,11 +182,23 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     ensure_dir(out_dir)
 
-    # Remove any pre-existing axis1/axis2 charts or tables so outdated
-    # images don't linger when segment compositions change. This ensures
-    # the carousel only shows freshly generated charts for the current
-    # axis breakdown.
-    for pattern in ("axis1_*", "axis2_*"):
+    # Clean out stale axis artifacts (both current and legacy naming schemes).
+    # We have historically used both:
+    #   - axis1_{TICKER}_{SEG}.png  (current)
+    #   - {TICKER}_{SEG}_axis1.png  (legacy)
+    # If the old files are left behind, the site generator can pick them up and
+    # show blank/incorrect charts (e.g. axis2 PNGs even when axis2 has no data).
+    stale_patterns = [
+        # current naming
+        "axis1_*",
+        "axis2_*",
+        # legacy naming used on the site (e.g. C_Banking_axis2.png)
+        "*_axis1.png",
+        "*_axis2.png",
+        "*_axis1*.html",
+        "*_axis2*.html",
+    ]
+    for pattern in stale_patterns:
         for old_file in out_dir.glob(pattern):
             try:
                 old_file.unlink()
@@ -243,10 +255,14 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
             for seg in segments:
                 seg_df = df_axis[df_axis["Segment"] == seg]
-                revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
-                op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-                revenues_b = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
-                op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
+                revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum(min_count=1) for y in years_all]
+                op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum(min_count=1) for y in years_all]
+                revenues_b = [float(v) / 1e9 if pd.notna(v) else float("nan") for v in revenues]
+                op_incomes_b = [float(v) / 1e9 if pd.notna(v) else float("nan") for v in op_incomes]
+
+                # If there is literally nothing to plot, do not emit a PNG.
+                if all(pd.isna(v) for v in revenues) and all(pd.isna(v) for v in op_incomes):
+                    continue
 
                 fig, ax = plt.subplots(figsize=(8, 5))
                 x_indices = list(range(len(years_all)))
@@ -264,6 +280,14 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 fig_path = out_dir / f"{axis_label}_{ticker}_{seg.replace('/', '_').replace(' ', '_')}.png"
                 plt.savefig(fig_path)
                 plt.close(fig)
+
+                # Extra safety: remove tiny/blank charts so they don't get served.
+                try:
+                    if fig_path.exists() and fig_path.stat().st_size < 2048:
+                        fig_path.unlink()
+                        print(f"[{VERSION}] removed tiny/blank chart → {fig_path}")
+                except Exception:
+                    pass
 
             def pv(col):
                 p = df_axis[df_axis["Year"].isin(years_tbl)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
