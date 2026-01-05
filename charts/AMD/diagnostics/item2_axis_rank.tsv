@@ -1,3 +1,2 @@
 AxisType	AxisGroup	MembersMatched	AxisScore	Examples
-StatementBusinessSegmentsAxis	OPERATING	6	24.0	All Other, Client, Client And Gaming
-ProductOrServiceAxis	PRODUCT	2	12.0	Client, Gaming
+StatementBusinessSegmentsAxis	OPERATING	3	15.0	Client, Embedded, Gaming
