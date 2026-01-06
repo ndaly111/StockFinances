@@ -125,6 +125,25 @@ def _to_float(x):
     try: return float(s)
     except: return pd.NA
 
+
+def axis_has_meaningful_oi(df_axis: pd.DataFrame) -> bool:
+    """
+    True when OpIncome is actually disclosed (at least one non-zero, non-null value).
+    If everything is NA or 0, treat OI as not meaningful and hide it from charts/tables.
+    """
+    if df_axis is None or df_axis.empty:
+        return False
+    if "OpIncome" not in df_axis.columns:
+        return False
+    oi = df_axis["OpIncome"].dropna()
+    if oi.empty:
+        return False
+    try:
+        return (oi.astype(float).abs() > 1e-9).any()
+    except Exception:
+        # If coercion fails, fail-open (show OI rather than accidentally hiding real data)
+        return True
+
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     """Pick a single divisor + unit label for the *whole* table."""
     if not isinstance(max_abs_value, (int, float)) or math.isnan(max_abs_value) or max_abs_value == 0:
@@ -169,29 +188,41 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     """Generate charts and a compact pivot HTML table for a single ticker."""
     ticker = ticker.upper()
-    try:
-        df = get_segment_data(ticker, dump_raw=True, raw_dir=out_dir)
-    except Exception as fetch_err:
-        print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
-        ensure_dir(out_dir)
-        (out_dir / f"{ticker}_segments_table.html").write_text(
-            f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>",
-            encoding="utf-8",
-        )
-        return
 
+    # Ensure dir exists and always purge stale axis artifacts *before* fetching.
+    # If SEC fetch fails, we still want to remove old/blank PNGs so the site
+    # doesn't keep serving them.
     ensure_dir(out_dir)
 
-    # Remove any pre-existing axis1/axis2 charts or tables so outdated
-    # images don't linger when segment compositions change. This ensures
-    # the carousel only shows freshly generated charts for the current
-    # axis breakdown.
-    for pattern in ("axis1_*", "axis2_*"):
+    # Clean out stale axis artifacts (both current and legacy naming schemes).
+    # We have historically used both:
+    #   - axis1_{TICKER}_{SEG}.png  (current)
+    #   - {TICKER}_{SEG}_axis1.png  (legacy)
+    stale_patterns = [
+        # current naming
+        "axis1_*",
+        "axis2_*",
+        # legacy naming used on the site (e.g. C_Banking_axis2.png)
+        "*_axis1.png",
+        "*_axis2.png",
+        "*_axis1*.html",
+        "*_axis2*.html",
+    ]
+    for pattern in stale_patterns:
         for old_file in out_dir.glob(pattern):
             try:
                 old_file.unlink()
             except Exception:
                 pass
+    try:
+        df = get_segment_data(ticker, dump_raw=True, raw_dir=out_dir)
+    except Exception as fetch_err:
+        print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
+        (out_dir / f"{ticker}_segments_table.html").write_text(
+            f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>",
+            encoding="utf-8",
+        )
+        return
 
     if df is None or df.empty:
         (out_dir / f"{ticker}_segments_table.html").write_text(
@@ -226,7 +257,12 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         axis_label = f"axis{idx}"
         if idx <= len(axes):
             _, df_axis = axes[idx - 1]
-            all_vals = pd.concat([df_axis["Revenue"].dropna(), df_axis["OpIncome"].dropna()], ignore_index=True)
+            oi_present = axis_has_meaningful_oi(df_axis)
+
+            vals = [df_axis["Revenue"].dropna()]
+            if oi_present:
+                vals.append(df_axis["OpIncome"].dropna())
+            all_vals = pd.concat(vals, ignore_index=True)
             if all_vals.empty:
                 min_y, max_y = 0.0, 0.0
             else:
@@ -243,34 +279,53 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
             for seg in segments:
                 seg_df = df_axis[df_axis["Segment"] == seg]
-                revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum() for y in years_all]
-                op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum() for y in years_all]
-                revenues_b = [0.0 if pd.isna(v) else v / 1e9 for v in revenues]
-                op_incomes_b = [0.0 if pd.isna(v) else v / 1e9 for v in op_incomes]
+                revenues = [seg_df.loc[seg_df["Year"] == y, "Revenue"].sum(min_count=1) for y in years_all]
+                op_incomes = [seg_df.loc[seg_df["Year"] == y, "OpIncome"].sum(min_count=1) for y in years_all]
+                revenues_b = [float(v) / 1e9 if pd.notna(v) else float("nan") for v in revenues]
+                op_incomes_b = [float(v) / 1e9 if pd.notna(v) else float("nan") for v in op_incomes]
+
+                # If there is literally nothing to plot, do not emit a PNG.
+                has_rev = not all(pd.isna(v) for v in revenues)
+                has_oi = oi_present and (not all(pd.isna(v) for v in op_incomes))
+                if not has_rev and not has_oi:
+                    continue
 
                 fig, ax = plt.subplots(figsize=(8, 5))
                 x_indices = list(range(len(years_all)))
                 bar_width = 0.35
                 ax.bar([x - bar_width / 2 for x in x_indices], revenues_b, width=bar_width, label="Revenue")
-                ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
+                if oi_present:
+                    ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
                 ax.set_xticks(x_indices)
                 ax.set_xticklabels(years_all)
                 ax.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
                 ax.set_ylabel("Value ($B)")
                 ax.set_title(seg)
                 ax.yaxis.grid(True, linestyle="--", alpha=0.5)
-                ax.legend(loc="upper left")
+                if oi_present:
+                    ax.legend(loc="upper left")
                 plt.tight_layout()
                 fig_path = out_dir / f"{axis_label}_{ticker}_{seg.replace('/', '_').replace(' ', '_')}.png"
                 plt.savefig(fig_path)
                 plt.close(fig)
 
+                # Extra safety: remove tiny/blank charts so they don't get served.
+                try:
+                    if fig_path.exists() and fig_path.stat().st_size < 2048:
+                        fig_path.unlink()
+                        print(f"[{VERSION}] removed tiny/blank chart → {fig_path}")
+                except Exception:
+                    pass
+
             def pv(col):
-                p = df_axis[df_axis["Year"].isin(years_tbl)].pivot_table(index="Segment", columns="Year", values=col, aggfunc="sum")
-                return p.reindex(columns=[y for y in years_tbl if y in p.columns])
+                # IMPORTANT: pivot_table(..., sum) will turn "all missing" into 0.
+                # Use groupby.sum(min_count=1) so missing stays missing.
+                base = df_axis[df_axis["Year"].isin(years_tbl)].copy()
+                g = base.groupby(["Segment", "Year"])[col].sum(min_count=1).unstack("Year")
+                return g.reindex(columns=[y for y in years_tbl if y in g.columns])
 
             rev_p = pv("Revenue")
-            oi_p  = pv("OpIncome")
+            oi_p  = pv("OpIncome") if oi_present else pd.DataFrame(index=rev_p.index)
 
             sort_col = "TTM" if "TTM" in rev_p.columns else (rev_p.columns[-1] if len(rev_p.columns) else None)
             if sort_col:
@@ -290,9 +345,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             column_specs: List[Tuple[str, str, str | None]] = []
             for seg, label in segment_labels:
                 column_specs.append((label, "Rev", seg))
-                column_specs.append((label, "OI", seg))
+                if oi_present:
+                    column_specs.append((label, "OI", seg))
             column_specs.append(("Total", "Rev", None))
-            column_specs.append(("Total", "OI", None))
+            if oi_present:
+                column_specs.append(("Total", "OI", None))
 
             year_rows: List[dict] = []
             for year in years_tbl:
@@ -313,7 +370,8 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                         totals[kind] += float(raw_val)
                         totals_present[kind] = True
                 row["Total Rev"] = totals["Rev"] if totals_present["Rev"] else pd.NA
-                row["Total OI"] = totals["OI"] if totals_present["OI"] else pd.NA
+                if oi_present:
+                    row["Total OI"] = totals["OI"] if totals_present["OI"] else pd.NA
                 year_rows.append(row)
 
             display_rows: List[dict[str, object]] = []
@@ -356,9 +414,10 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 """.strip()
 
             stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            metric_phrase = "revenue" + (" and operating income" if oi_present else "")
             caption = (
                 f'<div class="table-note">{VERSION} · {stamp} — Units: <b>{unit}</b>. '
-                "Rows list fiscal years (last 3 + TTM) with revenue and operating income for each segment; "
+                f"Rows list fiscal years (last 3 + TTM) with {metric_phrase} for each segment; "
                 'the final row shows the TTM revenue mix (operating income columns display “—” where mix is not applicable).</div>'
             )
             html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
