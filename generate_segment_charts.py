@@ -128,20 +128,21 @@ def _to_float(x):
 
 def axis_has_meaningful_oi(df_axis: pd.DataFrame) -> bool:
     """
-    True only when OpIncome looks actually disclosed (not all NaN, not all 0).
-    This prevents TSLA/C-style pages where OI shows as 0.00 everywhere due to
-    upstream aggregation/pivot coercing missing values to 0.
+    True when OpIncome is actually disclosed (at least one non-zero, non-null value).
+    If everything is NA or 0, treat OI as not meaningful and hide it from charts/tables.
     """
     if df_axis is None or df_axis.empty:
         return False
     if "OpIncome" not in df_axis.columns:
         return False
-    oi = df_axis["OpIncome"]
-    if oi.isna().all():
+    oi = df_axis["OpIncome"].dropna()
+    if oi.empty:
         return False
-    if (oi.fillna(0).abs() < 1e-12).all():
-        return False
-    return True
+    try:
+        return (oi.astype(float).abs() > 1e-9).any()
+    except Exception:
+        # If coercion fails, fail-open (show OI rather than accidentally hiding real data)
+        return True
 
 def _choose_scale(max_abs_value: float) -> Tuple[float, str]:
     """Pick a single divisor + unit label for the *whole* table."""
