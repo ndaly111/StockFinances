@@ -183,30 +183,23 @@ def _last3_plus_ttm(years: List[str]) -> List[str]:
         out.append("TTM")
     return out
 
-# ───────────────────── main per-ticker routine ────────────────────
 
-def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
-    """Generate charts and a compact pivot HTML table for a single ticker."""
-    ticker = ticker.upper()
-
-    # Ensure dir exists and always purge stale axis artifacts *before* fetching.
-    # If SEC fetch fails, we still want to remove old/blank PNGs so the site
-    # doesn't keep serving them.
-    ensure_dir(out_dir)
-
-    # Clean out stale axis artifacts (both current and legacy naming schemes).
-    # We have historically used both:
-    #   - axis1_{TICKER}_{SEG}.png  (current)
-    #   - {TICKER}_{SEG}_axis1.png  (legacy)
+def _cleanup_stale_axis_artifacts(out_dir: Path, ticker: str) -> None:
+    """
+    Remove old segment axis PNG/HTML artifacts so the site can't pick up stale charts.
+    Targets both:
+      - current naming: axis1_{TICKER}_*.png / axis2_{TICKER}_*.png + tables
+      - legacy naming: {TICKER}_*_axis1.png / {TICKER}_*_axis2.png
+    """
     stale_patterns = [
-        # current naming
-        "axis1_*",
-        "axis2_*",
+        # current naming (restrict to this ticker for safety)
+        f"axis1_{ticker}_*",
+        f"axis2_{ticker}_*",
         # legacy naming used on the site (e.g. C_Banking_axis2.png)
-        "*_axis1.png",
-        "*_axis2.png",
-        "*_axis1*.html",
-        "*_axis2*.html",
+        f"{ticker}_*_axis1.png",
+        f"{ticker}_*_axis2.png",
+        f"{ticker}_*_axis1*.html",
+        f"{ticker}_*_axis2*.html",
     ]
     for pattern in stale_patterns:
         for old_file in out_dir.glob(pattern):
@@ -214,20 +207,53 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 old_file.unlink()
             except Exception:
                 pass
+
+
+def _write_axis_placeholders(out_dir: Path, ticker: str, message: str) -> None:
+    """
+    Ensure axis tables always exist so the Segments section never disappears
+    from the generated site when data fetch/parsing fails.
+    """
+    for idx in (1, 2):
+        (out_dir / f"axis{idx}_{ticker}_segments_table.html").write_text(
+            f"<p>{message} (axis {idx}).</p>",
+            encoding="utf-8",
+        )
+
+# ───────────────────── main per-ticker routine ────────────────────
+
+def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
+    """Generate charts and a compact pivot HTML table for a single ticker."""
+    ticker = ticker.upper()
+
+    # Ensure out_dir exists before dump_raw writes into it
+    ensure_dir(out_dir)
+
     try:
         df = get_segment_data(ticker, dump_raw=True, raw_dir=out_dir)
     except Exception as fetch_err:
         print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
+        # If we fail to fetch/parse, do NOT leave the site with no axis tables.
+        # Also clean stale charts so we don't keep serving incorrect images.
+        _cleanup_stale_axis_artifacts(out_dir, ticker)
         (out_dir / f"{ticker}_segments_table.html").write_text(
             f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>",
             encoding="utf-8",
         )
+        _write_axis_placeholders(out_dir, ticker, f"Error fetching segment data for {ticker}: {fetch_err}")
         return
+
+    ensure_dir(out_dir)
+
+    # Clean stale axis artifacts before regenerating.
+    _cleanup_stale_axis_artifacts(out_dir, ticker)
 
     if df is None or df.empty:
         (out_dir / f"{ticker}_segments_table.html").write_text(
             f"<p>No segment data available for {ticker}.</p>", encoding="utf-8"
         )
+        # Critical: keep axis tables present so the site still renders the section.
+        _write_axis_placeholders(out_dir, ticker, f"No segment data available for {ticker}")
         return
 
     df = df.copy()

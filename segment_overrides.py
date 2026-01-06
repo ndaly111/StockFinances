@@ -110,7 +110,12 @@ def apply_segment_overrides(df: pd.DataFrame, ticker: str, overrides: Dict) -> p
     axis_translate = rules.get("axis_translate", {})
     if axis_translate:
         df["Axis"] = df["Axis"].replace(axis_translate)
-        df = df.groupby(["Axis", "Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]].sum(min_count=1)
+        grp = df.groupby(["Axis", "Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]]
+        try:
+            df = grp.sum(min_count=1)
+        except TypeError:
+            # Older pandas may not support min_count on GroupBy.sum
+            df = grp.sum()
 
     # 4) Axis labels
     axis_labels = rules.get("axis_labels", {})
@@ -194,7 +199,12 @@ def apply_segment_overrides(df: pd.DataFrame, ticker: str, overrides: Dict) -> p
         apply_regex(human_str, rules, humanize=False, mask=axis_series == ax)
 
     df["Segment"] = translated.where(~translated.isna(), human)
-    df = df.groupby(["Axis", "AxisLabel", "Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]].sum(min_count=1)
+    grp = df.groupby(["Axis", "AxisLabel", "Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]]
+    try:
+        df = grp.sum(min_count=1)
+    except TypeError:
+        # Older pandas may not support min_count on GroupBy.sum
+        df = grp.sum()
 
     # 6) Axis ordering
     prefer_axes = rules.get("prefer_axes", [])

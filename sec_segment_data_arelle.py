@@ -580,7 +580,12 @@ def get_segment_data(
     def _roll(df: pd.DataFrame) -> pd.DataFrame:
         if df.empty:
             return df
-        g = df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]].sum(min_count=1)
+        grp = df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]]
+        try:
+            g = grp.sum(min_count=1)
+        except TypeError:
+            # Older pandas may not support min_count on GroupBy.sum
+            g = grp.sum()
         g["Year"] = g["PeriodEnd"].dt.year
         return g
 
@@ -604,7 +609,12 @@ def get_segment_data(
         out = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType"])
     else:
         # Sum duplicates (same Segment-Year-Axis)
-        out = out.groupby(["Segment", "AxisType", "Year"], as_index=False)[["Revenue", "OpIncome"]].sum(min_count=1)
+        grp = out.groupby(["Segment", "AxisType", "Year"], as_index=False)[["Revenue", "OpIncome"]]
+        try:
+            out = grp.sum(min_count=1)
+        except TypeError:
+            # Older pandas may not support min_count on GroupBy.sum
+            out = grp.sum()
         def _yrkey(y):
             return 9999 if y == "TTM" else int(y)
         out["__k"] = out["Year"].map(_yrkey)
