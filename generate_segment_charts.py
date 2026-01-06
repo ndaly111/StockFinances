@@ -189,8 +189,9 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     """Generate charts and a compact pivot HTML table for a single ticker."""
     ticker = ticker.upper()
 
-    # Always ensure output dir exists and always purge stale artifacts,
-    # even if the SEC fetch fails (otherwise old blank/stale PNGs linger).
+    # Ensure dir exists and always purge stale axis artifacts *before* fetching.
+    # If SEC fetch fails, we still want to remove old/blank PNGs so the site
+    # doesn't keep serving them.
     ensure_dir(out_dir)
 
     # Clean out stale axis artifacts (both current and legacy naming schemes).
