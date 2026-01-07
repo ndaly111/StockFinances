@@ -44,17 +44,47 @@ os.makedirs(OUT_DIR, exist_ok=True)
 # ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
 <style>
+.table-wrap{overflow-x:auto;}
 .summary-table{border-collapse:collapse;
-  font-family:Verdana,Arial,sans-serif;font-size:12px;
-  border:3px solid #003366;margin:0 auto;width:auto;
-  max-width:520px;}
-.summary-table th{background:#f2f2f2;padding:4px 6px;
+  font-family:Verdana,Arial,sans-serif;font-size:13px;
+  border:3px solid #003366;margin:0 auto;width:100%;
+  max-width:none;}
+.summary-table th{background:#f2f2f2;padding:6px 8px;
   border:1px solid #B0B0B0;text-align:center;white-space:nowrap;}
-.summary-table td{padding:4px 6px;border:1px solid #B0B0B0;text-align:center;}
+.summary-table td{padding:6px 8px;border:1px solid #B0B0B0;text-align:center;}
+@media (max-width: 640px){
+  .summary-table{font-size:11px;}
+}
 </style>
 """
 
 YEARS = (1, 2, 3, 5, 10)
+
+CARD_STYLE = {
+    "border": "1px solid #8080FF",
+    "border-radius": "12px",
+    "background-color": "#FFFFFF",
+    "padding": "12px",
+    "margin": "14px 0",
+}
+META_STYLE = {
+    "color": "#4b5563",
+    "font-size": "14px",
+    "margin": "6px 0 10px",
+    "line-height": "1.4",
+}
+TITLE_STYLE = {
+    "font-size": "16px",
+    "font-weight": "700",
+    "margin": "0 0 6px 0",
+}
+CONTROL_CARD_STYLE = {
+    "border": "2px inset #C0C0C0",
+    "border-radius": "12px",
+    "background-color": "#FFFFFF",
+    "padding": "10px",
+    "margin": "10px 0 16px",
+}
 
 
 @dataclass
@@ -116,6 +146,13 @@ def _pctile(s) -> str:                      # whole-number percentile
     pct  = (rank / len(s_sorted)) * 100
     return str(int(round(max(1, min(99, pct)))))
 
+def _ordinal(n: int) -> str:
+    if 10 <= n % 100 <= 13:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
 def _pct_fmt(x: float) -> str:              # 0.1923 → '19.23 %'
     return f"{x * 100:.2f} %"
 
@@ -126,6 +163,9 @@ def _format_value(val, pct: bool) -> str:
     except TypeError:  # pragma: no cover - defensive, val may be str/object
         return "N/A"
     return _pct_fmt(val) if pct else f"{val:.2f}"
+
+def _inline_style(style: dict) -> str:
+    return "; ".join(f"{key}: {val}" for key, val in style.items())
 
 
 def _rows_by_years(series: pd.Series, pct: bool = False) -> pd.DataFrame:
@@ -307,9 +347,15 @@ def _summary_sentence(label: str, summary_df: pd.DataFrame) -> str:
     max_v = row.get("Max", "N/A")
     years = row.get("Years", "")
 
+    pct_value = None
+    if percentile is not None:
+        try:
+            pct_value = int(float(str(percentile).strip()))
+        except ValueError:
+            pct_value = None
     pct_text = (
-        f"the {percentile}th percentile"
-        if percentile and str(percentile).strip("—")
+        f"the {_ordinal(pct_value)} percentile"
+        if pct_value is not None
         else "an unavailable percentile"
     )
     years_text = f"over the past {years} years" if years else "recent history"
@@ -335,15 +381,12 @@ def _build_chart_block(
     """Return a Bokeh layout block (figure + optional callout/table)."""
 
     if series is None or series.dropna().empty:
-        placeholder = Div(
-            text=(
-                f"<div class=\"metric-card\"><h3>{title}</h3>"
-                "<div class=\"chart-placeholder\">No data available.</div></div>"
-            ),
-            sizing_mode="stretch_width",
-        )
+        title_div = Div(text=title, styles=TITLE_STYLE, sizing_mode="stretch_width")
+        placeholder = Div(text="No data available.", styles=META_STYLE, sizing_mode="stretch_width")
+        layout = column(title_div, placeholder, sizing_mode="stretch_width", spacing=8)
+        layout.styles = CARD_STYLE
         return ChartBlock(
-            layout=placeholder,
+            layout=layout,
             fig=None,
             source=None,
             log_axis=log_axis,
@@ -356,15 +399,12 @@ def _build_chart_block(
     if log_axis:
         series = series[series > 0]
     if series.empty:
-        placeholder = Div(
-            text=(
-                f"<div class=\"metric-card\"><h3>{title}</h3>"
-                "<div class=\"chart-placeholder\">No data available.</div></div>"
-            ),
-            sizing_mode="stretch_width",
-        )
+        title_div = Div(text=title, styles=TITLE_STYLE, sizing_mode="stretch_width")
+        placeholder = Div(text="No data available.", styles=META_STYLE, sizing_mode="stretch_width")
+        layout = column(title_div, placeholder, sizing_mode="stretch_width", spacing=8)
+        layout.styles = CARD_STYLE
         return ChartBlock(
-            layout=placeholder,
+            layout=layout,
             fig=None,
             source=None,
             log_axis=log_axis,
@@ -479,27 +519,35 @@ def _build_chart_block(
         fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
 
     if window_div is None:
-        window_div = Div(text="", sizing_mode="stretch_width", css_classes=["metric-meta"])
+        window_div = Div(text="", sizing_mode="stretch_width")
+    window_div.styles = META_STYLE
 
-    block_children = [Div(text=f"<h3>{title}</h3>", sizing_mode="stretch_width"), fig]
+    block_children = [Div(text=title, styles=TITLE_STYLE, sizing_mode="stretch_width"), fig]
     if callout_text:
-        block_children.append(
-            Div(
-                text=f"<div class='metric-meta'>{callout_text}</div>",
-                sizing_mode="stretch_width",
-            )
-        )
+        callout_div = Div(text=callout_text, sizing_mode="stretch_width")
+        callout_div.styles = META_STYLE
+        block_children.append(callout_div)
     if window_div:
         block_children.append(window_div)
     if table_html:
-        block_children.append(
-            Div(
-                text=f"<div class='table-wrap'>{table_html}</div>",
-                sizing_mode="stretch_width",
-            )
+        table_div = Div(
+            text=f"<div class='table-wrap'>{table_html}</div>",
+            sizing_mode="stretch_width",
         )
+        table_div.visible = False
+        toggle = Toggle(label="Show table", active=False)
+        toggle.js_on_change(
+            "active",
+            CustomJS(
+                args={"tbl": table_div},
+                code="tbl.visible = cb_obj.active;",
+            ),
+        )
+        block_children.append(toggle)
+        block_children.append(table_div)
 
-    layout = column(*block_children, sizing_mode="stretch_width", spacing=8, css_classes=["metric-card"])
+    layout = column(*block_children, sizing_mode="stretch_width", spacing=8)
+    layout.styles = CARD_STYLE
     return ChartBlock(
         layout=layout,
         fig=fig,
@@ -593,9 +641,12 @@ def render_index_growth_charts(tk="SPY"):
 
     ig_table_html = _build_html(ig_summary)
     pe_table_html = _build_html(pe_summary)
+    meta_style_attr = _inline_style(META_STYLE)
     eps_table_html = (
-        "<div class='metric-meta'><strong>EPS snapshot</strong></div>" + _build_html(eps_snapshot)
-        + "<div class='metric-meta' style='margin-top:12px;'><strong>EPS growth</strong></div>" + _build_html(eps_growth)
+        f"<div style=\"{meta_style_attr}\"><strong>EPS snapshot</strong></div>"
+        + _build_html(eps_snapshot)
+        + f"<div style=\"{meta_style_attr}; margin-top:12px;\"><strong>EPS growth</strong></div>"
+        + _build_html(eps_growth)
     )
 
     tk_lower = tk.lower()
@@ -638,7 +689,6 @@ def render_index_growth_charts(tk="SPY"):
             sizing_mode="stretch_width",
             format="%b %Y",
         )
-        slider.css_classes = ["chart-range-slider"]
         slider.js_on_change(
             "value",
             CustomJS(
@@ -683,7 +733,7 @@ def render_index_growth_charts(tk="SPY"):
                 data={"date": navigator_source_series.index.to_pydatetime(), "value": navigator_source_series.values}
             )
             range_nav = figure(
-                height=140,
+                height=100,
                 x_axis_type="datetime",
                 y_axis_type="linear",
                 sizing_mode="stretch_width",
@@ -695,12 +745,17 @@ def render_index_growth_charts(tk="SPY"):
             rt.overlay.fill_color = "#1f77b4"
             rt.overlay.fill_alpha = 0.2
             range_nav.add_tools(rt)
+            range_nav.yaxis.visible = False
             range_nav.ygrid.grid_line_color = None
-            range_nav.xaxis.axis_label = "Time Navigator"
+            range_nav.xgrid.grid_line_color = None
+            range_nav.xaxis.axis_label = None
+            range_nav.stylesheets = [
+                "@media (max-width: 640px){ :host{ display:none; } }"
+            ]
 
     blocks = []
     growth_callout = _summary_sentence("implied growth", ig_summary)
-    ig_window_div = Div(text="", sizing_mode="stretch_width", css_classes=["metric-meta"])
+    ig_window_div = Div(text="", sizing_mode="stretch_width")
     blocks.append(
         _build_chart_block(
             ig_plot,
@@ -716,7 +771,7 @@ def render_index_growth_charts(tk="SPY"):
     )
 
     pe_callout = _summary_sentence("P/E ratio", pe_summary)
-    pe_window_div = Div(text="", sizing_mode="stretch_width", css_classes=["metric-meta"])
+    pe_window_div = Div(text="", sizing_mode="stretch_width")
     blocks.append(
         _build_chart_block(
             pe_s,
@@ -731,7 +786,7 @@ def render_index_growth_charts(tk="SPY"):
         )
     )
 
-    eps_window_div = Div(text="", sizing_mode="stretch_width", css_classes=["metric-meta"])
+    eps_window_div = Div(text="", sizing_mode="stretch_width")
     blocks.append(
         _build_chart_block(
             eps_s,
@@ -854,20 +909,23 @@ def render_index_growth_charts(tk="SPY"):
             slider.js_on_change("value", callback)
 
     layout_children = []
+    controls_children = []
     if range_nav is not None:
-        layout_children.append(range_nav)
+        controls_children.append(range_nav)
     if preset_buttons:
         control_items = [*preset_buttons, auto_toggle]
-        controls_row = row(*control_items, sizing_mode="stretch_width", css_classes=["control-bar"])
-        layout_children.append(controls_row)
+        controls_row = row(*control_items, sizing_mode="stretch_width")
+        controls_children.append(controls_row)
     if slider is not None:
-        slider_row = row(slider, sizing_mode="stretch_width", css_classes=["control-bar"])
-        layout_children.append(slider_row)
+        controls_children.append(slider)
+    if controls_children:
+        controls = column(*controls_children, sizing_mode="stretch_width", spacing=10)
+        controls.styles = CONTROL_CARD_STYLE
+        layout_children.append(controls)
     layout_children.extend([b.layout for b in blocks])
 
     if layout_children:
         layout = column(*layout_children, sizing_mode="stretch_width", spacing=18)
-        layout.css_classes = ["metric-cards-root"]
         if callback is not None:
             layout.js_on_event(DocumentReady, callback)
         valuation_components = components(layout, wrap_script=False)
@@ -875,7 +933,6 @@ def render_index_growth_charts(tk="SPY"):
         placeholder = Div(
             text="<div class=\"chart-placeholder\">No chart data available.</div>",
             sizing_mode="stretch_width",
-            css_classes=["metric-cards-root"],
         )
         valuation_components = components(placeholder, wrap_script=False)
 
