@@ -2,8 +2,9 @@
 # html_generator2.py – retro fix: economic data + segment carousel/table + dividend
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
-import os, sqlite3, pandas as pd, yfinance as yf, requests
-import xml.etree.ElementTree as ET
+import os, sqlite3, pandas as pd, yfinance as yf
+
+from utils.news import fetch_company_headlines
 
 DB_PATH = "Stock Data.db"
 env = Environment(loader=FileSystemLoader("templates"))
@@ -48,47 +49,6 @@ def get_file_with_fallback(paths, ph: str = "No data available") -> str:
             continue
     return ph
 
-
-def fetch_company_headlines(ticker: str, max_items: int = 6):
-    """Return a list of headline dicts for the given ticker.
-
-    Attempts a handful of Yahoo Finance RSS endpoints with a browser-like
-    User-Agent to avoid feed blocking. Any per-feed errors are logged but do
-    not abort processing so we can still render partial results.
-    """
-
-    urls = [
-        f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US",
-        f"https://finance.yahoo.com/rss/search?p={ticker}",
-    ]
-
-    items = []
-    seen_titles = set()
-    headers = {"User-Agent": "Mozilla/5.0 (ticker headlines fetcher)"}
-
-    for url in urls:
-        if len(items) >= max_items:
-            break
-
-        try:
-            resp = requests.get(url, timeout=12, headers=headers)
-            resp.raise_for_status()
-            root = ET.fromstring(resp.text)
-            for item in root.findall(".//item"):
-                if len(items) >= max_items:
-                    break
-                title_el = item.find("title")
-                link_el = item.find("link")
-                title = (title_el.text or "").strip()
-                link = (link_el.text or "").strip()
-                if not title or title in seen_titles:
-                    continue
-                items.append({"title": title, "link": link})
-                seen_titles.add(title)
-        except Exception as exc:
-            print(f"[WARN] Unable to fetch headlines for {ticker} from {url}: {exc}")
-
-    return items
 
 # Inject retro CSS + container override
 def inject_retro(html: str) -> str:
@@ -375,9 +335,10 @@ def generate_dashboard_table(raw_rows):
     df = df.merge(pct, how="left", on="Ticker")
 
     # numeric / display columns
-    sp_num = pd.to_numeric(df["Share Price"], errors="coerce")
+    share_price_clean = df["Share Price"].astype(str).str.replace(r"[$,]", "", regex=True)
+    sp_num = pd.to_numeric(share_price_clean, errors="coerce")
     df["Share Price_num"]  = sp_num
-    df["Share Price_disp"] = sp_num.map(lambda x: f"{x:.2f}" if pd.notnull(x) else "–")
+    df["Share Price_disp"] = sp_num.map(lambda x: f"${x:,.2f}" if pd.notnull(x) else "–")
 
     pct_cols = base_cols[2:]
     for col in pct_cols:
