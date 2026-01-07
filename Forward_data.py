@@ -42,12 +42,12 @@ logging.basicConfig(level=logging.INFO,
 # ───────────────────────────────────────────────────────────────────────
 # SQLite helpers
 # ───────────────────────────────────────────────────────────────────────
-def _ensure_table() -> None:
+def _ensure_table(db_path: str = DB_PATH, table_name: str = TABLE_NAME) -> None:
     """Create table + PK columns once per run."""
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute(f"""
-        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+        CREATE TABLE IF NOT EXISTS {table_name} (
             Ticker TEXT NOT NULL,
             Date   TEXT NOT NULL,
             ForwardEPS   REAL,
@@ -61,15 +61,15 @@ def _ensure_table() -> None:
         conn.commit()
 
 @contextmanager
-def _connect():
+def _connect(db_path: str = DB_PATH):
     """SQLite connection that retries once if locked."""
     try:
-        conn = sqlite3.connect(DB_PATH, timeout=30, isolation_level=None)
+        conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)
         yield conn
     except OperationalError as e:
         if "database is locked" in str(e):
             time.sleep(1)
-            conn = sqlite3.connect(DB_PATH, timeout=30, isolation_level=None)
+            conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)
             yield conn
         else:
             raise
@@ -169,14 +169,19 @@ def scrape_annual_estimates(ticker: str,
 # ───────────────────────────────────────────────────────────────────────
 # Storage
 # ───────────────────────────────────────────────────────────────────────
-def _store(df: pd.DataFrame, ticker: str) -> None:
-    with _connect() as conn:
+def _store(
+    df: pd.DataFrame,
+    ticker: str,
+    db_path: str = DB_PATH,
+    table_name: str = TABLE_NAME,
+) -> None:
+    with _connect(db_path) as conn:
         cur = conn.cursor()
-        cur.execute(f"DELETE FROM {TABLE_NAME} WHERE Ticker = ?", (ticker,))
+        cur.execute(f"DELETE FROM {table_name} WHERE Ticker = ?", (ticker,))
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         for _, r in df.iterrows():
             cur.execute(f"""
-            INSERT INTO {TABLE_NAME}
+            INSERT INTO {table_name}
               (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated,
                ForwardEPSAnalysts, ForwardRevenueAnalysts)
             VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -223,6 +228,27 @@ def scrape_forward_data_batch(tickers: List[str], max_workers: int = 6) -> None:
                 logging.info(f"{tkr}: done")
             except Exception:
                 logging.error(f"{tkr}: FAILED\n{traceback.format_exc()}")
+
+# ───────────────────────────────────────────────────────────────────────
+# Backwards-compatible API (used by main.py)
+# ───────────────────────────────────────────────────────────────────────
+def scrape_and_prepare_data(
+    ticker: str,
+    session: Optional[requests.Session] = None,
+) -> pd.DataFrame:
+    """Legacy wrapper for main.py compatibility."""
+    return scrape_annual_estimates(ticker, session or SESSION)
+
+
+def store_in_database(
+    df: pd.DataFrame,
+    ticker: str,
+    db_path: str = DB_PATH,
+    table_name: str = TABLE_NAME,
+) -> None:
+    """Legacy wrapper for main.py compatibility."""
+    _ensure_table(db_path, table_name)
+    _store(df, ticker, db_path, table_name)
 
 # ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
