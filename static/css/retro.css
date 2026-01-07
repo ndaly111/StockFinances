@@ -18,10 +18,3 @@ td{padding:4px;border:1px solid #8080FF}
 .segment-table-wrapper .table-wrap table td:nth-child(4){text-align:right}
 .carousel-container{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px;border:2px inset #C0C0C0;background:#FAFAFF}
 .carousel-item{flex:0 0 auto;width:min(720px,95%);scroll-snap-align:start;border:1px solid #8080FF;padding:8px;background:#FFFFFF}
-.page-container{max-width:1200px;margin:0 auto;padding:0 12px}
-@media(min-width:900px){.page-container{padding:0 24px}}
-.control-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;border:1px solid #e6e8ef;border-radius:12px;background:#fff;margin:10px 0 16px}
-.metric-card{border:1px solid #e6e8ef;border-radius:14px;background:#fff;padding:12px;margin:14px 0}
-.metric-card h3{margin:0 0 8px}
-.metric-meta{color:#4b5563;font-size:14px;margin:6px 0 10px}
-.table-wrap{overflow-x:auto;margin-top:10px}
