@@ -436,7 +436,8 @@ def _build_chart_block(
     dots.hover_glyph = Circle(
         x="date",
         y="value",
-        size=9,
+        radius=4.5,
+        radius_units="screen",
         fill_color="#1f77b4",
         line_color="#1f77b4",
         fill_alpha=0.9,
