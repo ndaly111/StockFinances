@@ -13,22 +13,13 @@ import os
 import sys
 from typing import List, Tuple, Dict, Optional
 
-import requests
 import yfinance as yf
+
+from utils.news import fetch_market_headlines
 
 # === Settings ===
 
 OUTPUT_PATH = "daily-market-summary.html"
-
-# Licensed market-news provider endpoints (NewsAPI).
-# Requires a NewsAPI key provided via the ``NEWSAPI_API_KEY`` environment variable.
-# See https://newsapi.org/docs/terms for attribution requirements (the rendered
-# HTML includes a provider credit; do not remove it).
-NEWSAPI_ENDPOINTS = [
-    "https://newsapi.org/v2/top-headlines?country=us&category=business",
-    "https://newsapi.org/v2/everything?q=stock%20market&sortBy=publishedAt&language=en",
-]
-NEWSAPI_API_KEY_ENV = "NEWSAPI_API_KEY"
 
 INDEX_TICKERS = {
     "^GSPC": "S&P 500",
@@ -65,55 +56,6 @@ def get_index_change(ticker: str) -> Optional[Tuple[float, float]]:
     except Exception as e:
         print(f"Error fetching {ticker}: {e}", file=sys.stderr)
         return None
-
-
-def fetch_news_items(max_items: int = 10) -> List[Dict[str, str]]:
-    """Fetch market headlines from NewsAPI (licensed provider).
-
-    A valid NewsAPI key must be provided through the ``NEWSAPI_API_KEY``
-    environment variable. Requests use the official REST API instead of RSS to
-    comply with provider terms and avoid the earlier unauthenticated scraping
-    approach. Headlines include per-article source names to satisfy attribution
-    requirements.
-    """
-
-    api_key = os.getenv(NEWSAPI_API_KEY_ENV)
-    if not api_key:
-        print(f"Missing {NEWSAPI_API_KEY_ENV} (required for NewsAPI headlines)", file=sys.stderr)
-        return []
-
-    items: List[Dict[str, str]] = []
-    seen_titles = set()
-    headers = {"X-Api-Key": api_key}
-
-    for url in NEWSAPI_ENDPOINTS:
-        if len(items) >= max_items:
-            break
-
-        try:
-            resp = requests.get(url, timeout=15, headers=headers)
-            resp.raise_for_status()
-            payload = resp.json()
-            articles = payload.get("articles") or []
-
-            for article in articles:
-                if len(items) >= max_items:
-                    break
-
-                title = (article.get("title") or "").strip()
-                link = (article.get("url") or "").strip()
-                source = ""
-                source_obj = article.get("source") or {}
-                if isinstance(source_obj, dict):
-                    source = (source_obj.get("name") or "").strip()
-
-                if title and title not in seen_titles:
-                    items.append({"title": title, "link": link, "source": source})
-                    seen_titles.add(title)
-        except Exception as e:
-            print(f"Error fetching NewsAPI feed from {url}: {e}", file=sys.stderr)
-
-    return items
 
 
 def classify_headline(title: str) -> str:
@@ -293,11 +235,9 @@ def build_html(
   </section>
 
   <p class="disclaimer">
-    This page is generated automatically using index data (via Yahoo Finance)
-    and licensed market-news headlines delivered by NewsAPI.org. Headlines are
-    shown with their original publisher names, and the page is "powered by
-    NewsAPI.org" in accordance with provider attribution terms. It is for
-    informational purposes only and is not investment advice.
+    This page is generated automatically using index data and Yahoo Finance
+    RSS headlines. It is for informational purposes only and is not investment
+    advice.
   </p>
 </body>
 </html>
@@ -322,7 +262,14 @@ def generate_market_summary(output_path: str = OUTPUT_PATH) -> str:
         index_moves[ticker] = get_index_change(ticker)
 
     # 2) Fetch headlines
-    headlines = fetch_news_items(max_items=12)
+    headlines = fetch_market_headlines(max_items=12)
+    if not headlines and os.path.exists(output_path):
+        print(
+            f"No headlines fetched; keeping existing {output_path} instead.",
+            file=sys.stderr,
+        )
+        with open(output_path, encoding="utf-8") as f:
+            return f.read()
 
     # 3) Build HTML
     html_content = build_html(date_str, index_moves, headlines)
