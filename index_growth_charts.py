@@ -44,11 +44,11 @@ os.makedirs(OUT_DIR, exist_ok=True)
 # ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
 <style>
-.table-wrap{overflow-x:auto;}
+.table-wrap{overflow-x:auto;display:flex;justify-content:center;}
 .summary-table{border-collapse:collapse;
   font-family:Verdana,Arial,sans-serif;font-size:13px;
-  border:3px solid #003366;margin:0 auto;width:100%;
-  max-width:none;}
+  border:3px solid #003366;margin:0 auto;width:auto;
+  max-width:960px;}
 .summary-table th{background:#f2f2f2;padding:6px 8px;
   border:1px solid #B0B0B0;text-align:center;white-space:nowrap;}
 .summary-table td{padding:6px 8px;border:1px solid #B0B0B0;text-align:center;}
@@ -164,10 +164,6 @@ def _format_value(val, pct: bool) -> str:
         return "N/A"
     return _pct_fmt(val) if pct else f"{val:.2f}"
 
-def _inline_style(style: dict) -> str:
-    return "; ".join(f"{key}: {val}" for key, val in style.items())
-
-
 def _rows_by_years(series: pd.Series, pct: bool = False) -> pd.DataFrame:
     if series.empty:
         return pd.DataFrame(
@@ -234,73 +230,6 @@ def _rows_by_years(series: pd.Series, pct: bool = False) -> pd.DataFrame:
 
     return pd.DataFrame(rows)
 
-
-def _eps_growth_by_horizon(series: pd.Series) -> pd.DataFrame:
-    horizons = [1, 2, 3, 5, 10]
-    if series.empty:
-        return pd.DataFrame(
-            [
-                dict(
-                    Years=str(yrs),
-                    **{
-                        "Start Date": "N/A",
-                        "Start EPS": "N/A",
-                        "End EPS": "N/A",
-                        "Total Change %": "N/A",
-                        "CAGR %": "N/A",
-                    },
-                )
-                for yrs in horizons
-            ]
-        )
-
-    end_date = series.index.max()
-    end_eps = float(series.loc[end_date])
-    rows = []
-    for yrs in horizons:
-        start_date = end_date - pd.DateOffset(years=yrs)
-        start_window = series[series.index <= start_date]
-        if start_window.empty:
-            rows.append(
-                dict(
-                    Years=str(yrs),
-                    **{
-                        "Start Date": "N/A",
-                        "Start EPS": "N/A",
-                        "End EPS": f"{end_eps:.2f}",
-                        "Total Change %": "N/A",
-                        "CAGR %": "N/A",
-                    },
-                )
-            )
-            continue
-
-        start_idx = start_window.index.max()
-        start_eps = float(series.loc[start_idx])
-        if start_eps <= 0 or end_eps <= 0:
-            total_change = "N/A"
-            cagr = "N/A"
-        else:
-            total_change_val = (end_eps / start_eps - 1.0) * 100.0
-            years = max((end_date - start_idx).days / 365.25, 1e-6)
-            cagr_val = (end_eps / start_eps) ** (1 / years) - 1.0
-            total_change = f"{total_change_val:.2f} %"
-            cagr = f"{cagr_val * 100:.2f} %"
-
-        rows.append(
-            dict(
-                Years=str(yrs),
-                **{
-                    "Start Date": start_idx.strftime("%Y-%m-%d"),
-                    "Start EPS": f"{start_eps:.2f}",
-                    "End EPS": f"{end_eps:.2f}",
-                    "Total Change %": total_change,
-                    "CAGR %": cagr,
-                },
-            )
-        )
-
-    return pd.DataFrame(rows)
 
 def _ten_year_window(series: pd.Series) -> pd.Series:
     """Return the slice of ``series`` covering the last ten years (or all data)."""
@@ -377,6 +306,7 @@ def _build_chart_block(
     table_html: str | None = None,
     window_div: Div | None = None,
     window_mode: str = "ratio",
+    controls: object | None = None,
 ):
     """Return a Bokeh layout block (figure + optional callout/table)."""
 
@@ -522,7 +452,10 @@ def _build_chart_block(
         window_div = Div(text="", sizing_mode="stretch_width")
     window_div.styles = META_STYLE
 
-    block_children = [Div(text=title, styles=TITLE_STYLE, sizing_mode="stretch_width"), fig]
+    block_children = [Div(text=title, styles=TITLE_STYLE, sizing_mode="stretch_width")]
+    if controls:
+        block_children.append(controls)
+    block_children.append(fig)
     if callout_text:
         callout_div = Div(text=callout_text, sizing_mode="stretch_width")
         callout_div.styles = META_STYLE
@@ -636,18 +569,9 @@ def render_index_growth_charts(tk="SPY"):
 
     ig_summary = _rows_by_years(ig_s, pct=True)
     pe_summary = _rows_by_years(pe_s, pct=False)
-    eps_snapshot = _rows_by_years(eps_s, pct=False)
-    eps_growth = _eps_growth_by_horizon(eps_s)
-
     ig_table_html = _build_html(ig_summary)
     pe_table_html = _build_html(pe_summary)
-    meta_style_attr = _inline_style(META_STYLE)
-    eps_table_html = (
-        f"<div style=\"{meta_style_attr}\"><strong>EPS snapshot</strong></div>"
-        + _build_html(eps_snapshot)
-        + f"<div style=\"{meta_style_attr}; margin-top:12px;\"><strong>EPS growth</strong></div>"
-        + _build_html(eps_growth)
-    )
+    eps_table_html = ""
 
     tk_lower = tk.lower()
 
@@ -661,8 +585,7 @@ def render_index_growth_charts(tk="SPY"):
 
     common_range = None
     slider = None
-    preset_buttons: list[Button] = []
-    auto_toggle = Toggle(label="Auto Y", active=True, button_type="success")
+    auto_toggles: list[Toggle] = []
     callback = None
     min_date_ms = max_date_ms = None
     range_nav = None
@@ -701,32 +624,6 @@ def render_index_growth_charts(tk="SPY"):
             ),
         )
 
-        preset_spans = [("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("MAX", None)]
-        for label, yrs in preset_spans:
-            span_ms = None if yrs is None else int(yrs * 365.25 * 24 * 60 * 60 * 1000)
-            btn = Button(label=label, button_type="primary")
-            args = {
-                "rng": common_range,
-                "min_ms": min_date_ms,
-                "max_ms": max_date_ms,
-                "span_ms": span_ms,
-                "slider": slider,
-            }
-            btn.js_on_event(
-                "button_click",
-                CustomJS(
-                    args=args,
-                    code="""
-                    const end = max_ms;
-                    let start = span_ms ? Math.max(min_ms, end - span_ms) : min_ms;
-                    rng.start = start;
-                    rng.end = end;
-                    if (slider){ slider.value = [start, end]; }
-                """,
-                ),
-            )
-            preset_buttons.append(btn)
-
         navigator_source_series = next((s for s in (ig_plot, pe_s, eps_s) if not s.empty), None)
         if navigator_source_series is not None:
             nav_src = ColumnDataSource(
@@ -753,6 +650,40 @@ def render_index_growth_charts(tk="SPY"):
                 "@media (max-width: 640px){ :host{ display:none; } }"
             ]
 
+    def _make_controls_row():
+        if common_range is None:
+            return None
+        preset_spans = [("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("MAX", None)]
+        buttons = []
+        for label, yrs in preset_spans:
+            span_ms = None if yrs is None else int(yrs * 365.25 * 24 * 60 * 60 * 1000)
+            btn = Button(label=label, button_type="primary")
+            args = {
+                "rng": common_range,
+                "min_ms": min_date_ms,
+                "max_ms": max_date_ms,
+                "span_ms": span_ms,
+                "slider": slider,
+            }
+            btn.js_on_event(
+                "button_click",
+                CustomJS(
+                    args=args,
+                    code="""
+                    const end = max_ms;
+                    let start = span_ms ? Math.max(min_ms, end - span_ms) : min_ms;
+                    rng.start = start;
+                    rng.end = end;
+                    if (slider){ slider.value = [start, end]; }
+                """,
+                ),
+            )
+            buttons.append(btn)
+
+        auto_toggle = Toggle(label="Auto Y", active=True, button_type="success")
+        auto_toggles.append(auto_toggle)
+        return row(*buttons, auto_toggle, sizing_mode="stretch_width")
+
     blocks = []
     growth_callout = _summary_sentence("implied growth", ig_summary)
     ig_window_div = Div(text="", sizing_mode="stretch_width")
@@ -767,6 +698,7 @@ def render_index_growth_charts(tk="SPY"):
             table_html=ig_table_html,
             window_div=ig_window_div,
             window_mode="rate",
+            controls=_make_controls_row(),
         )
     )
 
@@ -783,6 +715,7 @@ def render_index_growth_charts(tk="SPY"):
             table_html=pe_table_html,
             window_div=pe_window_div,
             window_mode="rate",
+            controls=_make_controls_row(),
         )
     )
 
@@ -797,6 +730,7 @@ def render_index_growth_charts(tk="SPY"):
             log_axis=True,
             table_html=eps_table_html,
             window_div=eps_window_div,
+            controls=_make_controls_row(),
         )
     )
 
@@ -809,7 +743,7 @@ def render_index_growth_charts(tk="SPY"):
                 "sources": [b.source for b in chart_refs],
                 "logs": [b.log_axis for b in chart_refs],
                 "window_divs": [b.window_div for b in chart_refs],
-                "auto_toggle": auto_toggle,
+                "auto_toggles": auto_toggles,
                 "percent_axes": [b.percent_axis for b in chart_refs],
                 "window_modes": [b.window_mode for b in chart_refs],
             },
@@ -858,7 +792,8 @@ def render_index_growth_charts(tk="SPY"):
 
                     const hasPoints = isFinite(ymin) && isFinite(ymax);
 
-                    if (auto_toggle.active && hasPoints) {
+                    const autoActive = auto_toggles.some(toggle => toggle.active);
+                    if (autoActive && hasPoints) {
                         if (logAxis) {
                             fig.y_range.start = ymin * 0.93;
                             fig.y_range.end = ymax * 1.07;
@@ -904,7 +839,21 @@ def render_index_growth_charts(tk="SPY"):
         )
         common_range.js_on_change("start", callback)
         common_range.js_on_change("end", callback)
-        auto_toggle.js_on_change("active", callback)
+        for toggle in auto_toggles:
+            toggle.js_on_change(
+                "active",
+                CustomJS(
+                    args={"toggles": auto_toggles, "source": toggle},
+                    code="""
+                        for (const t of toggles) {
+                            if (t !== source) {
+                                t.active = source.active;
+                            }
+                        }
+                    """,
+                ),
+            )
+            toggle.js_on_change("active", callback)
         if slider is not None:
             slider.js_on_change("value", callback)
 
@@ -912,10 +861,6 @@ def render_index_growth_charts(tk="SPY"):
     controls_children = []
     if range_nav is not None:
         controls_children.append(range_nav)
-    if preset_buttons:
-        control_items = [*preset_buttons, auto_toggle]
-        controls_row = row(*control_items, sizing_mode="stretch_width")
-        controls_children.append(controls_row)
     if slider is not None:
         controls_children.append(slider)
     if controls_children:
