@@ -21,7 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from backfill_index_growth import backfill_index_growth
-from generate_index_growth_pages import generate_index_growth_pages
+from index_growth_charts import render_index_growth_charts
 
 
 def parse_args() -> argparse.Namespace:
@@ -29,7 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--db", default="Stock Data.db", help="Path to SQLite DB (default: Stock Data.db)")
     parser.add_argument(
         "--csv",
-        default="data/spy_price_history_monthly_1993_present.csv",
+        default="spy_price_history_monthly_1993_present.csv",
         help="Path to SPY monthly price CSV committed in repo",
     )
     parser.add_argument("--ticker", default="SPY", help="Ticker to backfill (default: SPY)")
@@ -98,8 +98,10 @@ def main() -> None:
     print("[run] backfill_index_growth")
     backfill_index_growth(db_path=str(db_path))
 
-    print("[run] generate_index_growth_pages")
-    generate_index_growth_pages(db_path=str(db_path))
+    print("[run] render_index_growth_charts")
+    # regenerate the Bokeh assets that spy_growth.html / qqq_growth.html load
+    for tk in ("SPY", "QQQ"):
+        render_index_growth_charts(tk)
 
 
 if __name__ == "__main__":
