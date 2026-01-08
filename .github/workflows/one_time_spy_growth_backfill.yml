@@ -1,0 +1,59 @@
+name: One-time SPY growth backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      db_path:
+        description: "Path to SQLite DB"
+        required: false
+        default: "Stock Data.db"
+      csv_path:
+        description: "Path to SPY monthly CSV"
+        required: false
+        default: "data/spy_price_history_monthly_1993_present.csv"
+      create_table:
+        description: "Create Index_Price_History if missing"
+        required: false
+        default: "false"
+      simulate_pre_etf:
+        description: "Simulate pre-ETF history for PE/EPS backfill"
+        required: false
+        default: "false"
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Run one-time SPY growth backfill
+        env:
+          CREATE_TABLE: ${{ inputs.create_table }}
+          SIMULATE_PRE_ETF: ${{ inputs.simulate_pre_etf }}
+        run: |
+          CREATE_FLAG=""
+          if [ "${CREATE_TABLE}" = "true" ]; then
+            CREATE_FLAG="--create-table"
+          fi
+          SIM_FLAG=""
+          if [ "${SIMULATE_PRE_ETF}" = "true" ]; then
+            SIM_FLAG="--simulate-pre-etf"
+          fi
+          python scripts/one_time_spy_growth_backfill.py \
+            --db "${{ inputs.db_path }}" \
+            --csv "${{ inputs.csv_path }}" \
+            ${CREATE_FLAG} \
+            ${SIM_FLAG}
