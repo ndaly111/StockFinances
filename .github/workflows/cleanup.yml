@@ -1,0 +1,34 @@
+name: Clean Database
+
+on:
+  schedule:
+    - cron: '0 8 1 * *' # Runs at 8:00 AM on the 1st day of every month
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Grants permission to push changes
+
+jobs:
+  run-main-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
+    
+    - name: Run main script
+      run: python update_annual_data.py  # This will generate 'financial_charts.html' in the root directory
+
+    - name: Set up Git identity
+      run: |
+        git config --global user.name 'ndaly111'
+        git config --global user.email 'ndaly111@gmail.com'
+        

@@ -1,0 +1,41 @@
+name: Audit split adjustments (2024+)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  audit-splits:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run split audit
+        env:
+          DB_PATH: "Stock Data.db"
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: |
+          python scripts/audit_splits_2024_plus.py \
+            --db-path "$DB_PATH" \
+            --output-csv split_audit_2024_plus.csv \
+            --output-html split_audit_2024_plus.html
+
+      - name: Upload audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: split-audit-2024-plus
+          path: |
+            split_audit_2024_plus.csv
+            split_audit_2024_plus.html
+          if-no-files-found: ignore

@@ -1,0 +1,72 @@
+name: Run Python Script and Deploy to GitHub Pages
+
+on:
+  schedule:
+    - cron: '0 8 * * 1-5'        # 08:00 UTC weekdays
+  workflow_dispatch:
+
+permissions:
+  contents: write                # allow this Action to push commits
+
+jobs:
+  run-main-script:
+    runs-on: ubuntu-latest
+
+    # ───── all steps can now see required secrets ─────
+    env:
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+      SEC_EMAIL: ${{ secrets.EMAIL }}          # required by generate_segment_charts.py
+      EMAIL_FOR_SEC: ${{ secrets.EMAIL }}      # accepted fallback
+      EMAIL: ${{ secrets.EMAIL }}              # accepted fallback
+
+    steps:
+    # ---------------------------------------------------------------- checkout main
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    # ---------------------------------------------------------------- Python setup
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    # ---------------------------------------------------------------- build site
+    - name: Run main script
+      run: python main_remote.py
+
+    # ---------------------------------------------------------------- commit to main
+    - name: Set up Git identity
+      run: |
+        git config --global user.name 'ndaly111'
+        git config --global user.email 'ndaly111@gmail.com'
+
+    - name: Commit and push changes to main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git add .
+        git commit -m "Update website content" --allow-empty
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main --force
+
+    # ---------------------------------------------------------------- deploy to gh-pages
+    - name: Clone repository (main)
+      uses: actions/checkout@v2
+      with:
+        ref: main
+        path: main_repo
+
+    - name: Check out gh-pages branch
+      run: |
+        git clone --branch=gh-pages https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
+        cd gh-pages
+        cp -r ../main_repo/* .
+
+    - name: Commit and push changes to gh-pages
+      run: |
+        cd gh-pages
+        git add .
+        git commit -m "Deploy to GitHub Pages" --allow-empty
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages --force

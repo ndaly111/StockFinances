@@ -1,0 +1,14 @@
+name: Disabled spy workflow
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'This workflow is disabled because a valid one exists in Spyhistorical.yml'
+        required: false
+        default: ''
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: No-op
+        run: echo 'spy.yml is disabled; use Spyhistorical.yml instead'

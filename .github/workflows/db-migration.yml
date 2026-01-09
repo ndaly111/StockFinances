@@ -1,0 +1,27 @@
+name: Database Migration
+
+# Trigger on any push to main, or manual dispatch
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run DB migration
+        env:
+          # Path to your SQLite file in the workspace
+          DB_PATH: "${{ github.workspace }}/Stock Data.db"
+        run: |
+          python migrate_expense_year_column.py

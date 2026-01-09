@@ -1,0 +1,35 @@
+name: Run Stock Split Script
+
+on:
+  workflow_dispatch:  # Allows you to run this manually from GitHub Actions
+  
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the repository
+    - name: Check out the repository
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'  # Ensure this matches your Python version
+
+    # Step 3: Install Dependencies (if any, like sqlite3)
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Add any other dependencies your script requires here
+        # For example, if you have a requirements.txt, you could use:
+        # pip install -r requirements.txt
+
+    # Step 4: Run the Python script
+    - name: Run stock split script
+      run: |
+        python db_annual_TTM_update.py
+      env:
+        DB_PATH: 'Stock Data.db'  # Set this path if you want to customize in the script

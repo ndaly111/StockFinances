@@ -1,0 +1,60 @@
+name: Run QQQ_PE Script and Deploy to GitHub Pages
+
+on:
+  schedule:
+    - cron: '0 8 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Grants permission to push changes
+
+jobs:
+  run-qqq-pe-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt  # Assumes you have a requirements.txt file
+
+    - name: Run QQQ_PE script
+      run: python QQQ_PE.py  # This will generate the necessary HTML files and charts
+
+    - name: Set up Git identity
+      run: |
+        git config --global user.name 'ndaly111'
+        git config --global user.email 'ndaly111@gmail.com'
+
+    - name: Commit and push changes to main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git add .  # This will add all new and modified files to the commit
+        git commit -m "Update website content" --allow-empty  # This commits the changes
+        git push origin main  # Push changes to the main branch
+
+    - name: Check out gh-pages branch
+      uses: actions/checkout@v2
+      with:
+        ref: gh-pages  # Ensure we are checking out the gh-pages branch
+        path: gh-pages  # Checkout the gh-pages branch to a directory named gh-pages
+
+    - name: Copy files to gh-pages
+      run: |
+        cp -r * gh-pages/  # Copy all files from the main branch directory to the gh-pages directory
+
+    - name: Commit and push changes to gh-pages
+      working-directory: gh-pages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git add .  # This will add all new and modified files to the commit
+        git commit -m "Deploy updates to GitHub Pages" --allow-empty  # This commits the changes
+        git push origin gh-pages  # Push changes to the gh-pages branch
