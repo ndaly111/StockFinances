@@ -166,7 +166,7 @@ def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Serie
 
     query = (
         "SELECT Date, EPS FROM Index_EPS_History "
-        "WHERE Ticker=? AND EPS_Type='TTM' ORDER BY Date"
+        "WHERE Ticker=? AND EPS_Type='TTM_REPORTED' ORDER BY Date"
     )
     df = pd.read_sql_query(query, conn, params=(ticker,), parse_dates=["Date"])
     if df.empty:

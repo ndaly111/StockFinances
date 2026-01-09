@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--db", default="Stock Data.db", help="Path to SQLite DB (default: Stock Data.db)")
     parser.add_argument(
         "--csv",
-        default="spy_price_history_monthly_1993_present.csv",
+        default="data/spy_price_history_monthly_1993_present.csv",
         help="Path to SPY monthly price CSV committed in repo",
     )
     parser.add_argument("--ticker", default="SPY", help="Ticker to store (default: SPY)")

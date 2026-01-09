@@ -28,9 +28,10 @@ def main():
             return
         cur.execute(
             """
-            SELECT Ticker, COUNT(*) FROM Index_EPS_History
-             WHERE EPS_Type='TTM' AND Ticker IN ('SPY','QQQ')
-            GROUP BY Ticker
+            SELECT Ticker, EPS_Type, COUNT(*) FROM Index_EPS_History
+             WHERE Ticker IN ('SPY','QQQ')
+            GROUP BY Ticker, EPS_Type
+            ORDER BY Ticker, EPS_Type
             """
         )
         rows = cur.fetchall()
@@ -38,8 +39,8 @@ def main():
         print("No EPS rows found for SPY/QQQ.")
         return
 
-    for ticker, count in rows:
-        print(f"{ticker}: {count} rows in Index_EPS_History")
+    for ticker, eps_type, count in rows:
+        print(f"{ticker} ({eps_type}): {count} rows in Index_EPS_History")
 
 
 if __name__ == "__main__":
