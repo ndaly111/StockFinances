@@ -225,7 +225,9 @@ def maybe_backfill_index_eps(db_path: str = DB_PATH) -> None:
             for tk in ("SPY", "QQQ"):
                 pe_ranges[tk] = _min_max(cur, tk, "Index_PE_History", "PE_Type", "TTM")
                 if eps_exists:
-                    eps_ranges[tk] = _min_max(cur, tk, "Index_EPS_History", "EPS_Type", "TTM")
+                    eps_ranges[tk] = _min_max(
+                        cur, tk, "Index_EPS_History", "EPS_Type", "IMPLIED_FROM_PE"
+                    )
     except sqlite3.Error as exc:
         print(f"[index EPS] Unable to inspect DB: {exc}")
         return

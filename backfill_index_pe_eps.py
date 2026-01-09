@@ -56,6 +56,7 @@ ETF_INCEPTION = {
     "SPY": pd.Timestamp("1993-01-29"),
     "QQQ": pd.Timestamp("1999-03-10"),
 }
+EPS_TYPE_IMPLIED = "IMPLIED_FROM_PE"
 
 
 @dataclass(frozen=True)
@@ -492,7 +493,7 @@ def main() -> int:
 
             # Determine earliest existing dates (we only insert earlier than these)
             min_pe = _min_date(conn, pe_spec, tk, "TTM")
-            min_eps = _min_date(conn, eps_spec, tk, "TTM")
+            min_eps = _min_date(conn, eps_spec, tk, EPS_TYPE_IMPLIED)
             print(f"Earliest existing PE date:  {min_pe if min_pe is not None else 'None'}")
             print(
                 f"Earliest existing EPS date: {min_eps if min_eps is not None else 'None'}"
@@ -543,7 +544,7 @@ def main() -> int:
                 conn=conn,
                 spec=eps_spec,
                 ticker=tk,
-                type_value="TTM",
+                type_value=EPS_TYPE_IMPLIED,
                 series=daily["eps"],
                 cutoff_exclusive=min_eps,
                 dry_run=args.dry_run,
