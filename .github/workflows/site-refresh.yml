@@ -40,7 +40,7 @@ jobs:
 
       - name: Generate pages
         run: |
-          python main.py
+          python main_remote.py
           python generate_market_summary.py
 
       - name: Check out gh-pages branch
