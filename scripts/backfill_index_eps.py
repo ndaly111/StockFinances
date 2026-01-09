@@ -13,6 +13,7 @@ from pathlib import Path
 import pandas as pd
 import yfinance as yf
 
+EPS_TYPE_IMPLIED = "IMPLIED_FROM_PE"
 
 def _parse_args():
     parser = argparse.ArgumentParser(description="Backfill index EPS history from P/E and price data.")
@@ -164,7 +165,7 @@ def _upsert_eps(conn: sqlite3.Connection, df: pd.DataFrame, tickers: tuple[str, 
                 eps = price_f / pe_f
             except Exception:
                 continue
-            rows.append((date_key, ticker, "TTM", eps))
+            rows.append((date_key, ticker, EPS_TYPE_IMPLIED, eps))
 
         conn.executemany(
             "INSERT OR REPLACE INTO Index_EPS_History(Date, Ticker, EPS_Type, EPS) "

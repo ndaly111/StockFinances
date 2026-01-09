@@ -40,6 +40,7 @@ from bokeh.plotting import figure
 
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
+EPS_TYPE_TTM_REPORTED = "TTM_REPORTED"
 
 # ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
@@ -119,16 +120,30 @@ def _series_pe(conn, tk):
     return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
 
 
+def _series_pe_monthly_derived(conn, tk):
+    """Return PE_Ratio (TTM_DERIVED_MONTHLY) series for ticker tk."""
+    df = pd.read_sql(
+        """SELECT Date, PE_Ratio AS val
+             FROM Index_PE_History
+            WHERE Ticker=? AND PE_Type='TTM_DERIVED_MONTHLY'
+         ORDER BY Date""",
+        conn,
+        params=(tk,),
+    )
+    df["Date"] = pd.to_datetime(df["Date"])
+    return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
+
+
 def _series_eps(conn, tk):
-    """Return EPS (TTM) series for ticker tk."""
+    """Return EPS (TTM reported) series for ticker tk."""
     try:
         df = pd.read_sql(
             """SELECT Date, EPS AS val
                  FROM Index_EPS_History
-                WHERE Ticker=? AND EPS_Type='TTM'
+                WHERE Ticker=? AND EPS_Type=?
              ORDER BY Date""",
             conn,
-            params=(tk,),
+            params=(tk, EPS_TYPE_TTM_REPORTED),
         )
     except AttributeError:  # pragma: no cover - allows mocked connections in tests
         return pd.Series(dtype=float)
@@ -307,6 +322,8 @@ def _build_chart_block(
     window_div: Div | None = None,
     window_mode: str = "ratio",
     controls: object | None = None,
+    marker_alpha: float = 0.0,
+    marker_size: int = 7,
 ):
     """Return a Bokeh layout block (figure + optional callout/table)."""
 
@@ -402,7 +419,14 @@ def _build_chart_block(
     fig.toolbar.active_drag = pan_tool
 
     fig.line("date", "value", source=source, line_width=2, color="#1f77b4")
-    dots = fig.circle("date", "value", source=source, size=7, color="#1f77b4", alpha=0)
+    dots = fig.circle(
+        "date",
+        "value",
+        source=source,
+        size=marker_size,
+        color="#1f77b4",
+        alpha=marker_alpha,
+    )
     dots.hover_glyph = Circle(
         x="date",
         y="value",
@@ -544,10 +568,16 @@ def render_index_growth_charts(tk="SPY"):
     with sqlite3.connect(DB_PATH) as conn:
         ig_s = _series_growth(conn, tk)
         pe_s = _series_pe(conn, tk)
+        pe_monthly = _series_pe_monthly_derived(conn, tk)
         eps_s = _series_eps(conn, tk)
 
-    eps_s = pd.to_numeric(eps_s, errors="coerce")
-    eps_s = eps_s[eps_s > 0].dropna()
+    pe_combined = pe_s.combine_first(pe_monthly)
+
+    eps_s = pd.to_numeric(eps_s, errors="coerce").dropna()
+    eps_has_nonpositive = not eps_s.empty and (eps_s <= 0).any()
+    eps_log_axis = not eps_has_nonpositive
+    if eps_log_axis:
+        eps_s = eps_s[eps_s > 0]
 
     ig_plot = ig_s.copy()
     ig_ylabel = "Implied Growth Rate"
@@ -568,7 +598,10 @@ def render_index_growth_charts(tk="SPY"):
             ig_percent_axis = True
 
     ig_summary = _rows_by_years(ig_s, pct=True)
-    pe_summary = _rows_by_years(pe_s, pct=False)
+    pe_summary_source = pe_combined
+    if not pe_combined.empty and isinstance(pe_combined.index, (pd.DatetimeIndex, pd.PeriodIndex)):
+        pe_summary_source = pe_combined.resample("M").last().dropna()
+    pe_summary = _rows_by_years(pe_summary_source, pct=False)
     ig_table_html = _build_html(ig_summary)
     pe_table_html = _build_html(pe_summary)
     eps_table_html = ""
@@ -579,7 +612,7 @@ def render_index_growth_charts(tk="SPY"):
 
     non_empty_series = [
         s.dropna()
-        for s in (ig_plot, pe_s, eps_s)
+        for s in (ig_plot, pe_combined, eps_s)
         if isinstance(s, pd.Series) and not s.dropna().empty
     ]
 
@@ -703,10 +736,12 @@ def render_index_growth_charts(tk="SPY"):
     )
 
     pe_callout = _summary_sentence("P/E ratio", pe_summary)
+    if pe_callout and tk.upper() == "SPY" and not pe_monthly.empty:
+        pe_callout = f"{pe_callout} Pre-2016 history uses monthly derived P/E (Price ÷ EPS)."
     pe_window_div = Div(text="", sizing_mode="stretch_width")
     blocks.append(
         _build_chart_block(
-            pe_s,
+            pe_combined,
             f"{tk} P/E Ratio",
             "P/E",
             False,
@@ -720,17 +755,28 @@ def render_index_growth_charts(tk="SPY"):
     )
 
     eps_window_div = Div(text="", sizing_mode="stretch_width")
+    eps_title = (
+        f"{tk} (S&P 500) EPS (TTM reported, monthly)"
+        if tk.upper() == "SPY"
+        else f"{tk} EPS (TTM reported, monthly)"
+    )
+    eps_callout = None
+    if eps_has_nonpositive:
+        eps_callout = "EPS includes non-positive values, so the chart uses a linear scale."
     blocks.append(
         _build_chart_block(
             eps_s,
-            f"{tk} EPS (TTM)",
+            eps_title,
             "EPS ($)",
             False,
             common_range,
-            log_axis=True,
+            log_axis=eps_log_axis,
+            callout_text=eps_callout,
             table_html=eps_table_html,
             window_div=eps_window_div,
             controls=_make_controls_row(),
+            marker_alpha=0.6,
+            marker_size=6,
         )
     )
 

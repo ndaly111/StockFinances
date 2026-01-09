@@ -18,6 +18,7 @@ DB_PATH        = "Stock Data.db"
 IDXES          = ["SPY", "QQQ"]
 FALLBACK_YIELD = 0.045
 CHART_DIR      = "charts"
+EPS_TYPE_IMPLIED = "IMPLIED_FROM_PE"
 os.makedirs(CHART_DIR, exist_ok=True)
 
 # ─── Yield normaliser ─────────────────────────────────────
@@ -124,8 +125,8 @@ def _log_today(y):
                     if price_f > 0 and ttm_pe_f > 0:
                         eps = price_f / ttm_pe_f
                         cur.execute(
-                            "INSERT OR REPLACE INTO Index_EPS_History VALUES (?,?, 'TTM', ?)",
-                            (today, tk, eps),
+                            "INSERT OR REPLACE INTO Index_EPS_History VALUES (?,?, ?, ?)",
+                            (today, tk, EPS_TYPE_IMPLIED, eps),
                         )
                 except Exception:
                     pass

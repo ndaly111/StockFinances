@@ -238,7 +238,7 @@ def test_populate_index_history_inserts_rows(temp_db: Path):
         assert implied_count > 0
 
         cur.execute(
-            "SELECT COUNT(*) FROM Index_EPS_History WHERE Ticker='QQQ' AND EPS_Type='TTM'"
+            "SELECT COUNT(*) FROM Index_EPS_History WHERE Ticker='QQQ' AND EPS_Type='IMPLIED_FROM_PE'"
         )
         eps_count = cur.fetchone()[0]
         assert eps_count > 0
@@ -246,9 +246,7 @@ def test_populate_index_history_inserts_rows(temp_db: Path):
         conn.close()
 
 
-def test_populate_index_history_prefers_csv_eps(
-    temp_db: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-):
+def test_populate_index_history_stores_implied_eps(temp_db: Path):
     spy_csv = dedent(
         """
         Date,SP500,Earnings
@@ -280,13 +278,6 @@ def test_populate_index_history_prefers_csv_eps(
         """
     )
 
-    eps_csv = "Date,EPS\n2023-12-01,8.5\n2024-01-01,9.25\n"
-    eps_path = tmp_path / "spy_eps.csv"
-    eps_path.write_text(eps_csv)
-
-    monkeypatch.setattr(pih, "EPS_DATASETS", {"SPY": (str(eps_path), "EPS")})
-    monkeypatch.setattr(pih, "_EPS_MONTHLY_CACHE", {})
-
     fetch = _fake_fetch_factory(
         {
             pih.SPY_DATA_URL: spy_csv,
@@ -309,12 +300,14 @@ def test_populate_index_history_prefers_csv_eps(
         cur.execute(
             """
             SELECT EPS FROM Index_EPS_History
-            WHERE Ticker='SPY' AND EPS_Type='TTM' AND Date='2024-01-01'
+            WHERE Ticker='SPY' AND EPS_Type='IMPLIED_FROM_PE' AND Date='2024-01-01'
             """
         )
         row = cur.fetchone()
         assert row is not None
         (eps_val,) = row
-        assert eps_val == pytest.approx(9.25)
+        expected_pe = 4600 / 152
+        expected_eps = 475 / expected_pe
+        assert eps_val == pytest.approx(expected_eps, rel=1e-3)
     finally:
         conn.close()
