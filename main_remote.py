@@ -30,6 +30,9 @@ from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
 from backfill_index_growth     import backfill_index_growth
+from scripts.load_index_eps_csv import load_eps_csv
+from scripts.load_index_price_csv import load_price_csv
+from scripts.derive_monthly_pe_from_price_and_eps import derive_monthly_pe
 
 # We no longer call the second table generator; chart writer owns the table.
 from generate_segment_charts   import generate_segment_charts_for_ticker
@@ -266,6 +269,85 @@ def maybe_backfill_index_eps(db_path: str = DB_PATH) -> None:
         print("[index EPS] EPS history present; backfill skipped.")
 
 
+def ensure_spy_monthly_eps_and_derived_pe(
+    db_path: str = DB_PATH,
+    *,
+    repo_root: Path | None = None,
+    eps_csv_path: Path | str | None = None,
+    price_csv_path: Path | str | None = None,
+) -> None:
+    ticker = "SPY"
+    repo_root = repo_root or Path(__file__).resolve().parent
+    eps_csv = Path(eps_csv_path) if eps_csv_path else repo_root / "data" / "spy_monthly_eps_1970_present.csv"
+    price_csv = (
+        Path(price_csv_path)
+        if price_csv_path
+        else repo_root / "data" / "spy_price_history_monthly_1993_present.csv"
+    )
+
+    def _count_rows(
+        conn: sqlite3.Connection, table: str, where_clause: str, params: tuple
+    ) -> int:
+        cur = conn.execute(
+            f"SELECT COUNT(*) FROM {table} WHERE {where_clause}",
+            params,
+        )
+        return int(cur.fetchone()[0])
+
+    load_eps_csv(
+        db_path=db_path,
+        csv_path=str(eps_csv.resolve()),
+        ticker=ticker,
+        eps_type="TTM_REPORTED",
+        column="SPY_EPS",
+    )
+    load_price_csv(
+        db_path=db_path,
+        csv_path=str(price_csv.resolve()),
+        ticker=ticker,
+        date_column="Date",
+        close_column="Close",
+    )
+    derive_monthly_pe(db_path=db_path, ticker=ticker)
+
+    with sqlite3.connect(db_path) as conn:
+        eps_count = _count_rows(
+            conn,
+            "Index_EPS_History",
+            "Ticker=? AND EPS_Type=?",
+            (ticker, "TTM_REPORTED"),
+        )
+        if eps_count == 0:
+            raise SystemExit(
+                "Missing SPY reported EPS data (Index_EPS_History, EPS_Type=TTM_REPORTED). "
+                f"Check CSV path and parsing: {eps_csv}"
+            )
+
+        price_count = _count_rows(
+            conn,
+            "Index_Price_History_Monthly",
+            "Ticker=?",
+            (ticker,),
+        )
+        if price_count == 0:
+            raise SystemExit(
+                "Missing SPY monthly price data (Index_Price_History_Monthly). "
+                f"Check CSV path and parsing: {price_csv}"
+            )
+
+        pe_count = _count_rows(
+            conn,
+            "Index_PE_History",
+            "Ticker=? AND PE_Type=?",
+            (ticker, "TTM_DERIVED_MONTHLY"),
+        )
+        if pe_count == 0:
+            raise SystemExit(
+                "Missing SPY derived monthly P/E data (Index_PE_History, PE_Type=TTM_DERIVED_MONTHLY). "
+                "Check EPS/price CSV parsing and derivation logic."
+            )
+
+
 # ───────────────────────────────────────────────────────────
 # Segments: charts + table (canonical)
 # ───────────────────────────────────────────────────────────
@@ -353,6 +435,7 @@ def mini_main():
         generate_earnings_tables()
         # Generate index growth charts for both SPY and QQQ so that
         # their growth pages share the same styled summaries.
+        ensure_spy_monthly_eps_and_derived_pe(DB_PATH)
         for idx in ("SPY", "QQQ"):
             render_index_growth_charts(idx)
         backfill_index_growth()
