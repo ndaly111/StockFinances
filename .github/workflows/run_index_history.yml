@@ -1,9 +1,16 @@
-name: Update Index PE & Growth History
+name: Update Index PE & Growth History (Scheduled)
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 12 * * 1"  # every Monday at 12:00 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: index-history
+  cancel-in-progress: true
 
 jobs:
   update-index-history:
@@ -21,8 +28,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install requirements if file exists; ignore errors to allow workflow to continue
-          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+          # Install requirements if file exists
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run index loader script
         run: |
@@ -30,6 +37,29 @@ jobs:
             --db "Stock Data.db" \
             --pe_csv "data/sp500_daily_pe_filled.csv" \
             --yield_csv "data/DGS10_filtered.csv"
+
+      - name: Load SPY EPS history (monthly CSV)
+        run: |
+          python scripts/load_index_eps_csv.py \
+            --db "Stock Data.db" \
+            --csv "data/spy_monthly_eps_1970_present.csv" \
+            --ticker "SPY" \
+            --column "SPY_EPS" \
+            --eps-type "TTM_REPORTED"
+
+      - name: Load SPY monthly price history (monthly CSV)
+        run: |
+          python scripts/load_index_price_csv.py \
+            --db "Stock Data.db" \
+            --csv "data/spy_price_history_monthly_1993_present.csv" \
+            --ticker "SPY" \
+            --close-column "Close"
+
+      - name: Derive monthly P/E from price and reported EPS
+        run: |
+          python scripts/derive_monthly_pe_from_price_and_eps.py \
+            --db "Stock Data.db" \
+            --ticker "SPY"
 
       - name: Generate index charts
         run: |
@@ -41,9 +71,11 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add "Stock Data.db"
+          git add charts/*_chart.js charts/*_chart_div.html || true
           git add charts/spy_growth_chart.png charts/spy_pe_chart.png || true
           git add charts/spy_growth_summary.html charts/spy_pe_summary.html || true
           git add charts/qqq_growth_chart.png charts/qqq_pe_chart.png || true
           git add charts/qqq_growth_summary.html charts/qqq_pe_summary.html || true
+          git add charts/*_eps_summary.html || true
           git commit -m "Auto-update: index PE & implied growth history and charts" || echo "No changes to commit"
           git push
