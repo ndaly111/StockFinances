@@ -19,9 +19,10 @@ from balancesheet_chart        import (
     plot_chart, create_and_save_table
 )
 from implied_growth_summary    import generate_all_summaries
-from Forward_data              import scrape_forward_data
+from forward_eps_history      import generate_all_forward_eps_assets
+from Forward_data              import scrape_forward_data, ensure_forward_schema
 from forecasted_earnings_chart import generate_forecast_charts_and_tables
-from ticker_info               import prepare_data_for_display, generate_html_table
+from ticker_info               import prepare_data_for_display, generate_html_table, ensure_history_schema
 from expense_reports           import generate_expense_reports
 from html_generator2           import html_generator2, generate_dashboard_table
 from valuation_update          import valuation_update, process_update_growth_csv
@@ -390,6 +391,12 @@ def mini_main():
 
     try:
         cursor = conn.cursor()
+
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA busy_timeout=30000;")
+        ensure_history_schema(cursor)
+        ensure_forward_schema(conn=conn)
+        conn.commit()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
         missing_segments = []
@@ -399,7 +406,7 @@ def mini_main():
             try:
                 # 1) Core financial data
                 annual_and_ttm_update(ticker, cursor)
-                scrape_forward_data(ticker)
+                scrape_forward_data(ticker, conn=conn, cursor=cursor, commit=False)
                 generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
 
                 # 2) Balance sheet
@@ -412,12 +419,16 @@ def mini_main():
                     missing_segments.append(ticker)
 
                 # 4) Valuation + reporting
-                prepared, mktcap = prepare_data_for_display(ticker, treasury)
+                prepared, mktcap = prepare_data_for_display(
+                    ticker, treasury, conn=conn, cursor=cursor, commit=False
+                )
                 generate_html_table(prepared, ticker)
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
+                conn.commit()
 
             except Exception as e:
+                conn.rollback()
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
 
@@ -427,6 +438,7 @@ def mini_main():
 
         eps_dividend_generator()
         generate_all_summaries()
+        generate_all_forward_eps_assets(tickers)
 
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)

@@ -65,7 +65,7 @@ def fetch_stock_data(ticker, treasury_yield):
         'P/B Ratio': f"{price_to_book:.1f}" if price_to_book else '-',
     }
 
-    return data, marketcap, implied_growth, implied_forward_growth
+    return data, marketcap, implied_growth, implied_forward_growth, forward_eps
 
 
 def calculate_implied_growth(pe_ratio, treasury_yield):
@@ -100,12 +100,50 @@ def format_number(value):
         return f"${value:.2f}"
 
 
-def prepare_data_for_display(ticker, treasury_yield):
-    fetched_data, marketcap, ttm_growth, forward_growth = fetch_stock_data(ticker, treasury_yield)
+def ensure_history_schema(cursor):
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Implied_Growth_History (
+            ticker TEXT,
+            growth_type TEXT CHECK(growth_type IN ('TTM', 'Forward')),
+            growth_value REAL,
+            date_recorded TEXT,
+            UNIQUE(ticker, growth_type, date_recorded)
+        )
+    ''')
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_igh_ticker_date "
+        "ON Implied_Growth_History (ticker, date_recorded)"
+    )
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Forward_EPS_History (
+            date_recorded TEXT,
+            ticker TEXT,
+            forward_eps REAL,
+            source TEXT,
+            PRIMARY KEY (date_recorded, ticker)
+        )
+    ''')
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_forward_eps_hist_ticker_date "
+        "ON Forward_EPS_History (ticker, date_recorded)"
+    )
+
+
+def prepare_data_for_display(ticker, treasury_yield, conn=None, cursor=None, commit=None):
+    fetched_data, marketcap, ttm_growth, forward_growth, forward_eps = fetch_stock_data(ticker, treasury_yield)
 
     # Record implied growths
     today_str = datetime.today().strftime("%Y-%m-%d")
-    record_implied_growth_history(ticker, today_str, ttm_growth, forward_growth)
+    if commit is None:
+        commit = False if (conn is not None or cursor is not None) else True
+    record_implied_growth_history(
+        ticker, today_str, ttm_growth, forward_growth, conn=conn, cursor=cursor, commit=commit
+    )
+
+    # Record forward EPS so revisions can be tracked over time.
+    record_forward_eps_history(
+        ticker, today_str, forward_eps, conn=conn, cursor=cursor, commit=commit
+    )
 
     return fetched_data, marketcap
 
@@ -145,20 +183,19 @@ def generate_html_table(data, ticker):
     return file_path
 
 
-def record_implied_growth_history(ticker, date_str, ttm_growth, forward_growth):
+def record_implied_growth_history(ticker, date_str, ttm_growth, forward_growth, conn=None, cursor=None, commit=True):
     os.makedirs("charts", exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    own_conn = False
+    if cursor is None:
+        if conn is None:
+            conn = sqlite3.connect(DB_PATH, timeout=30)
+            conn.execute("PRAGMA journal_mode=WAL;")
+            conn.execute("PRAGMA busy_timeout=30000;")
+            own_conn = True
+        cursor = conn.cursor()
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Implied_Growth_History (
-            ticker TEXT,
-            growth_type TEXT CHECK(growth_type IN ('TTM', 'Forward')),
-            growth_value REAL,
-            date_recorded TEXT,
-            UNIQUE(ticker, growth_type, date_recorded)
-        )
-    ''')
+    if own_conn:
+        ensure_history_schema(cursor)
 
     def try_insert(tkr, typ, val, date):
         if val in ('-', None) or not isinstance(val, (int, float)) or isinstance(val, complex):
@@ -172,8 +209,54 @@ def record_implied_growth_history(ticker, date_str, ttm_growth, forward_growth):
     try_insert(ticker, 'TTM', ttm_growth, date_str)
     try_insert(ticker, 'Forward', forward_growth, date_str)
 
-    conn.commit()
-    conn.close()
+    if commit or own_conn:
+        cursor.connection.commit()
+    if own_conn:
+        conn.close()
+
+
+def record_forward_eps_history(ticker, date_str, forward_eps, conn=None, cursor=None, commit=True):
+    os.makedirs("charts", exist_ok=True)
+    own_conn = False
+    if cursor is None:
+        if conn is None:
+            conn = sqlite3.connect(DB_PATH, timeout=30)
+            conn.execute("PRAGMA journal_mode=WAL;")
+            conn.execute("PRAGMA busy_timeout=30000;")
+            own_conn = True
+        cursor = conn.cursor()
+
+    if own_conn:
+        ensure_history_schema(cursor)
+
+    try:
+        if forward_eps is None:
+            if own_conn:
+                conn.close()
+            return
+        forward_eps = float(forward_eps)
+    except Exception:
+        if own_conn:
+            conn.close()
+        return
+
+    if forward_eps != forward_eps:
+        if own_conn:
+            conn.close()
+        return
+
+    cursor.execute(
+        '''
+        INSERT OR REPLACE INTO Forward_EPS_History (date_recorded, ticker, forward_eps, source)
+        VALUES (?, ?, ?, ?)
+        ''',
+        (date_str, ticker, forward_eps, "yfinance.info.forwardEps"),
+    )
+
+    if commit or own_conn:
+        cursor.connection.commit()
+    if own_conn:
+        conn.close()
 
 
 if __name__ == "__main__":
