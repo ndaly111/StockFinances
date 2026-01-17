@@ -26,6 +26,7 @@ from sqlite3 import OperationalError
 # ───────────────────────────────────────────────────────────────────────
 DB_PATH    = "Stock Data.db"
 TABLE_NAME = "ForwardFinancialData"
+FY_HIST_TABLE = "Forward_EPS_FY_History"
 
 HEADERS = {
     "User-Agent":
@@ -42,11 +43,27 @@ logging.basicConfig(level=logging.INFO,
 # ───────────────────────────────────────────────────────────────────────
 # SQLite helpers
 # ───────────────────────────────────────────────────────────────────────
-def _ensure_table(db_path: str = DB_PATH, table_name: str = TABLE_NAME) -> None:
-    """Create table + PK columns once per run."""
-    with sqlite3.connect(db_path) as conn:
-        conn.execute("PRAGMA journal_mode=WAL")
-        conn.execute(f"""
+def _ensure_table(
+    db_path: str = DB_PATH,
+    table_name: str = TABLE_NAME,
+    conn: sqlite3.Connection | None = None,
+) -> None:
+    """Create tables once per run. If conn is provided, use it (avoid extra connections)."""
+    if conn is None:
+        with sqlite3.connect(db_path) as created_conn:
+            created_conn.execute("PRAGMA journal_mode=WAL")
+            created_conn.execute("PRAGMA busy_timeout=30000")
+            _ensure_table(db_path=db_path, table_name=table_name, conn=created_conn)
+            created_conn.commit()
+        return
+
+    try:
+        if not getattr(conn, "in_transaction", False):
+            conn.execute("PRAGMA journal_mode=WAL")
+    except Exception:
+        pass
+    conn.execute("PRAGMA busy_timeout=30000")
+    conn.execute(f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             Ticker TEXT NOT NULL,
             Date   TEXT NOT NULL,
@@ -58,7 +75,35 @@ def _ensure_table(db_path: str = DB_PATH, table_name: str = TABLE_NAME) -> None:
             PRIMARY KEY (Ticker, Date)
         );
         """)
-        conn.commit()
+    conn.execute(f"""
+        CREATE TABLE IF NOT EXISTS {FY_HIST_TABLE} (
+            date_recorded TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            period_end    TEXT NOT NULL,
+            period_label  TEXT,
+            forward_eps   REAL,
+            eps_analysts  INTEGER,
+            source        TEXT,
+            PRIMARY KEY (date_recorded, ticker, period_end)
+        );
+        """)
+    conn.execute(
+        f"CREATE INDEX IF NOT EXISTS idx_fy_eps_hist_ticker_period_date "
+        f"ON {FY_HIST_TABLE} (ticker, period_end, date_recorded)"
+    )
+    _ensure_fy_hist_columns(conn)
+
+
+def _ensure_fy_hist_columns(conn: sqlite3.Connection) -> None:
+    cursor = conn.cursor()
+    cursor.execute(f"PRAGMA table_info({FY_HIST_TABLE})")
+    columns = {row[1] for row in cursor.fetchall()}
+    if "fiscal_year" not in columns:
+        try:
+            cursor.execute(f"ALTER TABLE {FY_HIST_TABLE} ADD COLUMN fiscal_year INTEGER")
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                raise
 
 @contextmanager
 def _connect(db_path: str = DB_PATH):
@@ -156,6 +201,7 @@ def _parse(soup: BeautifulSoup) -> Optional[pd.DataFrame]:
         "ForwardRevenueAnalysts" : rev_analysts,
         "ForwardEPSAnalysts"     : eps_analysts
     })
+    data["Period"] = ["This FY", "Next FY"]
     return data
 
 def scrape_annual_estimates(ticker: str,
@@ -174,40 +220,102 @@ def _store(
     ticker: str,
     db_path: str = DB_PATH,
     table_name: str = TABLE_NAME,
+    conn: sqlite3.Connection | None = None,
+    cursor: sqlite3.Cursor | None = None,
+    commit: bool = True,
 ) -> None:
-    with _connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute(f"DELETE FROM {table_name} WHERE Ticker = ?", (ticker,))
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        for _, r in df.iterrows():
-            cur.execute(f"""
-            INSERT INTO {table_name}
-              (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated,
-               ForwardEPSAnalysts, ForwardRevenueAnalysts)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(Ticker, Date) DO UPDATE SET
-              ForwardEPS             = excluded.ForwardEPS,
-              ForwardRevenue         = excluded.ForwardRevenue,
-              ForwardEPSAnalysts     = excluded.ForwardEPSAnalysts,
-              ForwardRevenueAnalysts = excluded.ForwardRevenueAnalysts,
-              LastUpdated            = excluded.LastUpdated;
-            """, (
-                ticker, r["Date"], r["ForwardEPS"], r["ForwardRevenue"],
-                now, r["ForwardEPSAnalysts"], r["ForwardRevenueAnalysts"]
-            ))
-        conn.commit()
+    own_conn = False
+    if cursor is None:
+        if conn is None:
+            conn = sqlite3.connect(db_path, timeout=30)
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA busy_timeout=30000")
+            own_conn = True
+        cursor = conn.cursor()
+
+    if own_conn:
+        _ensure_table(db_path=db_path, table_name=table_name, conn=cursor.connection)
+
+    cursor.execute(f"DELETE FROM {table_name} WHERE Ticker = ?", (ticker,))
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    for _, r in df.iterrows():
+        period_end = r["Date"]
+        fiscal_year = None
+        try:
+            fiscal_year = int(str(period_end)[:4])
+        except Exception:
+            fiscal_year = None
+        cursor.execute(f"""
+        INSERT INTO {table_name}
+          (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated,
+           ForwardEPSAnalysts, ForwardRevenueAnalysts)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(Ticker, Date) DO UPDATE SET
+          ForwardEPS             = excluded.ForwardEPS,
+          ForwardRevenue         = excluded.ForwardRevenue,
+          ForwardEPSAnalysts     = excluded.ForwardEPSAnalysts,
+          ForwardRevenueAnalysts = excluded.ForwardRevenueAnalysts,
+          LastUpdated            = excluded.LastUpdated;
+        """, (
+            ticker, period_end, r["ForwardEPS"], r["ForwardRevenue"],
+            now, r.get("ForwardEPSAnalysts", None), r.get("ForwardRevenueAnalysts", None)
+        ))
+        cursor.execute(f"""
+        INSERT INTO {FY_HIST_TABLE}
+          (date_recorded, ticker, period_end, period_label, forward_eps, eps_analysts, source, fiscal_year)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(date_recorded, ticker, period_end) DO UPDATE SET
+          period_label = excluded.period_label,
+          forward_eps  = excluded.forward_eps,
+          eps_analysts = excluded.eps_analysts,
+          source       = excluded.source,
+          fiscal_year  = excluded.fiscal_year;
+        """, (
+            today,
+            ticker,
+            period_end,
+            r.get("Period", None),
+            r["ForwardEPS"],
+            r.get("ForwardEPSAnalysts", None),
+            "zacks.detailed-earning-estimates",
+            fiscal_year,
+        ))
+
+    cursor.execute(
+        f"DELETE FROM {FY_HIST_TABLE} WHERE ticker = ? AND date_recorded < date('now', '-6 years')",
+        (ticker,),
+    )
+
+    if commit or own_conn:
+        cursor.connection.commit()
+    if own_conn:
+        conn.close()
     logging.info(f"{ticker}: stored {len(df)} rows")
 
 # ───────────────────────────────────────────────────────────────────────
 # Public API
 # ───────────────────────────────────────────────────────────────────────
-def scrape_forward_data(ticker: str) -> None:
-    _ensure_table()
+def scrape_forward_data(
+    ticker: str,
+    conn: sqlite3.Connection | None = None,
+    cursor: sqlite3.Cursor | None = None,
+    commit: bool = True,
+) -> None:
+    if conn is None and cursor is None:
+        _ensure_table()
+    else:
+        _ensure_table(conn=(conn or cursor.connection))
     df = scrape_annual_estimates(ticker, SESSION)
     if df.empty:
         logging.info(f"{ticker}: no data scraped")
         return
-    _store(df, ticker)
+    _store(df, ticker, conn=conn, cursor=cursor, commit=commit)
+
+
+def ensure_forward_schema(conn: sqlite3.Connection | None = None) -> None:
+    _ensure_table(conn=conn)
 
 def scrape_forward_data_batch(tickers: List[str], max_workers: int = 6) -> None:
     """Handy helper for multi-ticker runs (I/O-bound → threads are fine)."""
