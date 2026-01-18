@@ -55,7 +55,9 @@
 
   <div class="chart-block">
     <h2>Forward EPS Revisions</h2>
+    {% if ticker_data.forward_eps_revision_chart_path %}
     <img class="chart-img chart-block" src="{{ ticker_data.forward_eps_revision_chart_path }}" alt="Forward EPS Revisions">
+    {% endif %}
     <div class="table-wrap">{{ ticker_data.forward_eps_revision_summary_html | safe }}</div>
   </div>
 

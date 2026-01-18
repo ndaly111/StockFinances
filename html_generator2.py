@@ -455,6 +455,11 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                     f"{charts_dir_fs}/{t}_forward_eps_revision_summary.html",
                     "No forward EPS history available yet.",
                 ),
+                "forward_eps_revision_chart_path": (
+                    f"{charts_dir_web}/{t}_forward_eps_revision.png"
+                    if os.path.exists(f"{charts_dir_fs}/{t}_forward_eps_revision.png")
+                    else ""
+                ),
                 "segment_table_html_axis1":     get_file_with_fallback([
                     f"{charts_dir_fs}/{t}/axis1_{t}_segments_table.html",
                     f"{charts_dir_fs}/{t}/{t}_segments_table_axis1.html",
@@ -483,7 +488,6 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                 "valuation_chart":               f"{charts_dir_web}/{t}_valuation_chart.png",
                 "eps_dividend_chart_path":       f"{charts_dir_web}/{t}_eps_dividend_forecast.png",
                 "implied_growth_chart_path":     f"{charts_dir_web}/{t}_implied_growth_plot.png",
-                "forward_eps_revision_chart_path": f"{charts_dir_web}/{t}_forward_eps_revision.png",
 
                 # Segment carousels
                 **{
