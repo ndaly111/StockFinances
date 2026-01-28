@@ -100,7 +100,7 @@ def finviz_five_yr(ticker, cursor):
     try:
         pct = float(cell.find_next_sibling("td").text.strip("%"))
     except (AttributeError, ValueError):
-        print(f"[{ticker}] Couldn’t parse 5-yr growth.")
+        print(f"[{ticker}] Couldn't parse 5-yr growth.")
         return
 
     # ensure ticker exists
@@ -414,17 +414,33 @@ def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard):
     # --- push one-line dashboard summary -------------------------------
     try:
         def clean(v):
-            return float(str(v).strip('$BMK').replace(',', ''))
-        n_ttm  = clean(combo["Nicks_Valuation"].iloc[0])
-        n_fwd  = clean(combo["Nicks_Valuation"].iloc[1])
-        n_ttm_pct  = (n_ttm/price - 1)*100
-        n_fwd_pct  = (n_fwd/price - 1)*100
+            """Convert valuation to float, handling None/NaN gracefully."""
+            if v is None:
+                return None
+            if isinstance(v, float) and (np.isnan(v) or np.isinf(v)):
+                return None
+            s = str(v).strip('$BMK').replace(',', '')
+            if s.lower() in ('none', 'nan', 'inf', '-inf', ''):
+                return None
+            return float(s)
+
+        n_ttm = clean(combo["Nicks_Valuation"].iloc[0])
+        n_fwd = clean(combo["Nicks_Valuation"].iloc[1]) if len(combo) > 1 else None
+
+        if n_ttm is None or n_fwd is None:
+            raise ValueError("Nicks_Valuation contains None/NaN")
+
+        n_ttm_pct = (n_ttm/price - 1)*100
+        n_fwd_pct = (n_fwd/price - 1)*100
 
         if pd.notna(growth["FINVIZ_5yr_gwth"].iloc[0]):
             f_ttm = clean(combo["Finviz_Valuation"].iloc[0])
-            f_fwd = clean(combo["Finviz_Valuation"].iloc[1])
-            f_ttm_pct = (f_ttm/price - 1)*100
-            f_fwd_pct = (f_fwd/price - 1)*100
+            f_fwd = clean(combo["Finviz_Valuation"].iloc[1]) if len(combo) > 1 else None
+            if f_ttm is not None and f_fwd is not None:
+                f_ttm_pct = (f_ttm/price - 1)*100
+                f_fwd_pct = (f_fwd/price - 1)*100
+            else:
+                f_ttm = f_fwd = f_ttm_pct = f_fwd_pct = "-"
         else:
             f_ttm = f_fwd = f_ttm_pct = f_fwd_pct = "-"
     except Exception as e:
@@ -440,3 +456,13 @@ def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard):
         f"{f_ttm_pct:.1f}%" if isinstance(f_ttm_pct, float) else f_ttm_pct,
         f"{f_fwd_pct:.1f}%" if isinstance(f_fwd_pct, float) else f_fwd_pct
     ])
+
+    # --- log to ValuationHistory -------------------------------------------
+    try:
+        n_ttm_val = clean(combo["Nicks_Valuation"].iloc[0])
+        n_fwd_val = clean(combo["Nicks_Valuation"].iloc[1]) if len(combo) > 1 else None
+        f_ttm_val = clean(combo["Finviz_Valuation"].iloc[0]) if pd.notna(growth["FINVIZ_5yr_gwth"].iloc[0]) else None
+        f_fwd_val = clean(combo["Finviz_Valuation"].iloc[1]) if (len(combo) > 1 and pd.notna(growth["FINVIZ_5yr_gwth"].iloc[0])) else None
+        log_valuation_data(ticker, n_ttm_val, n_fwd_val, f_ttm_val, f_fwd_val)
+    except Exception as e:
+        print(f"[{ticker}] history log error: {e}")

@@ -1,5 +1,6 @@
 #start of balance_sheet_data_fetcher.py
 
+import logging
 import sqlite3
 from datetime import datetime, timedelta
 
@@ -8,13 +9,15 @@ import pandas as pd
 from config import get_fmp_api_key
 from data_providers import FMPDataProvider, DataProviderError
 
-DB_PATH = 'stock data.db'
+DB_PATH = 'Stock Data.db'  # Fixed: consistent casing with other files
 TICKER = 'AAPL'  # Example ticker
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def fetch_balance_sheet_data(ticker, cursor):
-    print("balance sheet data fetcher 1 fetch balance sheet data from db")
-    print(f"Fetching balance sheet data for {ticker}")
+    logger.debug(f"[{ticker}] Fetching balance sheet data from DB")
     try:
         query = """
         SELECT Symbol, Date, Cash_and_Cash_Equivalents, Total_Assets, Total_Liabilities,
@@ -27,7 +30,7 @@ def fetch_balance_sheet_data(ticker, cursor):
         results = cursor.fetchall()
 
         if not results:
-            print(f"No balance sheet data found for {ticker}.")
+            logger.debug(f"[{ticker}] No balance sheet data found")
             return None
 
         balance_sheet_data = [{
@@ -41,16 +44,16 @@ def fetch_balance_sheet_data(ticker, cursor):
             'Last_Updated': row[7]
         } for row in results]
 
-        print("---balance sheet data in database fetched")
+        logger.debug(f"[{ticker}] Balance sheet data fetched: {len(balance_sheet_data)} records")
         return balance_sheet_data
 
     except sqlite3.Error as e:
-        print(f"Database error while fetching balance sheet data for {ticker}: {e}")
+        logger.error(f"[{ticker}] Database error fetching balance sheet data: {e}")
         return None
 
 
 def check_missing_balance_sheet_data(ticker, cursor):
-    print(f"balance sheet data fetcher 2 Checking for missing balance sheet data for ticker: {ticker}")
+    logger.debug(f"[{ticker}] Checking for missing balance sheet data")
     try:
         columns = [
             'Date', 'Cash_and_Cash_Equivalents', 'Total_Assets', 'Total_Liabilities',
@@ -59,38 +62,31 @@ def check_missing_balance_sheet_data(ticker, cursor):
 
         cursor.execute("SELECT * FROM BalanceSheetData WHERE Symbol = ? ORDER BY Date", (ticker,))
         results = cursor.fetchall()
-        print("---defining the names for balance sheet data")
 
         missing_data = False
         for row in results:
-            print("---checking for missing data")
             row_data = dict(zip(columns, row))
             for key, value in row_data.items():
-                print("---checking row", row_data)
                 if value is None or (isinstance(value, str) and not value.strip()):
-                    print(f"Missing data for {key} in row: {row_data}")
+                    logger.debug(f"[{ticker}] Missing data for {key}")
                     missing_data = True
                     break
         return missing_data
 
     except sqlite3.Error as e:
-        print(f"Database error while checking balance sheet data for {ticker}: {e}")
+        logger.error(f"[{ticker}] Database error checking balance sheet data: {e}")
         return True
 
 
 def is_balance_sheet_data_outdated(balance_sheet_data):
-    print("balance sheet data fetcher 3 is balance sheet data outdated?")
-    print(type(balance_sheet_data))
-
     if not balance_sheet_data:
-        print("No balance sheet data available.")
+        logger.debug("No balance sheet data available")
         return True
 
     if isinstance(balance_sheet_data, list) and balance_sheet_data:
         last_update_value = balance_sheet_data[-1].get('Last_Updated')
-        print("---last updated", last_update_value)
     else:
-        print("balance_sheet_data is not a list or is empty.")
+        logger.debug("balance_sheet_data is not a list or is empty")
         return True
 
     try:
@@ -99,37 +95,35 @@ def is_balance_sheet_data_outdated(balance_sheet_data):
         except TypeError:
             latest_update = datetime.utcfromtimestamp(int(last_update_value))
     except (ValueError, TypeError) as e:
-        print(f"Error handling Last_Updated value: {e}")
+        logger.warning(f"Error parsing Last_Updated value: {e}")
         return True
 
-    print(f"---Latest balance sheet data update date: {latest_update}")
     threshold_date = latest_update + timedelta(days=111)
-    print(f"---Threshold date for updating balance sheet data: {threshold_date}")
 
     if datetime.utcnow() > threshold_date:
-        print("---Balance sheet data is outdated")
+        logger.debug("Balance sheet data is outdated")
         return True
     else:
-        print("---Balance sheet data is up-to-date")
+        logger.debug("Balance sheet data is up-to-date")
         return False
 
 
 def fetch_balance_sheet_data_from_provider(ticker, provider=None):
-    print("balance sheet data fetcher 5 | fetch balance sheet data from licensed provider")
+    logger.debug(f"[{ticker}] Fetching balance sheet from licensed provider")
     provider = provider or FMPDataProvider(api_key=get_fmp_api_key())
 
     try:
         balance_sheet_data = provider.fetch_balance_sheet(ticker)
     except DataProviderError as exc:
-        print(f"Provider error for {ticker}: {exc}")
+        logger.warning(f"[{ticker}] Provider error: {exc}")
         return None
 
-    print(f"---extracted balance sheet data: {balance_sheet_data}")
+    logger.debug(f"[{ticker}] Balance sheet data extracted")
     return balance_sheet_data
 
 
 def fetch_balance_sheet_data_from_yahoo(ticker, provider=None):
-    print("balance sheet data fetcher 5b | fetch balance sheet data from yahoo")
+    logger.debug(f"[{ticker}] Fetching balance sheet via provider")
     # Reuse the provider-based fetch logic to maintain a single mapping/validation path.
     balance_sheet_data = fetch_balance_sheet_data_from_provider(ticker, provider)
 
@@ -149,23 +143,23 @@ def fetch_balance_sheet_data_from_yahoo(ticker, provider=None):
 
     if not required_keys.issubset(balance_sheet_data.keys()):
         missing = required_keys.difference(balance_sheet_data.keys())
-        print(f"Missing expected balance sheet fields from Yahoo provider response: {missing}")
+        logger.warning(f"[{ticker}] Missing balance sheet fields: {missing}")
         return None
 
     return balance_sheet_data
 
 
 def store_fetched_balance_sheet_data(cursor, balance_sheet_data):
-    print("balance sheet data fetcher 6 Storing Fetched balance sheet data")
+    logger.debug(f"[{balance_sheet_data.get('Symbol')}] Storing balance sheet data")
     sql_statement = """
     INSERT INTO BalanceSheetData (
-        Symbol, 
-        Date, 
-        Cash_and_Cash_Equivalents, 
-        Total_Assets, 
-        Total_Liabilities, 
-        Total_Debt, 
-        Total_Shareholder_Equity,  
+        Symbol,
+        Date,
+        Cash_and_Cash_Equivalents,
+        Total_Assets,
+        Total_Liabilities,
+        Total_Debt,
+        Total_Shareholder_Equity,
         Last_Updated
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(Symbol) DO UPDATE SET
@@ -191,19 +185,19 @@ def store_fetched_balance_sheet_data(cursor, balance_sheet_data):
     try:
         cursor.execute(sql_statement, params)
         cursor.connection.commit()
-        print(f"Balance sheet data for {balance_sheet_data['Symbol']} on {balance_sheet_data['Date_of_Last_Reported_Quarter']} has been stored.")
+        logger.info(f"[{balance_sheet_data['Symbol']}] Balance sheet data stored")
     except sqlite3.Error as e:
-        print(f"An error occurred while storing balance sheet data: {e}")
+        logger.error(f"Error storing balance sheet data: {e}")
 
 
 def delete_invalid_records(cursor):
-    print("Cleaning up bad balance sheet records...")
+    logger.debug("Cleaning up bad balance sheet records")
     try:
         cursor.execute("DELETE FROM BalanceSheetData WHERE Last_Updated LIKE '-%'")
         bad = cursor.rowcount
         cursor.execute("""
             DELETE FROM BalanceSheetData
-            WHERE 
+            WHERE
                 Cash_and_Cash_Equivalents IS NULL OR
                 Total_Assets IS NULL OR
                 Total_Liabilities IS NULL OR
@@ -212,9 +206,10 @@ def delete_invalid_records(cursor):
         """)
         more_bad = cursor.rowcount
         cursor.connection.commit()
-        print(f"Deleted {bad + more_bad} invalid records.")
+        if bad + more_bad > 0:
+            logger.info(f"Deleted {bad + more_bad} invalid balance sheet records")
     except sqlite3.Error as e:
-        print(f"Error during cleanup: {e}")
+        logger.error(f"Error during cleanup: {e}")
 
 
 def balance_sheet_data_fetcher():
@@ -235,10 +230,10 @@ def balance_sheet_data_fetcher():
             for k in required_keys
         ):
             store_fetched_balance_sheet_data(cursor, new_balance_sheet_data)
-            print(f"New balance sheet data stored for {TICKER}.")
+            logger.info(f"[{TICKER}] New balance sheet data stored")
         else:
-            print(f"Skipping storing invalid balance sheet data for {TICKER}: {new_balance_sheet_data}")
+            logger.warning(f"[{TICKER}] Skipping invalid balance sheet data")
     else:
-        print(f"Balance sheet data for {TICKER} is up to date.")
+        logger.debug(f"[{TICKER}] Balance sheet data is up to date")
 
     conn.close()

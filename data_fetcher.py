@@ -1,5 +1,6 @@
 #start of data_fetcher.py
 
+import logging
 from datetime import datetime, timedelta
 
 import pandas as pd
@@ -9,6 +10,9 @@ from config import ALLOW_YAHOO_STORAGE, get_fmp_api_key
 from data_providers import FMPDataProvider, DataProviderError
 from split_utils import apply_split_adjustments, ensure_splits_table
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 
 def _ensure_split_alignment(ticker: str, cursor: sqlite3.Cursor) -> None:
     """Ensure split events are recorded and prior rows are split-adjusted."""
@@ -16,155 +20,121 @@ def _ensure_split_alignment(ticker: str, cursor: sqlite3.Cursor) -> None:
         ensure_splits_table(cursor)
         adjusted = apply_split_adjustments(ticker, cursor)
         if adjusted:
-            print(f"[{ticker}] Applied split adjustments before data fetch.")
+            logger.info(f"[{ticker}] Applied split adjustments before data fetch")
     except Exception as exc:
-        print(f"[{ticker}] Split check failed: {exc}")
+        logger.warning(f"[{ticker}] Split check failed: {exc}")
 
 
 def fetch_ticker_data(ticker, cursor):
-    print("data_fetcher 1(new) fetching ticker data")
+    logger.debug(f"[{ticker}] Fetching ticker data")
     try:
         _ensure_split_alignment(ticker, cursor)
 
         cursor.execute("PRAGMA table_info(Annual_Data)")
-        columns = [col[1] for col in cursor.fetchall()]  # Get column names
-        print("---getting column names",columns)
+        columns = [col[1] for col in cursor.fetchall()]
         cursor.execute("SELECT * FROM Annual_Data WHERE Symbol = ? ORDER BY Date ASC", (ticker,))
-        print("---fetching all data for ticker")
-        results = [dict(zip(columns, row)) for row in cursor.fetchall()]  # Convert each tuple to a dictionary
-        print("---converting tuple to a dictionary",results)
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         if results:
-
-            print("---fetched {len(results)} rows for {ticker}")
-            print("---storing into the data frame variable", results)
+            logger.debug(f"[{ticker}] Fetched {len(results)} rows")
             return results
         else:
-            print(f"No data found for {ticker} in the database.")
+            logger.debug(f"[{ticker}] No data found in database")
             return None
     except sqlite3.Error as e:
-        print(f"Database error: {e}")
+        logger.error(f"[{ticker}] Database error: {e}")
         return None
 
 
-
 def get_latest_annual_data_date(ticker, ticker_data):
-    print("data_fetcher 2(new) getting latest annual data date from ticker data")
+    logger.debug(f"[{ticker}] Getting latest annual data date")
     try:
-        # Assuming ticker_data is a list of dictionaries, each with a 'Date' key
         dates = [row['Date'] for row in ticker_data if row['Symbol'] == ticker]
 
         if dates:
             latest_date = max(dates)
-            print(f"---collecting the most recent date from ticker data: {latest_date}")
-            print(f"Latest date in data for {ticker}: {latest_date}")
+            logger.debug(f"[{ticker}] Latest date: {latest_date}")
             return latest_date
         else:
-            print(f"No data found for {ticker} in the data.")
+            logger.debug(f"[{ticker}] No dates found")
             return None
 
-    except Exception as e:  # Catch a more general exception if not interacting with a database
-        print(f"Error processing data: {e}")
+    except Exception as e:
+        logger.error(f"[{ticker}] Error processing data: {e}")
         return None
 
 
 def determine_if_annual_data_missing(ticker_data):
-    print("data fetcher 3(new) determine if annual data missing")
+    logger.debug("Determining if annual data is missing")
 
-    # Check if ticker_data is None or empty
     if not ticker_data:
-        print("---No ticker data found. Data is missing.")
-        return True  # Indicate that data is missing
+        logger.debug("No ticker data found - data is missing")
+        return True
 
-    # Proceed if ticker_data is not None
     try:
         years_listed = [datetime.strptime(row['Date'], '%Y-%m-%d').year for row in ticker_data]
         years_listed_sorted = sorted(years_listed)
-        print("---years listed sorted", years_listed_sorted)
 
         end_range = datetime.now().year - 1
-        print("---calculating end range", end_range)
         start_range = end_range - 3
-        print("---calculating start range", start_range)
-
         years_expected = list(range(start_range, end_range + 1))
-        print("---determining the years expected", years_expected)
 
-        print("---comparing years expected to the current years")
         if years_expected == years_listed_sorted:
-            print("---years expected is equal to years sorted", years_listed_sorted)
-            return False  # No need to fetch years
+            logger.debug(f"Years match expected: {years_listed_sorted}")
+            return False
         else:
-            print("---years expected is not equal to years sorted", years_listed_sorted)
-            return True  # Missing data detected
+            logger.debug(f"Years mismatch - expected {years_expected}, got {years_listed_sorted}")
+            return True
     except Exception as e:
-        print(f"Error processing annual data: {e}")
-        return True  # Assume data is missing in case of any error
+        logger.error(f"Error processing annual data: {e}")
+        return True
+
 
 def calculate_next_annual_check_date_from_data(ticker_data):
-    print("data fetcher 4(new) calculate next annual check date based on the latest date from data")
+    logger.debug("Calculating next annual check date")
 
     if not ticker_data:
-        print("---No data found, data needs to be fetched")
+        logger.debug("No data found - needs fetch")
         return True
 
-    # Correctly extracting all dates using dictionary access
     dates = [row['Date'] for row in ticker_data]
-    print("extracting all dates", dates)
-
-    # Find the latest date
     latest_date_str = max(dates) if dates else None
-    print("---find the latest date", latest_date_str)
 
     if latest_date_str is None:
-        print("---No latest date found after extraction, data needs to be fetched")
+        logger.debug("No latest date found - needs fetch")
         return True
 
-    # Convert the latest date string from the data to a datetime object
     latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
-    print(f"---Latest date from data: {latest_date_str}")
+    next_check_date = latest_date + timedelta(days=365 + 21)
 
-    # Calculate the next check date by adding one year and three weeks to the latest date
-    next_check_date = latest_date + timedelta(days=365 + 21)  # Equivalent to one year and three weeks
-    print(f"---Next annual check date should be: {next_check_date.date()}")
-
-    # Compare the next check date to today's date
     if datetime.now().date() > next_check_date.date():
-        print("---It's time to check for new annual data.")
+        logger.debug("Time to check for new annual data")
         return True
     else:
-        print("---No need to check for new annual data yet.")
+        logger.debug(f"No need to check until {next_check_date.date()}")
         return False
 
 
-
 def check_null_fields_annual(ticker, ticker_data):
-    print("data_fetcher 5(new) checking for null fields in annual data")
+    logger.debug(f"[{ticker}] Checking for null fields in annual data")
     if not ticker_data:
-        print("---No ticker data found. Assuming data is missing or incomplete.")
-        return True  # Return True to indicate that data is missing or might have null fields
+        logger.debug(f"[{ticker}] No ticker data - assuming incomplete")
+        return True
 
     for entry in ticker_data:
-        print("---checking ticker data", entry)
-        # Corrected line: use 'entry' instead of 'row'
-        print([type(x) for x in
-               (ticker, entry['Date'], entry['Revenue'], entry['Net_Income'], entry['EPS'], entry['Last_Updated'])])
-
-        # Access dictionary values by keys correctly
         if entry.get('Revenue') in [None, ''] or entry.get('Net_Income') in [None, ''] or entry.get('EPS') in [None, '']:
-            print(f"Null or empty fields found in Annual Data: {entry}")
+            logger.debug(f"[{ticker}] Null fields found for date {entry.get('Date')}")
             return True
     return False
 
 
-
 def fetch_annual_data_from_provider(ticker, provider=None):
-    print("data_fetcher 6(new) fetch annual data from licensed provider")
+    logger.debug(f"[{ticker}] Fetching annual data from provider")
     provider = provider or FMPDataProvider(api_key=get_fmp_api_key())
     try:
         raw_records = provider.fetch_annual_financials(ticker)
         if not raw_records:
-            print(f"No financial data available for {ticker} from provider.")
+            logger.warning(f"[{ticker}] No financial data from provider")
             return pd.DataFrame()
 
         financials = pd.DataFrame(raw_records)
@@ -177,38 +147,34 @@ def fetch_annual_data_from_provider(ticker, provider=None):
 
         missing_columns = [db_col for db_col in ['Revenue', 'Net_Income', 'EPS', 'Date'] if db_col not in financials.columns]
         if missing_columns:
-            print(f"Missing required columns for {ticker}: {missing_columns}")
+            logger.warning(f"[{ticker}] Missing required columns: {missing_columns}")
             return pd.DataFrame()
 
         financials = financials[list(column_mapping.keys())]
         financials.rename(columns=column_mapping, inplace=True)
-        print("---financials fetched and columns aligned to database schema")
+        logger.debug(f"[{ticker}] Financials fetched and aligned")
         return financials
     except DataProviderError as e:
-        print(f"Provider error fetching data for {ticker}: {e}")
+        logger.warning(f"[{ticker}] Provider error: {e}")
         return pd.DataFrame()
 
 
 def store_annual_data(ticker, annual_data, cursor):
-    print("data_fetcher (new)7 storing annual data")
-    print(f"Storing updated annual data for {ticker}")
+    logger.debug(f"[{ticker}] Storing annual data")
 
     rows_to_upsert = []
 
     for index, row in annual_data.iterrows():
-        # Convert the Date from Timestamp to string format if necessary
         date_str = row['Date'].strftime('%Y-%m-%d') if isinstance(row['Date'], pd.Timestamp) else row['Date']
 
-        # Check for the existence and completeness of the row in the database
         cursor.execute("""
             SELECT * FROM Annual_Data
             WHERE Symbol = ? AND Date = ? AND Revenue IS NOT NULL AND Net_Income IS NOT NULL AND EPS IS NOT NULL;
         """, (ticker, date_str))
         existing_row = cursor.fetchone()
 
-        # If the row exists and is complete, skip the update for this row
         if existing_row:
-            print(f"Complete data already exists for {ticker} on {date_str}. Skipping update.")
+            logger.debug(f"[{ticker}] Complete data exists for {date_str} - skipping")
             continue
 
         rows_to_upsert.append((ticker, date_str, row['Revenue'], row['Net_Income'], row['EPS']))
@@ -227,118 +193,97 @@ def store_annual_data(ticker, annual_data, cursor):
             """
             cursor.executemany(insert_sql, rows_to_upsert)
             cursor.connection.commit()
+            logger.info(f"[{ticker}] Stored {len(rows_to_upsert)} annual data rows")
         except sqlite3.Error as e:
-            print(f"Database error while storing/updating annual data for {ticker}: {e}")
+            logger.error(f"[{ticker}] Database error storing annual data: {e}")
 
 
 def handle_ttm_duplicates(ticker, cursor):
-    print("Checking for duplicate TTM entries for ticker:", ticker)
+    logger.debug(f"[{ticker}] Checking for duplicate TTM entries")
     try:
         cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ?", (ticker,))
         results = cursor.fetchall()
         if len(results) > 1:
-            print("---Multiple TTM entries detected for", ticker, ":", len(results))
+            logger.warning(f"[{ticker}] Multiple TTM entries detected: {len(results)}")
             cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ?", (ticker,))
             cursor.connection.commit()
-            print("---Cleared duplicate TTM entries for", ticker)
-            return True  # Indicates duplicates were found and cleared
-        return False  # Indicates no duplicates were found
+            logger.info(f"[{ticker}] Cleared duplicate TTM entries")
+            return True
+        return False
     except sqlite3.Error as e:
-        print("Database error during duplicate check:", e)
+        logger.error(f"[{ticker}] Database error during duplicate check: {e}")
         return False
 
 
 def fetch_ttm_data(ticker, cursor):
-    print("data fetcher (new)0 Fetching TTM data for ticker")
+    logger.debug(f"[{ticker}] Fetching TTM data")
     try:
         _ensure_split_alignment(ticker, cursor)
 
-        # Fetch the column names for TTM_Data table
         cursor.execute("PRAGMA table_info(TTM_Data)")
-        columns = [col[1] for col in cursor.fetchall()]  # Get column names
-        print("---getting column names", columns)
+        columns = [col[1] for col in cursor.fetchall()]
 
-        # Fetch all TTM data entries for the given ticker, ordered by Quarter
         cursor.execute("SELECT * FROM TTM_Data WHERE Symbol = ? ORDER BY Quarter DESC", (ticker,))
-        results = [dict(zip(columns, row)) for row in cursor.fetchall()]  # Convert each tuple to a dictionary
-        print("---converting tuple to a dictionary", results)
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         if len(results) > 1:
-            print("---Multiple TTM entries found for", ticker, "clearing existing data...")
+            logger.warning(f"[{ticker}] Multiple TTM entries found - clearing")
             cursor.execute("DELETE FROM TTM_Data WHERE Symbol = ?", (ticker,))
             cursor.connection.commit()
-            print("---All existing TTM data for", ticker, "has been cleared.")
-            return None  # Returning None to indicate that new data needs to be fetched
+            return None
         elif results:
-            print(f"---Fetched {len(results)} rows of TTM data for {ticker}")
-            return results[0]  # Return the most recent entry if only one exists
+            logger.debug(f"[{ticker}] Fetched TTM data")
+            return results[0]
         else:
-            print(f"No TTM data found for {ticker} in the database.")
+            logger.debug(f"[{ticker}] No TTM data found")
             return None
     except sqlite3.Error as e:
-        print(f"Database error: {e}")
+        logger.error(f"[{ticker}] Database error: {e}")
         return None
 
 
-
-
-
-
 def check_null_fields_ttm(ttm_data):
-    print("data_fetcher 9(new) checking for null fields in TTM data")
-    # Check if ttm_data is a list and not empty
+    logger.debug("Checking for null fields in TTM data")
     if not ttm_data or not isinstance(ttm_data, list):
-        print("---TTM data is missing or not in the expected format (list).")
-        return True  # Assume true to indicate missing or incomplete data
+        logger.debug("TTM data is missing or invalid format")
+        return True
 
-    # Check each dictionary in the list for null or empty fields
     for row in ttm_data:
-        # Ensure that row is a dictionary
         if not isinstance(row, dict):
-            print("---Row in TTM data is not a dictionary:", row)
-            return True  # Invalid data format detected
-        # Check for null or empty fields using get method on the dictionary
+            logger.debug("Row in TTM data is not a dictionary")
+            return True
         if row.get('TTM_Revenue') is None or row.get('TTM_Net_Income') is None or row.get('TTM_EPS') is None:
-            print("---Null or empty fields found in TTM Data:", row)
-            return True  # Null data detected
+            logger.debug("Null fields found in TTM data")
+            return True
 
-    print("---TTM data is complete with no null or empty fields.")
-    return False  # No null fields found
-
-
-
+    logger.debug("TTM data is complete")
+    return False
 
 
 def is_ttm_data_outdated(ttm_data):
-    print("data_fetcher 10(new) checking if TTM data is outdated")
-    print("---pre-processed ttm_data", ttm_data)
+    logger.debug("Checking if TTM data is outdated")
     try:
-        # Since ttm_data is a list of dictionaries, access the 'Quarter' field directly
         latest_date = max(datetime.strptime(row['Quarter'], '%Y-%m-%d') for row in ttm_data)
-        print(f"---Latest TTM data date: {latest_date}")
+        threshold_date = latest_date + timedelta(days=90)
 
-        # Calculate the date 3 months and 3 weeks ago
-        threshold_date = latest_date + timedelta(days=90)  # approximately three months
-        print(f"---Threshold date for updating TTM data: {threshold_date}")
-
-        # If the current date is past the threshold date, TTM data needs updating
         if datetime.now() > threshold_date:
-            print("---TTM data is outdated")
+            logger.debug("TTM data is outdated")
             return True
         else:
-            print("---TTM data is up-to-date")
+            logger.debug("TTM data is up-to-date")
             return False
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"Error checking TTM data: {e}")
         return True
 
+
 def is_ttm_data_blank(ttm_data):
-    print("data fetcher 11(new) is ttm data blank?")
+    logger.debug("Checking if TTM data is blank")
     if ttm_data is None or not ttm_data:
-        print("---ttm is blank")
+        logger.debug("TTM data is blank")
         return True
     else:
-        print("---ttm has data")
+        logger.debug("TTM data has content")
         return False
 
 
@@ -356,111 +301,93 @@ def fetch_ttm_data_from_yahoo(ticker):
         return None
 
     ttm_data = {}
-    # Attempt to calculate TTM Revenue and Net Income
     try:
         ttm_data['TTM_Revenue'] = ttm_financials.loc['Total Revenue', :].iloc[:4].sum()
         ttm_data['TTM_Net_Income'] = ttm_financials.loc['Net Income', :].iloc[:4].sum()
     except KeyError:
-        # If the key doesn't exist, or an error occurs, default these values to None
         ttm_data['TTM_Revenue'] = None
         ttm_data['TTM_Net_Income'] = None
 
-    # Directly use trailingEps for TTM_EPS without conditionally checking for NaNs in quarterly EPS data
     ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
-
-    # Get shares outstanding
     ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding', None)
-
-    # Get the quarter information
     ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
     return ttm_data
 
 
-
 def store_ttm_data(ticker, ttm_data, cursor):
-    print("Storing TTM data")
-    print(f"Storing updated TTM data for {ticker}")
+    logger.debug(f"[{ticker}] Storing TTM data")
 
     if not ALLOW_YAHOO_STORAGE:
         raise RuntimeError("Yahoo-derived data storage is disabled. Set ALLOW_YAHOO_STORAGE=true to override.")
 
-    # Prepare the data tuple for the SQL query
     ttm_values = (
         ticker,
         ttm_data['TTM_Revenue'],
         ttm_data['TTM_Net_Income'],
         ttm_data['TTM_EPS'],
-        ttm_data.get('Shares_Outstanding'),  # Get shares outstanding, using .get to avoid KeyError if not present
+        ttm_data.get('Shares_Outstanding'),
         ttm_data['Quarter']
     )
 
-    # Use INSERT OR REPLACE to overwrite existing data if the same ticker and quarter are found
     try:
         cursor.execute("""
             INSERT OR REPLACE INTO TTM_Data (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS, Shares_Outstanding, Quarter, Last_Updated)
             VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP);
         """, ttm_values)
         cursor.connection.commit()
-        print(f"TTM data stored/updated for {ticker}")
+        logger.info(f"[{ticker}] TTM data stored")
     except sqlite3.Error as e:
-        print(f"Database error while storing/updating TTM data for {ticker}: {e}")
-
+        logger.error(f"[{ticker}] Database error storing TTM data: {e}")
 
 
 def prompt_and_update_partial_entries(ticker, cursor, is_remote=False):
-    print("data_fetcher 9 prompt and update partial entries")
-    print("prompt and updating partial rows")
+    logger.debug(f"[{ticker}] Checking for partial entries")
 
     if is_remote:
-        print("Running in remote mode, skipping user prompts.")
+        logger.debug("Running in remote mode - skipping user prompts")
         return
 
-    else:
-        # Select rows with at least one non-NULL and at least one NULL among Revenue, Net_Income, EPS
-        cursor.execute("""
-            SELECT Symbol, Date, Revenue, Net_Income, EPS 
-            FROM Annual_Data 
-            WHERE (Revenue IS NOT NULL OR Net_Income IS NOT NULL OR EPS IS NOT NULL)
-            AND (Revenue IS NULL OR Net_Income IS NULL OR EPS IS NULL)
-            AND Symbol = ?
-        """, (ticker,))
-        partial_rows = cursor.fetchall()
+    cursor.execute("""
+        SELECT Symbol, Date, Revenue, Net_Income, EPS
+        FROM Annual_Data
+        WHERE (Revenue IS NOT NULL OR Net_Income IS NOT NULL OR EPS IS NOT NULL)
+        AND (Revenue IS NULL OR Net_Income IS NULL OR EPS IS NULL)
+        AND Symbol = ?
+    """, (ticker,))
+    partial_rows = cursor.fetchall()
 
-        for row in partial_rows:
-            print("rows", row)
-            symbol, date, revenue, net_income, eps = row
-            updates = []
-            params = []
-            print("partial rows ",partial_rows)
+    for row in partial_rows:
+        symbol, date, revenue, net_income, eps = row
+        updates = []
+        params = []
 
-            print(f"Partial data found for {symbol} in {date}.")
+        logger.info(f"[{symbol}] Partial data found for {date}")
 
-            if revenue is None:
-                response = input(f"Please enter the Revenue for {symbol} in {date} (or type 'skip' to leave unchanged): ")
-                if response.lower() != 'skip':
-                    updates.append("Revenue = ?")
-                    params.append(response)
+        if revenue is None:
+            response = input(f"Please enter the Revenue for {symbol} in {date} (or type 'skip' to leave unchanged): ")
+            if response.lower() != 'skip':
+                updates.append("Revenue = ?")
+                params.append(response)
 
-            if net_income is None:
-                response = input(f"Please enter the Net Income for {symbol} in {date} (or type 'skip' to leave unchanged): ")
-                if response.lower() != 'skip':
-                    updates.append("Net_Income = ?")
-                    params.append(response)
+        if net_income is None:
+            response = input(f"Please enter the Net Income for {symbol} in {date} (or type 'skip' to leave unchanged): ")
+            if response.lower() != 'skip':
+                updates.append("Net_Income = ?")
+                params.append(response)
 
-            if eps is None:
-                response = input(
-                    f"Please enter the EPS for {symbol} in {date} (or type 'skip' to leave unchanged): ")
-                if response.lower() != 'skip':
-                    updates.append("EPS = ?")
-                    params.append(response)
+        if eps is None:
+            response = input(
+                f"Please enter the EPS for {symbol} in {date} (or type 'skip' to leave unchanged): ")
+            if response.lower() != 'skip':
+                updates.append("EPS = ?")
+                params.append(response)
 
-            if updates:
-                update_query = f"UPDATE Annual_Data SET {', '.join(updates)} WHERE Symbol = ? AND Date = ?"
-                params.extend([symbol, date])
-                cursor.execute(update_query, params)
-                cursor.connection.commit()
-                print(f"Data updated for {symbol} in {date}.")
-
+        if updates:
+            update_query = f"UPDATE Annual_Data SET {', '.join(updates)} WHERE Symbol = ? AND Date = ?"
+            params.extend([symbol, date])
+            cursor.execute(update_query, params)
+            cursor.connection.commit()
+            logger.info(f"[{symbol}] Data updated for {date}")
 
 
 #end of data_fetcher.py
