@@ -15,6 +15,13 @@ import yfinance as yf
 
 from split_utils import apply_split_adjustments, ensure_splits_table
 
+# Import prefetched cache from forecasted_earnings_chart if available
+try:
+    from forecasted_earnings_chart import get_cached_yf_info
+except ImportError:
+    def get_cached_yf_info(ticker):
+        return {}
+
 DB_PATH   = "Stock Data.db"
 CHART_DIR = "charts"
 os.makedirs(CHART_DIR, exist_ok=True)
@@ -117,11 +124,23 @@ def _fetch_ttm(tkr: str) -> dict | None:
     q = tk.quarterly_financials
     if q is None or q.empty:
         return None
+
+    # Use prefetched info if available (avoids redundant API call)
+    cached_info = get_cached_yf_info(tkr)
+    if cached_info:
+        trailing_eps = cached_info.get("trailingEps", np.nan)
+        shares_outstanding = cached_info.get("sharesOutstanding", np.nan)
+    else:
+        # Fallback to direct fetch
+        info = tk.info
+        trailing_eps = info.get("trailingEps", np.nan) if info else np.nan
+        shares_outstanding = info.get("sharesOutstanding", np.nan) if info else np.nan
+
     return {
         "TTM_Revenue":        q.loc["Total Revenue"].iloc[:4].sum(),
         "TTM_Net_Income":     q.loc["Net Income"].iloc[:4].sum(),
-        "TTM_EPS":            tk.info.get("trailingEps", np.nan),
-        "Shares_Outstanding": tk.info.get("sharesOutstanding", np.nan),
+        "TTM_EPS":            trailing_eps,
+        "Shares_Outstanding": shares_outstanding,
         "Quarter":            q.columns[0].strftime("%Y-%m-%d"),
     }
 
