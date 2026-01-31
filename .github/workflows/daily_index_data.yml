@@ -1,0 +1,54 @@
+name: Daily Index Data Collection
+
+on:
+  schedule:
+    # Run at 9:30 PM UTC (4:30 PM EST) after market close
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-index-data
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install yfinance pandas
+
+      - name: Collect daily index data
+        run: |
+          python scripts/collect_daily_index_data.py --tickers SPY QQQ
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Stock Data.db" || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "data: daily index data update $(date -u +%Y-%m-%d)"
+            for i in 1 2 3; do
+              git pull --rebase && git push && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 2
+            done
+          fi
