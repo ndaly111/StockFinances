@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""Derive monthly P/E from monthly prices and reported EPS."""
+"""Derive monthly P/E from monthly prices and reported EPS.
+
+Note on scaling:
+    The EPS data in Index_EPS_History is based on S&P 500 index-level earnings
+    (e.g., when the index is at 6000, EPS might be ~$200).
+
+    SPY (the ETF) trades at roughly 1/10th of the S&P 500 index value
+    (e.g., SPY ~$600 when the index is at 6000).
+
+    To calculate accurate P/E ratios using SPY prices, we must scale the
+    index-level EPS down by the same factor. Otherwise:
+        Wrong: P/E = 600 / 200 = 3  (nonsense)
+        Right: P/E = 600 / 20 = 30  (correct, after scaling EPS by 1/10)
+"""
 
 from __future__ import annotations
 
@@ -12,6 +25,10 @@ DEFAULT_DB = "Stock Data.db"
 DEFAULT_TICKER = "SPY"
 EPS_TYPE = "TTM_REPORTED"
 PE_TYPE = "TTM_DERIVED_MONTHLY"
+
+# SPY trades at approximately 1/10th of the S&P 500 index value.
+# Scale the index-level EPS down to match SPY's price level.
+SPY_INDEX_DIVISOR = 10.0
 
 
 def _parse_args() -> argparse.Namespace:
@@ -83,7 +100,9 @@ def derive_monthly_pe(*, db_path: str, ticker: str = DEFAULT_TICKER) -> int:
         if merged.empty:
             return 0
 
-        merged["PE_Ratio"] = merged["Close"] / merged["EPS"]
+        # Scale EPS to match SPY price level (SPY is ~1/10th of index)
+        scaled_eps = merged["EPS"] / SPY_INDEX_DIVISOR
+        merged["PE_Ratio"] = merged["Close"] / scaled_eps
         merged["Date"] = merged["Month"].dt.to_timestamp("M").dt.strftime("%Y-%m-%d")
 
         rows = [
