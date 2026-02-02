@@ -20,8 +20,8 @@ from balancesheet_chart        import (
 )
 from implied_growth_summary    import generate_all_summaries
 from forward_eps_history      import generate_all_forward_eps_assets
-from Forward_data              import scrape_forward_data, ensure_forward_schema
-from forecasted_earnings_chart import generate_forecast_charts_and_tables
+from Forward_data              import scrape_forward_data, ensure_forward_schema, scrape_forward_data_batch
+from forecasted_earnings_chart import generate_forecast_charts_and_tables, prefetch_yfinance_data
 from ticker_info               import prepare_data_for_display, generate_html_table, ensure_history_schema
 from expense_reports           import generate_expense_reports
 from html_generator2           import html_generator2, generate_dashboard_table
@@ -399,6 +399,22 @@ def mini_main():
         conn.commit()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
+        # ─────────────────────────────────────────────────────────
+        # OPTIMIZATION: Batch prefetch yfinance data for all tickers
+        # This is much faster than individual API calls per ticker
+        # ─────────────────────────────────────────────────────────
+        print(f"[main] Prefetching yfinance data for {len(tickers)} tickers...")
+        prefetch_yfinance_data(tickers)
+        print("[main] yfinance prefetch complete")
+
+        # ─────────────────────────────────────────────────────────
+        # OPTIMIZATION: Batch scrape forward data (parallel threads)
+        # Uses ThreadPoolExecutor with 6 workers instead of sequential
+        # ─────────────────────────────────────────────────────────
+        print(f"[main] Batch scraping forward data for {len(tickers)} tickers...")
+        scrape_forward_data_batch(tickers, max_workers=6)
+        print("[main] Forward data batch scrape complete")
+
         missing_segments = []
 
         for ticker in tickers:
@@ -406,7 +422,7 @@ def mini_main():
             try:
                 # 1) Core financial data
                 annual_and_ttm_update(ticker, cursor)
-                scrape_forward_data(ticker, conn=conn, cursor=cursor, commit=False)
+                # Note: scrape_forward_data now done in batch above
                 generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
 
                 # 2) Balance sheet

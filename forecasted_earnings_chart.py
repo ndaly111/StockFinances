@@ -6,6 +6,53 @@ import numpy as np
 import os
 import yfinance as yf
 import shutil
+from functools import lru_cache
+
+# Cache for yfinance data to avoid repeated API calls
+_yf_cache = {}
+
+def prefetch_yfinance_data(tickers: list) -> dict:
+    """Batch fetch yfinance data for multiple tickers at once.
+
+    This is much faster than calling yf.Ticker().info individually.
+    Call this once before processing tickers to warm the cache.
+    """
+    global _yf_cache
+    # Filter out tickers we already have cached
+    missing = [t for t in tickers if t not in _yf_cache]
+    if not missing:
+        return _yf_cache
+
+    try:
+        # Batch fetch using yf.Tickers (much faster than individual calls)
+        batch = yf.Tickers(" ".join(missing))
+        for ticker in missing:
+            try:
+                info = batch.tickers[ticker].info
+                _yf_cache[ticker] = info if info else {}
+            except Exception:
+                _yf_cache[ticker] = {}
+    except Exception as e:
+        print(f"[yfinance batch] Error fetching batch data: {e}")
+        # Fallback: mark as empty so we don't retry
+        for ticker in missing:
+            _yf_cache[ticker] = {}
+
+    return _yf_cache
+
+def get_cached_yf_info(ticker: str) -> dict:
+    """Get yfinance info from cache, or fetch if not cached."""
+    if ticker in _yf_cache:
+        return _yf_cache[ticker]
+
+    # Single ticker fetch as fallback
+    try:
+        info = yf.Ticker(ticker).info
+        _yf_cache[ticker] = info if info else {}
+    except Exception:
+        _yf_cache[ticker] = {}
+
+    return _yf_cache[ticker]
 
 def millions_formatter(x, pos):
     return f'${int(x / 1e6)}M'
@@ -27,34 +74,37 @@ def format_axis(ax, max_value):
     ax.set_ylim(top=max_lim)
 
 def fetch_financial_data(ticker, db_path):
+    """Fetch all financial data in optimized queries."""
     historical_table = 'Annual_Data'
     forecast_table = 'ForwardFinancialData'
 
     with sqlite3.connect(db_path) as conn:
+        # Combined query for forecast data + analyst counts (avoid 2 separate queries)
+        forecast_query = f"""
+        SELECT Date, ForwardRevenue AS Revenue, ForwardEPS AS EPS,
+               ForwardEPSAnalysts, ForwardRevenueAnalysts
+        FROM {forecast_table}
+        WHERE Ticker = ?
+        ORDER BY Date;
+        """
+        forecast_full = pd.read_sql_query(forecast_query, conn, params=(ticker,))
+
+        # Split into forecast_data and analyst_counts
+        forecast_data = forecast_full[['Date', 'Revenue', 'EPS']].copy()
+        analyst_counts = forecast_full[['Date', 'ForwardEPSAnalysts', 'ForwardRevenueAnalysts']].copy()
+
+        # Historical data query
         historical_query = f"""
-        SELECT Date, Revenue, Net_Income, EPS 
-        FROM {historical_table} 
-        WHERE Symbol = ? 
+        SELECT Date, Revenue, Net_Income, EPS
+        FROM {historical_table}
+        WHERE Symbol = ?
         ORDER BY Date;
         """
         historical_data = pd.read_sql_query(historical_query, conn, params=(ticker,))
 
-        forecast_query = f"""
-        SELECT Date, ForwardRevenue AS Revenue, ForwardEPS AS EPS 
-        FROM {forecast_table} 
-        WHERE Ticker = ? 
-        ORDER BY Date;
-        """
-        forecast_data = pd.read_sql_query(forecast_query, conn, params=(ticker,))
-
-        analyst_count_query = f"""
-        SELECT Date, ForwardEPSAnalysts, ForwardRevenueAnalysts 
-        FROM {forecast_table} WHERE Ticker = ? ORDER BY Date;
-        """
-        analyst_counts = pd.read_sql_query(analyst_count_query, conn, params=(ticker,))
-
+        # Shares outstanding query
         shares_outstanding_query = """
-        SELECT Shares_Outstanding FROM TTM_Data WHERE Symbol = ? 
+        SELECT Shares_Outstanding FROM TTM_Data WHERE Symbol = ?
         ORDER BY Last_Updated DESC LIMIT 1;
         """
         shares_outstanding_result = pd.read_sql_query(shares_outstanding_query, conn, params=(ticker,))
@@ -70,23 +120,10 @@ def fetch_financial_data(ticker, db_path):
 
 def prepare_data_for_plotting(historical_data, forecast_data, shares_outstanding, ticker):
     """
-    Updated: Added try/except and extra checks to avoid errors when yfinance returns None or fails.
+    Updated: Uses cached yfinance data for better performance.
     """
-    # Safely attempt to get market data
-    market_data = None
-    info = {}
-    try:
-        market_data = yf.Ticker(ticker)
-        # Sometimes market_data.info can be None or can raise an error
-        temp_info = market_data.info
-        if temp_info is not None:
-            info = temp_info
-        else:
-            print(f"Warning: market_data.info returned None for {ticker}.")
-    except Exception as e:
-        print(f"Error retrieving market data for {ticker}: {e}")
-        # Fallback to empty info dict to avoid crashing
-        info = {}
+    # Use cached yfinance data (much faster than individual API calls)
+    info = get_cached_yf_info(ticker)
 
     # Now fetch current_price and market_cap from the safe 'info' dict
     current_price = info.get('regularMarketPrice', None)

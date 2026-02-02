@@ -602,9 +602,10 @@ def render_index_growth_charts(tk="SPY"):
     if not pe_combined.empty and isinstance(pe_combined.index, (pd.DatetimeIndex, pd.PeriodIndex)):
         pe_summary_source = pe_combined.resample("M").last().dropna()
     pe_summary = _rows_by_years(pe_summary_source, pct=False)
+    eps_summary = _rows_by_years(eps_s, pct=False)
     ig_table_html = _build_html(ig_summary)
     pe_table_html = _build_html(pe_summary)
-    eps_table_html = ""
+    eps_table_html = _build_html(eps_summary)
 
     tk_lower = tk.lower()
 
