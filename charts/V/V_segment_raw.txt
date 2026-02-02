@@ -35,27 +35,51 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-09-30          
                                 us-gaap:OperatingIncomeLoss 2025-09-30                                                                    2.399400e+10
                                 us-gaap:OperatingIncomeLoss 2024-09-30                                                                    2.359500e+10
                                 us-gaap:OperatingIncomeLoss 2023-09-30                                                                    2.100000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                                    1.090100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                    9.510000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                    srt:ProductOrServiceAxis:us-gaap:ServiceMember  4.760000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                    srt:ProductOrServiceAxis:us-gaap:ServiceMember  4.208000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31           srt:ProductOrServiceAxis:v:DataProcessingRevenuesMember  5.544000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31           srt:ProductOrServiceAxis:v:DataProcessingRevenuesMember  4.745000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31 srt:ProductOrServiceAxis:v:InternationalTransactionRevenuesMember  3.652000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31 srt:ProductOrServiceAxis:v:InternationalTransactionRevenuesMember  3.442000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31               srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember  1.214000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31               srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember  9.120000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                 srt:ProductOrServiceAxis:v:ClientIncentivesMember -4.269000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                 srt:ProductOrServiceAxis:v:ClientIncentivesMember -3.797000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                                    1.090100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                    9.510000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                          srt:StatementGeographicalAxis:country:US  4.163000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                          srt:StatementGeographicalAxis:country:US  3.738000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  6.738000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  5.772000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                                    1.090100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                    9.510000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31               srt:ProductOrServiceAxis:v:ValueAddedServicesMember  3.200000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31               srt:ProductOrServiceAxis:v:ValueAddedServicesMember  2.400000e+09
-                                us-gaap:OperatingIncomeLoss 2025-12-31                                                                    6.737000e+09
-                                us-gaap:OperatingIncomeLoss 2024-12-31                                                                    6.234000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                    1.017200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                    8.900000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                    2.927600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                    2.630900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                    srt:ProductOrServiceAxis:us-gaap:ServiceMember  4.330000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                    srt:ProductOrServiceAxis:us-gaap:ServiceMember  3.967000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                    srt:ProductOrServiceAxis:us-gaap:ServiceMember  1.293700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                    srt:ProductOrServiceAxis:us-gaap:ServiceMember  1.191500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30           srt:ProductOrServiceAxis:v:DataProcessingRevenuesMember  5.153000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30           srt:ProductOrServiceAxis:v:DataProcessingRevenuesMember  4.489000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30           srt:ProductOrServiceAxis:v:DataProcessingRevenuesMember  1.459900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30           srt:ProductOrServiceAxis:v:DataProcessingRevenuesMember  1.310400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:ProductOrServiceAxis:v:InternationalTransactionRevenuesMember  3.633000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30 srt:ProductOrServiceAxis:v:InternationalTransactionRevenuesMember  3.194000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:ProductOrServiceAxis:v:InternationalTransactionRevenuesMember  1.036600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30 srt:ProductOrServiceAxis:v:InternationalTransactionRevenuesMember  9.197000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30               srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember  1.028000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30               srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember  7.800000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30               srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember  2.877000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30               srt:ProductOrServiceAxis:us-gaap:ServiceOtherMember  2.228000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                 srt:ProductOrServiceAxis:v:ClientIncentivesMember -3.972000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                 srt:ProductOrServiceAxis:v:ClientIncentivesMember -3.530000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                 srt:ProductOrServiceAxis:v:ClientIncentivesMember -1.150300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                 srt:ProductOrServiceAxis:v:ClientIncentivesMember -1.013500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                    1.017200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                    8.900000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                    2.927600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                    2.630900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                          srt:StatementGeographicalAxis:country:US  3.927000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                          srt:StatementGeographicalAxis:country:US  3.621000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                          srt:StatementGeographicalAxis:country:US  1.147600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                          srt:StatementGeographicalAxis:country:US  1.090900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  6.245000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  5.279000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  1.780000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  1.540000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                    1.017200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                    8.900000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                    2.927600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30                                                                    2.630900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30               srt:ProductOrServiceAxis:v:ValueAddedServicesMember  2.800000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30               srt:ProductOrServiceAxis:v:ValueAddedServicesMember  2.200000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30               srt:ProductOrServiceAxis:v:ValueAddedServicesMember  7.800000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-06-30               srt:ProductOrServiceAxis:v:ValueAddedServicesMember  6.400000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                    6.177000e+09
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                    5.938000e+09
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                    1.784600e+10
+                                us-gaap:OperatingIncomeLoss 2024-06-30                                                                    1.724600e+10
