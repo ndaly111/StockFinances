@@ -109,7 +109,12 @@ def fetch_financial_data(ticker, db_path):
         """
         shares_outstanding_result = pd.read_sql_query(shares_outstanding_query, conn, params=(ticker,))
 
-        shares_outstanding = shares_outstanding_result.iloc[0]['Shares_Outstanding'] if not shares_outstanding_result.empty else None
+        shares_outstanding = None
+        if not shares_outstanding_result.empty:
+            try:
+                shares_outstanding = shares_outstanding_result.iloc[0]['Shares_Outstanding']
+            except (IndexError, KeyError):
+                shares_outstanding = None
 
         if shares_outstanding is not None:
             forecast_data['EPS'] = pd.to_numeric(forecast_data['EPS'], errors='coerce')
@@ -194,9 +199,14 @@ def plot_bars(ax, combined_data, bar_width, analyst_counts):
         label = date_str
 
         if date in analyst_counts['Date'].values:
-            revenue_analyst_count = analyst_counts.loc[analyst_counts['Date'] == date, 'ForwardRevenueAnalysts'].iloc[0]
-            eps_analyst_count = analyst_counts.loc[analyst_counts['Date'] == date, 'ForwardEPSAnalysts'].iloc[0]
-            label += f"\n({revenue_analyst_count}) / ({eps_analyst_count})"
+            try:
+                filtered = analyst_counts.loc[analyst_counts['Date'] == date]
+                if not filtered.empty:
+                    revenue_analyst_count = filtered['ForwardRevenueAnalysts'].iloc[0]
+                    eps_analyst_count = filtered['ForwardEPSAnalysts'].iloc[0]
+                    label += f"\n({revenue_analyst_count}) / ({eps_analyst_count})"
+            except (IndexError, KeyError):
+                pass  # Skip adding analyst counts if data unavailable
 
         custom_xtick_labels.append(label)
 
@@ -313,8 +323,13 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
         date_str = pd.to_datetime(date).strftime('%Y-%m-%d')
         label = date_str
         if date in analyst_counts['Date'].values:
-            eps_analyst_count = analyst_counts.loc[analyst_counts['Date'] == date, 'ForwardEPSAnalysts'].iloc[0]
-            label += f"\n({eps_analyst_count} analysts)"
+            try:
+                filtered = analyst_counts.loc[analyst_counts['Date'] == date]
+                if not filtered.empty:
+                    eps_analyst_count = filtered['ForwardEPSAnalysts'].iloc[0]
+                    label += f"\n({eps_analyst_count} analysts)"
+            except (IndexError, KeyError):
+                pass  # Skip adding analyst count if data unavailable
         custom_xtick_labels.append(label)
 
     ax.set_xticks(positions)
@@ -496,11 +511,19 @@ def generate_yoy_line_chart(chart_type, data, title, ylabel, output_path, analys
         va = 'top' if value < 0 else 'bottom'
         ax.text(year, label_pos, f'{value:.1f}%', ha='center', va=va, fontsize=10)
 
-    x_labels = [
-        f"{year}* ({analyst_counts.loc[analyst_counts['Year'] == year, analyst_column].iloc[0]})" 
-        if year in forecast_years else str(year)
-        for year in years
-    ]
+    x_labels = []
+    for year in years:
+        if year in forecast_years:
+            try:
+                filtered = analyst_counts.loc[analyst_counts['Year'] == year, analyst_column]
+                if not filtered.empty:
+                    x_labels.append(f"{year}* ({filtered.iloc[0]})")
+                else:
+                    x_labels.append(f"{year}*")
+            except (IndexError, KeyError):
+                x_labels.append(f"{year}*")
+        else:
+            x_labels.append(str(year))
     ax.set_xticks(years)
     ax.set_xticklabels(x_labels)
 

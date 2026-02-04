@@ -145,8 +145,11 @@ def _ensure(drop: bool = False, *, conn=None):
 
 def _store(tkr: str, mode: str = "annual", *, conn=None):
     yf_tkr = yf.Ticker(tkr)
-    df = (yf_tkr.financials.transpose()
-          if mode == "annual" else yf_tkr.quarterly_financials.transpose())
+    # Safely access financials (may be None)
+    raw_df = yf_tkr.financials if mode == "annual" else yf_tkr.quarterly_financials
+    if raw_df is None or raw_df.empty:
+        return
+    df = raw_df.transpose()
     if df.empty:
         return
 

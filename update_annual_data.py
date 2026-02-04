@@ -26,16 +26,32 @@ def fetch_annual_data_from_yahoo(ticker):
     print(f"Columns available for {ticker}: {list(financials.columns)}")
 
     # Return only the columns we need, handling the case where columns might not exist
-    columns_needed = ['Total Revenue', 'Net Income']
-    columns_to_rename = {'Total Revenue': 'Revenue', 'Net Income': 'Net_Income'}
+    columns_needed = []
+    columns_to_rename = {}
 
-    # Check if EPS is in the columns and add it to our requirements if so
+    # Check each required column and only add if it exists
+    if 'Total Revenue' in financials.columns:
+        columns_needed.append('Total Revenue')
+        columns_to_rename['Total Revenue'] = 'Revenue'
+    else:
+        print(f"'Total Revenue' not found for ticker: {ticker}")
+
+    if 'Net Income' in financials.columns:
+        columns_needed.append('Net Income')
+        columns_to_rename['Net Income'] = 'Net_Income'
+    else:
+        print(f"'Net Income' not found for ticker: {ticker}")
+
     if 'Basic EPS' in financials.columns:
         columns_needed.append('Basic EPS')
         columns_to_rename['Basic EPS'] = 'EPS'
     else:
-        # Log if EPS is not found; you may want to handle this case differently
-        print("EPS data not found for ticker:", ticker)
+        print(f"'Basic EPS' not found for ticker: {ticker}")
+
+    # If no financial columns found, return empty DataFrame
+    if not columns_needed:
+        print(f"No required financial columns found for {ticker}")
+        return pd.DataFrame()
 
     try:
         return financials[['Symbol', 'Date'] + columns_needed].rename(columns=columns_to_rename)
