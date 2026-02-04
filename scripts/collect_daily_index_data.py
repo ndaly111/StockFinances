@@ -85,7 +85,8 @@ def collect_ticker_data(ticker: str, conn: sqlite3.Connection) -> dict | None:
     """Fetch and store data for a single ticker."""
     try:
         stock = yf.Ticker(ticker)
-        info = stock.info or {}
+        # Ensure info is always a dict (stock.info can be None or non-dict)
+        info = stock.info if isinstance(stock.info, dict) else {}
 
         # Get current price
         price = info.get("regularMarketPrice") or info.get("previousClose")
