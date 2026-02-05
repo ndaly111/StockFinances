@@ -1,1 +1,1 @@
-[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":2,"AxisScore":12.0,"Examples":"Client, Gaming"},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":2,"AxisScore":12.0,"Examples":"Client And Gaming, Embedded"}]
+[{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":3,"AxisScore":15.0,"Examples":"Client, Embedded, Gaming"}]
