@@ -138,7 +138,13 @@ def value_asof(df, target_date):
     subset = df[df["date_recorded"] <= pd.Timestamp(target_date)]
     if subset.empty:
         return None
-    return float(subset.iloc[-1]["forward_eps"])
+    try:
+        val = subset.iloc[-1]["forward_eps"]
+        if val is None or pd.isna(val):
+            return None
+        return float(val)
+    except (IndexError, KeyError, TypeError, ValueError):
+        return None
 
 
 def write_forward_eps_summary_html(ticker, df, meta):

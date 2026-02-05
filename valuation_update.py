@@ -228,9 +228,11 @@ def plot_valuation_chart(df, current_price, ticker, growth):
 def fetch_stock_data(ticker):
     stock = yf.Ticker(ticker)
     current_price = get_current_price(stock)
-    forward_eps   = stock.info.get("forwardEps")
-    pe_ratio      = stock.info.get("trailingPE") or stock.info.get("trailingPe")
-    ps_ratio      = stock.info.get("priceToSalesTrailing12Months")
+    # Safely access stock.info (may be None)
+    info = stock.info if stock.info else {}
+    forward_eps   = info.get("forwardEps")
+    pe_ratio      = info.get("trailingPE") or info.get("trailingPe")
+    ps_ratio      = info.get("priceToSalesTrailing12Months")
     fwd_pe        = current_price / forward_eps if (forward_eps and current_price) else None
     return current_price, pe_ratio, ps_ratio, fwd_pe
 

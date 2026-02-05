@@ -308,9 +308,21 @@ def fetch_ttm_data_from_yahoo(ticker):
         ttm_data['TTM_Revenue'] = None
         ttm_data['TTM_Net_Income'] = None
 
-    ttm_data['TTM_EPS'] = stock.info.get('trailingEps', None)
-    ttm_data['Shares_Outstanding'] = stock.info.get('sharesOutstanding', None)
-    ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
+    # Safely access stock.info (may be None)
+    info = stock.info if stock.info else {}
+    ttm_data['TTM_EPS'] = info.get('trailingEps', None)
+    ttm_data['Shares_Outstanding'] = info.get('sharesOutstanding', None)
+
+    # Safely extract quarter date
+    try:
+        if stock.quarterly_financials is not None and len(stock.quarterly_financials.columns) > 0:
+            ttm_data['Quarter'] = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
+        else:
+            ttm_data['Quarter'] = None
+    except (IndexError, AttributeError) as e:
+        logger.warning(f"[{ticker}] Could not extract quarter date: {e}")
+        ttm_data['Quarter'] = None
+
     return ttm_data
 
 

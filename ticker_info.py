@@ -9,7 +9,8 @@ DB_PATH = "Stock Data.db"
 def fetch_stock_data(ticker, treasury_yield):
     try:
         stock = yf.Ticker(ticker)
-        raw_info = stock.info or {}
+        # Ensure raw_info is always a dict (stock.info can be None or non-dict)
+        raw_info = stock.info if isinstance(stock.info, dict) else {}
     except Exception as e:
         print(f"Error retrieving market data for {ticker}: {e}")
         raw_info = {}

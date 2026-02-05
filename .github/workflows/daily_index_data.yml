@@ -31,11 +31,15 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install yfinance pandas
+          pip install yfinance pandas requests beautifulsoup4
 
       - name: Collect daily index data
         run: |
           python scripts/collect_daily_index_data.py --tickers SPY QQQ
+
+      - name: Backfill implied growth from P/E history
+        run: |
+          python backfill_index_growth.py || echo "Backfill growth failed, continuing..."
 
       - name: Commit changes
         run: |

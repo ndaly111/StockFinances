@@ -34,7 +34,13 @@ def _norm_yld(v):
 
 # ─── Fetch P/E ratios ─────────────────────────────────────
 def _fetch_pe(tk):
-    info = yf.Ticker(tk).info
+    try:
+        stock = yf.Ticker(tk)
+        info = stock.info if isinstance(stock.info, dict) else {}
+    except Exception as e:
+        print(f"[{tk}] Error fetching info: {e}")
+        info = {}
+
     ttm  = info.get("trailingPE")
     fwd  = info.get("forwardPE")
     if fwd is None:
@@ -42,6 +48,10 @@ def _fetch_pe(tk):
         if px and eps:
             try: fwd = px / eps
             except ZeroDivisionError: fwd = None
+
+    if ttm is None and fwd is None:
+        print(f"[{tk}] Warning: Could not fetch P/E ratios (trailingPE={ttm}, forwardPE={fwd})")
+
     return ttm, fwd
 
 # ─── Growth calc ──────────────────────────────────────────
@@ -86,22 +96,29 @@ def _ensure_tables(conn):
 
 def _log_today(y):
     today = datetime.today().strftime("%Y-%m-%d")
+    print(f"[index_growth] Logging data for {today}")
     with sqlite3.connect(DB_PATH) as conn:
         _ensure_tables(conn); cur = conn.cursor()
         for tk in IDXES:
             ttm_pe, fwd_pe = _fetch_pe(tk)
             price = None
             try:
-                price = yf.Ticker(tk).info.get("regularMarketPrice")
-            except Exception:
+                stock = yf.Ticker(tk)
+                info = stock.info if isinstance(stock.info, dict) else {}
+                price = info.get("regularMarketPrice")
+            except Exception as e:
+                print(f"[{tk}] Error getting price from info: {e}")
                 price = None
             if price is None:
                 try:
                     hist = yf.Ticker(tk).history(period="5d", auto_adjust=False, actions=False)
                     if not hist.empty:
                         price = float(hist["Close"].iloc[-1])
-                except Exception:
+                except Exception as e:
+                    print(f"[{tk}] Error getting price from history: {e}")
                     price = None
+
+            print(f"[{tk}] P/E: TTM={ttm_pe}, Fwd={fwd_pe}, Price={price}")
             ttm_g, fwd_g   = _growth(ttm_pe, fwd_pe, y)
 
             if ttm_g is not None:

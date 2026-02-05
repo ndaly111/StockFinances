@@ -40,19 +40,31 @@ def fetch_and_store_all_data(ticker, cursor):
 
     # Fetch and store TTM data
     try:
-        ttm_data = stock.quarterly_financials.iloc[:, :4].sum(axis=1)
-        quarter_end_date = stock.quarterly_financials.columns[0].strftime('%Y-%m-%d')
+        quarterly_fin = stock.quarterly_financials
+        if quarterly_fin is None or quarterly_fin.empty:
+            print(f"No quarterly financials data for {ticker}")
+        else:
+            # Safely sum available quarters (up to 4)
+            num_quarters = min(4, len(quarterly_fin.columns))
+            ttm_data = quarterly_fin.iloc[:, :num_quarters].sum(axis=1)
 
-        cursor.execute("""
-            INSERT INTO TTM_Data (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS, Quarter, Last_Updated)
-            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            ON CONFLICT(Symbol, Quarter) DO UPDATE SET
-            TTM_Revenue = excluded.TTM_Revenue,
-            TTM_Net_Income = excluded.TTM_Net_Income,
-            TTM_EPS = excluded.TTM_EPS,
-            Last_Updated = CURRENT_TIMESTAMP;
-        """, (ticker, ttm_data.get('Total Revenue'), ttm_data.get('Net Income'), ttm_data.get('Basic EPS'), quarter_end_date))
-        cursor.connection.commit()
+            # Safely extract quarter end date
+            try:
+                quarter_end_date = quarterly_fin.columns[0].strftime('%Y-%m-%d')
+            except (IndexError, AttributeError):
+                quarter_end_date = None
+
+            if quarter_end_date:
+                cursor.execute("""
+                    INSERT INTO TTM_Data (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS, Quarter, Last_Updated)
+                    VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    ON CONFLICT(Symbol, Quarter) DO UPDATE SET
+                    TTM_Revenue = excluded.TTM_Revenue,
+                    TTM_Net_Income = excluded.TTM_Net_Income,
+                    TTM_EPS = excluded.TTM_EPS,
+                    Last_Updated = CURRENT_TIMESTAMP;
+                """, (ticker, ttm_data.get('Total Revenue'), ttm_data.get('Net Income'), ttm_data.get('Basic EPS'), quarter_end_date))
+                cursor.connection.commit()
     except Exception as e:
         print(f"Error fetching/storing TTM data for {ticker}: {e}")
 

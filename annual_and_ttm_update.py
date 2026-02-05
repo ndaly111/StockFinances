@@ -136,12 +136,33 @@ def _fetch_ttm(tkr: str) -> dict | None:
         trailing_eps = info.get("trailingEps", np.nan) if info else np.nan
         shares_outstanding = info.get("sharesOutstanding", np.nan) if info else np.nan
 
+    # Safely extract TTM Revenue with fallback
+    try:
+        ttm_revenue = q.loc["Total Revenue"].iloc[:4].sum()
+    except KeyError:
+        logging.warning("[%s] 'Total Revenue' not found in quarterly_financials", tkr)
+        ttm_revenue = np.nan
+
+    # Safely extract TTM Net Income with fallback
+    try:
+        ttm_net_income = q.loc["Net Income"].iloc[:4].sum()
+    except KeyError:
+        logging.warning("[%s] 'Net Income' not found in quarterly_financials", tkr)
+        ttm_net_income = np.nan
+
+    # Safely extract Quarter date
+    try:
+        quarter_str = q.columns[0].strftime("%Y-%m-%d") if len(q.columns) > 0 else None
+    except (IndexError, AttributeError) as e:
+        logging.warning("[%s] Could not extract quarter date: %s", tkr, e)
+        quarter_str = None
+
     return {
-        "TTM_Revenue":        q.loc["Total Revenue"].iloc[:4].sum(),
-        "TTM_Net_Income":     q.loc["Net Income"].iloc[:4].sum(),
+        "TTM_Revenue":        ttm_revenue,
+        "TTM_Net_Income":     ttm_net_income,
         "TTM_EPS":            trailing_eps,
         "Shares_Outstanding": shares_outstanding,
-        "Quarter":            q.columns[0].strftime("%Y-%m-%d"),
+        "Quarter":            quarter_str,
     }
 
 # ──────────────────── storage helpers ────────────────────────

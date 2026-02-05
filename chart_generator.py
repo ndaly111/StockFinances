@@ -81,12 +81,21 @@ def prepare_data_for_charts(ticker, cursor):
     if not ttm_df.empty and 'Last_Updated' in ttm_df:
         print("---checking if ttm df is not empty")
 
-        # Extract the last quarter end date
-        last_quarter_end = ttm_dfb.loc[0, 'Quarter']
-        print("---last quarter",last_quarter_end)
+        # Safely extract the last quarter end date
+        last_quarter_end = None
+        if not ttm_dfb.empty and 'Quarter' in ttm_dfb.columns:
+            try:
+                last_quarter_end = ttm_dfb.loc[0, 'Quarter']
+            except (KeyError, IndexError):
+                last_quarter_end = None
+
+        print("---last quarter", last_quarter_end)
         # Check if 'Date' already formatted with 'TTM' to prevent "TTM TTM"
-        if not str(last_quarter_end).startswith('TTM'):
-            ttm_df.at[0, 'Date'] = f'TTM {last_quarter_end}'
+        if last_quarter_end is not None and not str(last_quarter_end).startswith('TTM'):
+            try:
+                ttm_df.at[0, 'Date'] = f'TTM {last_quarter_end}'
+            except (KeyError, IndexError):
+                pass  # Skip if can't set the date
         print('---extracting last quarter date', last_quarter_end)
 
     # Check if annual_data and ttm_data are empty
