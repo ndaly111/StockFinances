@@ -8,6 +8,7 @@ import ticker_manager
 from generate_market_summary import generate_market_summary
 from generate_economic_data    import generate_economic_data
 from annual_and_ttm_update     import annual_and_ttm_update, get_db_connection
+from chart_generator           import prepare_data_for_charts, generate_financial_charts
 from html_generator            import create_html_for_tickers
 from balance_sheet_data_fetcher import (
     fetch_balance_sheet_data, check_missing_balance_sheet_data,
@@ -422,6 +423,12 @@ def mini_main():
             try:
                 # 1) Core financial data
                 annual_and_ttm_update(ticker, cursor)
+
+                # Historical revenue/net-income/EPS charts + table
+                financial_data_df = prepare_data_for_charts(ticker, cursor)
+                if not financial_data_df.empty:
+                    generate_financial_charts(ticker, CHARTS_DIR, financial_data_df)
+
                 # Note: scrape_forward_data now done in batch above
                 generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
 
