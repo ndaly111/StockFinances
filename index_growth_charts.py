@@ -42,6 +42,9 @@ DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
 EPS_TYPE_TTM_REPORTED = "TTM_REPORTED"
 
+# Divisor to convert ETF-level EPS (IMPLIED_FROM_PE) to index-level EPS.
+_INDEX_EPS_DIVISOR: dict[str, float] = {"SPY": 10.0, "QQQ": 4.0}
+
 # ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
 <style>
@@ -135,7 +138,13 @@ def _series_pe_monthly_derived(conn, tk):
 
 
 def _series_eps(conn, tk):
-    """Return EPS (TTM reported) series for ticker tk."""
+    """Return EPS series for ticker *tk*.
+
+    Authoritative source is ``TTM_REPORTED`` (monthly).  For dates after the
+    last reported row the series is extended with ``TTM_DAILY`` (index-level,
+    daily) and then ``IMPLIED_FROM_PE`` (ETF-level, daily, scaled up by the
+    index divisor).
+    """
     try:
         df = pd.read_sql(
             """SELECT Date, EPS AS val
@@ -148,7 +157,53 @@ def _series_eps(conn, tk):
     except AttributeError:  # pragma: no cover - allows mocked connections in tests
         return pd.Series(dtype=float)
     df["Date"] = pd.to_datetime(df["Date"])
-    return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
+    reported = pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
+
+    # Determine the cut-off after which we supplement with daily data.
+    cutoff = reported.index.max() if not reported.empty else pd.Timestamp.min
+
+    # --- TTM_DAILY (already at index level) ---
+    try:
+        df_daily = pd.read_sql(
+            """SELECT Date, EPS AS val
+                 FROM Index_EPS_History
+                WHERE Ticker=? AND EPS_Type='TTM_DAILY' AND Date>?
+             ORDER BY Date""",
+            conn,
+            params=(tk, cutoff.strftime("%Y-%m-%d")),
+        )
+    except (AttributeError, Exception):
+        df_daily = pd.DataFrame(columns=["Date", "val"])
+    df_daily["Date"] = pd.to_datetime(df_daily["Date"])
+    daily = pd.to_numeric(df_daily.set_index("Date")["val"], errors="coerce").dropna()
+
+    # --- IMPLIED_FROM_PE (ETF level – scale up by divisor) ---
+    divisor = _INDEX_EPS_DIVISOR.get(tk.upper(), 1.0)
+    try:
+        df_implied = pd.read_sql(
+            """SELECT Date, EPS AS val
+                 FROM Index_EPS_History
+                WHERE Ticker=? AND EPS_Type='IMPLIED_FROM_PE' AND Date>?
+             ORDER BY Date""",
+            conn,
+            params=(tk, cutoff.strftime("%Y-%m-%d")),
+        )
+    except (AttributeError, Exception):
+        df_implied = pd.DataFrame(columns=["Date", "val"])
+    df_implied["Date"] = pd.to_datetime(df_implied["Date"])
+    implied = pd.to_numeric(df_implied.set_index("Date")["val"], errors="coerce").dropna()
+    implied = implied * divisor
+
+    # Combine: reported is authoritative; daily fills gaps; implied fills remainder.
+    parts = [s for s in (reported, daily, implied) if not s.empty]
+    if not parts:
+        return reported  # empty series with DatetimeIndex
+    combined = parts[0]
+    for part in parts[1:]:
+        combined = combined.combine_first(part)
+
+    combined.index = pd.DatetimeIndex(combined.index)
+    return combined.sort_index()
 
 def _pctile(s) -> str:                      # whole-number percentile
     """Return percentile rank of the latest value in *s* (1-99)."""
@@ -369,6 +424,38 @@ def _build_chart_block(
 
     yoy_pct = _calc_hover_metrics(values)
 
+    # ── Compute explicit y_range from the visible x-window ──
+    visible = values
+    if x_range is not None:
+        try:
+            xs = pd.Timestamp(x_range.start)
+            xe = pd.Timestamp(x_range.end)
+            vis = values[(values.index >= xs) & (values.index <= xe)]
+            if log_axis:
+                vis = vis[vis > 0]
+            if not vis.empty:
+                visible = vis
+        except Exception:
+            pass
+    if log_axis:
+        visible = visible[visible > 0]
+    if not visible.empty:
+        y_min, y_max = float(visible.min()), float(visible.max())
+        if log_axis:
+            y_min_padded = y_min * 0.93
+            y_max_padded = y_max * 1.07
+        elif y_max == y_min:
+            pad = abs(y_max) * 0.07 or 1.0
+            y_min_padded = y_min - pad
+            y_max_padded = y_max + pad
+        else:
+            pad = (y_max - y_min) * 0.07
+            y_min_padded = y_min - pad
+            y_max_padded = y_max + pad
+        y_range = Range1d(start=y_min_padded, end=y_max_padded)
+    else:
+        y_range = None
+
     def _clean(arr):
         cleaned = []
         for val in arr:
@@ -389,7 +476,7 @@ def _build_chart_block(
         }
     )
 
-    fig = figure(
+    fig_kwargs = dict(
         title=None,
         x_axis_type="datetime",
         y_axis_type="log" if log_axis else "linear",
@@ -399,6 +486,9 @@ def _build_chart_block(
         tools="",
         x_range=x_range,
     )
+    if y_range is not None:
+        fig_kwargs["y_range"] = y_range
+    fig = figure(**fig_kwargs)
 
     pan_tool = PanTool(dimensions="width")
     wheel_zoom = WheelZoomTool(dimensions="width")
@@ -757,9 +847,9 @@ def render_index_growth_charts(tk="SPY"):
 
     eps_window_div = Div(text="", sizing_mode="stretch_width")
     eps_title = (
-        f"{tk} (S&P 500) EPS (TTM reported, monthly)"
+        f"{tk} (S&P 500) EPS (TTM)"
         if tk.upper() == "SPY"
-        else f"{tk} EPS (TTM reported, monthly)"
+        else f"{tk} EPS (TTM)"
     )
     eps_callout = None
     if eps_has_nonpositive:
