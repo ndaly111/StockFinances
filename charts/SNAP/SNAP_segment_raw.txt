@@ -1,28 +1,37 @@
                                                     Concept  PeriodEnd                                                               Dims         Value
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                                     5.931447e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                     5.361398e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                     4.606115e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                     4.601847e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31             srt:ProductOrServiceAxis:snap:AdvertisingRevenueMember  5.186077e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31             srt:ProductOrServiceAxis:snap:AdvertisingRevenueMember  4.903703e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31             srt:ProductOrServiceAxis:snap:AdvertisingRevenueMember  4.408306e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                   srt:ProductOrServiceAxis:snap:OtherRevenueMember  7.453700e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                   srt:ProductOrServiceAxis:snap:OtherRevenueMember  4.576950e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                   srt:ProductOrServiceAxis:snap:OtherRevenueMember  1.978090e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                                     5.931447e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                     5.361398e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                     4.606115e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31               srt:StatementGeographicalAxis:srt:NorthAmericaMember  3.473174e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31               srt:StatementGeographicalAxis:srt:NorthAmericaMember  3.236217e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31               srt:StatementGeographicalAxis:srt:NorthAmericaMember  2.952301e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31               srt:StatementGeographicalAxis:srt:NorthAmericaMember  3.205554e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                     srt:StatementGeographicalAxis:srt:EuropeMember  1.092092e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                     srt:StatementGeographicalAxis:srt:EuropeMember  9.570750e+08
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                     srt:StatementGeographicalAxis:srt:EuropeMember  7.720780e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                     srt:StatementGeographicalAxis:srt:EuropeMember  7.127640e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31               srt:StatementGeographicalAxis:snap:RestOfWorldMember  1.366181e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31               srt:StatementGeographicalAxis:snap:RestOfWorldMember  1.168106e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31               srt:StatementGeographicalAxis:snap:RestOfWorldMember  8.817360e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31               srt:StatementGeographicalAxis:snap:RestOfWorldMember  6.835290e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                                     5.931447e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                     5.361398e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                     4.606115e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                                                                     4.601847e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                           srt:StatementGeographicalAxis:country:US  3.400000e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                           srt:StatementGeographicalAxis:country:US  3.100000e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                           srt:StatementGeographicalAxis:country:US  2.900000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31                           srt:StatementGeographicalAxis:country:US  3.100000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31 us-gaap:StatementBusinessSegmentsAxis:snap:ReportableSegmentMember  5.931447e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31 us-gaap:StatementBusinessSegmentsAxis:snap:ReportableSegmentMember  5.361398e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31 us-gaap:StatementBusinessSegmentsAxis:snap:ReportableSegmentMember  4.606115e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31 us-gaap:StatementBusinessSegmentsAxis:snap:ReportableSegmentMember  4.601847e+09
+                                us-gaap:OperatingIncomeLoss 2025-12-31                                                                    -5.321670e+08
                                 us-gaap:OperatingIncomeLoss 2024-12-31                                                                    -7.872940e+08
                                 us-gaap:OperatingIncomeLoss 2023-12-31                                                                    -1.398379e+09
-                                us-gaap:OperatingIncomeLoss 2022-12-31                                                                    -1.395306e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                     1.506839e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                     1.372574e+09
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                     4.214986e+09
