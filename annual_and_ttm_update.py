@@ -117,7 +117,6 @@ def _fetch_annual(tkr: str) -> pd.DataFrame:
                         "Basic EPS":     "EPS"}, inplace=True)
     return _clean_financial_df(fin)
 
-@lru_cache(maxsize=32)
 def _fetch_ttm(tkr: str) -> dict | None:
     logging.info("Fetching TTM data from Yahoo Finance")
     tk = yf.Ticker(tkr)
@@ -179,19 +178,43 @@ def _store_annual(tkr: str, df: pd.DataFrame, cur: sqlite3.Cursor):
               _to_float(row["EPS"])))
 
 def _store_ttm(tkr: str, d: dict, cur: sqlite3.Cursor):
-    cur.execute("""
-        INSERT OR REPLACE INTO TTM_Data
-            (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS,
-             Shares_Outstanding, Quarter, Last_Updated)
-        VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP);
-    """, (
-        tkr,
-        _to_float(d.get("TTM_Revenue")),
-        _to_float(d.get("TTM_Net_Income")),
-        _to_float(d.get("TTM_EPS")),
-        _to_float(d.get("Shares_Outstanding")),
-        d.get("Quarter"),
-    ))
+    new_quarter = d.get("Quarter")
+
+    # Check if there is already a row for this ticker and what Quarter it holds
+    cur.execute("SELECT Quarter FROM TTM_Data WHERE Symbol=?", (tkr,))
+    existing = cur.fetchone()
+
+    if existing and existing[0] == new_quarter:
+        # Same quarter — update financial values but preserve Last_Updated
+        cur.execute("""
+            UPDATE TTM_Data
+               SET TTM_Revenue        = ?,
+                   TTM_Net_Income      = ?,
+                   TTM_EPS             = ?,
+                   Shares_Outstanding  = ?
+             WHERE Symbol = ?;
+        """, (
+            _to_float(d.get("TTM_Revenue")),
+            _to_float(d.get("TTM_Net_Income")),
+            _to_float(d.get("TTM_EPS")),
+            _to_float(d.get("Shares_Outstanding")),
+            tkr,
+        ))
+    else:
+        # New quarter (or new ticker) — full insert with fresh timestamp
+        cur.execute("""
+            INSERT OR REPLACE INTO TTM_Data
+                (Symbol, TTM_Revenue, TTM_Net_Income, TTM_EPS,
+                 Shares_Outstanding, Quarter, Last_Updated)
+            VALUES (?,?,?,?,?,?,CURRENT_TIMESTAMP);
+        """, (
+            tkr,
+            _to_float(d.get("TTM_Revenue")),
+            _to_float(d.get("TTM_Net_Income")),
+            _to_float(d.get("TTM_EPS")),
+            _to_float(d.get("Shares_Outstanding")),
+            new_quarter,
+        ))
 
 # ───────────────────────── TTM freshness check ─────────────────────
 def _latest_completed_quarter_end(today: datetime | None = None) -> datetime:
@@ -217,7 +240,23 @@ def _is_ttm_fresh(tkr: str, cur: sqlite3.Cursor, freshness_hours: int = 24) -> b
 
     quarter_str, last_updated_str = row
 
-    # 1) recent pull (time-based)
+    # 1) Quarter validity check FIRST — if the stored Quarter is behind the
+    #    latest completed quarter, force a re-fetch regardless of timestamp.
+    if quarter_str:
+        try:
+            quarter_dt = datetime.fromisoformat(str(quarter_str))
+            if quarter_dt.date() < _latest_completed_quarter_end().date():
+                logging.info("[%s] TTM quarter %s is stale (latest=%s); forcing re-fetch",
+                             tkr, quarter_str, _latest_completed_quarter_end().date())
+                return False
+        except Exception:
+            logging.warning("[%s] Unable to parse Quarter=%s; forcing re-fetch", tkr, quarter_str)
+            return False
+    else:
+        # No quarter stored at all → stale
+        return False
+
+    # 2) Quarter is current — now apply the time-based freshness window
     if last_updated_str:
         try:
             last_updated = datetime.fromisoformat(str(last_updated_str))
@@ -226,16 +265,6 @@ def _is_ttm_fresh(tkr: str, cur: sqlite3.Cursor, freshness_hours: int = 24) -> b
                 return True
         except Exception:
             logging.warning("[%s] Unable to parse Last_Updated=%s", tkr, last_updated_str)
-
-    # 2) latest completed quarter already recorded
-    if quarter_str:
-        try:
-            quarter_dt = datetime.fromisoformat(str(quarter_str))
-            if quarter_dt.date() >= _latest_completed_quarter_end().date():
-                logging.info("[%s] TTM quarter %s is current; skipping fetch", tkr, quarter_str)
-                return True
-        except Exception:
-            logging.warning("[%s] Unable to parse Quarter=%s", tkr, quarter_str)
 
     return False
 
@@ -258,12 +287,11 @@ def annual_and_ttm_update(
         batching multiple ticker updates within a single transaction.
     """
 
-    # Annual (only if none exist)
-    cur.execute("SELECT 1 FROM Annual_Data WHERE Symbol=? LIMIT 1", (tkr,))
-    if not cur.fetchone():
-        df = _fetch_annual(tkr)
-        if not df.empty:
-            _store_annual(tkr, df, cur)
+    # Annual — always fetch and upsert (lru_cache on _fetch_annual prevents
+    # redundant Yahoo API calls within the same run)
+    df = _fetch_annual(tkr)
+    if not df.empty:
+        _store_annual(tkr, df, cur)
 
     # TTM (overwrite with latest every run)
     if force_refresh or not _is_ttm_fresh(tkr, cur):

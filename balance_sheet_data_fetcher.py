@@ -123,30 +123,53 @@ def fetch_balance_sheet_data_from_provider(ticker, provider=None):
 
 
 def fetch_balance_sheet_data_from_yahoo(ticker, provider=None):
-    logger.debug(f"[{ticker}] Fetching balance sheet via provider")
-    # Reuse the provider-based fetch logic to maintain a single mapping/validation path.
-    balance_sheet_data = fetch_balance_sheet_data_from_provider(ticker, provider)
+    """Fetch the most recent balance sheet data from Yahoo Finance via yfinance."""
+    logger.debug(f"[{ticker}] Fetching balance sheet from Yahoo Finance")
 
-    if balance_sheet_data is None:
+    try:
+        import yfinance as yf
+        import numpy as np
+
+        bs = yf.Ticker(ticker).quarterly_balance_sheet
+        if bs is None or bs.empty:
+            logger.warning(f"[{ticker}] yfinance returned empty balance sheet")
+            return None
+
+        # Most recent quarter is the first column
+        latest = bs.iloc[:, 0]
+        quarter_date = bs.columns[0].strftime("%Y-%m-%d")
+
+        def _get(field):
+            val = latest.get(field)
+            if val is None or (isinstance(val, float) and np.isnan(val)):
+                return None
+            return float(val)
+
+        balance_sheet_data = {
+            'Symbol': ticker,
+            'Date_of_Last_Reported_Quarter': quarter_date,
+            'Cash': _get('Cash And Cash Equivalents'),
+            'Total_Assets': _get('Total Assets'),
+            'Total_Liabilities': _get('Total Liabilities Net Minority Interest'),
+            'Debt': _get('Total Debt'),
+            'Equity': _get('Stockholders Equity'),
+            'Last_Updated': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+        }
+
+        required_keys = {
+            'Symbol', 'Date_of_Last_Reported_Quarter', 'Cash',
+            'Total_Assets', 'Total_Liabilities', 'Debt', 'Equity', 'Last_Updated',
+        }
+        missing = [k for k in required_keys if balance_sheet_data.get(k) is None]
+        if missing:
+            logger.warning(f"[{ticker}] Missing balance sheet fields from yfinance: {missing}")
+            return None
+
+        return balance_sheet_data
+
+    except Exception as exc:
+        logger.warning(f"[{ticker}] yfinance balance sheet fetch failed: {exc}")
         return None
-
-    required_keys = {
-        'Symbol',
-        'Date_of_Last_Reported_Quarter',
-        'Cash',
-        'Total_Assets',
-        'Total_Liabilities',
-        'Debt',
-        'Equity',
-        'Last_Updated',
-    }
-
-    if not required_keys.issubset(balance_sheet_data.keys()):
-        missing = required_keys.difference(balance_sheet_data.keys())
-        logger.warning(f"[{ticker}] Missing balance sheet fields: {missing}")
-        return None
-
-    return balance_sheet_data
 
 
 def store_fetched_balance_sheet_data(cursor, balance_sheet_data):
