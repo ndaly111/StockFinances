@@ -38,12 +38,17 @@ from bokeh.models import (
 )
 from bokeh.plotting import figure
 
+from pathlib import Path
+
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
 EPS_TYPE_TTM_REPORTED = "TTM_REPORTED"
 
 # Divisor to convert ETF-level EPS (IMPLIED_FROM_PE) to index-level EPS.
 _INDEX_EPS_DIVISOR: dict[str, float] = {"SPY": 10.0, "QQQ": 4.0}
+
+# Default CSV path for SPY monthly reported EPS.
+_SPY_EPS_CSV = Path(__file__).resolve().parent / "data" / "spy_monthly_eps_1970_present.csv"
 
 # ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
@@ -653,8 +658,113 @@ def _write_legacy_tables(tk_lower: str, ig_table_html: str, pe_table_html: str, 
         with open(os.path.join(OUT_DIR, filename), "w", encoding="utf-8") as f:
             f.write(html)
 
+# ───────── auto-extend SPY EPS CSV from daily DB data ──────
+def _extend_eps_csv(
+    db_path: str = DB_PATH,
+    csv_path: Path = _SPY_EPS_CSV,
+    ticker: str = "SPY",
+) -> int:
+    """Append missing months to the SPY EPS CSV using daily DB data.
+
+    Reads IMPLIED_FROM_PE and TTM_DAILY rows after the CSV's last date,
+    groups by month, calibrates to the CSV's last value, and appends.
+    Returns the number of new rows appended.
+    """
+    if not csv_path.exists():
+        return 0
+
+    csv_df = pd.read_csv(csv_path)
+    if csv_df.empty or "Date" not in csv_df.columns:
+        return 0
+
+    csv_df["Date"] = pd.to_datetime(csv_df["Date"])
+    last_csv_date = csv_df["Date"].max()
+    last_csv_eps = float(csv_df.loc[csv_df["Date"] == last_csv_date].iloc[0, 1])
+
+    divisor = _INDEX_EPS_DIVISOR.get(ticker.upper(), 1.0)
+
+    with sqlite3.connect(db_path) as conn:
+        # Daily implied EPS (ETF-level, scaled to index)
+        implied = pd.read_sql(
+            """SELECT Date, EPS * ? AS EPS FROM Index_EPS_History
+               WHERE Ticker=? AND EPS_Type='IMPLIED_FROM_PE'
+                 AND Date>=? ORDER BY Date""",
+            conn,
+            params=(divisor, ticker, last_csv_date.strftime("%Y-%m-%d")),
+        )
+        # Daily TTM EPS (already index-level)
+        daily = pd.read_sql(
+            """SELECT Date, EPS FROM Index_EPS_History
+               WHERE Ticker=? AND EPS_Type='TTM_DAILY'
+                 AND Date>=? ORDER BY Date""",
+            conn,
+            params=(ticker, last_csv_date.strftime("%Y-%m-%d")),
+        )
+
+    for df in (implied, daily):
+        df["Date"] = pd.to_datetime(df["Date"])
+        df.set_index("Date", inplace=True)
+
+    combined = daily.combine_first(implied).sort_index()
+    if combined.empty:
+        return 0
+
+    # Monthly median of daily values
+    monthly = combined["EPS"].resample("ME").median().dropna()
+
+    # Calibration: match the last CSV value to the implied value at that month
+    last_csv_period = last_csv_date.to_period("M")
+    cal_month = last_csv_period.to_timestamp("M")
+    if cal_month in monthly.index and monthly[cal_month] > 0:
+        cal_factor = last_csv_eps / monthly[cal_month]
+    else:
+        cal_factor = 1.0
+
+    # Only append months strictly after the last CSV month
+    new_months = monthly[monthly.index.to_period("M") > last_csv_period]
+    # Drop the current (partial) month
+    today = pd.Timestamp(_dt.date.today())
+    new_months = new_months[new_months.index < today.to_period("M").to_timestamp("M")]
+
+    if new_months.empty:
+        return 0
+
+    new_rows = []
+    for d, v in new_months.items():
+        adjusted = round(float(v * cal_factor), 2)
+        new_rows.append(f"{d.strftime('%Y-%m-01')},{adjusted}")
+
+    # Append to CSV
+    with open(csv_path, "r+") as f:
+        content = f.read()
+        if content and not content.endswith("\n"):
+            f.write("\n")
+        f.write("\n".join(new_rows) + "\n")
+
+    print(f"[EPS CSV] Appended {len(new_rows)} months to {csv_path.name}")
+
+    # Reload into DB
+    try:
+        from scripts.load_index_eps_csv import load_eps_csv
+
+        load_eps_csv(
+            db_path=db_path,
+            csv_path=str(csv_path),
+            ticker=ticker,
+            eps_type=EPS_TYPE_TTM_REPORTED,
+            column="SPY_EPS",
+        )
+    except ImportError:
+        print("[EPS CSV] load_eps_csv not available; CSV updated but DB not reloaded")
+
+    return len(new_rows)
+
+
 # ───────── callable entry-point / mini-main ────────────────
 def render_index_growth_charts(tk="SPY"):
+    if tk.upper() == "SPY":
+        _extend_eps_csv(DB_PATH)
+
     with sqlite3.connect(DB_PATH) as conn:
         ig_s = _series_growth(conn, tk)
         pe_s = _series_pe(conn, tk)
