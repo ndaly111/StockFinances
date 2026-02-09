@@ -1,7 +1,74 @@
-body{font-family:system-ui,Arial;margin:0 20px 40px;max-width:960px}
-h1  {margin:20px 0}
-nav {margin:0 0 20px}
-nav a{margin-right:14px;text-decoration:none;color:#0645AD}
-.sec{margin-top:80px}
-.stats{font-size:.9em;color:#555;margin:6px 0 0}
-.plotly-graph-div{width:100%;max-width:720px;height:350px}
+/* econ.css – supplement to retro.css for economic_charts.html */
+
+.econ-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 10px 20px 40px;
+}
+
+/* Updated timestamp */
+.updated {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 4px 0 18px;
+}
+
+/* Section groups */
+.section {
+  margin-top: 50px;
+}
+.section > h2 {
+  border-bottom: 2px solid #000080;
+  padding-bottom: 4px;
+}
+
+/* Chart cards */
+.chart-card {
+  margin: 30px 0 50px;
+}
+.chart-card h3 {
+  margin-bottom: 6px;
+}
+.chart-card .js-plotly-plot {
+  width: 100%;
+  max-width: 920px;
+}
+
+/* Stats line below each chart */
+.stats-line {
+  font-size: 0.88rem;
+  color: #333;
+  margin: 6px 0 2px;
+}
+
+/* Percentile callout sentence */
+.callout {
+  font-size: 0.85rem;
+  color: #000080;
+  font-style: italic;
+  margin: 2px 0 0;
+}
+
+/* Dashboard summary table */
+.dashboard-table {
+  margin: 10px 0 20px;
+}
+.dashboard-table td:nth-child(2),
+.dashboard-table td:nth-child(4),
+.dashboard-table td:nth-child(5) {
+  text-align: right;
+  font-family: "Courier New", monospace;
+}
+.dashboard-table td:nth-child(6) {
+  text-align: center;
+}
+
+/* Percentile color highlights */
+.pct-low  { color: #006600; font-weight: bold; }
+.pct-high { color: #CC0000; font-weight: bold; }
+
+/* Back link */
+.back-link {
+  margin-top: 40px;
+  font-size: 0.9rem;
+}
