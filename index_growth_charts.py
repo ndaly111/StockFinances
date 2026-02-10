@@ -801,7 +801,8 @@ def render_index_growth_charts(tk="SPY"):
     ig_summary = _rows_by_years(ig_s, pct=True)
     pe_summary_source = pe_combined
     if not pe_combined.empty and isinstance(pe_combined.index, (pd.DatetimeIndex, pd.PeriodIndex)):
-        pe_summary_source = pe_combined.resample("M").last().dropna()
+        _ME = "ME" if pd.__version__ >= "2.2" else "M"
+        pe_summary_source = pe_combined.resample(_ME).last().dropna()
     pe_summary = _rows_by_years(pe_summary_source, pct=False)
     eps_summary = _rows_by_years(eps_s, pct=False)
     ig_table_html = _build_html(ig_summary)
