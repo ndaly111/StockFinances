@@ -710,7 +710,7 @@ def _extend_eps_csv(
         return 0
 
     # Monthly median of daily values
-    monthly = combined["EPS"].resample("ME").median().dropna()
+    monthly = combined["EPS"].resample("M").median().dropna()
 
     # Calibration: match the last CSV value to the implied value at that month
     last_csv_period = last_csv_date.to_period("M")
