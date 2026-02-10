@@ -38,9 +38,17 @@ from bokeh.models import (
 )
 from bokeh.plotting import figure
 
+from pathlib import Path
+
 DB_PATH, OUT_DIR = "Stock Data.db", "charts"
 os.makedirs(OUT_DIR, exist_ok=True)
 EPS_TYPE_TTM_REPORTED = "TTM_REPORTED"
+
+# Divisor to convert ETF-level EPS (IMPLIED_FROM_PE) to index-level EPS.
+_INDEX_EPS_DIVISOR: dict[str, float] = {"SPY": 10.0, "QQQ": 4.0}
+
+# Default CSV path for SPY monthly reported EPS.
+_SPY_EPS_CSV = Path(__file__).resolve().parent / "data" / "spy_monthly_eps_1970_present.csv"
 
 # ───────── uniform CSS (blue frame + grey grid) ────────────
 SUMMARY_CSS = """
@@ -135,7 +143,13 @@ def _series_pe_monthly_derived(conn, tk):
 
 
 def _series_eps(conn, tk):
-    """Return EPS (TTM reported) series for ticker tk."""
+    """Return EPS series for ticker *tk*.
+
+    Authoritative source is ``TTM_REPORTED`` (monthly).  For dates after the
+    last reported row the series is extended with ``TTM_DAILY`` (index-level,
+    daily) and then ``IMPLIED_FROM_PE`` (ETF-level, daily, scaled up by the
+    index divisor).
+    """
     try:
         df = pd.read_sql(
             """SELECT Date, EPS AS val
@@ -148,7 +162,53 @@ def _series_eps(conn, tk):
     except AttributeError:  # pragma: no cover - allows mocked connections in tests
         return pd.Series(dtype=float)
     df["Date"] = pd.to_datetime(df["Date"])
-    return pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
+    reported = pd.to_numeric(df.set_index("Date")["val"], errors="coerce").dropna()
+
+    # Determine the cut-off after which we supplement with daily data.
+    cutoff = reported.index.max() if not reported.empty else pd.Timestamp.min
+
+    # --- TTM_DAILY (already at index level) ---
+    try:
+        df_daily = pd.read_sql(
+            """SELECT Date, EPS AS val
+                 FROM Index_EPS_History
+                WHERE Ticker=? AND EPS_Type='TTM_DAILY' AND Date>?
+             ORDER BY Date""",
+            conn,
+            params=(tk, cutoff.strftime("%Y-%m-%d")),
+        )
+    except (AttributeError, Exception):
+        df_daily = pd.DataFrame(columns=["Date", "val"])
+    df_daily["Date"] = pd.to_datetime(df_daily["Date"])
+    daily = pd.to_numeric(df_daily.set_index("Date")["val"], errors="coerce").dropna()
+
+    # --- IMPLIED_FROM_PE (ETF level – scale up by divisor) ---
+    divisor = _INDEX_EPS_DIVISOR.get(tk.upper(), 1.0)
+    try:
+        df_implied = pd.read_sql(
+            """SELECT Date, EPS AS val
+                 FROM Index_EPS_History
+                WHERE Ticker=? AND EPS_Type='IMPLIED_FROM_PE' AND Date>?
+             ORDER BY Date""",
+            conn,
+            params=(tk, cutoff.strftime("%Y-%m-%d")),
+        )
+    except (AttributeError, Exception):
+        df_implied = pd.DataFrame(columns=["Date", "val"])
+    df_implied["Date"] = pd.to_datetime(df_implied["Date"])
+    implied = pd.to_numeric(df_implied.set_index("Date")["val"], errors="coerce").dropna()
+    implied = implied * divisor
+
+    # Combine: reported is authoritative; daily fills gaps; implied fills remainder.
+    parts = [s for s in (reported, daily, implied) if not s.empty]
+    if not parts:
+        return reported  # empty series with DatetimeIndex
+    combined = parts[0]
+    for part in parts[1:]:
+        combined = combined.combine_first(part)
+
+    combined.index = pd.DatetimeIndex(combined.index)
+    return combined.sort_index()
 
 def _pctile(s) -> str:                      # whole-number percentile
     """Return percentile rank of the latest value in *s* (1-99)."""
@@ -369,6 +429,38 @@ def _build_chart_block(
 
     yoy_pct = _calc_hover_metrics(values)
 
+    # ── Compute explicit y_range from the visible x-window ──
+    visible = values
+    if x_range is not None:
+        try:
+            xs = pd.Timestamp(x_range.start)
+            xe = pd.Timestamp(x_range.end)
+            vis = values[(values.index >= xs) & (values.index <= xe)]
+            if log_axis:
+                vis = vis[vis > 0]
+            if not vis.empty:
+                visible = vis
+        except Exception:
+            pass
+    if log_axis:
+        visible = visible[visible > 0]
+    if not visible.empty:
+        y_min, y_max = float(visible.min()), float(visible.max())
+        if log_axis:
+            y_min_padded = y_min * 0.93
+            y_max_padded = y_max * 1.07
+        elif y_max == y_min:
+            pad = abs(y_max) * 0.07 or 1.0
+            y_min_padded = y_min - pad
+            y_max_padded = y_max + pad
+        else:
+            pad = (y_max - y_min) * 0.07
+            y_min_padded = y_min - pad
+            y_max_padded = y_max + pad
+        y_range = Range1d(start=y_min_padded, end=y_max_padded)
+    else:
+        y_range = None
+
     def _clean(arr):
         cleaned = []
         for val in arr:
@@ -389,7 +481,7 @@ def _build_chart_block(
         }
     )
 
-    fig = figure(
+    fig_kwargs = dict(
         title=None,
         x_axis_type="datetime",
         y_axis_type="log" if log_axis else "linear",
@@ -399,6 +491,9 @@ def _build_chart_block(
         tools="",
         x_range=x_range,
     )
+    if y_range is not None:
+        fig_kwargs["y_range"] = y_range
+    fig = figure(**fig_kwargs)
 
     pan_tool = PanTool(dimensions="width")
     wheel_zoom = WheelZoomTool(dimensions="width")
@@ -563,8 +658,114 @@ def _write_legacy_tables(tk_lower: str, ig_table_html: str, pe_table_html: str, 
         with open(os.path.join(OUT_DIR, filename), "w", encoding="utf-8") as f:
             f.write(html)
 
+# ───────── auto-extend SPY EPS CSV from daily DB data ──────
+def _extend_eps_csv(
+    db_path: str = DB_PATH,
+    csv_path: Path = _SPY_EPS_CSV,
+    ticker: str = "SPY",
+) -> int:
+    """Append missing months to the SPY EPS CSV using daily DB data.
+
+    Reads IMPLIED_FROM_PE and TTM_DAILY rows after the CSV's last date,
+    groups by month, calibrates to the CSV's last value, and appends.
+    Returns the number of new rows appended.
+    """
+    if not csv_path.exists():
+        return 0
+
+    csv_df = pd.read_csv(csv_path)
+    if csv_df.empty or "Date" not in csv_df.columns:
+        return 0
+
+    csv_df["Date"] = pd.to_datetime(csv_df["Date"])
+    last_csv_date = csv_df["Date"].max()
+    last_csv_eps = float(csv_df.loc[csv_df["Date"] == last_csv_date].iloc[0, 1])
+
+    divisor = _INDEX_EPS_DIVISOR.get(ticker.upper(), 1.0)
+
+    with sqlite3.connect(db_path) as conn:
+        # Daily implied EPS (ETF-level, scaled to index)
+        implied = pd.read_sql(
+            """SELECT Date, EPS * ? AS EPS FROM Index_EPS_History
+               WHERE Ticker=? AND EPS_Type='IMPLIED_FROM_PE'
+                 AND Date>=? ORDER BY Date""",
+            conn,
+            params=(divisor, ticker, last_csv_date.strftime("%Y-%m-%d")),
+        )
+        # Daily TTM EPS (already index-level)
+        daily = pd.read_sql(
+            """SELECT Date, EPS FROM Index_EPS_History
+               WHERE Ticker=? AND EPS_Type='TTM_DAILY'
+                 AND Date>=? ORDER BY Date""",
+            conn,
+            params=(ticker, last_csv_date.strftime("%Y-%m-%d")),
+        )
+
+    for df in (implied, daily):
+        df["Date"] = pd.to_datetime(df["Date"])
+        df.set_index("Date", inplace=True)
+
+    combined = daily.combine_first(implied).sort_index()
+    if combined.empty:
+        return 0
+
+    # Monthly median of daily values ('ME' in pandas ≥2.2, 'M' in older)
+    _MONTH_END = "ME" if pd.__version__ >= "2.2" else "M"
+    monthly = combined["EPS"].resample(_MONTH_END).median().dropna()
+
+    # Calibration: match the last CSV value to the implied value at that month
+    last_csv_period = last_csv_date.to_period("M")
+    cal_month = last_csv_period.to_timestamp("M")
+    if cal_month in monthly.index and monthly[cal_month] > 0:
+        cal_factor = last_csv_eps / monthly[cal_month]
+    else:
+        cal_factor = 1.0
+
+    # Only append months strictly after the last CSV month
+    new_months = monthly[monthly.index.to_period("M") > last_csv_period]
+    # Drop the current (partial) month
+    today = pd.Timestamp(_dt.date.today())
+    new_months = new_months[new_months.index < today.to_period("M").to_timestamp("M")]
+
+    if new_months.empty:
+        return 0
+
+    new_rows = []
+    for d, v in new_months.items():
+        adjusted = round(float(v * cal_factor), 2)
+        new_rows.append(f"{d.strftime('%Y-%m-01')},{adjusted}")
+
+    # Append to CSV
+    with open(csv_path, "r+") as f:
+        content = f.read()
+        if content and not content.endswith("\n"):
+            f.write("\n")
+        f.write("\n".join(new_rows) + "\n")
+
+    print(f"[EPS CSV] Appended {len(new_rows)} months to {csv_path.name}")
+
+    # Reload into DB
+    try:
+        from scripts.load_index_eps_csv import load_eps_csv
+
+        load_eps_csv(
+            db_path=db_path,
+            csv_path=str(csv_path),
+            ticker=ticker,
+            eps_type=EPS_TYPE_TTM_REPORTED,
+            column="SPY_EPS",
+        )
+    except ImportError:
+        print("[EPS CSV] load_eps_csv not available; CSV updated but DB not reloaded")
+
+    return len(new_rows)
+
+
 # ───────── callable entry-point / mini-main ────────────────
 def render_index_growth_charts(tk="SPY"):
+    if tk.upper() == "SPY":
+        _extend_eps_csv(DB_PATH)
+
     with sqlite3.connect(DB_PATH) as conn:
         ig_s = _series_growth(conn, tk)
         pe_s = _series_pe(conn, tk)
@@ -600,7 +801,8 @@ def render_index_growth_charts(tk="SPY"):
     ig_summary = _rows_by_years(ig_s, pct=True)
     pe_summary_source = pe_combined
     if not pe_combined.empty and isinstance(pe_combined.index, (pd.DatetimeIndex, pd.PeriodIndex)):
-        pe_summary_source = pe_combined.resample("M").last().dropna()
+        _ME = "ME" if pd.__version__ >= "2.2" else "M"
+        pe_summary_source = pe_combined.resample(_ME).last().dropna()
     pe_summary = _rows_by_years(pe_summary_source, pct=False)
     eps_summary = _rows_by_years(eps_s, pct=False)
     ig_table_html = _build_html(ig_summary)
@@ -757,9 +959,9 @@ def render_index_growth_charts(tk="SPY"):
 
     eps_window_div = Div(text="", sizing_mode="stretch_width")
     eps_title = (
-        f"{tk} (S&P 500) EPS (TTM reported, monthly)"
+        f"{tk} (S&P 500) EPS (TTM)"
         if tk.upper() == "SPY"
-        else f"{tk} EPS (TTM reported, monthly)"
+        else f"{tk} EPS (TTM)"
     )
     eps_callout = None
     if eps_has_nonpositive:

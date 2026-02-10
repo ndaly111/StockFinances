@@ -11,8 +11,8 @@
 
   <meta charset="UTF-8"><title>QQQ Growth &amp; P/E History</title>
   <link rel="stylesheet" href="/static/css/retro.css">
-  <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.css">
-  <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.0.min.css">
+  <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.2.min.css">
+  <link rel="stylesheet" href="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.2.min.css">
   <style>
     .chart-container{width:100%;min-height:320px;margin:0 auto;}
     .chart-placeholder{padding:1.5rem;text-align:center;color:#666;font-style:italic;}
@@ -27,18 +27,22 @@
     .chart-range-slider .bk-input{font-size:12px;}
     .back-link{margin-top:2.5rem;}
   </style>
-  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.0.min.js"></script>
-  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.0.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.8.2.min.js"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.8.2.min.js"></script>
   <script>
     async function loadBokehChart(targetId, divUrl, scriptUrl) {
       const target = document.getElementById(targetId);
       if (!target) {
         return;
       }
+      if (typeof Bokeh === "undefined") {
+        target.innerHTML = '<div class="chart-placeholder">Chart library failed to load. Please disable ad-blockers or check your connection and refresh.</div>';
+        return;
+      }
       try {
         const [divResp, scriptResp] = await Promise.all([
-          fetch(divUrl, {cache: "no-cache"}),
-          fetch(scriptUrl, {cache: "no-cache"}),
+          fetch(divUrl),
+          fetch(scriptUrl),
         ]);
         if (!divResp.ok) {
           throw new Error(`Failed to load ${divUrl}: ${divResp.status}`);

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# generate_economic_data.py  – rev 12-Aug-2025
-# CPI stored as YoY %, pp deltas, safe date normalization, 3Y selector support
+# generate_economic_data.py  – rev 09-Feb-2026
+# 10 indicators: +PCEPI, DGS2, T10Y2Y, ICSA, UMCSENT
 # -------------------------------------------------------------------
 import os, re, sqlite3, datetime as dt
 from pathlib import Path
@@ -41,7 +41,12 @@ INDICATORS = {
                  "schedule":lambda:_next_bls("empsit")},
     "CPIAUCSL": {"name":"CPI (All-Items YoY)","units":"%","group":"labor",
                  "schedule":lambda:_next_bls("cpi")},
+    "PCEPI":    {"name":"PCE Price Index (YoY)","units":"%","group":"labor"},
+    "ICSA":     {"name":"Initial Jobless Claims","units":"K","group":"labor"},
+    "UMCSENT":  {"name":"Consumer Sentiment","units":"idx","group":"labor"},
     "DGS10":    {"name":"10-Year Treasury","units":"%","group":"rates"},
+    "DGS2":     {"name":"2-Year Treasury","units":"%","group":"rates"},
+    "T10Y2Y":   {"name":"10Y-2Y Yield Spread","units":"%","group":"rates"},
     "GDPC1":    {"name":"Real GDP (2017$ SAAR)","units":"T","group":"rates",
                  "schedule":_next_bea_gdp},
     # pseudo-row for display; data actually from DFEDTARL/U
@@ -172,14 +177,21 @@ def generate_economic_data():
 
         unrate = _fred_series("UNRATE")
         cpi_ix = _fred_series("CPIAUCSL")  # raw index; convert to YoY %
+        pce_ix = _fred_series("PCEPI")     # raw index; convert to YoY %
+        icsa   = _fred_series("ICSA")
+        umcsent= _fred_series("UMCSENT")
         dgs10  = _fred_series("DGS10")
+        dgs2   = _fred_series("DGS2")
+        t10y2y = _fred_series("T10Y2Y")
         gdp    = _fred_series("GDPC1")
         tarL   = _fred_series("DFEDTARL")
         tarU   = _fred_series("DFEDTARU")
 
-        # ---- upsert raw series EXCEPT CPI (we store CPI as YoY %) ----
+        # ---- upsert raw series EXCEPT CPI/PCE (we store those as YoY %) ----
         for sid, ser in {
-            "UNRATE": unrate, "DGS10": dgs10, "GDPC1": gdp, "DFEDTARL": tarL, "DFEDTARU": tarU
+            "UNRATE": unrate, "DGS10": dgs10, "DGS2": dgs2, "T10Y2Y": t10y2y,
+            "GDPC1": gdp, "DFEDTARL": tarL, "DFEDTARU": tarU,
+            "ICSA": icsa, "UMCSENT": umcsent,
         }.items():
             if ser is None or ser.empty:
                 continue
@@ -231,6 +243,38 @@ def generate_economic_data():
             plt.savefig(CHART_DIR / "CPIAUCSL_history.png", dpi=110)
             plt.close()
 
+        # ───── PCE row (purge old + store YoY %) ─────
+        if not pce_ix.empty:
+            conn.execute("DELETE FROM economic_data WHERE indicator='PCEPI'")
+            conn.commit()
+            pce_yoy = (pce_ix.pct_change(12) * 100).dropna()
+            df = pce_yoy.to_frame("value").reset_index().rename(columns={"index": "date"})
+            df["indicator"] = "PCEPI"
+            df["date"] = pd.to_datetime(df["date"]).dt.date.astype(str)
+            _upsert(conn, df)
+            _normalize_dates(conn)
+            last_pce = float(pce_yoy.iloc[-1])
+            mchg = f"{last_pce - float(pce_yoy.iloc[-2]):+.2f} pp" if len(pce_yoy) >= 2 else "—"
+            ychg = f"{last_pce - float(pce_yoy.iloc[-13]):+.2f} pp" if len(pce_yoy) >= 13 else "—"
+            rows.append(dict(sid="PCEPI", group="labor", name=INDICATORS["PCEPI"]["name"],
+                             latest=_fmt(last_pce, "%"), d1=mchg, d2=ychg, next="Monthly"))
+
+        # ───── ICSA row (K, weekly) ─────
+        if not icsa.empty:
+            v = float(icsa.iloc[-1])
+            d1 = f"{(v - float(icsa.iloc[-2])) / 1000:+.0f} K" if len(icsa) >= 2 else "—"
+            d2 = f"{(v - float(icsa.iloc[-53])) / 1000:+.0f} K" if len(icsa) >= 53 else "—"
+            rows.append(dict(sid="ICSA", group="labor", name=INDICATORS["ICSA"]["name"],
+                             latest=f"{v / 1000:,.0f} K", d1=d1, d2=d2, next="Weekly"))
+
+        # ───── UMCSENT row (index) ─────
+        if not umcsent.empty:
+            v = float(umcsent.iloc[-1])
+            d1 = f"{v - float(umcsent.iloc[-2]):+.1f}" if len(umcsent) >= 2 else "—"
+            d2 = f"{v - float(umcsent.iloc[-13]):+.1f}" if len(umcsent) >= 13 else "—"
+            rows.append(dict(sid="UMCSENT", group="labor", name=INDICATORS["UMCSENT"]["name"],
+                             latest=f"{v:.1f}", d1=d1, d2=d2, next="Monthly"))
+
         # ───── 10-Year row (bp deltas) ─────
         if not dgs10.empty:
             v = float(dgs10.iloc[-1])
@@ -241,6 +285,22 @@ def generate_economic_data():
                              latest=last_disp, d1=d1, d2=d2, next="Daily"))
             plt.figure(); dgs10.plot(title=INDICATORS["DGS10"]["name"]); plt.tight_layout()
             plt.savefig(CHART_DIR / "DGS10_history.png", dpi=110); plt.close()
+
+        # ───── 2-Year row (bp deltas) ─────
+        if not dgs2.empty:
+            v = float(dgs2.iloc[-1])
+            d1 = f"{(v - float(dgs2.iloc[-6])) * 100:+.0f} bp" if len(dgs2) >= 6 else "—"
+            d2 = f"{(v - float(dgs2.iloc[-66])) * 100:+.0f} bp" if len(dgs2) >= 66 else "—"
+            rows.append(dict(sid="DGS2", group="rates", name=INDICATORS["DGS2"]["name"],
+                             latest=_fmt(v, "%"), d1=d1, d2=d2, next="Daily"))
+
+        # ───── 10Y-2Y Yield Spread row (bp deltas) ─────
+        if not t10y2y.empty:
+            v = float(t10y2y.iloc[-1])
+            d1 = f"{(v - float(t10y2y.iloc[-6])) * 100:+.0f} bp" if len(t10y2y) >= 6 else "—"
+            d2 = f"{(v - float(t10y2y.iloc[-66])) * 100:+.0f} bp" if len(t10y2y) >= 66 else "—"
+            rows.append(dict(sid="T10Y2Y", group="rates", name=INDICATORS["T10Y2Y"]["name"],
+                             latest=f"{v:+.2f} %", d1=d1, d2=d2, next="Daily"))
 
         # ───── GDP row ─────
         if not gdp.empty:
