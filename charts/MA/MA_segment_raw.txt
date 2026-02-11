@@ -1,31 +1,31 @@
                     Concept  PeriodEnd                                                             Dims        Value
+           us-gaap:Revenues 2025-12-31                                                                  3.279100e+10
            us-gaap:Revenues 2024-12-31                                                                  2.816700e+10
            us-gaap:Revenues 2023-12-31                                                                  2.509800e+10
-           us-gaap:Revenues 2022-12-31                                                                  2.223700e+10
+           us-gaap:Revenues 2025-12-31                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 1.947600e+10
            us-gaap:Revenues 2024-12-31                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 1.733500e+10
            us-gaap:Revenues 2023-12-31                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 1.582400e+10
-           us-gaap:Revenues 2022-12-31                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 1.435800e+10
+           us-gaap:Revenues 2025-12-31 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 1.331500e+10
            us-gaap:Revenues 2024-12-31 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 1.083200e+10
            us-gaap:Revenues 2023-12-31 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 9.274000e+09
-           us-gaap:Revenues 2022-12-31 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 7.879000e+09
+           us-gaap:Revenues 2025-12-31                                                                  3.279100e+10
            us-gaap:Revenues 2024-12-31                                                                  2.816700e+10
            us-gaap:Revenues 2023-12-31                                                                  2.509800e+10
-           us-gaap:Revenues 2022-12-31                                                                  2.223700e+10
+           us-gaap:Revenues 2025-12-31                 srt:StatementGeographicalAxis:srt:AmericasMember 1.404400e+10
            us-gaap:Revenues 2024-12-31                 srt:StatementGeographicalAxis:srt:AmericasMember 1.237500e+10
            us-gaap:Revenues 2023-12-31                 srt:StatementGeographicalAxis:srt:AmericasMember 1.113500e+10
-           us-gaap:Revenues 2022-12-31                 srt:StatementGeographicalAxis:srt:AmericasMember 1.015600e+10
+           us-gaap:Revenues 2025-12-31      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 1.874700e+10
            us-gaap:Revenues 2024-12-31      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 1.579200e+10
            us-gaap:Revenues 2023-12-31      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 1.396300e+10
-           us-gaap:Revenues 2022-12-31      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 1.208100e+10
+           us-gaap:Revenues 2025-12-31                                                                  3.279100e+10
            us-gaap:Revenues 2024-12-31                                                                  2.816700e+10
            us-gaap:Revenues 2023-12-31                                                                  2.509800e+10
-           us-gaap:Revenues 2022-12-31                                                                  2.223700e+10
+           us-gaap:Revenues 2025-12-31  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 3.279100e+10
            us-gaap:Revenues 2024-12-31  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 2.816700e+10
            us-gaap:Revenues 2023-12-31  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 2.509800e+10
-           us-gaap:Revenues 2022-12-31  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 2.223700e+10
+us-gaap:OperatingIncomeLoss 2025-12-31                                                                  1.889700e+10
 us-gaap:OperatingIncomeLoss 2024-12-31                                                                  1.558200e+10
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                  1.400800e+10
-us-gaap:OperatingIncomeLoss 2022-12-31                                                                  1.226400e+10
            us-gaap:Revenues 2025-09-30                                                                  8.602000e+09
            us-gaap:Revenues 2024-09-30                                                                  7.369000e+09
            us-gaap:Revenues 2025-09-30                                                                  2.398500e+10
