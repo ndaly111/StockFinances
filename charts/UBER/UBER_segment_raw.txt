@@ -1,109 +1,97 @@
-                    Concept  PeriodEnd                                                                                                                  Dims         Value
-           us-gaap:Revenues 2022-12-31                                                                                                                        3.187700e+10
-           us-gaap:Revenues 2023-12-31                                                                                                                        3.728100e+10
-           us-gaap:Revenues 2024-12-31                                                                                                                        4.397800e+10
-           us-gaap:Revenues 2022-12-31                                                             us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.402900e+10
-           us-gaap:Revenues 2023-12-31                                                             us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.983200e+10
-           us-gaap:Revenues 2024-12-31                                                             us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  2.508700e+10
-           us-gaap:Revenues 2022-12-31                                                             us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.090100e+10
-           us-gaap:Revenues 2023-12-31                                                             us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.220400e+10
-           us-gaap:Revenues 2024-12-31                                                             us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.375000e+10
-           us-gaap:Revenues 2022-12-31                                                              us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  6.947000e+09
-           us-gaap:Revenues 2023-12-31                                                              us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  5.245000e+09
-           us-gaap:Revenues 2024-12-31                                                              us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  5.141000e+09
-           us-gaap:Revenues 2022-12-31                                                                                                                        3.187700e+10
-           us-gaap:Revenues 2023-12-31                                                                                                                        3.728100e+10
-           us-gaap:Revenues 2024-12-31                                                                                                                        4.397800e+10
-           us-gaap:Revenues 2022-12-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  1.947400e+10
-           us-gaap:Revenues 2023-12-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  2.043600e+10
-           us-gaap:Revenues 2024-12-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  2.361800e+10
-           us-gaap:Revenues 2022-12-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  1.978000e+09
-           us-gaap:Revenues 2023-12-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  2.512000e+09
-           us-gaap:Revenues 2024-12-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  2.795000e+09
-           us-gaap:Revenues 2022-12-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  6.944000e+09
-           us-gaap:Revenues 2023-12-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  9.904000e+09
-           us-gaap:Revenues 2024-12-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  1.252900e+10
-           us-gaap:Revenues 2022-12-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  3.481000e+09
-           us-gaap:Revenues 2023-12-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  4.429000e+09
-           us-gaap:Revenues 2024-12-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  5.036000e+09
-           us-gaap:Revenues 2022-12-31                                                                                                                        3.187700e+10
-           us-gaap:Revenues 2023-12-31                                                                                                                        3.728100e+10
-           us-gaap:Revenues 2024-12-31                                                                                                                        4.397800e+10
-           us-gaap:Revenues 2022-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.402900e+10
-           us-gaap:Revenues 2022-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.090100e+10
-           us-gaap:Revenues 2022-12-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  6.947000e+09
-           us-gaap:Revenues 2022-12-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  3.187700e+10
-           us-gaap:Revenues 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.983200e+10
-           us-gaap:Revenues 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.220400e+10
-           us-gaap:Revenues 2023-12-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  5.245000e+09
-           us-gaap:Revenues 2023-12-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  3.728100e+10
-           us-gaap:Revenues 2024-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  2.508700e+10
-           us-gaap:Revenues 2024-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.375000e+10
-           us-gaap:Revenues 2024-12-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  5.141000e+09
-           us-gaap:Revenues 2024-12-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  4.397800e+10
-           us-gaap:Revenues 2022-12-31                                                                              srt:StatementGeographicalAxis:country:US  1.795300e+10
-           us-gaap:Revenues 2023-12-31                                                                              srt:StatementGeographicalAxis:country:US  1.862000e+10
-           us-gaap:Revenues 2024-12-31                                                                              srt:StatementGeographicalAxis:country:US  2.142900e+10
-           us-gaap:Revenues 2022-12-31                                                                              srt:StatementGeographicalAxis:country:GB  4.215000e+09
-           us-gaap:Revenues 2023-12-31                                                                              srt:StatementGeographicalAxis:country:GB  6.522000e+09
-           us-gaap:Revenues 2024-12-31                                                                              srt:StatementGeographicalAxis:country:GB  8.373000e+09
-           us-gaap:Revenues 2022-12-31                                                            srt:StatementGeographicalAxis:uber:AllOtherCountriesMember  9.709000e+09
-           us-gaap:Revenues 2023-12-31                                                            srt:StatementGeographicalAxis:uber:AllOtherCountriesMember  1.213900e+10
-           us-gaap:Revenues 2024-12-31                                                            srt:StatementGeographicalAxis:uber:AllOtherCountriesMember  1.417600e+10
-           us-gaap:Revenues 2022-12-31                                                                                                                        3.187700e+10
-           us-gaap:Revenues 2023-12-31                                                                                                                        3.728100e+10
-           us-gaap:Revenues 2024-12-31                                                                                                                        4.397800e+10
-us-gaap:OperatingIncomeLoss 2022-12-31                                                                                                                       -1.832000e+09
-us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                        1.110000e+09
-us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                        2.799000e+09
-us-gaap:OperatingIncomeLoss 2022-12-31                                                                                                                       -1.832000e+09
-us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                        1.110000e+09
-us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                        2.799000e+09
-           us-gaap:Revenues 2024-09-30                                                                                                                        1.118800e+10
-           us-gaap:Revenues 2025-09-30                                                                                                                        1.346700e+10
-           us-gaap:Revenues 2024-09-30                                                                                                                        3.201900e+10
-           us-gaap:Revenues 2025-09-30                                                                                                                        3.765100e+10
-           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  6.409000e+09
-           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  3.470000e+09
-           us-gaap:Revenues 2024-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  1.309000e+09
-           us-gaap:Revenues 2024-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.118800e+10
-           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  7.682000e+09
-           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  4.477000e+09
-           us-gaap:Revenues 2025-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  1.308000e+09
-           us-gaap:Revenues 2025-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.346700e+10
-           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.817600e+10
-           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  9.977000e+09
-           us-gaap:Revenues 2024-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  3.866000e+09
-           us-gaap:Revenues 2024-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  3.201900e+10
-           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  2.146600e+10
-           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.235600e+10
-           us-gaap:Revenues 2025-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  3.829000e+09
-           us-gaap:Revenues 2025-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  3.765100e+10
-           us-gaap:Revenues 2024-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  6.006000e+09
-           us-gaap:Revenues 2025-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  6.698000e+09
-           us-gaap:Revenues 2024-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  1.730400e+10
-           us-gaap:Revenues 2025-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  1.947800e+10
-           us-gaap:Revenues 2024-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  6.790000e+08
-           us-gaap:Revenues 2025-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  8.290000e+08
-           us-gaap:Revenues 2024-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  2.068000e+09
-           us-gaap:Revenues 2025-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  2.335000e+09
-           us-gaap:Revenues 2024-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  3.196000e+09
-           us-gaap:Revenues 2025-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  4.388000e+09
-           us-gaap:Revenues 2024-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  8.939000e+09
-           us-gaap:Revenues 2025-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  1.160600e+10
-           us-gaap:Revenues 2024-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.307000e+09
-           us-gaap:Revenues 2025-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.552000e+09
-           us-gaap:Revenues 2024-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  3.708000e+09
-           us-gaap:Revenues 2025-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  4.232000e+09
-           us-gaap:Revenues 2024-09-30                                                                                                                        1.118800e+10
-           us-gaap:Revenues 2025-09-30                                                                                                                        1.346700e+10
-           us-gaap:Revenues 2024-09-30                                                                                                                        3.201900e+10
-           us-gaap:Revenues 2025-09-30                                                                                                                        3.765100e+10
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                        1.061000e+09
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                        1.113000e+09
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                        2.029000e+09
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                        3.791000e+09
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                        1.061000e+09
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                        1.113000e+09
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                        2.029000e+09
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                        3.791000e+09
+                    Concept  PeriodEnd                                                                                                                  Dims        Value
+           us-gaap:Revenues 2023-12-31                                                                                                                       3.728100e+10
+           us-gaap:Revenues 2024-12-31                                                                                                                       4.397800e+10
+           us-gaap:Revenues 2025-12-31                                                                                                                       5.201700e+10
+           us-gaap:Revenues 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember 1.983200e+10
+           us-gaap:Revenues 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember 1.220400e+10
+           us-gaap:Revenues 2023-12-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember 5.245000e+09
+           us-gaap:Revenues 2023-12-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.728100e+10
+           us-gaap:Revenues 2024-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember 2.508700e+10
+           us-gaap:Revenues 2024-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember 1.375000e+10
+           us-gaap:Revenues 2024-12-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember 5.141000e+09
+           us-gaap:Revenues 2024-12-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.397800e+10
+           us-gaap:Revenues 2025-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember 2.967000e+10
+           us-gaap:Revenues 2025-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember 1.724800e+10
+           us-gaap:Revenues 2025-12-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember 5.099000e+09
+           us-gaap:Revenues 2025-12-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 5.201700e+10
+           us-gaap:Revenues 2023-12-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember 2.043600e+10
+           us-gaap:Revenues 2024-12-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember 2.361800e+10
+           us-gaap:Revenues 2025-12-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember 2.646900e+10
+           us-gaap:Revenues 2023-12-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember 2.512000e+09
+           us-gaap:Revenues 2024-12-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember 2.795000e+09
+           us-gaap:Revenues 2025-12-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember 3.327000e+09
+           us-gaap:Revenues 2023-12-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember 9.904000e+09
+           us-gaap:Revenues 2024-12-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember 1.252900e+10
+           us-gaap:Revenues 2025-12-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember 1.636400e+10
+           us-gaap:Revenues 2023-12-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember 4.429000e+09
+           us-gaap:Revenues 2024-12-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember 5.036000e+09
+           us-gaap:Revenues 2025-12-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember 5.857000e+09
+           us-gaap:Revenues 2023-12-31                                                                                                                       3.728100e+10
+           us-gaap:Revenues 2024-12-31                                                                                                                       4.397800e+10
+           us-gaap:Revenues 2025-12-31                                                                                                                       5.201700e+10
+           us-gaap:Revenues 2023-12-31                                                                              srt:StatementGeographicalAxis:country:US 1.862000e+10
+           us-gaap:Revenues 2024-12-31                                                                              srt:StatementGeographicalAxis:country:US 2.142900e+10
+           us-gaap:Revenues 2025-12-31                                                                              srt:StatementGeographicalAxis:country:US 2.377100e+10
+           us-gaap:Revenues 2023-12-31                                                                              srt:StatementGeographicalAxis:country:GB 6.522000e+09
+           us-gaap:Revenues 2024-12-31                                                                              srt:StatementGeographicalAxis:country:GB 8.373000e+09
+           us-gaap:Revenues 2025-12-31                                                                              srt:StatementGeographicalAxis:country:GB 1.060900e+10
+           us-gaap:Revenues 2023-12-31                                                            srt:StatementGeographicalAxis:uber:AllOtherCountriesMember 1.213900e+10
+           us-gaap:Revenues 2024-12-31                                                            srt:StatementGeographicalAxis:uber:AllOtherCountriesMember 1.417600e+10
+           us-gaap:Revenues 2025-12-31                                                            srt:StatementGeographicalAxis:uber:AllOtherCountriesMember 1.763700e+10
+           us-gaap:Revenues 2023-12-31                                                                                                                       3.728100e+10
+           us-gaap:Revenues 2024-12-31                                                                                                                       4.397800e+10
+           us-gaap:Revenues 2025-12-31                                                                                                                       5.201700e+10
+us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                       1.110000e+09
+us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                       2.799000e+09
+us-gaap:OperatingIncomeLoss 2025-12-31                                                                                                                       5.565000e+09
+us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                       1.110000e+09
+us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                       2.799000e+09
+us-gaap:OperatingIncomeLoss 2025-12-31                                                                                                                       5.565000e+09
+           us-gaap:Revenues 2024-09-30                                                                                                                       1.118800e+10
+           us-gaap:Revenues 2025-09-30                                                                                                                       1.346700e+10
+           us-gaap:Revenues 2024-09-30                                                                                                                       3.201900e+10
+           us-gaap:Revenues 2025-09-30                                                                                                                       3.765100e+10
+           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember 6.409000e+09
+           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember 3.470000e+09
+           us-gaap:Revenues 2024-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember 1.309000e+09
+           us-gaap:Revenues 2024-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.118800e+10
+           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember 7.682000e+09
+           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember 4.477000e+09
+           us-gaap:Revenues 2025-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember 1.308000e+09
+           us-gaap:Revenues 2025-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.346700e+10
+           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember 1.817600e+10
+           us-gaap:Revenues 2024-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember 9.977000e+09
+           us-gaap:Revenues 2024-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember 3.866000e+09
+           us-gaap:Revenues 2024-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.201900e+10
+           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember 2.146600e+10
+           us-gaap:Revenues 2025-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember 1.235600e+10
+           us-gaap:Revenues 2025-09-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember 3.829000e+09
+           us-gaap:Revenues 2025-09-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.765100e+10
+           us-gaap:Revenues 2024-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember 6.006000e+09
+           us-gaap:Revenues 2025-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember 6.698000e+09
+           us-gaap:Revenues 2024-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember 1.730400e+10
+           us-gaap:Revenues 2025-09-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember 1.947800e+10
+           us-gaap:Revenues 2024-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember 6.790000e+08
+           us-gaap:Revenues 2025-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember 8.290000e+08
+           us-gaap:Revenues 2024-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember 2.068000e+09
+           us-gaap:Revenues 2025-09-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember 2.335000e+09
+           us-gaap:Revenues 2024-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember 3.196000e+09
+           us-gaap:Revenues 2025-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember 4.388000e+09
+           us-gaap:Revenues 2024-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember 8.939000e+09
+           us-gaap:Revenues 2025-09-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember 1.160600e+10
+           us-gaap:Revenues 2024-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember 1.307000e+09
+           us-gaap:Revenues 2025-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember 1.552000e+09
+           us-gaap:Revenues 2024-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember 3.708000e+09
+           us-gaap:Revenues 2025-09-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember 4.232000e+09
+           us-gaap:Revenues 2024-09-30                                                                                                                       1.118800e+10
+           us-gaap:Revenues 2025-09-30                                                                                                                       1.346700e+10
+           us-gaap:Revenues 2024-09-30                                                                                                                       3.201900e+10
+           us-gaap:Revenues 2025-09-30                                                                                                                       3.765100e+10
+us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                       1.061000e+09
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                       1.113000e+09
+us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                       2.029000e+09
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                       3.791000e+09
+us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                       1.061000e+09
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                       1.113000e+09
+us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                       2.029000e+09
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                       3.791000e+09
