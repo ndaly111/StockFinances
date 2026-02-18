@@ -1,1 +1,1 @@
-[{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":3,"AxisScore":13.0,"Examples":"International, International Package, Supply Chain Solutions"},{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":1,"AxisScore":3.0,"Examples":"Domestic"}]
+[{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":1,"AxisScore":7.0,"Examples":"International"},{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":1,"AxisScore":3.0,"Examples":"Domestic"}]
