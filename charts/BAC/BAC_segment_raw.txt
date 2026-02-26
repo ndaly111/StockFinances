@@ -1,28 +1,28 @@
          Concept  PeriodEnd                                                 Dims        Value
-us-gaap:Revenues 2024-12-31                                                      1.018870e+11
-us-gaap:Revenues 2023-12-31                                                      9.858100e+10
-us-gaap:Revenues 2022-12-31                                                      9.495000e+10
+us-gaap:Revenues 2025-12-31                                                      1.130970e+11
+us-gaap:Revenues 2024-12-31                                                      1.058560e+11
+us-gaap:Revenues 2023-12-31                                                      1.027690e+11
+us-gaap:Revenues 2025-12-31 srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember 5.194000e+10
 us-gaap:Revenues 2024-12-31 srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember 4.166600e+10
 us-gaap:Revenues 2023-12-31 srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember 4.268600e+10
-us-gaap:Revenues 2022-12-31 srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember 3.446900e+10
-us-gaap:Revenues 2024-12-31             srt:StatementGeographicalAxis:country:US 8.846500e+10
-us-gaap:Revenues 2023-12-31             srt:StatementGeographicalAxis:country:US 8.557100e+10
-us-gaap:Revenues 2022-12-31             srt:StatementGeographicalAxis:country:US 8.289000e+10
+us-gaap:Revenues 2025-12-31             srt:StatementGeographicalAxis:country:US 9.768700e+10
+us-gaap:Revenues 2024-12-31             srt:StatementGeographicalAxis:country:US 9.243400e+10
+us-gaap:Revenues 2023-12-31             srt:StatementGeographicalAxis:country:US 8.975900e+10
+us-gaap:Revenues 2025-12-31         srt:StatementGeographicalAxis:srt:AsiaMember 6.004000e+09
 us-gaap:Revenues 2024-12-31         srt:StatementGeographicalAxis:srt:AsiaMember 5.184000e+09
 us-gaap:Revenues 2023-12-31         srt:StatementGeographicalAxis:srt:AsiaMember 4.952000e+09
-us-gaap:Revenues 2022-12-31         srt:StatementGeographicalAxis:srt:AsiaMember 4.597000e+09
+us-gaap:Revenues 2025-12-31     srt:StatementGeographicalAxis:us-gaap:EMEAMember 7.561000e+09
 us-gaap:Revenues 2024-12-31     srt:StatementGeographicalAxis:us-gaap:EMEAMember 6.499000e+09
 us-gaap:Revenues 2023-12-31     srt:StatementGeographicalAxis:us-gaap:EMEAMember 6.393000e+09
-us-gaap:Revenues 2022-12-31     srt:StatementGeographicalAxis:us-gaap:EMEAMember 6.044000e+09
+us-gaap:Revenues 2025-12-31 srt:StatementGeographicalAxis:srt:LatinAmericaMember 1.845000e+09
 us-gaap:Revenues 2024-12-31 srt:StatementGeographicalAxis:srt:LatinAmericaMember 1.739000e+09
 us-gaap:Revenues 2023-12-31 srt:StatementGeographicalAxis:srt:LatinAmericaMember 1.665000e+09
-us-gaap:Revenues 2022-12-31 srt:StatementGeographicalAxis:srt:LatinAmericaMember 1.419000e+09
+us-gaap:Revenues 2025-12-31    srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.541000e+10
 us-gaap:Revenues 2024-12-31    srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.342200e+10
 us-gaap:Revenues 2023-12-31    srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.301000e+10
-us-gaap:Revenues 2022-12-31    srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.206000e+10
-us-gaap:Revenues 2024-12-31                                                      1.018870e+11
-us-gaap:Revenues 2023-12-31                                                      9.858100e+10
-us-gaap:Revenues 2022-12-31                                                      9.495000e+10
+us-gaap:Revenues 2025-12-31                                                      1.130970e+11
+us-gaap:Revenues 2024-12-31                                                      1.058560e+11
+us-gaap:Revenues 2023-12-31                                                      1.027690e+11
 us-gaap:Revenues 2025-09-30                                                      2.808800e+10
 us-gaap:Revenues 2024-09-30                                                      2.534500e+10
 us-gaap:Revenues 2025-09-30                                                      8.191700e+10
