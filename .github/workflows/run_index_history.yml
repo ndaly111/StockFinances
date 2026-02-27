@@ -55,11 +55,39 @@ jobs:
             --ticker "SPY" \
             --close-column "Close"
 
-      - name: Derive monthly P/E from price and reported EPS
+      - name: Derive monthly P/E from price and reported EPS (SPY)
         run: |
           python scripts/derive_monthly_pe_from_price_and_eps.py \
             --db "Stock Data.db" \
             --ticker "SPY"
+
+      - name: Generate QQQ monthly price CSV (if missing)
+        run: |
+          if [ ! -f "data/qqq_price_history_monthly_1999_present.csv" ]; then
+            python scripts/generate_index_price_csv.py \
+              --ticker QQQ \
+              --output "data/qqq_price_history_monthly_1999_present.csv"
+          fi
+
+      - name: Load QQQ monthly price history (monthly CSV)
+        run: |
+          if [ -f "data/qqq_price_history_monthly_1999_present.csv" ]; then
+            python scripts/load_index_price_csv.py \
+              --db "Stock Data.db" \
+              --csv "data/qqq_price_history_monthly_1999_present.csv" \
+              --ticker "QQQ" \
+              --close-column "Close"
+          fi
+
+      - name: Backfill QQQ PE/EPS from Trendonify + yfinance
+        run: |
+          python backfill_index_pe_eps.py \
+            --db "Stock Data.db" \
+            --tickers QQQ
+
+      - name: Recompute implied growth (SPY + QQQ)
+        run: |
+          python backfill_index_growth.py
 
       - name: Generate index charts
         run: |
@@ -71,6 +99,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add "Stock Data.db"
+          git add data/qqq_price_history_monthly_1999_present.csv || true
           git add charts/*_chart.js charts/*_chart_div.html || true
           git add charts/spy_growth_chart.png charts/spy_pe_chart.png || true
           git add charts/spy_growth_summary.html charts/spy_pe_summary.html || true

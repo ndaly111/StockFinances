@@ -1,0 +1,75 @@
+name: One-time QQQ growth backfill
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      db_path:
+        description: "Path to SQLite DB"
+        required: false
+        default: "Stock Data.db"
+      create_table:
+        description: "Create Index_Price_History if missing"
+        required: false
+        default: "false"
+      simulate_pre_etf:
+        description: "Simulate pre-ETF history using ^NDX index proxy"
+        required: false
+        default: "false"
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Run one-time QQQ growth backfill
+        env:
+          CREATE_TABLE: ${{ inputs.create_table }}
+          SIMULATE_PRE_ETF: ${{ inputs.simulate_pre_etf }}
+        run: |
+          CREATE_FLAG=""
+          if [ "${CREATE_TABLE}" = "true" ]; then
+            CREATE_FLAG="--create-table"
+          fi
+          SIM_FLAG=""
+          if [ "${SIMULATE_PRE_ETF}" = "true" ]; then
+            SIM_FLAG="--simulate-pre-etf"
+          fi
+          python scripts/one_time_qqq_growth_backfill.py \
+            --db "${{ inputs.db_path }}" \
+            ${CREATE_FLAG} \
+            ${SIM_FLAG}
+
+      - name: Commit & push updated DB + growth assets (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Stock Data.db" || true
+          git add data/qqq_price_history_monthly_1999_present.csv || true
+          git add "spy_growth.html" "qqq_growth.html" || true
+          git add charts/ || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "One-time QQQ growth backfill (1999+)"
+            git push
+          fi
