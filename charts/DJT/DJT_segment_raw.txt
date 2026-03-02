@@ -1,15 +1,23 @@
-                                                    Concept  PeriodEnd Dims        Value
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31         3618800.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31         4131100.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2022-12-31         1470500.0
-                                us-gaap:OperatingIncomeLoss 2024-12-31      -186038900.0
-                                us-gaap:OperatingIncomeLoss 2023-12-31       -15967400.0
-                                us-gaap:OperatingIncomeLoss 2022-12-31       -23247300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30          972900.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30         1010900.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30         2677400.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30         2618300.0
-                                us-gaap:OperatingIncomeLoss 2025-09-30       -57658400.0
-                                us-gaap:OperatingIncomeLoss 2024-09-30       -23654700.0
-                                us-gaap:OperatingIncomeLoss 2025-09-30      -140701400.0
-                                us-gaap:OperatingIncomeLoss 2024-09-30      -140665800.0
+                                                    Concept  PeriodEnd                                                                                                              Dims        Value
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                                                                                      3682600.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                                                                      3618800.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                                                                                      4131100.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31         srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    3425300.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31            srt:ProductOrServiceAxis:djt:SubscriptionMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember     257300.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    3682600.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    3618800.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    4131100.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31                                                        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    3682600.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    3618800.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31                                                        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    4131100.0
+                                us-gaap:OperatingIncomeLoss 2025-12-31                                                                                                                   -573043700.0
+                                us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                   -186038900.0
+                                us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                    -15967400.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                                                       972900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                                                                      1010900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                                                      2677400.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                                                                      2618300.0
+                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                    -57658400.0
+                                us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                    -23654700.0
+                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                   -140701400.0
+                                us-gaap:OperatingIncomeLoss 2024-09-30                                                                                                                   -140665800.0
