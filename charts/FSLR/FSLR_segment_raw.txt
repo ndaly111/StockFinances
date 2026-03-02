@@ -1,4 +1,26 @@
                     Concept  PeriodEnd                                                                                Dims        Value
+           us-gaap:Revenues 2025-12-31                                                                                     5219376000.0
+           us-gaap:Revenues 2024-12-31                                                                                     4206289000.0
+           us-gaap:Revenues 2023-12-31                                                                                     3318602000.0
+           us-gaap:Revenues 2024-12-31 us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:fslr:CleantechSolarMember   37800000.0
+           us-gaap:Revenues 2025-12-31                                            srt:StatementGeographicalAxis:country:US 4994679000.0
+           us-gaap:Revenues 2024-12-31                                            srt:StatementGeographicalAxis:country:US 3904844000.0
+           us-gaap:Revenues 2023-12-31                                            srt:StatementGeographicalAxis:country:US 3187603000.0
+           us-gaap:Revenues 2025-12-31                                            srt:StatementGeographicalAxis:country:IN  195584000.0
+           us-gaap:Revenues 2024-12-31                                            srt:StatementGeographicalAxis:country:IN  201714000.0
+           us-gaap:Revenues 2023-12-31                                            srt:StatementGeographicalAxis:country:IN   10869000.0
+           us-gaap:Revenues 2025-12-31                                            srt:StatementGeographicalAxis:country:FR    6303000.0
+           us-gaap:Revenues 2024-12-31                                            srt:StatementGeographicalAxis:country:FR   34370000.0
+           us-gaap:Revenues 2023-12-31                                            srt:StatementGeographicalAxis:country:FR   68302000.0
+           us-gaap:Revenues 2025-12-31                   srt:StatementGeographicalAxis:fslr:AllotherforeigncountriesMember   22810000.0
+           us-gaap:Revenues 2024-12-31                   srt:StatementGeographicalAxis:fslr:AllotherforeigncountriesMember   65361000.0
+           us-gaap:Revenues 2023-12-31                   srt:StatementGeographicalAxis:fslr:AllotherforeigncountriesMember   51828000.0
+           us-gaap:Revenues 2025-12-31                                                                                     5219376000.0
+           us-gaap:Revenues 2024-12-31                                                                                     4206289000.0
+           us-gaap:Revenues 2023-12-31                                                                                     3318602000.0
+us-gaap:OperatingIncomeLoss 2025-12-31                                                                                     1596864000.0
+us-gaap:OperatingIncomeLoss 2024-12-31                                                                                     1394420000.0
+us-gaap:OperatingIncomeLoss 2023-12-31                                                                                      857266000.0
            us-gaap:Revenues 2025-09-30                                                                                     1594856000.0
            us-gaap:Revenues 2024-09-30                                                                                      887668000.0
            us-gaap:Revenues 2025-09-30                                                                                     3536594000.0
