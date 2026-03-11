@@ -1,173 +1,125 @@
-                                                    Concept  PeriodEnd                                                                                                              Dims         Value
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  4.484700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  3.496000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  2.894900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.904000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.661400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  6.870000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                                                                    6.388700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                                                                    5.157400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                                                                    3.581900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  7.908000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  3.359600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  3.343000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  4.484700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.103100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  2.300000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  5.709000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.904000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                  srt:StatementGeographicalAxis:srt:AmericasMember  1.893900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember  3.589600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember  9.052000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                                                                    6.388700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  4.898000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  2.686900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  3.193000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  3.496000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.007200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.553000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  4.989000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.661400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                  srt:StatementGeographicalAxis:srt:AmericasMember  1.497000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.842200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember  8.182000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                                                                    5.157400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  3.591000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  2.327200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  2.086000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  2.894900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  4.688000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  6.480000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.534000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  6.870000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                  srt:StatementGeographicalAxis:srt:AmericasMember  8.279000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.392000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember  3.620000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                                                                    3.581900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                      us-gaap:BusinessAcquisitionAxis:avgo:VMwareAcquisitionMember  1.238400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  3.685800e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  3.009600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  2.818200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  2.702900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  2.147800e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  7.637000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                                                                    6.388700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                                                                    5.157400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                                                                    3.581900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                          srt:StatementGeographicalAxis:country:US  1.650600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                          srt:StatementGeographicalAxis:country:US  1.288700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                          srt:StatementGeographicalAxis:country:US  6.975000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                   srt:StatementGeographicalAxis:avgo:ChinaincludingHongKongMember  1.115500e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                   srt:StatementGeographicalAxis:avgo:ChinaincludingHongKongMember  1.048300e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                   srt:StatementGeographicalAxis:avgo:ChinaincludingHongKongMember  1.153300e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                          srt:StatementGeographicalAxis:country:SG  1.079600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                          srt:StatementGeographicalAxis:country:SG  9.559000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                          srt:StatementGeographicalAxis:country:SG  4.479000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                          srt:StatementGeographicalAxis:country:TW  6.451000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                srt:StatementGeographicalAxis:avgo:AllOtherGeographiesMemberMember  1.897900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                srt:StatementGeographicalAxis:avgo:AllOtherGeographiesMemberMember  1.864500e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                srt:StatementGeographicalAxis:avgo:AllOtherGeographiesMemberMember  1.283200e+10
-                                us-gaap:OperatingIncomeLoss 2025-11-02                                                                                                                    2.548400e+10
-                                us-gaap:OperatingIncomeLoss 2024-11-03                                                                                                                    1.346300e+10
-                                us-gaap:OperatingIncomeLoss 2023-10-29                                                                                                                    1.620700e+10
-                                us-gaap:OperatingIncomeLoss 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  2.123200e+10
-                                us-gaap:OperatingIncomeLoss 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  1.675900e+10
-                                us-gaap:OperatingIncomeLoss 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  1.648600e+10
-                                us-gaap:OperatingIncomeLoss 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  2.076500e+10
-                                us-gaap:OperatingIncomeLoss 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  1.397700e+10
-                                us-gaap:OperatingIncomeLoss 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  5.639000e+09
-                                us-gaap:OperatingIncomeLoss 2025-11-02                                                                                                                    2.548400e+10
-                                us-gaap:OperatingIncomeLoss 2024-11-03                                                                                                                    1.346300e+10
-                                us-gaap:OperatingIncomeLoss 2023-10-29                                                                                                                    1.620700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  9.257000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  7.439000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  2.593400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  2.204300e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  6.695000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  5.633000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.993800e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.547700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                                                                    1.595200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                                                                    1.307200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                                                                    4.587200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                                                                    3.752000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  6.620000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  8.181000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  4.140000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  9.257000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  4.062000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  7.790000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.854000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  6.695000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                  srt:StatementGeographicalAxis:srt:AmericasMember  4.724000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember  8.960000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember  2.268000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                                                                    1.595200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  5.820000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  6.411000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  4.460000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  7.439000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  3.409000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  6.300000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.594000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  5.633000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                  srt:StatementGeographicalAxis:srt:AmericasMember  3.991000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember  7.041000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember  2.040000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                                                                    1.307200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  1.787000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  2.290400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  1.243000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  2.593400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.227500e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  2.188000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  5.475000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.993800e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                  srt:StatementGeographicalAxis:srt:AmericasMember  1.406200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.509200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember  6.718000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                                                                    4.587200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  1.763000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  1.886900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember  1.411000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember  2.204300e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  9.187000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.623000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  4.667000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember  1.547700e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                  srt:StatementGeographicalAxis:srt:AmericasMember  1.095000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.049200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember  6.078000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                                                                    3.752000e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  9.166000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  7.274000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  2.578600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  2.186600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  6.786000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  5.798000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  2.008600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  1.565400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                                                                    1.595200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                                                                    1.307200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-03                                                                                                                    4.587200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-08-04                                                                                                                    3.752000e+10
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                                                                                                    5.887000e+09
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                                                                                                    3.788000e+09
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                                                                                                    1.797600e+10
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                                                                                                    8.836000e+09
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  5.217000e+09
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  4.042000e+09
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  1.472900e+10
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember  1.213600e+10
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  5.238000e+09
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  3.906000e+09
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  1.534700e+10
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember  9.789000e+09
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                              us-gaap:StatementBusinessSegmentsAxis:avgo:UnallocatedExpensesMember -4.568000e+09
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                              us-gaap:StatementBusinessSegmentsAxis:avgo:UnallocatedExpensesMember -4.160000e+09
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                              us-gaap:StatementBusinessSegmentsAxis:avgo:UnallocatedExpensesMember -1.210000e+10
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                              us-gaap:StatementBusinessSegmentsAxis:avgo:UnallocatedExpensesMember -1.308900e+10
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                                                                                                    5.887000e+09
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                                                                                                    3.788000e+09
-                                us-gaap:OperatingIncomeLoss 2025-08-03                                                                                                                    1.797600e+10
-                                us-gaap:OperatingIncomeLoss 2024-08-04                                                                                                                    8.836000e+09
+                                                    Concept  PeriodEnd                                                                                                              Dims        Value
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 4.484700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 3.496000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 2.894900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.904000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.661400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 6.870000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                                                                   6.388700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                                                                   5.157400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                                                                   3.581900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 7.908000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 3.359600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 3.343000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 4.484700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.103100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 2.300000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 5.709000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.904000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                  srt:StatementGeographicalAxis:srt:AmericasMember 1.893900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember 3.589600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember 9.052000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                                                                   6.388700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 4.898000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 2.686900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 3.193000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 3.496000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.007200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.553000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 4.989000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.661400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                  srt:StatementGeographicalAxis:srt:AmericasMember 1.497000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember 2.842200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember 8.182000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                                                                   5.157400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 3.591000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 2.327200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 2.086000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 2.894900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 4.688000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 6.480000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.534000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 6.870000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                  srt:StatementGeographicalAxis:srt:AmericasMember 8.279000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember 2.392000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember 3.620000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                                                                   3.581900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                      us-gaap:BusinessAcquisitionAxis:avgo:VMwareAcquisitionMember 1.238400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 3.685800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 3.009600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 2.818200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 2.702900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 2.147800e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 7.637000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                                                                   6.388700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                                                                   5.157400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                                                                   3.581900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                          srt:StatementGeographicalAxis:country:US 1.650600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                          srt:StatementGeographicalAxis:country:US 1.288700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                          srt:StatementGeographicalAxis:country:US 6.975000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                   srt:StatementGeographicalAxis:avgo:ChinaincludingHongKongMember 1.115500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                   srt:StatementGeographicalAxis:avgo:ChinaincludingHongKongMember 1.048300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                   srt:StatementGeographicalAxis:avgo:ChinaincludingHongKongMember 1.153300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                          srt:StatementGeographicalAxis:country:SG 1.079600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                                          srt:StatementGeographicalAxis:country:SG 9.559000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                                          srt:StatementGeographicalAxis:country:SG 4.479000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                                          srt:StatementGeographicalAxis:country:TW 6.451000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-02                                                srt:StatementGeographicalAxis:avgo:AllOtherGeographiesMemberMember 1.897900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-03                                                srt:StatementGeographicalAxis:avgo:AllOtherGeographiesMemberMember 1.864500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-10-29                                                srt:StatementGeographicalAxis:avgo:AllOtherGeographiesMemberMember 1.283200e+10
+                                us-gaap:OperatingIncomeLoss 2025-11-02                                                                                                                   2.548400e+10
+                                us-gaap:OperatingIncomeLoss 2024-11-03                                                                                                                   1.346300e+10
+                                us-gaap:OperatingIncomeLoss 2023-10-29                                                                                                                   1.620700e+10
+                                us-gaap:OperatingIncomeLoss 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 2.123200e+10
+                                us-gaap:OperatingIncomeLoss 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 1.675900e+10
+                                us-gaap:OperatingIncomeLoss 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 1.648600e+10
+                                us-gaap:OperatingIncomeLoss 2025-11-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 2.076500e+10
+                                us-gaap:OperatingIncomeLoss 2024-11-03                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 1.397700e+10
+                                us-gaap:OperatingIncomeLoss 2023-10-29                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 5.639000e+09
+                                us-gaap:OperatingIncomeLoss 2025-11-02                                                                                                                   2.548400e+10
+                                us-gaap:OperatingIncomeLoss 2024-11-03                                                                                                                   1.346300e+10
+                                us-gaap:OperatingIncomeLoss 2023-10-29                                                                                                                   1.620700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 1.413000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 1.014300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 5.181000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 4.773000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                                                                                   1.931100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                                                                                   1.491600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 2.164000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 1.095000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 1.016000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 1.413000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 2.917000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 6.650000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.599000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 5.181000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                                  srt:StatementGeographicalAxis:srt:AmericasMember 5.081000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember 1.161500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember 2.615000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                                                                                   1.931100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                  srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 1.935000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02               srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 7.333000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                  srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:us-gaap:ProductMember 8.750000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 1.014300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02    srt:StatementGeographicalAxis:srt:AmericasMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 2.697000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02 srt:StatementGeographicalAxis:srt:AsiaPacificMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 6.990000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02    srt:StatementGeographicalAxis:us-gaap:EMEAMember; srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 1.377000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                      srt:ProductOrServiceAxis:avgo:SubscriptionsandServicesMember 4.773000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                                  srt:StatementGeographicalAxis:srt:AmericasMember 4.632000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                               srt:StatementGeographicalAxis:srt:AsiaPacificMember 8.032000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                                  srt:StatementGeographicalAxis:us-gaap:EMEAMember 2.252000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                                                                                   1.491600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 1.251500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 8.212000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 6.796000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 6.704000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-01                                                                                                                   1.931100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-02                                                                                                                   1.491600e+10
+                                us-gaap:OperatingIncomeLoss 2026-02-01                                                                                                                   8.563000e+09
+                                us-gaap:OperatingIncomeLoss 2025-02-02                                                                                                                   6.260000e+09
+                                us-gaap:OperatingIncomeLoss 2026-02-01                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 7.503000e+09
+                                us-gaap:OperatingIncomeLoss 2025-02-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:SemiconductorSolutionsMember 4.706000e+09
+                                us-gaap:OperatingIncomeLoss 2026-02-01                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 5.323000e+09
+                                us-gaap:OperatingIncomeLoss 2025-02-02                                           us-gaap:StatementBusinessSegmentsAxis:avgo:InfrastructureSoftwareMember 5.122000e+09
+                                us-gaap:OperatingIncomeLoss 2026-02-01                                                                                                                   8.563000e+09
+                                us-gaap:OperatingIncomeLoss 2025-02-02                                                                                                                   6.260000e+09
