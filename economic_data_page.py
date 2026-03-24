@@ -199,7 +199,13 @@ def _plot_div(df, sid):
                           annotation_text=ref["label"],
                           annotation_position="top left")
 
-    return fig.to_html(full_html=False, include_plotlyjs=False)
+    # Default view: last 10 years (range buttons still work)
+    now = datetime.utcnow()
+    ten_years_ago = (now - pd.DateOffset(years=10)).strftime("%Y-%m-%d")
+    fig.update_layout(xaxis_range=[ten_years_ago, now.strftime("%Y-%m-%d")])
+
+    return fig.to_html(full_html=False, include_plotlyjs=False,
+                       config={"displayModeBar": False, "responsive": True})
 
 
 def _build_dashboard_table(conn, indicators):
@@ -219,10 +225,12 @@ def _build_dashboard_table(conn, indicators):
             f'<td class="{pct_class}">{_ordinal(pct)}</td></tr>'
         )
     return (
+        '<div class="table-scroll">'
         '<table class="dashboard-table"><thead>'
         '<tr><th>Indicator</th><th>Latest</th><th>As Of</th>'
         '<th>1-Mo &Delta;</th><th>YoY &Delta;</th><th>Percentile</th></tr>'
         '</thead><tbody>' + "".join(rows_html) + '</tbody></table>'
+        '</div>'
     )
 
 
