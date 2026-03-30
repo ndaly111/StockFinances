@@ -37,9 +37,9 @@ def ensure_dividend_schema(conn: sqlite3.Connection):
 
 # ───────────────── Yahoo helper ─────────────────
 def fetch_ttm_dividend(symbol: str) -> float | None:
-    tk = yf.Ticker(symbol)
-    div = tk.info.get("trailingAnnualDividendRate")
     try:
+        tk = yf.Ticker(symbol)
+        div = tk.info.get("trailingAnnualDividendRate")
         return float(div) if div is not None else None
     except Exception:
         return None

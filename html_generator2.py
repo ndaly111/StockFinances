@@ -25,7 +25,10 @@ def get_company_short_name(tk: str, cur) -> str:
     row = cur.fetchone()
     if row and row[0]:
         return row[0]
-    name = (yf.Ticker(tk).info or {}).get("shortName", "").strip() or tk
+    try:
+        name = (yf.Ticker(tk).info or {}).get("shortName", "").strip() or tk
+    except Exception:
+        name = tk
     cur.execute("UPDATE Tickers_Info SET short_name=? WHERE ticker=?", (name, tk))
     cur.connection.commit()
     return name
