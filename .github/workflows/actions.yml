@@ -49,7 +49,7 @@ jobs:
       run: |
         git add .
         git commit -m "Update website content" --allow-empty
-        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main --force
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main
 
     # ---------------------------------------------------------------- deploy to gh-pages
     - name: Clone repository (main)
@@ -69,4 +69,4 @@ jobs:
         cd gh-pages
         git add .
         git commit -m "Deploy to GitHub Pages" --allow-empty
-        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages --force
+        git push https://ndaly111:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
