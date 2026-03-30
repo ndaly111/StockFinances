@@ -255,6 +255,7 @@ Average Dilution Earnings
 Net Income Common Stockholders
 Net Income
 Net Income Including Noncontrolling Interests
+Net Income Discontinuous Operations
 Net Income Continuous Operations
 Earnings From Equity Interest Net Of Tax
 Tax Provision
@@ -265,6 +266,7 @@ Special Income Charges
 Other Special Charges
 Restructuring And Mergern Acquisition
 Earnings From Equity Interest
+Gain On Sale Of Security
 Net Non Operating Interest Income Expense
 Interest Expense Non Operating
 Interest Income Non Operating
@@ -319,7 +321,6 @@ Interest Income Non Operating
 Operating Income
 Operating Expense
 Other Operating Expenses
-Research And Development
 Selling General And Administration
 Selling And Marketing Expense
 General And Administrative Expense
@@ -353,7 +354,6 @@ Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
 Preferred Stock Dividends
 Net Income
-Minority Interests
 Net Income Including Noncontrolling Interests
 Net Income Discontinuous Operations
 Net Income Continuous Operations
@@ -362,8 +362,6 @@ Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
 Special Income Charges
-Other Special Charges
-Write Off
 Restructuring And Mergern Acquisition
 Gain On Sale Of Security
 Net Non Operating Interest Income Expense
@@ -440,6 +438,7 @@ Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
+Otherunder Preferred Stock Dividend
 Preferred Stock Dividends
 Net Income
 Minority Interests
@@ -639,6 +638,7 @@ Other Non Operating Income Expenses
 Special Income Charges
 Gain On Sale Of Business
 Write Off
+Impairment Of Capital Assets
 Restructuring And Mergern Acquisition
 Net Non Operating Interest Income Expense
 Interest Expense Non Operating
@@ -829,7 +829,6 @@ Gain On Sale Of Security
 Selling General And Administration
 Selling And Marketing Expense
 General And Administrative Expense
-Other Gand A
 Insurance And Claims
 Salaries And Wages
 Total Revenue
@@ -859,6 +858,7 @@ Basic Average Shares
 Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
+Average Dilution Earnings
 Net Income Common Stockholders
 Net Income
 Net Income Including Noncontrolling Interests
@@ -1153,6 +1153,7 @@ Other Income Expense
 Other Non Operating Income Expenses
 Special Income Charges
 Gain On Sale Of Ppe
+Gain On Sale Of Business
 Other Special Charges
 Impairment Of Capital Assets
 Restructuring And Mergern Acquisition
@@ -1287,6 +1288,8 @@ Special Income Charges
 Gain On Sale Of Ppe
 Gain On Sale Of Business
 Other Special Charges
+Write Off
+Impairment Of Capital Assets
 Restructuring And Mergern Acquisition
 Earnings From Equity Interest
 Gain On Sale Of Security
@@ -1327,12 +1330,15 @@ Basic EPS
 Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
 Net Income
+Minority Interests
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
 Tax Provision
 Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
+Special Income Charges
+Other Special Charges
 Gain On Sale Of Security
 Net Non Operating Interest Income Expense
 Interest Expense Non Operating
@@ -1373,6 +1379,7 @@ Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
+Otherunder Preferred Stock Dividend
 Net Income
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
@@ -1381,7 +1388,6 @@ Tax Provision
 Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
-Earnings From Equity Interest
 Gain On Sale Of Security
 Net Non Operating Interest Income Expense
 Total Other Finance Cost
@@ -1467,6 +1473,7 @@ Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
+Otherunder Preferred Stock Dividend
 Net Income
 Minority Interests
 Net Income Including Noncontrolling Interests
@@ -1532,7 +1539,6 @@ Interest Expense Non Operating
 Interest Income Non Operating
 Operating Income
 Operating Expense
-Other Operating Expenses
 Selling General And Administration
 Gross Profit
 Cost Of Revenue
@@ -1672,6 +1678,7 @@ Other Non Operating Income Expenses
 Special Income Charges
 Other Special Charges
 Write Off
+Restructuring And Mergern Acquisition
 Gain On Sale Of Security
 Net Non Operating Interest Income Expense
 Interest Expense Non Operating
@@ -1680,6 +1687,9 @@ Operating Income
 Operating Expense
 Research And Development
 Selling General And Administration
+Selling And Marketing Expense
+General And Administrative Expense
+Other Gand A
 Gross Profit
 Cost Of Revenue
 Total Revenue
@@ -1711,7 +1721,6 @@ Preferred Stock Dividends
 Net Income
 Minority Interests
 Net Income Including Noncontrolling Interests
-Net Income Discontinuous Operations
 Net Income Continuous Operations
 Tax Provision
 Pretax Income
@@ -1856,7 +1865,6 @@ Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
 Special Income Charges
-Other Special Charges
 Write Off
 Restructuring And Mergern Acquisition
 Net Non Operating Interest Income Expense
@@ -1866,7 +1874,6 @@ Operating Expense
 Other Operating Expenses
 Depreciation Amortization Depletion Income Statement
 Depreciation And Amortization In Income Statement
-Depreciation Income Statement
 Selling General And Administration
 Gross Profit
 Cost Of Revenue
@@ -1904,7 +1911,6 @@ Depreciation And Amortization In Income Statement
 Selling General And Administration
 Selling And Marketing Expense
 General And Administrative Expense
-Other Gand A
 Salaries And Wages
 Total Revenue
 Operating Revenue
@@ -1942,6 +1948,7 @@ Net Income Continuous Operations
 Tax Provision
 Pretax Income
 Other Income Expense
+Other Non Operating Income Expenses
 Special Income Charges
 Gain On Sale Of Ppe
 Other Special Charges
@@ -1962,8 +1969,6 @@ Operating Revenue
 Tax Effect Of Unusual Items
 Tax Rate For Calcs
 Normalized EBITDA
-Total Unusual Items
-Total Unusual Items Excluding Goodwill
 Net Income From Continuing Operation Net Minority Interest
 Reconciled Depreciation
 Reconciled Cost Of Revenue
@@ -1989,8 +1994,6 @@ Tax Provision
 Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
-Special Income Charges
-Impairment Of Capital Assets
 Net Non Operating Interest Income Expense
 Interest Expense Non Operating
 Interest Income Non Operating
@@ -2013,9 +2016,6 @@ Reconciled Depreciation
 Reconciled Cost Of Revenue
 EBITDA
 EBIT
-Net Interest Income
-Interest Expense
-Interest Income
 Normalized Income
 Net Income From Continuing And Discontinued Operation
 Total Expenses
@@ -2027,7 +2027,6 @@ Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
 Otherunder Preferred Stock Dividend
 Net Income
-Minority Interests
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
 Tax Provision
@@ -2038,9 +2037,6 @@ Special Income Charges
 Other Special Charges
 Impairment Of Capital Assets
 Gain On Sale Of Security
-Net Non Operating Interest Income Expense
-Interest Expense Non Operating
-Interest Income Non Operating
 Operating Income
 Operating Expense
 Other Operating Expenses
@@ -2086,7 +2082,6 @@ Net Income Continuous Operations
 Tax Provision
 Pretax Income
 Other Income Expense
-Other Non Operating Income Expenses
 Special Income Charges
 Gain On Sale Of Business
 Other Special Charges
@@ -2185,7 +2180,6 @@ Gain On Sale Of Security
 Selling General And Administration
 Selling And Marketing Expense
 General And Administrative Expense
-Other Gand A
 Salaries And Wages
 Total Revenue
 Operating Revenue
@@ -2337,6 +2331,7 @@ Other Non Operating Income Expenses
 Special Income Charges
 Gain On Sale Of Ppe
 Other Special Charges
+Write Off
 Impairment Of Capital Assets
 Restructuring And Mergern Acquisition
 Gain On Sale Of Security
@@ -2346,6 +2341,7 @@ Interest Income Non Operating
 Operating Income
 Operating Expense
 Other Operating Expenses
+Other Taxes
 Research And Development
 Selling General And Administration
 Gross Profit
@@ -2724,7 +2720,6 @@ Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
-Otherunder Preferred Stock Dividend
 Net Income
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
@@ -2827,7 +2822,6 @@ Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
-Otherunder Preferred Stock Dividend
 Net Income
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
@@ -3089,6 +3083,52 @@ EBITDA
 EBIT
 Net Interest Income
 Interest Expense
+Interest Income
+Normalized Income
+Net Income From Continuing And Discontinued Operation
+Total Expenses
+Diluted Average Shares
+Basic Average Shares
+Diluted EPS
+Basic EPS
+Diluted NI Availto Com Stockholders
+Average Dilution Earnings
+Net Income Common Stockholders
+Otherunder Preferred Stock Dividend
+Net Income
+Minority Interests
+Net Income Including Noncontrolling Interests
+Net Income Continuous Operations
+Tax Provision
+Pretax Income
+Other Income Expense
+Special Income Charges
+Write Off
+Impairment Of Capital Assets
+Earnings From Equity Interest
+Net Non Operating Interest Income Expense
+Total Other Finance Cost
+Interest Expense Non Operating
+Interest Income Non Operating
+Operating Income
+Operating Expense
+Selling General And Administration
+Gross Profit
+Cost Of Revenue
+Total Revenue
+Operating Revenue
+Tax Effect Of Unusual Items
+Tax Rate For Calcs
+Normalized EBITDA
+Total Unusual Items
+Total Unusual Items Excluding Goodwill
+Net Income From Continuing Operation Net Minority Interest
+Reconciled Depreciation
+Reconciled Cost Of Revenue
+EBITDA
+EBIT
+Net Interest Income
+Interest Expense
 Normalized Income
 Net Income From Continuing And Discontinued Operation
 Total Expenses
@@ -3304,6 +3344,7 @@ Impairment Of Capital Assets
 Restructuring And Mergern Acquisition
 Earnings From Equity Interest
 Net Non Operating Interest Income Expense
+Total Other Finance Cost
 Interest Expense Non Operating
 Interest Income Non Operating
 Operating Income
@@ -3401,6 +3442,7 @@ Other Income Expense
 Other Non Operating Income Expenses
 Special Income Charges
 Gain On Sale Of Ppe
+Gain On Sale Of Business
 Other Special Charges
 Write Off
 Impairment Of Capital Assets
@@ -3513,8 +3555,6 @@ Operating Revenue
 Tax Effect Of Unusual Items
 Tax Rate For Calcs
 Normalized EBITDA
-Total Unusual Items
-Total Unusual Items Excluding Goodwill
 Net Income From Continuing Operation Net Minority Interest
 Reconciled Depreciation
 Reconciled Cost Of Revenue
@@ -3543,7 +3583,6 @@ Tax Provision
 Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
-Gain On Sale Of Security
 Net Non Operating Interest Income Expense
 Interest Expense Non Operating
 Interest Income Non Operating
@@ -3634,6 +3673,7 @@ Net Income
 Minority Interests
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
+Tax Provision
 Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
@@ -3714,6 +3754,7 @@ Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
 Otherunder Preferred Stock Dividend
 Net Income
+Minority Interests
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
 Tax Provision
@@ -3722,6 +3763,7 @@ Other Income Expense
 Other Non Operating Income Expenses
 Special Income Charges
 Other Special Charges
+Earnings From Equity Interest
 Gain On Sale Of Security
 Net Non Operating Interest Income Expense
 Interest Expense Non Operating
@@ -3729,8 +3771,13 @@ Interest Income Non Operating
 Operating Income
 Operating Expense
 Other Operating Expenses
+Depreciation Amortization Depletion Income Statement
+Depreciation And Amortization In Income Statement
 Research And Development
 Selling General And Administration
+General And Administrative Expense
+Other Gand A
+Salaries And Wages
 Gross Profit
 Cost Of Revenue
 Total Revenue
@@ -3997,7 +4044,6 @@ Tax Provision
 Pretax Income
 Other Income Expense
 Other Non Operating Income Expenses
-Earnings From Equity Interest
 Gain On Sale Of Security
 Net Non Operating Interest Income Expense
 Total Other Finance Cost
@@ -4268,7 +4314,6 @@ Basic EPS
 Diluted NI Availto Com Stockholders
 Average Dilution Earnings
 Net Income Common Stockholders
-Otherunder Preferred Stock Dividend
 Net Income
 Minority Interests
 Net Income Including Noncontrolling Interests
@@ -4404,6 +4449,7 @@ Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
 Net Income Common Stockholders
+Otherunder Preferred Stock Dividend
 Net Income
 Net Income Including Noncontrolling Interests
 Net Income Continuous Operations
@@ -4449,7 +4495,6 @@ Basic Average Shares
 Diluted EPS
 Basic EPS
 Diluted NI Availto Com Stockholders
-Average Dilution Earnings
 Net Income Common Stockholders
 Otherunder Preferred Stock Dividend
 Net Income
@@ -4514,7 +4559,6 @@ Special Income Charges
 Gain On Sale Of Business
 Other Special Charges
 Net Non Operating Interest Income Expense
-Total Other Finance Cost
 Interest Expense Non Operating
 Interest Income Non Operating
 Operating Income
