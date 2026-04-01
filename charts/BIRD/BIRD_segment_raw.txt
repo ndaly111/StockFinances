@@ -1,7 +1,7 @@
-                    Concept  PeriodEnd Dims        Value
-us-gaap:OperatingIncomeLoss 2024-12-31       -97553000.0
-us-gaap:OperatingIncomeLoss 2023-12-31      -153003000.0
-us-gaap:OperatingIncomeLoss 2025-09-30       -19885000.0
-us-gaap:OperatingIncomeLoss 2024-09-30       -21782000.0
-us-gaap:OperatingIncomeLoss 2025-09-30       -59242000.0
-us-gaap:OperatingIncomeLoss 2024-09-30       -71782000.0
+                    Concept  PeriodEnd Dims       Value
+us-gaap:OperatingIncomeLoss 2025-12-31      -79962000.0
+us-gaap:OperatingIncomeLoss 2024-12-31      -97553000.0
+us-gaap:OperatingIncomeLoss 2025-09-30      -19885000.0
+us-gaap:OperatingIncomeLoss 2024-09-30      -21782000.0
+us-gaap:OperatingIncomeLoss 2025-09-30      -59242000.0
+us-gaap:OperatingIncomeLoss 2024-09-30      -71782000.0
