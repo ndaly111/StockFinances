@@ -32,6 +32,7 @@ from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
 from backfill_index_growth     import backfill_index_growth
+from edgar_backfill            import maybe_backfill_edgar_financials
 from scripts.load_index_eps_csv import load_eps_csv
 from scripts.load_index_price_csv import load_price_csv
 from scripts.derive_monthly_pe_from_price_and_eps import derive_monthly_pe
@@ -399,6 +400,12 @@ def mini_main():
         ensure_forward_schema(conn=conn)
         conn.commit()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
+
+        # ─────────────────────────────────────────────────────────
+        # EDGAR BACKFILL: Fill 10 years of Revenue/Net Income/EPS
+        # from SEC XBRL data (public, no API key required)
+        # ─────────────────────────────────────────────────────────
+        maybe_backfill_edgar_financials(tickers, DB_PATH)
 
         # ─────────────────────────────────────────────────────────
         # OPTIMIZATION: Batch prefetch yfinance data for all tickers
