@@ -56,18 +56,15 @@ def _update_ttm_div(cur: sqlite3.Cursor, symbol: str, ttm_div: float | None):
 
 # ───────────────── main generator ───────────────
 def generate_eps_dividend(symbols: list[str], db_path: str = DB_PATH):
-    conn = sqlite3.connect(db_path)
-    ensure_dividend_schema(conn)
-    cur  = conn.cursor()
+    with sqlite3.connect(db_path) as conn:
+        ensure_dividend_schema(conn)
+        cur  = conn.cursor()
 
-    for sym in symbols:
-        logging.info("[%s] Fetching TTM dividend …", sym)
-        ttm_amount = fetch_ttm_dividend(sym)
-        _update_ttm_div(cur, sym, ttm_amount)
-        logging.info("[%s] TTM dividend set to %s", sym, ttm_amount)
-
-    conn.commit()
-    conn.close()
+        for sym in symbols:
+            logging.info("[%s] Fetching TTM dividend …", sym)
+            ttm_amount = fetch_ttm_dividend(sym)
+            _update_ttm_div(cur, sym, ttm_amount)
+            logging.info("[%s] TTM dividend set to %s", sym, ttm_amount)
 
 
 # ───────────────── CLI / mini-main ──────────────

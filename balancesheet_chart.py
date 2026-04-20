@@ -17,17 +17,16 @@ os.makedirs(charts_output_dir, exist_ok=True)
 # Fetch data from the database
 def fetch_balance_sheet_data(ticker):
     print("balance sheet chart 1 fetch bs data")
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT Total_Assets, Total_Liabilities, Total_Shareholder_Equity, Total_Debt, Cash_and_Cash_Equivalents
-        FROM BalanceSheetData
-        WHERE Symbol = ?
-        ORDER BY Date DESC
-        LIMIT 1;""", (ticker,))
-    data = cursor.fetchone()
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT Total_Assets, Total_Liabilities, Total_Shareholder_Equity, Total_Debt, Cash_and_Cash_Equivalents
+            FROM BalanceSheetData
+            WHERE Symbol = ?
+            ORDER BY Date DESC
+            LIMIT 1;""", (ticker,))
+        data = cursor.fetchone()
     print("---data fetched", data)
-    conn.close()
     if data:
         return {
             'Total_Assets': data[0],

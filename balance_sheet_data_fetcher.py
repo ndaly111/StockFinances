@@ -236,27 +236,25 @@ def delete_invalid_records(cursor):
 
 
 def balance_sheet_data_fetcher():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
 
-    # Clean up previously bad data
-    delete_invalid_records(cursor)
+        # Clean up previously bad data
+        delete_invalid_records(cursor)
 
-    balance_sheet_data = fetch_balance_sheet_data(TICKER, cursor)
+        balance_sheet_data = fetch_balance_sheet_data(TICKER, cursor)
 
-    if check_missing_balance_sheet_data(TICKER, cursor) or is_balance_sheet_data_outdated(balance_sheet_data):
-        new_balance_sheet_data = fetch_balance_sheet_data_from_provider(TICKER)
+        if check_missing_balance_sheet_data(TICKER, cursor) or is_balance_sheet_data_outdated(balance_sheet_data):
+            new_balance_sheet_data = fetch_balance_sheet_data_from_provider(TICKER)
 
-        required_keys = ['Cash', 'Total_Assets', 'Total_Liabilities', 'Debt', 'Equity']
-        if new_balance_sheet_data and all(
-            new_balance_sheet_data.get(k) is not None and not pd.isna(new_balance_sheet_data.get(k))
-            for k in required_keys
-        ):
-            store_fetched_balance_sheet_data(cursor, new_balance_sheet_data)
-            logger.info(f"[{TICKER}] New balance sheet data stored")
+            required_keys = ['Cash', 'Total_Assets', 'Total_Liabilities', 'Debt', 'Equity']
+            if new_balance_sheet_data and all(
+                new_balance_sheet_data.get(k) is not None and not pd.isna(new_balance_sheet_data.get(k))
+                for k in required_keys
+            ):
+                store_fetched_balance_sheet_data(cursor, new_balance_sheet_data)
+                logger.info(f"[{TICKER}] New balance sheet data stored")
+            else:
+                logger.warning(f"[{TICKER}] Skipping invalid balance sheet data")
         else:
-            logger.warning(f"[{TICKER}] Skipping invalid balance sheet data")
-    else:
-        logger.debug(f"[{TICKER}] Balance sheet data is up to date")
-
-    conn.close()
+            logger.debug(f"[{TICKER}] Balance sheet data is up to date")

@@ -227,12 +227,16 @@ def generate_earnings_tables():
         logging.warning("No new earnings data fetched; regenerating HTML from existing tables")
 
     # ——— Past Earnings HTML ———
-    conn = sqlite3.connect(DB_PATH)
-    dfp = pd.read_sql_query(f"""
-        SELECT * FROM earnings_past
-        WHERE earnings_date BETWEEN '{seven_days_ago.date()}' AND '{today.date()}'
-    """, conn, parse_dates=['earnings_date'])
-    conn.close()
+    with sqlite3.connect(DB_PATH) as conn:
+        dfp = pd.read_sql_query(
+            """
+            SELECT * FROM earnings_past
+            WHERE earnings_date BETWEEN ? AND ?
+            """,
+            conn,
+            params=(seven_days_ago.date().isoformat(), today.date().isoformat()),
+            parse_dates=['earnings_date'],
+        )
 
     if not dfp.empty:
         def format_surprise(value: float) -> str:
@@ -314,13 +318,17 @@ def generate_earnings_tables():
             f.write("<p>No earnings in the past 7 days.</p>")
 
     # ——— Upcoming Earnings HTML ———
-    conn = sqlite3.connect(DB_PATH)
-    dfu = pd.read_sql_query(f"""
-        SELECT * FROM earnings_upcoming
-        WHERE earnings_date > '{today.date()}' 
-          AND earnings_date <= '{ninety_days_out.date()}'
-    """, conn, parse_dates=['earnings_date'])
-    conn.close()
+    with sqlite3.connect(DB_PATH) as conn:
+        dfu = pd.read_sql_query(
+            """
+            SELECT * FROM earnings_upcoming
+            WHERE earnings_date > ?
+              AND earnings_date <= ?
+            """,
+            conn,
+            params=(today.date().isoformat(), ninety_days_out.date().isoformat()),
+            parse_dates=['earnings_date'],
+        )
 
     if not dfu.empty:
         dfu['Date'] = pd.to_datetime(dfu['earnings_date'])

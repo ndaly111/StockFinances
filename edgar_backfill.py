@@ -116,33 +116,31 @@ def backfill_all(
     Returns a summary dict with counts.
     """
     provider = EdgarDataProvider(years=years)
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
 
-    total_upserted = 0
-    success = 0
-    skipped = 0
+        total_upserted = 0
+        success = 0
+        skipped = 0
 
-    for i, ticker in enumerate(tickers):
-        try:
-            count = backfill_ticker(ticker, cursor, provider)
-            if count > 0:
-                conn.commit()
-                total_upserted += count
-                logger.info("[%s] EDGAR backfilled %d rows", ticker, count)
-                success += 1
-            else:
+        for i, ticker in enumerate(tickers):
+            try:
+                count = backfill_ticker(ticker, cursor, provider)
+                if count > 0:
+                    conn.commit()
+                    total_upserted += count
+                    logger.info("[%s] EDGAR backfilled %d rows", ticker, count)
+                    success += 1
+                else:
+                    skipped += 1
+            except Exception as exc:
+                conn.rollback()
+                logger.warning("[%s] EDGAR backfill failed: %s", ticker, exc)
                 skipped += 1
-        except Exception as exc:
-            conn.rollback()
-            logger.warning("[%s] EDGAR backfill failed: %s", ticker, exc)
-            skipped += 1
 
-        # Rate-limit SEC requests
-        if i < len(tickers) - 1:
-            time.sleep(_SEC_DELAY)
-
-    conn.close()
+            # Rate-limit SEC requests
+            if i < len(tickers) - 1:
+                time.sleep(_SEC_DELAY)
 
     summary = {
         "tickers_processed": len(tickers),
@@ -170,19 +168,18 @@ def maybe_backfill_edgar_financials(
     cutoff_year = datetime.now().year - 4  # FMP covers ~4 years
 
     try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
 
-        # Check if we have any data older than the FMP window
-        cursor.execute(
-            """
-            SELECT COUNT(DISTINCT Symbol) FROM Annual_Data
-            WHERE Date < ? AND Revenue IS NOT NULL
-            """,
-            (f"{cutoff_year}-01-01",),
-        )
-        tickers_with_history = cursor.fetchone()[0]
-        conn.close()
+            # Check if we have any data older than the FMP window
+            cursor.execute(
+                """
+                SELECT COUNT(DISTINCT Symbol) FROM Annual_Data
+                WHERE Date < ? AND Revenue IS NOT NULL
+                """,
+                (f"{cutoff_year}-01-01",),
+            )
+            tickers_with_history = cursor.fetchone()[0]
 
         # If most tickers already have deep history, skip
         if tickers_with_history >= len(tickers) * 0.8:
