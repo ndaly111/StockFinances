@@ -1,1 +1,27 @@
+# Python
 __pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Logs
+*.log
+
+# Generated content
+charts/
+pages/
+
+# Caches
+.cache_ix/
+.sec_cik_cache.json
+
+# Stale / scratch databases (keep the canonical "Stock Data.db" tracked)
+stock data.db
+your_database_path.db
+*.db.pre_index_load_backup_*
+*.db.before_cpi_backfill_*
+
+# OS / editor
+.DS_Store
+*.swp
