@@ -123,7 +123,7 @@ def _to_float(x):
     if isinstance(x, (int, float)): return float(x)
     s = str(x).replace(",", "").strip()
     try: return float(s)
-    except: return pd.NA
+    except (ValueError, TypeError): return pd.NA
 
 
 def axis_has_meaningful_oi(df_axis: pd.DataFrame) -> bool:

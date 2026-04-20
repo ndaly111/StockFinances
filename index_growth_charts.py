@@ -634,7 +634,7 @@ def _pct_color(v):                          # green ≤30, red ≥70
         v=float(v)
         if v<=30: return "color:#008800;font-weight:bold"
         if v>=70: return "color:#CC0000;font-weight:bold"
-    except: pass
+    except (ValueError, TypeError): pass
     return ""
 
 def _build_html(df):

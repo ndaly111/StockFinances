@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import logging
+from html import escape as html_escape
 import pandas as pd
 from datetime import datetime
 import yfinance as yf
@@ -345,7 +346,7 @@ def generate_earnings_tables():
         for date, group in early:
             html += f"<h3>{date}</h3><ul>"
             for _, row in group.iterrows():
-                html += f"<li>{row['ticker']}</li>"
+                html += f"<li>{html_escape(str(row['ticker']))}</li>"
             html += "</ul>"
 
         if later:
@@ -353,7 +354,7 @@ def generate_earnings_tables():
             for date, group in later:
                 html += f"<h3>{date}</h3><ul>"
                 for _, row in group.iterrows():
-                    html += f"<li>{row['ticker']}</li>"
+                    html += f"<li>{html_escape(str(row['ticker']))}</li>"
                 html += "</ul>"
             html += "</details>"
 
