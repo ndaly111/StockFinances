@@ -70,7 +70,7 @@ def check_and_update_annual_data(db_path):
                 EPS = COALESCE(?, EPS), 
                 Last_Updated = COALESCE(?, Last_Updated)
             WHERE Symbol = ? AND Date = ?
-        """, (revenue, net_income, eps, current_time if last_updated is None else last_updated, symbol, year))
+        """, (revenue, net_income, eps, current_time if last_updated is None else last_updated, symbol, date))
         conn.commit()
         print(f"Updated data for {symbol} in {date}.")
 
