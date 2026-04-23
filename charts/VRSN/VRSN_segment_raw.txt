@@ -26,39 +26,21 @@ us-gaap:OperatingIncomeLoss 2023-12-31                                          
 us-gaap:OperatingIncomeLoss 2025-12-31                                                                 1121000000.0
 us-gaap:OperatingIncomeLoss 2024-12-31                                                                 1058200000.0
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                 1000600000.0
-           us-gaap:Revenues 2025-09-30                                                                  419100000.0
-           us-gaap:Revenues 2024-09-30                                                                  390600000.0
-           us-gaap:Revenues 2025-09-30                                                                 1231300000.0
-           us-gaap:Revenues 2024-09-30                                                                 1162000000.0
-           us-gaap:Revenues 2025-09-30                                                                  419100000.0
-           us-gaap:Revenues 2024-09-30                                                                  390600000.0
-           us-gaap:Revenues 2025-09-30                                                                 1231300000.0
-           us-gaap:Revenues 2024-09-30                                                                 1162000000.0
-           us-gaap:Revenues 2025-09-30                        srt:StatementGeographicalAxis:country:US  275900000.0
-           us-gaap:Revenues 2024-09-30                        srt:StatementGeographicalAxis:country:US  260200000.0
-           us-gaap:Revenues 2025-09-30                        srt:StatementGeographicalAxis:country:US  812500000.0
-           us-gaap:Revenues 2024-09-30                        srt:StatementGeographicalAxis:country:US  773200000.0
-           us-gaap:Revenues 2025-09-30                srt:StatementGeographicalAxis:us-gaap:EMEAMember   71200000.0
-           us-gaap:Revenues 2024-09-30                srt:StatementGeographicalAxis:us-gaap:EMEAMember   62800000.0
-           us-gaap:Revenues 2025-09-30                srt:StatementGeographicalAxis:us-gaap:EMEAMember  207000000.0
-           us-gaap:Revenues 2024-09-30                srt:StatementGeographicalAxis:us-gaap:EMEAMember  184700000.0
-           us-gaap:Revenues 2025-09-30             srt:StatementGeographicalAxis:srt:AsiaPacificMember   47000000.0
-           us-gaap:Revenues 2024-09-30             srt:StatementGeographicalAxis:srt:AsiaPacificMember   43500000.0
-           us-gaap:Revenues 2025-09-30             srt:StatementGeographicalAxis:srt:AsiaPacificMember  136900000.0
-           us-gaap:Revenues 2024-09-30             srt:StatementGeographicalAxis:srt:AsiaPacificMember  132200000.0
-           us-gaap:Revenues 2025-09-30                  srt:StatementGeographicalAxis:vrsn:OtherMember   25000000.0
-           us-gaap:Revenues 2024-09-30                  srt:StatementGeographicalAxis:vrsn:OtherMember   24100000.0
-           us-gaap:Revenues 2025-09-30                  srt:StatementGeographicalAxis:vrsn:OtherMember   74900000.0
-           us-gaap:Revenues 2024-09-30                  srt:StatementGeographicalAxis:vrsn:OtherMember   71900000.0
-           us-gaap:Revenues 2025-09-30                                                                  419100000.0
-           us-gaap:Revenues 2024-09-30                                                                  390600000.0
-           us-gaap:Revenues 2025-09-30                                                                 1231300000.0
-           us-gaap:Revenues 2024-09-30                                                                 1162000000.0
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                  284300000.0
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                  269300000.0
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                  836200000.0
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                  794400000.0
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                  284300000.0
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                  269300000.0
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                  836200000.0
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                  794400000.0
+           us-gaap:Revenues 2026-03-31                                                                  428900000.0
+           us-gaap:Revenues 2025-03-31                                                                  402300000.0
+           us-gaap:Revenues 2026-03-31                                                                  428900000.0
+           us-gaap:Revenues 2025-03-31                                                                  402300000.0
+           us-gaap:Revenues 2026-03-31                        srt:StatementGeographicalAxis:country:US  283400000.0
+           us-gaap:Revenues 2025-03-31                        srt:StatementGeographicalAxis:country:US  266100000.0
+           us-gaap:Revenues 2026-03-31                srt:StatementGeographicalAxis:us-gaap:EMEAMember   73500000.0
+           us-gaap:Revenues 2025-03-31                srt:StatementGeographicalAxis:us-gaap:EMEAMember   67000000.0
+           us-gaap:Revenues 2026-03-31             srt:StatementGeographicalAxis:srt:AsiaPacificMember   48000000.0
+           us-gaap:Revenues 2025-03-31             srt:StatementGeographicalAxis:srt:AsiaPacificMember   44400000.0
+           us-gaap:Revenues 2026-03-31                  srt:StatementGeographicalAxis:vrsn:OtherMember   24000000.0
+           us-gaap:Revenues 2025-03-31                  srt:StatementGeographicalAxis:vrsn:OtherMember   24800000.0
+           us-gaap:Revenues 2026-03-31                                                                  428900000.0
+           us-gaap:Revenues 2025-03-31                                                                  402300000.0
+us-gaap:OperatingIncomeLoss 2026-03-31                                                                  293600000.0
+us-gaap:OperatingIncomeLoss 2025-03-31                                                                  271200000.0
+us-gaap:OperatingIncomeLoss 2026-03-31                                                                  293600000.0
+us-gaap:OperatingIncomeLoss 2025-03-31                                                                  271200000.0
