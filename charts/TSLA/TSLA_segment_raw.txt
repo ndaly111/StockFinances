@@ -66,91 +66,48 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31      us-g
                                 us-gaap:OperatingIncomeLoss 2025-12-31                                                                                    4.355000e+09
                                 us-gaap:OperatingIncomeLoss 2024-12-31                                                                                    7.076000e+09
                                 us-gaap:OperatingIncomeLoss 2023-12-31                                                                                    8.891000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 2.035900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 1.883100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 4.907100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 5.382100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 4.170000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 7.390000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 1.451000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 2.071000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 4.290000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 4.460000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 1.311000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 1.380000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                             srt:ProductOrServiceAxis:tsla:AutomotiveRevenuesMember 2.120500e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                             srt:ProductOrServiceAxis:tsla:AutomotiveRevenuesMember 2.001600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                             srt:ProductOrServiceAxis:tsla:AutomotiveRevenuesMember 5.183300e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                             srt:ProductOrServiceAxis:tsla:AutomotiveRevenuesMember 5.727200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                     srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageMember 3.415000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                     srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageMember 2.376000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                     srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageMember 8.934000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                     srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageMember 7.025000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 3.475000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 2.790000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 9.159000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 7.686000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                    2.809500e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                                    2.518200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                    6.992600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                                    7.198300e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 2.035900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 1.883100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 4.907100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 5.382100e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 4.170000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 7.390000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 1.451000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 2.071000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageSalesMember 3.281000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageSalesMember 2.228000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageSalesMember 8.548000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageSalesMember 6.616000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 3.475000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 2.790000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 9.159000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 7.686000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:tsla:SalesAndServicesMember 2.753200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                               srt:ProductOrServiceAxis:tsla:SalesAndServicesMember 2.458800e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:tsla:SalesAndServicesMember 6.822900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                               srt:ProductOrServiceAxis:tsla:SalesAndServicesMember 7.019400e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 4.290000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 4.460000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 1.311000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 1.380000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30              srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageLeasingMember 1.340000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30              srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageLeasingMember 1.480000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30              srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageLeasingMember 3.860000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30              srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageLeasingMember 4.090000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                    2.809500e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                                    2.518200e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                    6.992600e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                                    7.198300e+10
-                                           us-gaap:Revenues 2025-09-30                 us-gaap:StatementBusinessSegmentsAxis:tsla:AutomotiveSegmentMember 2.468000e+10
-                                           us-gaap:Revenues 2024-09-30                 us-gaap:StatementBusinessSegmentsAxis:tsla:AutomotiveSegmentMember 2.280600e+10
-                                           us-gaap:Revenues 2025-09-30                 us-gaap:StatementBusinessSegmentsAxis:tsla:AutomotiveSegmentMember 6.099200e+10
-                                           us-gaap:Revenues 2024-09-30                 us-gaap:StatementBusinessSegmentsAxis:tsla:AutomotiveSegmentMember 6.495800e+10
-                                           us-gaap:Revenues 2025-09-30 us-gaap:StatementBusinessSegmentsAxis:tsla:EnergyGenerationAndStorageSegmentMember 3.415000e+09
-                                           us-gaap:Revenues 2024-09-30 us-gaap:StatementBusinessSegmentsAxis:tsla:EnergyGenerationAndStorageSegmentMember 2.376000e+09
-                                           us-gaap:Revenues 2025-09-30 us-gaap:StatementBusinessSegmentsAxis:tsla:EnergyGenerationAndStorageSegmentMember 8.934000e+09
-                                           us-gaap:Revenues 2024-09-30 us-gaap:StatementBusinessSegmentsAxis:tsla:EnergyGenerationAndStorageSegmentMember 7.025000e+09
-                                           us-gaap:Revenues 2025-09-30                                           srt:StatementGeographicalAxis:country:US 1.459800e+10
-                                           us-gaap:Revenues 2024-09-30                                           srt:StatementGeographicalAxis:country:US 1.258400e+10
-                                           us-gaap:Revenues 2025-09-30                                           srt:StatementGeographicalAxis:country:US 3.674000e+10
-                                           us-gaap:Revenues 2024-09-30                                           srt:StatementGeographicalAxis:country:US 3.560200e+10
-                                           us-gaap:Revenues 2025-09-30                                           srt:StatementGeographicalAxis:country:CN 5.653000e+09
-                                           us-gaap:Revenues 2024-09-30                                           srt:StatementGeographicalAxis:country:CN 5.665000e+09
-                                           us-gaap:Revenues 2025-09-30                                           srt:StatementGeographicalAxis:country:CN 1.426100e+10
-                                           us-gaap:Revenues 2024-09-30                                           srt:StatementGeographicalAxis:country:CN 1.489300e+10
-                                           us-gaap:Revenues 2025-09-30                            srt:StatementGeographicalAxis:tsla:OtherCountriesMember 7.844000e+09
-                                           us-gaap:Revenues 2024-09-30                            srt:StatementGeographicalAxis:tsla:OtherCountriesMember 6.933000e+09
-                                           us-gaap:Revenues 2025-09-30                            srt:StatementGeographicalAxis:tsla:OtherCountriesMember 1.892500e+10
-                                           us-gaap:Revenues 2024-09-30                            srt:StatementGeographicalAxis:tsla:OtherCountriesMember 2.148800e+10
-                                           us-gaap:Revenues 2025-09-30                                                                                    2.809500e+10
-                                           us-gaap:Revenues 2024-09-30                                                                                    2.518200e+10
-                                           us-gaap:Revenues 2025-09-30                                                                                    6.992600e+10
-                                           us-gaap:Revenues 2024-09-30                                                                                    7.198300e+10
-                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                    1.624000e+09
-                                us-gaap:OperatingIncomeLoss 2024-09-30                                                                                    2.717000e+09
-                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                    2.946000e+09
-                                us-gaap:OperatingIncomeLoss 2024-09-30                                                                                    5.493000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 1.547300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 1.292500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 3.800000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 5.950000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 3.810000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 4.470000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                             srt:ProductOrServiceAxis:tsla:AutomotiveRevenuesMember 1.623400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                             srt:ProductOrServiceAxis:tsla:AutomotiveRevenuesMember 1.396700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                     srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageMember 2.408000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                     srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageMember 2.730000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 3.745000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 2.638000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                                    2.238700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                                    1.933500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 1.547300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                srt:ProductOrServiceAxis:tsla:AutomotiveSalesMember 1.292500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 3.800000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                    srt:ProductOrServiceAxis:tsla:AutomotiveRegulatoryCreditsMember 5.950000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageSalesMember 2.305000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageSalesMember 2.621000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 3.745000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                               srt:ProductOrServiceAxis:tsla:ServicesAndOtherMember 2.638000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                               srt:ProductOrServiceAxis:tsla:SalesAndServicesMember 2.190300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                               srt:ProductOrServiceAxis:tsla:SalesAndServicesMember 1.877900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 3.810000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                              srt:ProductOrServiceAxis:tsla:AutomotiveLeasingMember 4.470000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31              srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageLeasingMember 1.030000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31              srt:ProductOrServiceAxis:tsla:EnergyGenerationAndStorageLeasingMember 1.090000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                                    2.238700e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                                    1.933500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31      us-gaap:RelatedPartyTransactionsByRelatedPartyAxis:us-gaap:RelatedPartyMember 8.700000e+07
+                                           us-gaap:Revenues 2026-03-31                 us-gaap:StatementBusinessSegmentsAxis:tsla:AutomotiveSegmentMember 1.997900e+10
+                                           us-gaap:Revenues 2025-03-31                 us-gaap:StatementBusinessSegmentsAxis:tsla:AutomotiveSegmentMember 1.660500e+10
+                                           us-gaap:Revenues 2026-03-31 us-gaap:StatementBusinessSegmentsAxis:tsla:EnergyGenerationAndStorageSegmentMember 2.408000e+09
+                                           us-gaap:Revenues 2025-03-31 us-gaap:StatementBusinessSegmentsAxis:tsla:EnergyGenerationAndStorageSegmentMember 2.730000e+09
+                                           us-gaap:Revenues 2026-03-31                                           srt:StatementGeographicalAxis:country:US 1.067700e+10
+                                           us-gaap:Revenues 2025-03-31                                           srt:StatementGeographicalAxis:country:US 1.033300e+10
+                                           us-gaap:Revenues 2026-03-31                                           srt:StatementGeographicalAxis:country:CN 4.184000e+09
+                                           us-gaap:Revenues 2025-03-31                                           srt:StatementGeographicalAxis:country:CN 4.303000e+09
+                                           us-gaap:Revenues 2026-03-31                            srt:StatementGeographicalAxis:tsla:OtherCountriesMember 7.526000e+09
+                                           us-gaap:Revenues 2025-03-31                            srt:StatementGeographicalAxis:tsla:OtherCountriesMember 4.699000e+09
+                                           us-gaap:Revenues 2026-03-31                                                                                    2.238700e+10
+                                           us-gaap:Revenues 2025-03-31                                                                                    1.933500e+10
+                                us-gaap:OperatingIncomeLoss 2026-03-31                                                                                    9.410000e+08
+                                us-gaap:OperatingIncomeLoss 2025-03-31                                                                                    3.990000e+08
