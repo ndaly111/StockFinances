@@ -21,12 +21,7 @@
 us-gaap:OperatingIncomeLoss 2025-12-31                                                                                     1596864000.0
 us-gaap:OperatingIncomeLoss 2024-12-31                                                                                     1394420000.0
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                                      857266000.0
-           us-gaap:Revenues 2025-09-30                                                                                     1594856000.0
-           us-gaap:Revenues 2024-09-30                                                                                      887668000.0
-           us-gaap:Revenues 2025-09-30                                                                                     3536594000.0
-           us-gaap:Revenues 2024-09-30                                                                                     2692258000.0
-           us-gaap:Revenues 2024-09-30 us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:fslr:CleantechSolarMember   27300000.0
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                                      466095000.0
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                                      321999000.0
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                                     1048946000.0
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                                      937651000.0
+           us-gaap:Revenues 2026-03-31                                                                                     1044240000.0
+           us-gaap:Revenues 2025-03-31                                                                                      844568000.0
+us-gaap:OperatingIncomeLoss 2026-03-31                                                                                      345303000.0
+us-gaap:OperatingIncomeLoss 2025-03-31                                                                                      221244000.0
