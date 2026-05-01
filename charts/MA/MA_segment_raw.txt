@@ -26,39 +26,22 @@
 us-gaap:OperatingIncomeLoss 2025-12-31                                                                  1.889700e+10
 us-gaap:OperatingIncomeLoss 2024-12-31                                                                  1.558200e+10
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                  1.400800e+10
-           us-gaap:Revenues 2025-09-30                                                                  8.602000e+09
-           us-gaap:Revenues 2024-09-30                                                                  7.369000e+09
-           us-gaap:Revenues 2025-09-30                                                                  2.398500e+10
-           us-gaap:Revenues 2024-09-30                                                                  2.067800e+10
-           us-gaap:Revenues 2025-09-30                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 5.179000e+09
-           us-gaap:Revenues 2024-09-30                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 4.629000e+09
-           us-gaap:Revenues 2025-09-30                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 1.455600e+10
-           us-gaap:Revenues 2024-09-30                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 1.292400e+10
-           us-gaap:Revenues 2025-09-30 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 3.423000e+09
-           us-gaap:Revenues 2024-09-30 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 2.740000e+09
-           us-gaap:Revenues 2025-09-30 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 9.429000e+09
-           us-gaap:Revenues 2024-09-30 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 7.754000e+09
-           us-gaap:Revenues 2025-09-30                                                                  8.602000e+09
-           us-gaap:Revenues 2024-09-30                                                                  7.369000e+09
-           us-gaap:Revenues 2025-09-30                                                                  2.398500e+10
-           us-gaap:Revenues 2024-09-30                                                                  2.067800e+10
-           us-gaap:Revenues 2025-09-30             srt:StatementGeographicalAxis:srt:NorthAmericaMember 3.651000e+09
-           us-gaap:Revenues 2024-09-30             srt:StatementGeographicalAxis:srt:NorthAmericaMember 3.156000e+09
-           us-gaap:Revenues 2025-09-30             srt:StatementGeographicalAxis:srt:NorthAmericaMember 1.020700e+10
-           us-gaap:Revenues 2024-09-30             srt:StatementGeographicalAxis:srt:NorthAmericaMember 9.093000e+09
-           us-gaap:Revenues 2025-09-30      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 4.951000e+09
-           us-gaap:Revenues 2024-09-30      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 4.213000e+09
-           us-gaap:Revenues 2025-09-30      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 1.377800e+10
-           us-gaap:Revenues 2024-09-30      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 1.158500e+10
-           us-gaap:Revenues 2025-09-30                                                                  8.602000e+09
-           us-gaap:Revenues 2024-09-30                                                                  7.369000e+09
-           us-gaap:Revenues 2025-09-30                                                                  2.398500e+10
-           us-gaap:Revenues 2024-09-30                                                                  2.067800e+10
-           us-gaap:Revenues 2025-09-30  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 8.602000e+09
-           us-gaap:Revenues 2024-09-30  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 7.369000e+09
-           us-gaap:Revenues 2025-09-30  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 2.398500e+10
-           us-gaap:Revenues 2024-09-30  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 2.067800e+10
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                  5.061000e+09
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                  4.004000e+09
-us-gaap:OperatingIncomeLoss 2025-09-30                                                                  1.398700e+10
-us-gaap:OperatingIncomeLoss 2024-09-30                                                                  1.164400e+10
+           us-gaap:Revenues 2026-03-31                                                                  8.398000e+09
+           us-gaap:Revenues 2025-03-31                                                                  7.250000e+09
+           us-gaap:Revenues 2026-03-31                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 4.948000e+09
+           us-gaap:Revenues 2025-03-31                 srt:ProductOrServiceAxis:ma:PaymentNetworkMember 4.432000e+09
+           us-gaap:Revenues 2026-03-31 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 3.450000e+09
+           us-gaap:Revenues 2025-03-31 srt:ProductOrServiceAxis:ma:ValueAddedServicesAndSolutionsMember 2.818000e+09
+           us-gaap:Revenues 2026-03-31                                                                  8.398000e+09
+           us-gaap:Revenues 2025-03-31                                                                  7.250000e+09
+           us-gaap:Revenues 2026-03-31             srt:StatementGeographicalAxis:srt:NorthAmericaMember 3.564000e+09
+           us-gaap:Revenues 2025-03-31             srt:StatementGeographicalAxis:srt:NorthAmericaMember 3.151000e+09
+           us-gaap:Revenues 2026-03-31      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 4.834000e+09
+           us-gaap:Revenues 2025-03-31      srt:StatementGeographicalAxis:ma:InternationalMarketsMember 4.099000e+09
+           us-gaap:Revenues 2026-03-31                                                                  8.398000e+09
+           us-gaap:Revenues 2026-03-31                                                                  8.398000e+09
+           us-gaap:Revenues 2025-03-31                                                                  7.250000e+09
+           us-gaap:Revenues 2026-03-31  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 8.398000e+09
+           us-gaap:Revenues 2025-03-31  us-gaap:StatementBusinessSegmentsAxis:ma:PaymentSolutionsMember 7.250000e+09
+us-gaap:OperatingIncomeLoss 2026-03-31                                                                  4.907000e+09
+us-gaap:OperatingIncomeLoss 2025-03-31                                                                  4.149000e+09
