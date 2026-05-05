@@ -2,7 +2,5 @@
 us-gaap:OperatingIncomeLoss 2025-12-31      1560868000.0
 us-gaap:OperatingIncomeLoss 2024-12-31      1465906000.0
 us-gaap:OperatingIncomeLoss 2023-12-31       930911000.0
-us-gaap:OperatingIncomeLoss 2025-09-30       749449000.0
-us-gaap:OperatingIncomeLoss 2024-09-30       691210000.0
-us-gaap:OperatingIncomeLoss 2025-09-30      1374227000.0
-us-gaap:OperatingIncomeLoss 2024-09-30      1251165000.0
+us-gaap:OperatingIncomeLoss 2026-03-31       232943000.0
+us-gaap:OperatingIncomeLoss 2025-03-31       200942000.0
