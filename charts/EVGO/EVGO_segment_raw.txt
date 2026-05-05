@@ -19,43 +19,35 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-12-31          
 us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-12-31                                                                256825000.0
                                 us-gaap:OperatingIncomeLoss 2025-12-31                                                               -110663000.0
                                 us-gaap:OperatingIncomeLoss 2024-12-31                                                               -131570000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30     srt:ProductOrServiceAxis:evgo:ChargingRevenueRetailMember   35296000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30     srt:ProductOrServiceAxis:evgo:ChargingRevenueRetailMember   26656000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30     srt:ProductOrServiceAxis:evgo:ChargingRevenueRetailMember   98090000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30     srt:ProductOrServiceAxis:evgo:ChargingRevenueRetailMember   67318000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30 srt:ProductOrServiceAxis:evgo:ChargingRevenueCommercialMember    9070000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30 srt:ProductOrServiceAxis:evgo:ChargingRevenueCommercialMember    7581000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30 srt:ProductOrServiceAxis:evgo:ChargingRevenueCommercialMember   25426000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30 srt:ProductOrServiceAxis:evgo:ChargingRevenueCommercialMember   18864000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30        srt:ProductOrServiceAxis:evgo:ChargingRevenueOemMember    6417000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30        srt:ProductOrServiceAxis:evgo:ChargingRevenueOemMember    4305000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30        srt:ProductOrServiceAxis:evgo:ChargingRevenueOemMember   19583000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30        srt:ProductOrServiceAxis:evgo:ChargingRevenueOemMember   10675000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30     srt:ProductOrServiceAxis:evgo:RegulatoryCreditSalesMember    2753000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30     srt:ProductOrServiceAxis:evgo:RegulatoryCreditSalesMember    2191000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30     srt:ProductOrServiceAxis:evgo:RegulatoryCreditSalesMember    7989000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30     srt:ProductOrServiceAxis:evgo:RegulatoryCreditSalesMember    5974000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30         srt:ProductOrServiceAxis:evgo:NetworkRevenueOemMember    2249000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30         srt:ProductOrServiceAxis:evgo:NetworkRevenueOemMember    1278000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30         srt:ProductOrServiceAxis:evgo:NetworkRevenueOemMember    3623000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30         srt:ProductOrServiceAxis:evgo:NetworkRevenueOemMember    6328000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember   55785000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember   42011000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember  154711000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember  109159000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                    srt:ProductOrServiceAxis:evgo:ExtendMember   31913000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                    srt:ProductOrServiceAxis:evgo:ExtendMember   21912000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                    srt:ProductOrServiceAxis:evgo:ExtendMember   92786000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                    srt:ProductOrServiceAxis:evgo:ExtendMember   68730000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30          srt:ProductOrServiceAxis:evgo:AncillaryRevenueMember    4601000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30          srt:ProductOrServiceAxis:evgo:AncillaryRevenueMember    3612000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30          srt:ProductOrServiceAxis:evgo:AncillaryRevenueMember   18119000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30          srt:ProductOrServiceAxis:evgo:AncillaryRevenueMember   11423000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                 92299000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                 67535000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                265616000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-09-30                                                                189312000.0
-                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                -34084000.0
-                                us-gaap:OperatingIncomeLoss 2024-09-30                                                                -31789000.0
-                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                -98296000.0
-                                us-gaap:OperatingIncomeLoss 2024-09-30                                                                -96546000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember   55717000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember   47098000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                    srt:ProductOrServiceAxis:evgo:ExtendMember   33187000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                    srt:ProductOrServiceAxis:evgo:ExtendMember   23488000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31     srt:ProductOrServiceAxis:evgo:AVAndAncillaryRevenueMember   20627000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31     srt:ProductOrServiceAxis:evgo:AVAndAncillaryRevenueMember    4701000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31 srt:ProductOrServiceAxis:evgo:NonChargingNetworkRevenueMember   53814000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31 srt:ProductOrServiceAxis:evgo:NonChargingNetworkRevenueMember   28189000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                109531000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                 75287000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31     srt:ProductOrServiceAxis:evgo:ChargingRevenueRetailMember   33786000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31     srt:ProductOrServiceAxis:evgo:ChargingRevenueRetailMember   30015000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31 srt:ProductOrServiceAxis:evgo:ChargingRevenueCommercialMember    8814000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31 srt:ProductOrServiceAxis:evgo:ChargingRevenueCommercialMember    7783000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31        srt:ProductOrServiceAxis:evgo:ChargingRevenueOemMember    4775000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31        srt:ProductOrServiceAxis:evgo:ChargingRevenueOemMember    5258000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31     srt:ProductOrServiceAxis:evgo:RegulatoryCreditSalesMember    3280000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31     srt:ProductOrServiceAxis:evgo:RegulatoryCreditSalesMember    2786000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31         srt:ProductOrServiceAxis:evgo:NetworkRevenueOemMember    5062000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31         srt:ProductOrServiceAxis:evgo:NetworkRevenueOemMember    1256000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember   55717000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31    srt:ProductOrServiceAxis:evgo:ChargingNetworkRevenueMember   47098000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                    srt:ProductOrServiceAxis:evgo:ExtendMember   33187000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                    srt:ProductOrServiceAxis:evgo:ExtendMember   23488000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31          srt:ProductOrServiceAxis:evgo:AncillaryRevenueMember   20627000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31          srt:ProductOrServiceAxis:evgo:AncillaryRevenueMember    4701000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31 srt:ProductOrServiceAxis:evgo:NonChargingNetworkRevenueMember   53814000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31 srt:ProductOrServiceAxis:evgo:NonChargingNetworkRevenueMember   28189000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                109531000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                 75287000.0
+                                us-gaap:OperatingIncomeLoss 2026-03-31                                                                -36346000.0
+                                us-gaap:OperatingIncomeLoss 2025-03-31                                                                -33400000.0
