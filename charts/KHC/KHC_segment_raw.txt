@@ -5,11 +5,7 @@ us-gaap:OperatingIncomeLoss 2023-12-30       4.572000e+09
 us-gaap:OperatingIncomeLoss 2025-12-27      -4.669000e+09
 us-gaap:OperatingIncomeLoss 2024-12-28       1.683000e+09
 us-gaap:OperatingIncomeLoss 2023-12-30       4.572000e+09
-us-gaap:OperatingIncomeLoss 2025-09-27       1.025000e+09
-us-gaap:OperatingIncomeLoss 2024-09-28      -1.010000e+08
-us-gaap:OperatingIncomeLoss 2025-09-27      -5.753000e+09
-us-gaap:OperatingIncomeLoss 2024-09-28       1.723000e+09
-us-gaap:OperatingIncomeLoss 2025-09-27       1.025000e+09
-us-gaap:OperatingIncomeLoss 2024-09-28      -1.010000e+08
-us-gaap:OperatingIncomeLoss 2025-09-27      -5.753000e+09
-us-gaap:OperatingIncomeLoss 2024-09-28       1.723000e+09
+us-gaap:OperatingIncomeLoss 2026-03-28       1.145000e+09
+us-gaap:OperatingIncomeLoss 2025-03-29       1.196000e+09
+us-gaap:OperatingIncomeLoss 2026-03-28       1.145000e+09
+us-gaap:OperatingIncomeLoss 2025-03-29       1.196000e+09
