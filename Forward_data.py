@@ -13,11 +13,12 @@ revenue) and stores results in the SQLite table ForwardFinancialData.
 # ───────────────────────────────────────────────────────────────────────
 import re, calendar, logging, sqlite3, time, traceback
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 import pandas as pd
 import requests
+import yfinance as yf
 from bs4 import BeautifulSoup
 from sqlite3 import OperationalError
 
@@ -92,6 +93,26 @@ def _ensure_table(
         f"ON {FY_HIST_TABLE} (ticker, period_end, date_recorded)"
     )
     _ensure_fy_hist_columns(conn)
+    _ensure_source_column(conn)
+
+
+def _ensure_source_column(conn: sqlite3.Connection) -> None:
+    """Add Source column to ForwardFinancialData if missing.
+
+    Pre-existing rows (from Zacks scraping) will have Source=NULL; the migration
+    script tags them 'zacks' so we can distinguish historical sources from new
+    Yahoo-sourced rows going forward.
+    """
+    cur = conn.cursor()
+    cur.execute(f"PRAGMA table_info({TABLE_NAME})")
+    cols = {row[1] for row in cur.fetchall()}
+    if "Source" not in cols:
+        try:
+            cur.execute(f"ALTER TABLE {TABLE_NAME} ADD COLUMN Source TEXT")
+            cur.execute(f"UPDATE {TABLE_NAME} SET Source = 'zacks' WHERE Source IS NULL")
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                raise
 
 
 def _ensure_fy_hist_columns(conn: sqlite3.Connection) -> None:
@@ -207,10 +228,148 @@ def _parse(soup: BeautifulSoup) -> Optional[pd.DataFrame]:
 def scrape_annual_estimates(ticker: str,
                             session: Optional[requests.Session] = None
                            ) -> pd.DataFrame:
+    """Zacks scraper (legacy path; kept as fallback)."""
     s = session or requests.Session()
     soup = _fetch_html(ticker, s)
     df = _parse(soup)
     return df if df is not None else pd.DataFrame()
+
+
+# ───────────────────────────────────────────────────────────────────────
+# Yahoo Finance path (preferred — avoids anti-scraping on GitHub Actions)
+# ───────────────────────────────────────────────────────────────────────
+def _ts_to_date(ts) -> Optional[str]:
+    """Yahoo gives FY-end as a Unix timestamp at UTC midnight; use UTC so
+    we don't shift into the prior day for users west of UTC."""
+    if not ts:
+        return None
+    try:
+        return datetime.fromtimestamp(int(ts), tz=timezone.utc).strftime("%Y-%m-%d")
+    except (TypeError, ValueError, OSError):
+        return None
+
+
+def _safe_num(row, key) -> Optional[float]:
+    try:
+        v = row[key]
+        if pd.isna(v):
+            return None
+        return float(v)
+    except (KeyError, TypeError):
+        return None
+
+
+def _safe_int(row, key) -> Optional[int]:
+    try:
+        v = row[key]
+        if pd.isna(v):
+            return None
+        return int(v)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def yahoo_annual_estimates(ticker: str,
+                           info: Optional[dict] = None
+                          ) -> pd.DataFrame:
+    """Yahoo Finance replacement for Zacks scrape_annual_estimates.
+
+    Pulls forward-EPS, forward-revenue, and analyst counts for the current
+    fiscal year ('0y') and next fiscal year ('+1y') from yfinance's structured
+    earnings_estimate / revenue_estimate endpoints. Returns the same DataFrame
+    shape as scrape_annual_estimates so the storage layer is unchanged.
+
+    Returns an empty DataFrame if Yahoo has no data for the ticker (caller can
+    then try Zacks as a fallback).
+    """
+    try:
+        tk = yf.Ticker(ticker)
+        eps_df = tk.earnings_estimate
+        rev_df = tk.revenue_estimate
+    except Exception as exc:
+        logging.warning(f"{ticker}: Yahoo earnings_estimate failed -- {exc}")
+        return pd.DataFrame()
+
+    if eps_df is None or eps_df.empty or "0y" not in eps_df.index:
+        return pd.DataFrame()
+
+    # Fiscal year-end dates. nextFiscalYearEnd is the FY currently being
+    # estimated (i.e. "This FY"); the year after is +1y. If .info is too
+    # expensive to fetch per-ticker, callers can pre-fetch and pass it in.
+    if info is None:
+        try:
+            info = tk.info or {}
+        except Exception:
+            info = {}
+    next_fy_ts = info.get("nextFiscalYearEnd")
+    this_fy_date = _ts_to_date(next_fy_ts)
+    if not this_fy_date:
+        # Fallback: assume Dec 31 of the current calendar year
+        this_fy_date = f"{datetime.now().year}-12-31"
+
+    # +1y is one year after this_fy_date (preserves the fiscal-year month)
+    try:
+        d = datetime.strptime(this_fy_date, "%Y-%m-%d")
+        next_fy_d = d.replace(year=d.year + 1)
+    except ValueError:
+        next_fy_d = datetime.strptime(this_fy_date, "%Y-%m-%d") + timedelta(days=365)
+    next_fy_date = next_fy_d.strftime("%Y-%m-%d")
+
+    cur_eps = eps_df.loc["0y"]
+    nxt_eps = eps_df.loc["+1y"] if "+1y" in eps_df.index else None
+    cur_rev = rev_df.loc["0y"] if (rev_df is not None and not rev_df.empty
+                                    and "0y" in rev_df.index) else None
+    nxt_rev = rev_df.loc["+1y"] if (rev_df is not None and not rev_df.empty
+                                    and "+1y" in rev_df.index) else None
+
+    rows = [{
+        "Period": "This FY",
+        "Date": this_fy_date,
+        "ForwardEPS": _safe_num(cur_eps, "avg"),
+        "ForwardRevenue": _safe_num(cur_rev, "avg") if cur_rev is not None else None,
+        "ForwardEPSAnalysts": _safe_int(cur_eps, "numberOfAnalysts"),
+        "ForwardRevenueAnalysts": _safe_int(cur_rev, "numberOfAnalysts")
+            if cur_rev is not None else None,
+    }]
+    if nxt_eps is not None:
+        rows.append({
+            "Period": "Next FY",
+            "Date": next_fy_date,
+            "ForwardEPS": _safe_num(nxt_eps, "avg"),
+            "ForwardRevenue": _safe_num(nxt_rev, "avg") if nxt_rev is not None else None,
+            "ForwardEPSAnalysts": _safe_int(nxt_eps, "numberOfAnalysts"),
+            "ForwardRevenueAnalysts": _safe_int(nxt_rev, "numberOfAnalysts")
+                if nxt_rev is not None else None,
+        })
+
+    data = pd.DataFrame(rows)
+    # If EPS is missing for every row, treat as no data -> let caller fall back to Zacks
+    if data["ForwardEPS"].isna().all():
+        return pd.DataFrame()
+    return data
+
+
+def fetch_annual_estimates(ticker: str,
+                           prefer: str = "yahoo",
+                           session: Optional[requests.Session] = None,
+                           info: Optional[dict] = None,
+                          ) -> tuple[pd.DataFrame, str]:
+    """Return (DataFrame, source_tag). Tries Yahoo first by default, falls back
+    to Zacks if Yahoo returns empty. source_tag is one of {'yahoo', 'zacks', ''}.
+    """
+    if prefer == "yahoo":
+        df = yahoo_annual_estimates(ticker, info=info)
+        if not df.empty:
+            return df, "yahoo"
+        logging.info(f"{ticker}: Yahoo returned empty; falling back to Zacks")
+        df = scrape_annual_estimates(ticker, session)
+        return (df, "zacks") if not df.empty else (df, "")
+    else:
+        df = scrape_annual_estimates(ticker, session)
+        if not df.empty:
+            return df, "zacks"
+        df = yahoo_annual_estimates(ticker, info=info)
+        return (df, "yahoo") if not df.empty else (df, "")
 
 # ───────────────────────────────────────────────────────────────────────
 # Storage
@@ -223,6 +382,7 @@ def _store(
     conn: sqlite3.Connection | None = None,
     cursor: sqlite3.Cursor | None = None,
     commit: bool = True,
+    source: str = "zacks",
 ) -> None:
     own_conn = False
     if cursor is None:
@@ -250,18 +410,24 @@ def _store(
         cursor.execute(f"""
         INSERT INTO {table_name}
           (Ticker, Date, ForwardEPS, ForwardRevenue, LastUpdated,
-           ForwardEPSAnalysts, ForwardRevenueAnalysts)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+           ForwardEPSAnalysts, ForwardRevenueAnalysts, Source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(Ticker, Date) DO UPDATE SET
           ForwardEPS             = excluded.ForwardEPS,
           ForwardRevenue         = excluded.ForwardRevenue,
           ForwardEPSAnalysts     = excluded.ForwardEPSAnalysts,
           ForwardRevenueAnalysts = excluded.ForwardRevenueAnalysts,
-          LastUpdated            = excluded.LastUpdated;
+          LastUpdated            = excluded.LastUpdated,
+          Source                 = excluded.Source;
         """, (
             ticker, period_end, r["ForwardEPS"], r["ForwardRevenue"],
-            now, r.get("ForwardEPSAnalysts", None), r.get("ForwardRevenueAnalysts", None)
+            now, r.get("ForwardEPSAnalysts", None), r.get("ForwardRevenueAnalysts", None),
+            source,
         ))
+        # FY_HIST_TABLE.source describes the upstream endpoint, not just the vendor
+        fy_hist_source = ("yahoo.earnings_estimate" if source == "yahoo"
+                          else "zacks.detailed-earning-estimates" if source == "zacks"
+                          else source)
         cursor.execute(f"""
         INSERT INTO {FY_HIST_TABLE}
           (date_recorded, ticker, period_end, period_label, forward_eps, eps_analysts, source, fiscal_year)
@@ -279,7 +445,7 @@ def _store(
             r.get("Period", None),
             r["ForwardEPS"],
             r.get("ForwardEPSAnalysts", None),
-            "zacks.detailed-earning-estimates",
+            fy_hist_source,
             fiscal_year,
         ))
 
@@ -302,40 +468,62 @@ def scrape_forward_data(
     conn: sqlite3.Connection | None = None,
     cursor: sqlite3.Cursor | None = None,
     commit: bool = True,
+    prefer: str = "yahoo",
 ) -> None:
     if conn is None and cursor is None:
         _ensure_table()
     else:
         _ensure_table(conn=(conn or cursor.connection))
-    df = scrape_annual_estimates(ticker, SESSION)
+    df, src = fetch_annual_estimates(ticker, prefer=prefer, session=SESSION)
     if df.empty:
-        logging.info(f"{ticker}: no data scraped")
+        logging.info(f"{ticker}: no data (tried {prefer} + fallback)")
         return
-    _store(df, ticker, conn=conn, cursor=cursor, commit=commit)
+    _store(df, ticker, conn=conn, cursor=cursor, commit=commit, source=src)
 
 
 def ensure_forward_schema(conn: sqlite3.Connection | None = None) -> None:
     _ensure_table(conn=conn)
 
-def scrape_forward_data_batch(tickers: List[str], max_workers: int = 6) -> None:
-    """Handy helper for multi-ticker runs (I/O-bound → threads are fine)."""
+
+def scrape_forward_data_batch(tickers: List[str], max_workers: int = 10,
+                              prefer: str = "yahoo") -> None:
+    """Multi-ticker fetch in parallel.
+
+    Defaults to Yahoo (avoids Zacks anti-scraping risk on GitHub Actions); falls
+    back to Zacks per-ticker if Yahoo returns empty. Set prefer='zacks' to use
+    the legacy path.
+    """
     from concurrent.futures import ThreadPoolExecutor, as_completed
-    def _worker(tkr):
-        with requests.Session() as sess:
-            d = scrape_annual_estimates(tkr, sess)
+
+    def _worker(tkr: str):
+        sess: Optional[requests.Session] = None
+        try:
+            if prefer == "zacks":
+                sess = requests.Session()
+            d, src = fetch_annual_estimates(tkr, prefer=prefer, session=sess)
             if not d.empty:
-                _store(d, tkr)
+                _store(d, tkr, source=src)
+                return src
             else:
                 logging.info(f"{tkr}: no data")
+                return None
+        finally:
+            if sess is not None:
+                sess.close()
+
+    counts = {"yahoo": 0, "zacks": 0, "none": 0}
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         fut_to_tkr = {ex.submit(_worker, t): t for t in tickers}
         for fut in as_completed(fut_to_tkr):
             tkr = fut_to_tkr[fut]
             try:
-                fut.result()
-                logging.info(f"{tkr}: done")
+                src = fut.result()
+                counts[src or "none"] += 1
+                logging.info(f"{tkr}: done ({src or 'no data'})")
             except Exception:
+                counts["none"] += 1
                 logging.error(f"{tkr}: FAILED\n{traceback.format_exc()}")
+    logging.info(f"forward batch summary: {counts}")
 
 # ───────────────────────────────────────────────────────────────────────
 # Backwards-compatible API (used by main.py)
