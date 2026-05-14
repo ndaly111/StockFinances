@@ -1,1 +1,40 @@
+# Python
 __pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# OS / editor metadata
+.DS_Store
+.idea/
+.vscode/
+Thumbs.db
+
+# Runtime logs
+*.log
+app.log
+
+# Runtime / build caches
+.cache_ix/
+.sec_cik_cache.json
+
+# SQLite Browser project files (editor-specific)
+*.sqbpro
+
+# Database BACKUPS (live DBs are kept on purpose, see README)
+*.db.backup_*
+*.db.pre_*_backup_*
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Stray/legacy files we don't want in the repo
+your_database_path.db
+node.js
+Untitled*.jpg
+Untitled*.png
+
+# Local virtualenvs (anybody who clones)
+.venv/
+venv/
+env/

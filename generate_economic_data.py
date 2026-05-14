@@ -15,7 +15,7 @@ HTML_OUT  = CHART_DIR / "economic_data.html"
 
 FRED_KEY  = os.getenv("FRED_API_KEY", "").strip()
 fred      = Fred(api_key=FRED_KEY) if FRED_KEY else None
-STAMP     = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+STAMP     = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M UTC")
 # ──────────────────────────
 
 # ───────── helper to fetch next release dates ─────────

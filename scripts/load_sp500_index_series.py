@@ -244,6 +244,43 @@ def backup_db(db_path):
         dst.write(src.read())
     return backup_path
 
+def run(db_path: str = DB_PATH, pe_csv: str = PE_CSV_PATH,
+        yield_csv: str = YIELD_CSV_PATH, dry_run: bool = False) -> None:
+    """Library entry point -- callable from main_remote.py without subprocess."""
+    if not os.path.exists(pe_csv):
+        raise FileNotFoundError(f"PE CSV not found: {pe_csv}")
+    if not os.path.exists(yield_csv):
+        raise FileNotFoundError(f"Treasury yield CSV not found: {yield_csv}")
+
+    pe_rows = load_pe_rows(pe_csv)
+    yield_map = load_yield_map(yield_csv)
+    growth_rows, missing = compute_growth_rows(pe_rows, yield_map)
+
+    if missing:
+        print(f"[WARN] Skipped {missing} P/E rows without matching 10y yield entries.")
+
+    print(f"[INFO] Prepared {len(pe_rows)} P/E rows and {len(growth_rows)} growth rows.")
+    if dry_run:
+        print("[DRY RUN] No DB changes will be made.")
+        return
+
+    bkp = backup_db(db_path)
+    if bkp:
+        print(f"[INFO] DB backup created: {bkp}")
+
+    conn = sqlite3.connect(db_path, timeout=30)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA synchronous=NORMAL;")
+        ensure_tables(conn)
+
+        n1 = insert_pe(conn, pe_rows, dry_run=False)
+        n2 = insert_growth(conn, growth_rows, dry_run=False)
+        print(f"[DONE] Inserted/updated {n1} P/E rows, {n2} growth rows into '{db_path}'.")
+    finally:
+        conn.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description="One-time loader for SPY P/E and implied growth")
     parser.add_argument("--db", default=DB_PATH, help="Path to SQLite DB (default: Stock Data.db)")
@@ -255,42 +292,8 @@ def main():
     )
     parser.add_argument("--dry-run", action="store_true", help="Validate and show counts without writing")
     args = parser.parse_args()
+    run(db_path=args.db, pe_csv=args.pe_csv, yield_csv=args.yield_csv, dry_run=args.dry_run)
 
-    if not os.path.exists(args.pe_csv):
-        raise FileNotFoundError(f"PE CSV not found: {args.pe_csv}")
-    if not os.path.exists(args.yield_csv):
-        raise FileNotFoundError(f"Treasury yield CSV not found: {args.yield_csv}")
-
-    pe_rows = load_pe_rows(args.pe_csv)
-    yield_map = load_yield_map(args.yield_csv)
-    growth_rows, missing = compute_growth_rows(pe_rows, yield_map)
-
-    if missing:
-        print(
-            f"[WARN] Skipped {missing} P/E rows without matching 10y yield entries."
-        )
-
-    print(f"[INFO] Prepared {len(pe_rows)} P/E rows and {len(growth_rows)} growth rows.")
-    if args.dry_run:
-        print("[DRY RUN] No DB changes will be made.")
-        return
-
-    # Backup DB once before writing
-    bkp = backup_db(args.db)
-    if bkp:
-        print(f"[INFO] DB backup created: {bkp}")
-
-    conn = sqlite3.connect(args.db, timeout=30)
-    try:
-        conn.execute("PRAGMA journal_mode=WAL;")
-        conn.execute("PRAGMA synchronous=NORMAL;")
-        ensure_tables(conn)
-
-        n1 = insert_pe(conn, pe_rows, dry_run=False)
-        n2 = insert_growth(conn, growth_rows, dry_run=False)
-        print(f"[DONE] Inserted/updated {n1} P/E rows, {n2} growth rows into '{args.db}'.")
-    finally:
-        conn.close()
 
 if __name__ == "__main__":
     main()

@@ -26,7 +26,7 @@ from __future__ import annotations
 import argparse
 import math
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple
 
@@ -439,7 +439,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 </style>
 """.strip()
 
-            stamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            stamp = datetime.now(timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M UTC")
             metric_phrase = "revenue" + (" and operating income" if oi_present else "")
             caption = (
                 f'<div class="table-note">{VERSION} · {stamp} — Units: <b>{unit}</b>. '

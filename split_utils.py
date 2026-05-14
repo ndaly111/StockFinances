@@ -15,7 +15,7 @@ import math
 import os
 import sqlite3
 from collections import defaultdict
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from functools import lru_cache
 from statistics import median
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -1204,7 +1204,7 @@ def apply_split_adjustments(
     cur.execute("SELECT Date FROM Splits WHERE Symbol=?", (ticker,))
     recorded_dates = {row[0] for row in cur.fetchall()}
 
-    now_iso = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
+    now_iso = datetime.now(timezone.utc).replace(tzinfo=None).isoformat(sep=" ", timespec="seconds")
     adjustments_applied = False
     inference_result: Optional[Dict[str, object]] = None
     inference_adjusted_dates: set[str] = set()

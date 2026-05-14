@@ -2,7 +2,7 @@ import os
 import sqlite3
 import logging
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 import yfinance as yf
 from ticker_manager import read_tickers, modify_tickers
 
@@ -195,7 +195,7 @@ def generate_earnings_tables():
                     float(rev_est) if rev_est is not None else None,
                     float(rev_rpt) if rev_rpt is not None else None,
                     float(rev_surprise) if pd.notna(rev_surprise) else None,
-                    datetime.utcnow().isoformat()
+                    datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
                 ))
                 any_rows = True
 
@@ -208,7 +208,7 @@ def generate_earnings_tables():
                 ''', (
                     ticker,
                     fdate.date().isoformat(),
-                    datetime.utcnow().isoformat()
+                    datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
                 ))
                 any_rows = True
 

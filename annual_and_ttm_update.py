@@ -6,7 +6,7 @@
 #  • TTM row is written with INSERT OR REPLACE (robust to any PK/UNIQUE flags)
 # ---------------------------------------------------------------------------
 import logging, os, sqlite3, time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 import numpy as np
@@ -218,7 +218,7 @@ def _store_ttm(tkr: str, d: dict, cur: sqlite3.Cursor):
 
 # ───────────────────────── TTM freshness check ─────────────────────
 def _latest_completed_quarter_end(today: datetime | None = None) -> datetime:
-    today = today or datetime.utcnow()
+    today = today or datetime.now(timezone.utc).replace(tzinfo=None)
     month = today.month
     quarter = (month - 1) // 3 + 1
 
@@ -260,7 +260,7 @@ def _is_ttm_fresh(tkr: str, cur: sqlite3.Cursor, freshness_hours: int = 24) -> b
     if last_updated_str:
         try:
             last_updated = datetime.fromisoformat(str(last_updated_str))
-            if last_updated >= datetime.utcnow() - timedelta(hours=freshness_hours):
+            if last_updated >= datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=freshness_hours):
                 logging.info("[%s] TTM is fresh (updated within %s hours)", tkr, freshness_hours)
                 return True
         except Exception:

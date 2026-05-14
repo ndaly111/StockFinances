@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 import requests
@@ -60,5 +60,5 @@ class FMPDataProvider(DataProvider):
             "Total_Liabilities": latest.get("totalLiabilities"),
             "Debt": latest.get("totalDebt"),
             "Equity": latest.get("totalStockholdersEquity"),
-            "Last_Updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "Last_Updated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         }
