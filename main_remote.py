@@ -446,6 +446,11 @@ def mini_main():
                     ticker, treasury, conn=conn, cursor=cursor, commit=False
                 )
                 generate_html_table(prepared, ticker)
+                # Flush pending writes BEFORE valuation_update -- that call's
+                # fetch_financial_valuation_data() opens a *second* connection
+                # that needs to write to Splits, and would otherwise hit
+                # "database is locked" against our uncommitted transaction.
+                conn.commit()
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
                 generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
                 conn.commit()
@@ -454,8 +459,9 @@ def mini_main():
                 import traceback
                 conn.rollback()
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
+                # Keep a short traceback in case unknown errors appear later
                 tb_lines = traceback.format_exc().splitlines()
-                for line in tb_lines[-20:]:
+                for line in tb_lines[-8:]:
                     print(f"[TRACE {ticker}] {line}")
                 continue
             finally:

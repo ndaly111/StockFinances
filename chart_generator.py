@@ -152,9 +152,16 @@ def generate_revenue_net_income_chart(financial_data_df, ticker, revenue_chart_p
     bars2 = ax.bar(positions + width / 2, df['Net_Income'] / scale_factor, width, label=f'Net Income ({label_ending})', color='blue')
     ax.set_ylabel(ylabel)
 
-    max_revenue = max(df['Revenue'] / scale_factor)
-    min_net_income = min(df['Net_Income'] / scale_factor)
-    upper_limit = max_revenue * 1.2
+    # Use pandas .max()/.min() (NaN-skipping) instead of Python max()/min(),
+    # which propagate NaN if a row has missing data. CRM/GME/TGT had a
+    # row of all-NaN historical data; the resulting NaN ylim crashed matplotlib.
+    max_revenue = (df['Revenue'] / scale_factor).max(skipna=True)
+    min_net_income = (df['Net_Income'] / scale_factor).min(skipna=True)
+    if pd.isna(max_revenue):
+        max_revenue = 0
+    if pd.isna(min_net_income):
+        min_net_income = 0
+    upper_limit = max_revenue * 1.2 if max_revenue > 0 else 1
     lower_limit = min_net_income * 1.2 if min_net_income < 0 else 0
 
     ax.set_ylim(lower_limit, upper_limit)
