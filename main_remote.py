@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # main_remote.py – 2025-08-27  (segments first; canonical table path)
 import sqlite3, pandas as pd, yfinance as yf, math, os, subprocess, sys
+import matplotlib.pyplot as plt
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -453,6 +454,10 @@ def mini_main():
                 conn.rollback()
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
+            finally:
+                # Safety net: any matplotlib figure that escaped a close() call
+                # is collected here so leaks don't accumulate across tickers.
+                plt.close("all")
 
         if missing_segments:
             msg = "Missing segment tables for: " + ", ".join(missing_segments)

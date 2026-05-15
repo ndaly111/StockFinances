@@ -342,27 +342,21 @@ def plot_eps(ticker, ax, combined_data, analyst_counts, bar_width):
     return ax
 
 def generate_financial_forecast_chart(ticker, combined_data, charts_output_dir, db_path, historical_data, forecast_data, analyst_counts):
-    max_revenue = combined_data['Revenue'].max()
-    max_net_income = combined_data['Net_Income'].max()
-    max_value = max(max_revenue, max_net_income)
-
-    fig, ax1 = plt.subplots(figsize=(10, 6))
     bar_width = 0.3
-    plot_bars(ax1, combined_data, bar_width, analyst_counts)
 
-    format_axis(ax1, max_value)
-
-    fig, ax1 = plt.subplots(figsize=(10, 6))
-    bar_width = 0.3
+    # Revenue / Net-Income forecast chart (format_chart() saves + closes this fig)
+    fig_rev, ax1 = plt.subplots(figsize=(10, 6))
     plot_bars(ax1, combined_data, bar_width, analyst_counts)
     add_value_labels(ax1)
     format_chart(ax1, combined_data, charts_output_dir, ticker)
+    plt.close(fig_rev)  # defense in depth — format_chart already calls plt.close()
 
-    fig, ax2 = plt.subplots(figsize=(10, 6))
+    # EPS forecast chart
+    fig_eps, ax2 = plt.subplots(figsize=(10, 6))
     plot_eps(ticker, ax2, combined_data, analyst_counts, bar_width)
     plt.tight_layout()
     plt.savefig(f"{charts_output_dir}{ticker}_EPS_Forecast.png")
-    plt.close(fig)
+    plt.close(fig_eps)
 
 def calculate_yoy_growth(combined_data, analyst_counts):
     combined_data['Year'] = pd.to_datetime(combined_data['Date']).dt.year
