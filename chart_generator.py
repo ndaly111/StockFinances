@@ -231,23 +231,27 @@ def generate_eps_chart(ticker, charts_output_dir, financial_data_df):
 
     add_eps_value_labels(ax, eps_bars)
 
-    # Calculate y-axis limits
-    max_eps = max(financial_data_df['EPS'])
-    min_eps = min(financial_data_df['EPS'])
+    # Calculate y-axis limits (NaN-safe: rows with missing EPS shouldn't break the chart)
+    max_eps = financial_data_df['EPS'].max(skipna=True)
+    min_eps = financial_data_df['EPS'].min(skipna=True)
+    if pd.isna(max_eps):
+        max_eps = 0
+    if pd.isna(min_eps):
+        min_eps = 0
 
-    if max_eps <0:
+    if max_eps < 0:
         upper_limit = 0
     else:
         upper_limit = max_eps * 1.25
     if min_eps < 0:
         adjusted_eps_limit = min_eps * 1.25
-        print("adjusted eps limit",adjusted_eps_limit)
         adjusted_max_eps_limit = 0 - (max_eps * 1.25)
-        print("adjusted max eps limit",adjusted_max_eps_limit)
-        print
         lower_limit = min(adjusted_eps_limit, adjusted_max_eps_limit)
     else:
         lower_limit = 0
+
+    if upper_limit == lower_limit:
+        upper_limit = lower_limit + 1  # avoid matplotlib singular-axis warning
 
     # Set the new y-axis limits
     ax.set_ylim(lower_limit, upper_limit)
