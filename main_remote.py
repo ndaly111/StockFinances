@@ -455,7 +455,7 @@ def mini_main():
                 conn.rollback()
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 tb_lines = traceback.format_exc().splitlines()
-                for line in tb_lines[-6:]:
+                for line in tb_lines[-20:]:
                     print(f"[TRACE {ticker}] {line}")
                 continue
             finally:
