@@ -364,7 +364,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 if total_ttm and total_ttm != 0:
                     pct_series = (rev_p["TTM"] / total_ttm) * 100.0
 
-            max_val = pd.concat([rev_p, oi_p]).abs().max().max()
+            # Coerce non-numeric (Python None) to NaN so .abs() doesn't choke
+            # on object-dtype columns. pd.to_numeric with errors='coerce'
+            # leaves numerics alone and NaN'ifies anything else.
+            _combined = pd.concat([rev_p, oi_p]).apply(pd.to_numeric, errors="coerce")
+            max_val = _combined.abs().max().max()
             div, unit = _choose_scale(float(max_val) if pd.notna(max_val) else 0.0)
 
             segment_labels = [(seg, _segment_short_label(seg)) for seg in rev_p.index]
