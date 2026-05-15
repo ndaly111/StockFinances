@@ -428,8 +428,8 @@ def style_positive(value):
 def save_yoy_growth_to_html(yoy_growth_table, charts_output_dir, ticker):
     filename = f"{ticker}_yoy_growth_tbl"
     styled_table = (yoy_growth_table.style
-                    .applymap(style_negative)
-                    .applymap(style_positive)
+                    .map(style_negative)
+                    .map(style_positive)
                     .set_table_styles({
                         'Revenue Growth (%)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
                         'Revenue Analysts (#)': [{'selector': 'td', 'props': [('text-align', 'center')]}],
