@@ -205,7 +205,7 @@ def _ttm(tkr: str) -> pd.DataFrame:
     if len(recent) < 4:
         return pd.DataFrame()
 
-    expect = pd.date_range(end=recent["period_ending"].max(), periods=4, freq="Q")
+    expect = pd.date_range(end=recent["period_ending"].max(), periods=4, freq="QE")
     if list(expect.to_period("Q")) != list(recent["period_ending"].dt.to_period("Q")):
         return pd.DataFrame()
 

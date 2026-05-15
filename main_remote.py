@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # main_remote.py – 2025-08-27  (segments first; canonical table path)
 import sqlite3, pandas as pd, yfinance as yf, math, os, subprocess, sys
+import matplotlib.pyplot as plt
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -189,25 +190,16 @@ def maybe_load_sp500_index_series(db_path: str = DB_PATH) -> None:
         )
         return
 
-    script_path = Path("scripts") / "load_sp500_index_series.py"
-    if not script_path.exists():
-        print(f"[SP500 loader] Loader script not found at {script_path}")
-        return
-
-    print("[SP500 loader] Running load_sp500_index_series.py for SPY")
+    print("[SP500 loader] Running load_sp500_index_series for SPY")
     try:
-        subprocess.run([sys.executable, str(script_path)], check=True)
-    except subprocess.CalledProcessError as exc:
-        print(f"[SP500 loader] Loader script failed with exit code {exc.returncode}")
+        from scripts.load_sp500_index_series import run as run_sp500_loader
+        run_sp500_loader(db_path=db_path, pe_csv=str(pe_csv), yield_csv=str(yield_csv))
+    except Exception as exc:
+        print(f"[SP500 loader] Loader failed: {exc!r}")
 
 
 def maybe_backfill_index_eps(db_path: str = DB_PATH) -> None:
     """Backfill EPS only when the history is missing or incomplete."""
-
-    script_path = Path("scripts") / "backfill_index_eps.py"
-    if not script_path.exists():
-        print(f"[index EPS] Backfill script missing at {script_path}")
-        return
 
     tolerance_days = 14
 
@@ -265,9 +257,10 @@ def maybe_backfill_index_eps(db_path: str = DB_PATH) -> None:
     if not eps_exists or missing:
         print("[index EPS] Backfilling EPS history for:", missing or "all")
         try:
-            subprocess.run([sys.executable, str(script_path), "--db", db_path], check=True)
-        except subprocess.CalledProcessError as exc:
-            print(f"[index EPS] Backfill failed with exit code {exc.returncode}")
+            from scripts.backfill_index_eps import run as run_backfill_index_eps
+            run_backfill_index_eps(db_path=db_path)
+        except Exception as exc:
+            print(f"[index EPS] Backfill failed: {exc!r}")
     else:
         print("[index EPS] EPS history present; backfill skipped.")
 
@@ -461,6 +454,10 @@ def mini_main():
                 conn.rollback()
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
                 continue
+            finally:
+                # Safety net: any matplotlib figure that escaped a close() call
+                # is collected here so leaks don't accumulate across tickers.
+                plt.close("all")
 
         if missing_segments:
             msg = "Missing segment tables for: " + ", ".join(missing_segments)

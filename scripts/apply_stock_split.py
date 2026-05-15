@@ -14,7 +14,7 @@ import logging
 import os
 import shutil
 import sqlite3
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Iterable, List, Sequence
 
 from split_utils import ensure_splits_table
@@ -185,7 +185,7 @@ def _backup_database(db_path: str, ticker: str, split_date: date) -> str:
 
 def _record_split_event(cur: sqlite3.Cursor, ticker: str, split_date: date, ratio: float) -> None:
     ensure_splits_table(cur)
-    now_iso = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
+    now_iso = datetime.now(timezone.utc).replace(tzinfo=None).isoformat(sep=" ", timespec="seconds")
     cur.execute(
         """
         INSERT INTO Splits(Symbol, Date, Ratio, Source, Last_Checked)

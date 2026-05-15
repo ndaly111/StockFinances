@@ -9,7 +9,7 @@
 
 import time
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import pandas as pd
 
 from sec_segment_data_arelle import get_segment_data
@@ -54,7 +54,7 @@ def _wrap_panel(inner: str) -> str:
 
 
 def render_table_html(ticker: str, df: pd.DataFrame) -> str:
-    updated = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    updated = datetime.now(timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M UTC")
     title = f"{ticker} — Segment Revenue & Operating Income (Last 3 FY + TTM)"
 
     if df is None or df.empty:
@@ -124,7 +124,7 @@ def main():
             err_html = _wrap_panel(f"<h3>{t} — Segment Revenue & Operating Income</h3><p>Error: {e}</p>")
             save_html(OUTPUT_DIR / f"{t}_segments.html", err_html)
 
-    pieces = [f"<h2>Segment Tables ({datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')})</h2>"]
+    pieces = [f"<h2>Segment Tables ({datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y-%m-%d %H:%M UTC')})</h2>"]
     for t, html in all_snippets:
         pieces.append(f'<div id="{t}">{html}</div>')
     index_html = "\n\n".join(pieces)

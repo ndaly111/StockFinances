@@ -5,7 +5,7 @@ the ratio (if available) and current UTC time.
 """
 
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timezone
 
 def get_pe_ratio(ticker_symbol):
     ticker_data = yf.Ticker(ticker_symbol)
@@ -16,7 +16,7 @@ def get_pe_ratio(ticker_symbol):
 if __name__ == "__main__":
     symbol = "TQQQ"
     pe = get_pe_ratio(symbol)
-    now_utc = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    now_utc = datetime.now(timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     if pe is None:
         print(f"{now_utc}\nNo trailing P/E ratio data available for {symbol}.")

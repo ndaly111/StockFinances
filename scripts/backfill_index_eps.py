@@ -176,10 +176,11 @@ def _upsert_eps(conn: sqlite3.Connection, df: pd.DataFrame, tickers: tuple[str, 
     return inserted
 
 
-def main():
-    args = _parse_args()
-    db_path = Path(args.db)
-    tickers = tuple(args.tickers)
+def run(db_path: str = "Stock Data.db", years: int = 10,
+        tickers: tuple = ("SPY", "QQQ")) -> None:
+    """Library entry point -- callable from main_remote.py without subprocess."""
+    db_path = Path(db_path)
+    tickers = tuple(tickers)
     if not db_path.exists():
         raise SystemExit(f"Database not found: {db_path}")
 
@@ -188,7 +189,7 @@ def main():
         if not _table_exists(conn, "Index_PE_History"):
             raise SystemExit("Index_PE_History table not found; nothing to backfill.")
 
-        pe_hist = _load_pe_history(conn, tickers, args.years)
+        pe_hist = _load_pe_history(conn, tickers, years)
         if pe_hist.empty:
             print("[backfill_index_eps] No P/E history found for SPY/QQQ.")
             return
@@ -198,6 +199,11 @@ def main():
         conn.commit()
 
     print(f"[backfill_index_eps] Upserted {inserted} EPS rows into Index_EPS_History.")
+
+
+def main():
+    args = _parse_args()
+    run(db_path=args.db, years=args.years, tickers=tuple(args.tickers))
 
 
 if __name__ == "__main__":

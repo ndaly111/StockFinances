@@ -5,7 +5,7 @@
 # -------------------------------------------------------------------
 import sqlite3, numpy as np, pandas as pd, plotly.graph_objects as go
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 DB_PATH  = "Stock Data.db"
 HTML_OUT = Path("economic_charts.html")
@@ -200,7 +200,7 @@ def _plot_div(df, sid):
                           annotation_position="top left")
 
     # Default view: last 10 years (range buttons still work)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     ten_years_ago = (now - pd.DateOffset(years=10)).strftime("%Y-%m-%d")
     fig.update_layout(xaxis_range=[ten_years_ago, now.strftime("%Y-%m-%d")])
 
@@ -333,4 +333,4 @@ def render_single_page(timestamp: str, indicators: dict):
 # CLI
 if __name__ == "__main__":
     from generate_economic_data import INDICATORS
-    render_single_page(datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"), INDICATORS)
+    render_single_page(datetime.now(timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M UTC"), INDICATORS)

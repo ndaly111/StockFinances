@@ -2,7 +2,7 @@
 
 import logging
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 
@@ -100,7 +100,7 @@ def is_balance_sheet_data_outdated(balance_sheet_data):
 
     threshold_date = latest_update + timedelta(days=111)
 
-    if datetime.utcnow() > threshold_date:
+    if datetime.now(timezone.utc).replace(tzinfo=None) > threshold_date:
         logger.debug("Balance sheet data is outdated")
         return True
     else:
@@ -153,7 +153,7 @@ def fetch_balance_sheet_data_from_yahoo(ticker, provider=None):
             'Total_Liabilities': _get('Total Liabilities Net Minority Interest'),
             'Debt': _get('Total Debt'),
             'Equity': _get('Stockholders Equity'),
-            'Last_Updated': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+            'Last_Updated': datetime.now(timezone.utc).replace(tzinfo=None).strftime('%Y-%m-%d %H:%M:%S'),
         }
 
         required_keys = {
