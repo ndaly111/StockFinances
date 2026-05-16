@@ -106,8 +106,16 @@ def _clean_financial_df(df: pd.DataFrame) -> pd.DataFrame:
 # ─────────────────── fetch from Yahoo Finance ─────────────────
 @lru_cache(maxsize=32)
 def _fetch_annual(tkr: str) -> pd.DataFrame:
-    logging.info("Fetching ANNUAL data from Yahoo Finance")
-    fin = yf.Ticker(tkr).financials
+    # Prefer the bulk-prefetched cache (populated by main_remote.py before
+    # the per-ticker loop); only hit yfinance directly if the cache misses.
+    try:
+        from forecasted_earnings_chart import get_cached_financials
+        fin = get_cached_financials(tkr)
+    except Exception:
+        fin = None
+    if fin is None:
+        logging.info("Fetching ANNUAL data from Yahoo Finance (cache miss)")
+        fin = yf.Ticker(tkr).financials
     if fin is None or fin.empty:
         return pd.DataFrame()
     fin = fin.T
@@ -118,9 +126,16 @@ def _fetch_annual(tkr: str) -> pd.DataFrame:
     return _clean_financial_df(fin)
 
 def _fetch_ttm(tkr: str) -> dict | None:
-    logging.info("Fetching TTM data from Yahoo Finance")
-    tk = yf.Ticker(tkr)
-    q = tk.quarterly_financials
+    # Use bulk-prefetched quarterly financials if available
+    tk = yf.Ticker(tkr)  # Still needed below for .info fallback
+    try:
+        from forecasted_earnings_chart import get_cached_quarterly_financials
+        q = get_cached_quarterly_financials(tkr)
+    except Exception:
+        q = None
+    if q is None:
+        logging.info("Fetching TTM data from Yahoo Finance (cache miss)")
+        q = tk.quarterly_financials
     if q is None or q.empty:
         return None
 

@@ -130,7 +130,14 @@ def fetch_balance_sheet_data_from_yahoo(ticker, provider=None):
         import yfinance as yf
         import numpy as np
 
-        bs = yf.Ticker(ticker).quarterly_balance_sheet
+        # Prefer pre-fetched cache if available
+        try:
+            from forecasted_earnings_chart import get_cached_quarterly_balance_sheet
+            bs = get_cached_quarterly_balance_sheet(ticker)
+        except Exception:
+            bs = None
+        if bs is None:
+            bs = yf.Ticker(ticker).quarterly_balance_sheet
         if bs is None or bs.empty:
             logger.warning(f"[{ticker}] yfinance returned empty balance sheet")
             return None

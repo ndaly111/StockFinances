@@ -23,7 +23,11 @@ from balancesheet_chart        import (
 from implied_growth_summary    import generate_all_summaries
 from forward_eps_history      import generate_all_forward_eps_assets
 from Forward_data              import scrape_forward_data, ensure_forward_schema, scrape_forward_data_batch
-from forecasted_earnings_chart import generate_forecast_charts_and_tables, prefetch_yfinance_data
+from forecasted_earnings_chart import (
+    generate_forecast_charts_and_tables,
+    prefetch_yfinance_data,
+    prefetch_yfinance_bulk,
+)
 from ticker_info               import prepare_data_for_display, generate_html_table, ensure_history_schema
 from expense_reports           import generate_expense_reports
 from html_generator2           import html_generator2, generate_dashboard_table
@@ -407,6 +411,15 @@ def mini_main():
         print(f"[main] Prefetching yfinance data for {len(tickers)} tickers...")
         prefetch_yfinance_data(tickers)
         print("[main] yfinance prefetch complete")
+
+        # ─────────────────────────────────────────────────────────
+        # OPTIMIZATION: Bulk-prefetch the heavy per-ticker attributes
+        # (financials / quarterly / balance_sheet / splits) in parallel
+        # so the sequential per-ticker loop reads from cache instead of
+        # making 4 sequential HTTP calls per ticker. Largest cost in the
+        # main loop, ~5-6 min savings expected.
+        # ─────────────────────────────────────────────────────────
+        prefetch_yfinance_bulk(tickers)
 
         # ─────────────────────────────────────────────────────────
         # OPTIMIZATION: Batch scrape forward data (parallel threads)
