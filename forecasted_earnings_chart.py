@@ -16,6 +16,74 @@ from threading import Lock
 _yf_cache = {}
 _yf_cache_lock = Lock()
 
+# Bulk cache for the heavy per-ticker attributes that the main loop calls
+# sequentially. Keyed by ticker, value is a dict of attribute -> DataFrame
+# (or Series for splits). Populated by prefetch_yfinance_bulk().
+_yf_bulk: dict = {}
+_yf_bulk_lock = Lock()
+
+
+def _fetch_ticker_bulk(tkr: str) -> tuple[str, dict]:
+    """Fetch the four heavy per-ticker attributes for one ticker.
+
+    Each attribute is its own HTTP roundtrip in yfinance, but they're cheap
+    when done sequentially within a single thread; the parallelism comes from
+    running this function many times concurrently via ThreadPoolExecutor.
+    """
+    data: dict = {}
+    tk = yf.Ticker(tkr)
+    for attr in ("financials", "quarterly_financials", "quarterly_balance_sheet", "splits"):
+        try:
+            data[attr] = getattr(tk, attr)
+        except Exception:
+            data[attr] = None
+    return tkr, data
+
+
+def prefetch_yfinance_bulk(tickers: list, max_workers: int = 12) -> dict:
+    """Fetch financials/quarterly_financials/balance_sheet/splits in parallel.
+
+    Cuts the per-ticker yfinance work in the main loop. Should be called once
+    before the sequential loop. Cache is keyed by ticker.
+
+    Why max_workers=12: Yahoo handles bursts up to ~15 reliably, but each
+    worker hits 4 endpoints back-to-back so the effective concurrent request
+    count is bursty. 12 is a comfortable margin against 429s.
+    """
+    global _yf_bulk
+    missing = [t for t in tickers if t not in _yf_bulk]
+    if not missing:
+        return _yf_bulk
+
+    t0 = time.time()
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        for fut in as_completed(ex.submit(_fetch_ticker_bulk, t) for t in missing):
+            tkr, data = fut.result()
+            with _yf_bulk_lock:
+                _yf_bulk[tkr] = data
+    elapsed = time.time() - t0
+    print(f"[yfinance bulk prefetch] {len(missing)} tickers "
+          f"(financials + quarterly + balance_sheet + splits) "
+          f"in {elapsed:.1f}s ({max_workers} workers)")
+    return _yf_bulk
+
+
+def get_cached_financials(ticker: str):
+    """Return cached .financials DataFrame, or None if not pre-fetched."""
+    return _yf_bulk.get(ticker, {}).get("financials")
+
+
+def get_cached_quarterly_financials(ticker: str):
+    return _yf_bulk.get(ticker, {}).get("quarterly_financials")
+
+
+def get_cached_quarterly_balance_sheet(ticker: str):
+    return _yf_bulk.get(ticker, {}).get("quarterly_balance_sheet")
+
+
+def get_cached_splits(ticker: str):
+    return _yf_bulk.get(ticker, {}).get("splits")
+
 
 def prefetch_yfinance_data(tickers: list, max_workers: int = 15) -> dict:
     """Fetch yf.Ticker(t).info for many tickers in parallel.

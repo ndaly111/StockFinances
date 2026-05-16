@@ -104,8 +104,14 @@ def _ratio_close(observed: float | None, expected: float, tolerance: float) -> b
 
 
 def _from_yfinance(ticker: str) -> List[Tuple[date, float, str]]:
-    tk = yf.Ticker(ticker)
-    splits = tk.splits
+    # Prefer bulk-prefetched splits if available
+    try:
+        from forecasted_earnings_chart import get_cached_splits
+        splits = get_cached_splits(ticker)
+    except Exception:
+        splits = None
+    if splits is None:
+        splits = yf.Ticker(ticker).splits
     events: List[Tuple[date, float, str]] = []
     if splits is None or splits.empty:
         return events
