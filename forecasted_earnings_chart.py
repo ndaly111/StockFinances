@@ -6,38 +6,46 @@ import numpy as np
 import os
 import yfinance as yf
 import shutil
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
+from threading import Lock
 
-# Cache for yfinance data to avoid repeated API calls
+# Cache for yfinance data to avoid repeated API calls. Lock guards writes
+# so the parallel prefetch below doesn't race.
 _yf_cache = {}
+_yf_cache_lock = Lock()
 
-def prefetch_yfinance_data(tickers: list) -> dict:
-    """Batch fetch yfinance data for multiple tickers at once.
 
-    This is much faster than calling yf.Ticker().info individually.
-    Call this once before processing tickers to warm the cache.
+def prefetch_yfinance_data(tickers: list, max_workers: int = 15) -> dict:
+    """Fetch yf.Ticker(t).info for many tickers in parallel.
+
+    The old implementation used yf.Tickers(...).info which is sequential
+    under the hood (one HTTP per ticker, executed serially). This version
+    farms the per-ticker .info calls out to a ThreadPoolExecutor so the
+    waiting overlaps. Each call is HTTP I/O so threading is the right fit.
     """
     global _yf_cache
-    # Filter out tickers we already have cached
     missing = [t for t in tickers if t not in _yf_cache]
     if not missing:
         return _yf_cache
 
-    try:
-        # Batch fetch using yf.Tickers (much faster than individual calls)
-        batch = yf.Tickers(" ".join(missing))
-        for ticker in missing:
-            try:
-                info = batch.tickers[ticker].info
-                _yf_cache[ticker] = info if info else {}
-            except Exception:
-                _yf_cache[ticker] = {}
-    except Exception as e:
-        print(f"[yfinance batch] Error fetching batch data: {e}")
-        # Fallback: mark as empty so we don't retry
-        for ticker in missing:
-            _yf_cache[ticker] = {}
+    def _fetch_one(tkr: str):
+        try:
+            info = yf.Ticker(tkr).info or {}
+        except Exception:
+            info = {}
+        return tkr, info
 
+    t0 = time.time()
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        for fut in as_completed(ex.submit(_fetch_one, t) for t in missing):
+            tkr, info = fut.result()
+            with _yf_cache_lock:
+                _yf_cache[tkr] = info
+    elapsed = time.time() - t0
+    print(f"[yfinance prefetch] {len(missing)} tickers in {elapsed:.1f}s "
+          f"({max_workers} workers)")
     return _yf_cache
 
 def get_cached_yf_info(ticker: str) -> dict:

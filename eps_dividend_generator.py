@@ -7,6 +7,7 @@
 # -------------------------------------------------------------------------
 import os, sqlite3, logging
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 import yfinance as yf
 
@@ -55,16 +56,31 @@ def _update_ttm_div(cur: sqlite3.Cursor, symbol: str, ttm_div: float | None):
 
 
 # ───────────────── main generator ───────────────
-def generate_eps_dividend(symbols: list[str], db_path: str = DB_PATH):
+def generate_eps_dividend(symbols: list[str], db_path: str = DB_PATH,
+                          max_workers: int = 15):
+    """Fetch dividends in parallel then write to DB serially.
+
+    Each fetch is HTTP I/O (~1s per ticker via yfinance) and trivially
+    parallelizable. DB writes stay on the main thread to avoid SQLite
+    concurrency issues.
+    """
     conn = sqlite3.connect(db_path)
     ensure_dividend_schema(conn)
     cur  = conn.cursor()
 
+    def _one(sym):
+        return sym, fetch_ttm_dividend(sym)
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        for fut in as_completed(ex.submit(_one, s) for s in symbols):
+            sym, val = fut.result()
+            results[sym] = val
+            logging.info("[%s] TTM dividend = %s", sym, val)
+
+    # Write in the original order so logs are reproducible
     for sym in symbols:
-        logging.info("[%s] Fetching TTM dividend …", sym)
-        ttm_amount = fetch_ttm_dividend(sym)
-        _update_ttm_div(cur, sym, ttm_amount)
-        logging.info("[%s] TTM dividend set to %s", sym, ttm_amount)
+        _update_ttm_div(cur, sym, results.get(sym))
 
     conn.commit()
     conn.close()
