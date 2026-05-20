@@ -249,6 +249,22 @@ td{padding:4px;border:1px solid #8080FF}
     <img class="chart-img chart-block" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
   </div>
 
+  {% if ticker_data.forward_eps_history_chart_path or ticker_data.forward_revenue_history_chart_path %}
+  <div class="chart-block">
+    <h2>Projection History</h2>
+    <p style="font-size:0.9em;color:#555;margin-top:0;">
+      How the next-FY EPS and revenue estimates have drifted over time. One line per
+      fiscal year &ndash; past lines end when that FY became current.
+    </p>
+    {% if ticker_data.forward_eps_history_chart_path %}
+    <img class="chart-img chart-block" src="{{ ticker_data.forward_eps_history_chart_path }}" alt="Forward EPS projection history by FY">
+    {% endif %}
+    {% if ticker_data.forward_revenue_history_chart_path %}
+    <img class="chart-img chart-block" src="{{ ticker_data.forward_revenue_history_chart_path }}" alt="Forward revenue projection history by FY">
+    {% endif %}
+  </div>
+  {% endif %}
+
   <div class="chart-block">
     <h2>Y/Y % Change</h2>
     <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
