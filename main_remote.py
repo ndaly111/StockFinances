@@ -22,6 +22,7 @@ from balancesheet_chart        import (
 )
 from implied_growth_summary    import generate_all_summaries
 from forward_eps_history      import generate_all_forward_eps_assets
+from forward_revenue_history  import generate_all_forward_revenue_assets
 from Forward_data              import scrape_forward_data, ensure_forward_schema, scrape_forward_data_batch
 from forecasted_earnings_chart import (
     generate_forecast_charts_and_tables,
@@ -489,6 +490,7 @@ def mini_main():
         eps_dividend_generator()
         generate_all_summaries()
         generate_all_forward_eps_assets(tickers)
+        generate_all_forward_revenue_assets(tickers)
 
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)

@@ -463,6 +463,16 @@ def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
                     if os.path.exists(f"{charts_dir_fs}/{t}_forward_eps_revision.png")
                     else ""
                 ),
+                "forward_eps_history_chart_path": (
+                    f"{charts_dir_web}/{t}_forward_eps_history_by_fy.png"
+                    if os.path.exists(f"{charts_dir_fs}/{t}_forward_eps_history_by_fy.png")
+                    else ""
+                ),
+                "forward_revenue_history_chart_path": (
+                    f"{charts_dir_web}/{t}_forward_revenue_history_by_fy.png"
+                    if os.path.exists(f"{charts_dir_fs}/{t}_forward_revenue_history_by_fy.png")
+                    else ""
+                ),
                 "segment_table_html_axis1":     get_file_with_fallback([
                     f"{charts_dir_fs}/{t}/axis1_{t}_segments_table.html",
                     f"{charts_dir_fs}/{t}/{t}_segments_table_axis1.html",

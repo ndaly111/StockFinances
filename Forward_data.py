@@ -119,9 +119,20 @@ def _ensure_fy_hist_columns(conn: sqlite3.Connection) -> None:
     cursor = conn.cursor()
     cursor.execute(f"PRAGMA table_info({FY_HIST_TABLE})")
     columns = {row[1] for row in cursor.fetchall()}
-    if "fiscal_year" not in columns:
+    # forward_revenue + revenue_analysts were added 2026-05-20 so the same
+    # snapshot row can drive both the EPS-history and revenue-history charts.
+    # Historical rows will be NULL for these — that's fine, the charts just
+    # treat them as missing data.
+    new_columns = [
+        ("fiscal_year", "INTEGER"),
+        ("forward_revenue", "REAL"),
+        ("revenue_analysts", "INTEGER"),
+    ]
+    for name, decl in new_columns:
+        if name in columns:
+            continue
         try:
-            cursor.execute(f"ALTER TABLE {FY_HIST_TABLE} ADD COLUMN fiscal_year INTEGER")
+            cursor.execute(f"ALTER TABLE {FY_HIST_TABLE} ADD COLUMN {name} {decl}")
         except sqlite3.OperationalError as exc:
             if "duplicate column name" not in str(exc).lower():
                 raise
@@ -430,14 +441,17 @@ def _store(
                           else source)
         cursor.execute(f"""
         INSERT INTO {FY_HIST_TABLE}
-          (date_recorded, ticker, period_end, period_label, forward_eps, eps_analysts, source, fiscal_year)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          (date_recorded, ticker, period_end, period_label, forward_eps, eps_analysts,
+           source, fiscal_year, forward_revenue, revenue_analysts)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(date_recorded, ticker, period_end) DO UPDATE SET
-          period_label = excluded.period_label,
-          forward_eps  = excluded.forward_eps,
-          eps_analysts = excluded.eps_analysts,
-          source       = excluded.source,
-          fiscal_year  = excluded.fiscal_year;
+          period_label     = excluded.period_label,
+          forward_eps      = excluded.forward_eps,
+          eps_analysts     = excluded.eps_analysts,
+          source           = excluded.source,
+          fiscal_year      = excluded.fiscal_year,
+          forward_revenue  = excluded.forward_revenue,
+          revenue_analysts = excluded.revenue_analysts;
         """, (
             today,
             ticker,
@@ -447,6 +461,8 @@ def _store(
             r.get("ForwardEPSAnalysts", None),
             fy_hist_source,
             fiscal_year,
+            r.get("ForwardRevenue", None),
+            r.get("ForwardRevenueAnalysts", None),
         ))
 
     cursor.execute(

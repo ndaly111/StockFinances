@@ -267,6 +267,75 @@ def plot_forward_eps_revision_chart(ticker):
     return output_path
 
 
+def _get_all_fy_history(ticker):
+    """Return every (date_recorded, period_end, forward_eps) for a ticker — all FYs,
+    not just the active one. Used by the multi-FY chart that shows how each year's
+    projection evolved before that year rolled over."""
+    if not os.path.exists(DB_PATH):
+        return pd.DataFrame()
+    with sqlite3.connect(DB_PATH) as conn:
+        ensure_schema(conn)
+        df = pd.read_sql_query(
+            f"""
+            SELECT date_recorded, period_end, forward_eps, fiscal_year, period_label
+            FROM {FY_TABLE}
+            WHERE ticker = ?
+            ORDER BY period_end ASC, date_recorded ASC
+            """,
+            conn,
+            params=(ticker,),
+        )
+    if df.empty:
+        return df
+    df["date_recorded"] = pd.to_datetime(df["date_recorded"], errors="coerce")
+    df["period_end"] = pd.to_datetime(df["period_end"], errors="coerce")
+    df["forward_eps"] = pd.to_numeric(df["forward_eps"], errors="coerce")
+    df = df.dropna(subset=["date_recorded", "period_end", "forward_eps"]).copy()
+    return df
+
+
+def plot_forward_eps_history_by_fy(ticker):
+    """Multi-FY chart: one line per fiscal year, ending when that FY rolled over
+    (i.e. its period_end became <= today). Past FYs end at their last observation
+    before becoming current; the still-active FY extends to today's data point.
+    Starts sparse and fills in as the daily snapshot table accumulates rows.
+    """
+    ensure_output_directory()
+    df = _get_all_fy_history(ticker)
+    output_path = f"{CHARTS_DIR}/{ticker}_forward_eps_history_by_fy.png"
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    if df.empty:
+        ax.text(0.5, 0.55, f"No projection history for {ticker} yet",
+                ha="center", va="center", fontsize=13, fontweight="bold")
+        ax.text(0.5, 0.42, "Daily snapshots accumulate here; this chart fills in over time.",
+                ha="center", va="center", fontsize=10, color="gray")
+        ax.set_axis_off()
+        plt.savefig(output_path, bbox_inches="tight", dpi=150)
+        plt.close()
+        return output_path
+
+    period_ends = sorted(df["period_end"].dropna().unique())
+    for period_end in period_ends:
+        line_df = df[df["period_end"] == period_end].sort_values("date_recorded")
+        if line_df.empty:
+            continue
+        fy = int(pd.Timestamp(period_end).year)
+        label = f"FY{fy}"
+        ax.plot(line_df["date_recorded"], line_df["forward_eps"],
+                marker="o", linewidth=1.6, markersize=4, label=label)
+
+    ax.set_title(f"Forward EPS projection history by fiscal year - {ticker}")
+    ax.set_xlabel("Date projection was recorded")
+    ax.set_ylabel("Forward EPS estimate")
+    ax.grid(True, linestyle="--", alpha=0.5)
+    ax.legend(loc="best", fontsize=9)
+    fig.autofmt_xdate()
+    plt.savefig(output_path, bbox_inches="tight", dpi=150)
+    plt.close()
+    return output_path
+
+
 def generate_all_forward_eps_assets(tickers=None):
     ensure_output_directory()
     if tickers is None:
@@ -288,6 +357,7 @@ def generate_all_forward_eps_assets(tickers=None):
     for ticker in tickers:
         try:
             plot_forward_eps_revision_chart(ticker)
+            plot_forward_eps_history_by_fy(ticker)
             df, meta = get_forward_eps_history_for_display(ticker)
             write_forward_eps_summary_html(ticker, df, meta)
             if df.empty:
