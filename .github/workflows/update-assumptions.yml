@@ -1,10 +1,11 @@
 name: Update assumptions
 
 # Triggered by update_form.html (unlisted) via GitHub REST API workflow_dispatch.
-# Updates one ticker's growth rate and/or profit margin in Tickers_Info, opens a
-# GitHub issue with the before/after diff (which auto-emails the repo owner),
-# regenerates the public assumptions.json, and queues a site refresh so the
-# valuation chart picks up the new values.
+# Updates one ticker's growth rate and/or profit margin in Tickers_Info, opens
+# a GitHub issue with the before/after diff (which auto-emails the repo owner),
+# refreshes only that ticker's valuation chart + page (~30s) instead of the
+# full 25-minute site refresh, and pushes everything — including the freshly
+# rendered ticker page — to gh-pages.
 
 on:
   workflow_dispatch:
@@ -25,7 +26,6 @@ on:
 permissions:
   contents: write
   issues: write
-  actions: write
 
 concurrency:
   group: update-assumptions-${{ inputs.ticker }}
@@ -49,7 +49,7 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install pandas
+          pip install -r requirements.txt
 
       - name: Normalize inputs + capture previous values
         id: prev
@@ -59,7 +59,7 @@ jobs:
           MARGIN_NEW: ${{ inputs.profit_margin }}
         run: |
           python - <<'PY'
-          import json, os, sqlite3, sys
+          import os, sqlite3, sys
           ticker = os.environ["TICKER"].strip().upper()
           if not ticker:
               sys.exit("ticker is empty")
@@ -106,7 +106,12 @@ jobs:
       - name: Refresh data/assumptions.json
         run: python scripts/dump_assumptions.py
 
-      - name: Commit & push
+      - name: Per-ticker refresh (valuation chart + page)
+        env:
+          TICKER: ${{ steps.prev.outputs.ticker }}
+        run: python scripts/refresh_one_ticker.py "$TICKER"
+
+      - name: Commit & push to main
         id: commit
         env:
           TICKER:     ${{ steps.prev.outputs.ticker }}
@@ -117,7 +122,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "Stock Data.db" tickers.csv data/assumptions.json
+          # Stage everything the per-ticker refresh might have touched
+          git add "Stock Data.db" tickers.csv data/assumptions.json \
+                  "charts/${TICKER}_*" "pages/${TICKER}_page.html" 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes — submitted values match what's already in the DB."
             echo "no_change=true" >> "$GITHUB_OUTPUT"
@@ -131,6 +138,43 @@ jobs:
           git push
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "no_change=false" >> "$GITHUB_OUTPUT"
+
+      # Don't use the existing repo's git for gh-pages — fetching that whole
+      # branch's history is what blew the run out to ~7 minutes. Instead, a
+      # depth-1 ref-specific clone of just gh-pages, dropping the deploy to
+      # the network round-trip (≈10s).
+      - name: Checkout gh-pages (shallow)
+        if: steps.commit.outputs.no_change != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages-deploy
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Deploy ticker artifacts to gh-pages
+        if: steps.commit.outputs.no_change != 'true'
+        env:
+          TICKER: ${{ steps.prev.outputs.ticker }}
+        working-directory: gh-pages-deploy
+        run: |
+          set -e
+          mkdir -p charts pages data
+          cp ../data/assumptions.json data/assumptions.json
+          for f in ../charts/${TICKER}_*; do
+            [ -e "$f" ] && cp "$f" charts/
+          done
+          [ -e "../pages/${TICKER}_page.html" ] && cp "../pages/${TICKER}_page.html" pages/
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/assumptions.json "charts/${TICKER}_*" "pages/${TICKER}_page.html" 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "gh-pages already current for $TICKER."
+          else
+            git commit -m "deploy: refresh $TICKER after assumptions change"
+            git push origin gh-pages
+          fi
 
       - name: Open audit issue
         if: steps.commit.outputs.no_change != 'true'
@@ -153,8 +197,8 @@ jobs:
           | growth_rate | ${GROWTH_OLD:-_(unset)_} | $GROWTH_NEW |
           | profit_margin | ${MARGIN_OLD:-_(unset)_} | ${MARGIN_NEW:-_(unchanged)_} |
 
-          The valuation chart will refresh after the next site refresh completes
-          (auto-triggered below; ~25 min)."
+          Valuation chart + page were refreshed in-place and deployed to
+          gh-pages (no full site refresh needed)."
           gh issue create \
             --title "Assumptions changed: $TICKER" \
             --body "$BODY" \
@@ -162,9 +206,3 @@ jobs:
           gh issue create \
             --title "Assumptions changed: $TICKER" \
             --body "$BODY"
-
-      - name: Trigger site refresh
-        if: steps.commit.outputs.no_change != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run "Refresh site" --repo "${{ github.repository }}"

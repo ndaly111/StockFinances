@@ -142,16 +142,22 @@
         </p>
         <div class="pat-current" id="pat-status">No token saved</div>
         <input type="password" id="pat-input" placeholder="github_pat_...">
-        <button type="button" id="save-pat">Save token</button>
+        <button type="button" id="test-pat">Test &amp; save token</button>
         <button type="button" id="clear-pat" style="background:#991b1b;">Clear token</button>
+        <p class="help" style="margin:0.5rem 0 0;">
+          Required scope for fine-grained PATs:
+          <strong>Repository &rarr; Actions &rarr; Read and write</strong>.
+          The Test button verifies this before saving so you find out about
+          scope issues immediately.
+        </p>
       </details>
     </div>
 
     <div id="status" class="status"></div>
     <p class="help" style="margin-top:1rem;">
-      After submit: wait ~25 minutes for the site to refresh, then hard-refresh
-      (Ctrl+F5) the ticker's page to see the new valuation chart. You'll also
-      get an email from GitHub when the audit issue is opened.
+      After submit: wait ~30 seconds for the per-ticker refresh, then
+      hard-refresh (Ctrl+F5) the ticker's page to see the new valuation chart.
+      You'll also get an email from GitHub when the audit issue is opened.
     </p>
   </div>
 
@@ -210,13 +216,65 @@
         : 'No token saved';
     }
 
-    $('save-pat').addEventListener('click', () => {
-      const v = $('pat-input').value.trim();
-      if (!v) { status('Enter a token first.', 'err'); return; }
-      localStorage.setItem(PAT_KEY, v);
-      $('pat-input').value = '';
-      updatePatStatus();
-      status('Token saved.', 'ok');
+    // Probes the dispatches endpoint with an empty body. If the token can
+    // even SEE the endpoint we get 422 (bad inputs) -- which is success here.
+    // 401/403 means the token lacks Actions: Read and write on this repo.
+    async function testToken(token) {
+      const url =
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}` +
+        `/actions/workflows/${WORKFLOW_FILE}/dispatches`;
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${token}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })  // no inputs => 422 if scope is fine
+      });
+      if (r.status === 422) return { ok: true };
+      if (r.status === 204) return { ok: true, dispatched: true };
+      let detail = '';
+      try { detail = (await r.json()).message || ''; } catch (_) {}
+      return { ok: false, status: r.status, detail };
+    }
+
+    $('test-pat').addEventListener('click', async () => {
+      const v = $('pat-input').value.trim() || localStorage.getItem(PAT_KEY) || '';
+      if (!v) { status('Paste a token first (or it must already be saved).', 'err'); return; }
+      status('Testing token against GitHub...', 'info');
+      $('test-pat').disabled = true;
+      try {
+        const res = await testToken(v);
+        if (res.ok) {
+          localStorage.setItem(PAT_KEY, v);
+          $('pat-input').value = '';
+          updatePatStatus();
+          status(
+            res.dispatched
+              ? 'Token works (and just queued a dispatch with no inputs — harmless, it will fail validation).'
+              : 'Token works. Saved.',
+            'ok'
+          );
+        } else {
+          let msg = `Token failed (HTTP ${res.status}). `;
+          if (res.status === 401) {
+            msg += 'Token is invalid or expired.';
+          } else if (res.status === 403) {
+            msg += 'Missing Actions: Read and write on this repo. Re-edit the token on GitHub and add that permission.';
+          } else if (res.status === 404) {
+            msg += 'Repo not visible to this token. Re-edit and select ndaly111/StockFinances under Repository access.';
+          } else {
+            msg += res.detail || 'Unknown.';
+          }
+          status(msg, 'err');
+        }
+      } catch (e) {
+        status(`Network error testing token: ${e.message}`, 'err');
+      } finally {
+        $('test-pat').disabled = false;
+      }
     });
 
     $('clear-pat').addEventListener('click', () => {

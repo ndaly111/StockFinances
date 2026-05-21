@@ -1,0 +1,84 @@
+name: Refresh site (daily)
+
+# Fast daily refresh: only the things that move day-to-day. Forward EPS /
+# revenue estimates, current price, valuation chart, forecast charts, news,
+# implied growth, forward-estimate-history snapshots, dashboard, market
+# summary. Historical financials, balance sheet, segments, expense reports,
+# EDGAR backfill, and the index-growth historical rebuilds are skipped —
+# those are handled by site-refresh.yml on Sundays. Expected runtime ~5-8 min
+# (was ~25 min for the full pipeline).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 11 * * 1-5"    # 6:00 EST
+    - cron: "0 15 * * 1-5"    # 10:00 EST
+    - cron: "0 18 * * 1-5"    # 1:00 PM EST
+    - cron: "30 21 * * 1-5"   # 4:30 PM EST
+
+permissions:
+  contents: write
+
+concurrency:
+  # Share the concurrency group with the weekly job so a Sunday weekly run
+  # can't collide with a daily dispatch.
+  group: site-refresh
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MODE: daily
+      FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+      SEC_EMAIL: ${{ secrets.EMAIL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate pages
+        run: |
+          python main_remote.py
+          python generate_market_summary.py
+          python scripts/dump_assumptions.py
+
+      - name: Check out gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 1
+
+      - name: Copy site output into gh-pages
+        run: |
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude "gh-pages" \
+            ./ gh-pages/
+
+      - name: Commit & push changes to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Deploy to GitHub Pages (daily)"
+            git push origin gh-pages
+          fi
