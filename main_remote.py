@@ -371,6 +371,24 @@ def build_segments_for_ticker(ticker: str) -> bool:
 # Main
 # ───────────────────────────────────────────────────────────
 def mini_main():
+    # MODE=daily skips everything that doesn't change day-to-day: annual
+    # financials, balance sheet, segments, expense reports, EDGAR backfill,
+    # index growth backfills, etc. The daily flow still refreshes:
+    #   - forward EPS / forward revenue estimates (revise constantly)
+    #   - stock price and valuation chart
+    #   - forecast charts + tables (read forward data)
+    #   - implied growth (depends on price)
+    #   - forward estimate history snapshots
+    #   - market summary, economic data, dashboard
+    # MODE=weekly (default) runs the full pipeline including the heavy
+    # historical rebuilds. Intended to fire Sunday morning.
+    mode = os.environ.get("MODE", "weekly").strip().lower() or "weekly"
+    if mode not in {"daily", "weekly"}:
+        print(f"[main] unknown MODE={mode!r}, defaulting to 'weekly'")
+        mode = "weekly"
+    is_weekly = mode == "weekly"
+    print(f"[main] MODE={mode} (weekly={is_weekly})")
+
     write_build_stamp()
     generate_economic_data()
 
@@ -382,9 +400,8 @@ def mini_main():
     )
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
-    # below is the inserted code
-    maybe_load_sp500_index_series(DB_PATH)
-    # above is the inserted code
+    if is_weekly:
+        maybe_load_sp500_index_series(DB_PATH)
     conn = establish_database_connection(DB_PATH)
     if not conn:
         return
@@ -399,33 +416,21 @@ def mini_main():
         conn.commit()
         process_update_growth_csv(UPDATE_GROWTH_CSV, DB_PATH)
 
-        # ─────────────────────────────────────────────────────────
-        # EDGAR BACKFILL: Fill 10 years of Revenue/Net Income/EPS
-        # from SEC XBRL data (public, no API key required)
-        # ─────────────────────────────────────────────────────────
-        maybe_backfill_edgar_financials(tickers, DB_PATH)
+        if is_weekly:
+            # EDGAR backfill is conditional on missing data; safe but slow,
+            # so skip it on daily runs even though it usually no-ops.
+            maybe_backfill_edgar_financials(tickers, DB_PATH)
 
-        # ─────────────────────────────────────────────────────────
-        # OPTIMIZATION: Batch prefetch yfinance data for all tickers
-        # This is much faster than individual API calls per ticker
-        # ─────────────────────────────────────────────────────────
-        print(f"[main] Prefetching yfinance data for {len(tickers)} tickers...")
+        print(f"[main] Prefetching yfinance .info for {len(tickers)} tickers...")
         prefetch_yfinance_data(tickers)
         print("[main] yfinance prefetch complete")
 
-        # ─────────────────────────────────────────────────────────
-        # OPTIMIZATION: Bulk-prefetch the heavy per-ticker attributes
-        # (financials / quarterly / balance_sheet / splits) in parallel
-        # so the sequential per-ticker loop reads from cache instead of
-        # making 4 sequential HTTP calls per ticker. Largest cost in the
-        # main loop, ~5-6 min savings expected.
-        # ─────────────────────────────────────────────────────────
-        prefetch_yfinance_bulk(tickers)
+        if is_weekly:
+            # bulk = financials / quarterly / balance_sheet / splits — feeds the
+            # weekly-only per-ticker fetchers. Skipping on daily runs is the
+            # largest single time saver (~5-6 min).
+            prefetch_yfinance_bulk(tickers)
 
-        # ─────────────────────────────────────────────────────────
-        # OPTIMIZATION: Batch scrape forward data (parallel threads)
-        # Uses ThreadPoolExecutor with 6 workers instead of sequential
-        # ─────────────────────────────────────────────────────────
         print(f"[main] Batch scraping forward data for {len(tickers)} tickers...")
         scrape_forward_data_batch(tickers, max_workers=6)
         print("[main] Forward data batch scrape complete")
@@ -433,76 +438,76 @@ def mini_main():
         missing_segments = []
 
         for ticker in tickers:
-            print(f"[main] Processing {ticker}")
+            print(f"[main] Processing {ticker} ({'weekly' if is_weekly else 'daily'})")
             try:
-                # 1) Core financial data
-                annual_and_ttm_update(ticker, cursor)
+                if is_weekly:
+                    # Core financial data + historical charts only on weekly.
+                    annual_and_ttm_update(ticker, cursor)
+                    financial_data_df = prepare_data_for_charts(ticker, cursor)
+                    if not financial_data_df.empty:
+                        generate_financial_charts(ticker, CHARTS_DIR, financial_data_df)
 
-                # Historical revenue/net-income/EPS charts + table
-                financial_data_df = prepare_data_for_charts(ticker, cursor)
-                if not financial_data_df.empty:
-                    generate_financial_charts(ticker, CHARTS_DIR, financial_data_df)
-
-                # Note: scrape_forward_data now done in batch above
+                # Forecast charts use forward data which IS refreshed daily.
                 generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
 
-                # 2) Balance sheet
-                fetch_and_update_balance_sheet_data(ticker, cursor)
-                balancesheet_chart(ticker)
+                if is_weekly:
+                    # Balance sheet + segments + expense reports change with
+                    # 10-K/10-Q filings, not day-to-day.
+                    fetch_and_update_balance_sheet_data(ticker, cursor)
+                    balancesheet_chart(ticker)
 
-                # 3) Segments (run within loop so no separate pass/pause)
-                ok = build_segments_for_ticker(ticker)
-                if not ok:
-                    missing_segments.append(ticker)
+                    ok = build_segments_for_ticker(ticker)
+                    if not ok:
+                        missing_segments.append(ticker)
 
-                # 4) Valuation + reporting
+                # Valuation + reporting — price-driven, must run daily.
                 prepared, mktcap = prepare_data_for_display(
                     ticker, treasury, conn=conn, cursor=cursor, commit=False
                 )
                 generate_html_table(prepared, ticker)
-                # Flush pending writes BEFORE valuation_update -- that call's
-                # fetch_financial_valuation_data() opens a *second* connection
-                # that needs to write to Splits, and would otherwise hit
-                # "database is locked" against our uncommitted transaction.
                 conn.commit()
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
-                generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
+
+                if is_weekly:
+                    generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
                 conn.commit()
 
             except Exception as e:
                 import traceback
                 conn.rollback()
                 print(f"[WARN] Skipping remaining steps for {ticker} due to error: {e}")
-                # Keep a short traceback in case unknown errors appear later
                 tb_lines = traceback.format_exc().splitlines()
                 for line in tb_lines[-8:]:
                     print(f"[TRACE {ticker}] {line}")
                 continue
             finally:
-                # Safety net: any matplotlib figure that escaped a close() call
-                # is collected here so leaks don't accumulate across tickers.
                 plt.close("all")
 
         if missing_segments:
             msg = "Missing segment tables for: " + ", ".join(missing_segments)
             print(f"[WARN] {msg}")
 
-        eps_dividend_generator()
+        if is_weekly:
+            # EPS-dividend chart, full implied-growth summaries that depend
+            # on historicals.
+            eps_dividend_generator()
+
         generate_all_summaries()
+        # Forward estimate history snapshots run daily so the chart gets
+        # one new dot per day; on weekly runs they no-op for that day.
         generate_all_forward_eps_assets(tickers)
         generate_all_forward_revenue_assets(tickers)
 
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
-        maybe_backfill_index_eps(DB_PATH)
-        generate_earnings_tables()
-        # Generate index growth charts for both SPY and QQQ so that
-        # their growth pages share the same styled summaries.
-        ensure_spy_monthly_eps_and_derived_pe(DB_PATH)
-        for idx in ("SPY", "QQQ"):
-            render_index_growth_charts(idx)
-        backfill_index_growth()
+        if is_weekly:
+            maybe_backfill_index_eps(DB_PATH)
+            generate_earnings_tables()
+            ensure_spy_monthly_eps_and_derived_pe(DB_PATH)
+            for idx in ("SPY", "QQQ"):
+                render_index_growth_charts(idx)
+            backfill_index_growth()
 
         try:
             generate_market_summary()

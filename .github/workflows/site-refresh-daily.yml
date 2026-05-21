@@ -1,20 +1,27 @@
-name: Refresh site (weekly)
+name: Refresh site (daily)
 
-# Full pipeline: refreshes historical financials, balance sheet, segments,
-# expense reports, EDGAR backfill, and the index-growth historical rebuilds.
-# Runs Sundays (so Monday's daily refresh has fresh historicals to read
-# from). The daily workflow handles everything else weekdays — see
-# site-refresh-daily.yml.
+# Fast daily refresh: only the things that move day-to-day. Forward EPS /
+# revenue estimates, current price, valuation chart, forecast charts, news,
+# implied growth, forward-estimate-history snapshots, dashboard, market
+# summary. Historical financials, balance sheet, segments, expense reports,
+# EDGAR backfill, and the index-growth historical rebuilds are skipped —
+# those are handled by site-refresh.yml on Sundays. Expected runtime ~5-8 min
+# (was ~25 min for the full pipeline).
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 13 * * 0"      # 8:00 AM EST Sunday — once a week, full pipeline
+    - cron: "0 11 * * 1-5"    # 6:00 EST
+    - cron: "0 15 * * 1-5"    # 10:00 EST
+    - cron: "0 18 * * 1-5"    # 1:00 PM EST
+    - cron: "30 21 * * 1-5"   # 4:30 PM EST
 
 permissions:
   contents: write
 
 concurrency:
+  # Share the concurrency group with the weekly job so a Sunday weekly run
+  # can't collide with a daily dispatch.
   group: site-refresh
   cancel-in-progress: true
 
@@ -22,7 +29,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      MODE: weekly
+      MODE: daily
       FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
       FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
       SEC_EMAIL: ${{ secrets.EMAIL }}
@@ -54,7 +61,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Copy site output into gh-pages
         run: |
@@ -72,6 +79,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "Deploy to GitHub Pages"
+            git commit -m "Deploy to GitHub Pages (daily)"
             git push origin gh-pages
           fi
