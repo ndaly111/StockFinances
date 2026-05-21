@@ -46,6 +46,13 @@
     <img class="chart-img chart-block" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
   </div>
 
+  <div class="chart-block">
+    <h2>Y/Y % Change</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
+    <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
+  </div>
+
   {% if ticker_data.forward_eps_history_chart_path or ticker_data.forward_revenue_history_chart_path %}
   <div class="chart-block">
     <h2>Forward Estimate History</h2>
@@ -61,13 +68,6 @@
     {% endif %}
   </div>
   {% endif %}
-
-  <div class="chart-block">
-    <h2>Y/Y % Change</h2>
-    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
-    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
-    <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
-  </div>
 
   <div class="chart-block">
     <h2>Expenses</h2>

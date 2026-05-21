@@ -68,24 +68,51 @@ def inject_retro(html: str) -> str:
 # ───────── segment helpers ──────────────────────────────────────
 def build_segment_carousel_html(ticker: str, charts_dir_fs: str, charts_dir_web: str) -> dict:
     """
-    Return separate carousels for axis1/axis2 based on filename prefixes.
+    Return vertical chart stacks for axis1 / axis2.
+
+    Ordering: largest segment first. We read {axis}_order.json (written by
+    generate_segment_charts.py after it sorts segments by TTM revenue desc)
+    and use that filename list. If the manifest is missing, fall back to
+    alphabetical so an old run doesn't break the page.
+
+    Layout: previously a horizontal scrolling carousel — now a plain block
+    stack so every segment chart is visible at once without scrolling.
     """
+    import json as _json
     seg_dir = os.path.join(charts_dir_fs, ticker)
     if not os.path.isdir(seg_dir):
         return {"axis1": "", "axis2": ""}
-    pngs = [f for f in sorted(os.listdir(seg_dir)) if f.lower().endswith(".png")]
+    available = {f for f in os.listdir(seg_dir) if f.lower().endswith(".png")}
+
     def build(prefix):
-        imgs = [f for f in pngs if f.startswith(prefix + "_")]
-        if not imgs:
-            # fallback for legacy files like ``name_axis1.png``/``name_axis2.png``
-            imgs = [f for f in pngs if f.endswith("_" + prefix + ".png")]
-        if not imgs:
+        ordered: list[str] = []
+        manifest_path = os.path.join(seg_dir, f"{prefix}_order.json")
+        if os.path.exists(manifest_path):
+            try:
+                manifest = _json.loads(
+                    open(manifest_path, "r", encoding="utf-8").read()
+                )
+                ordered = [f for f in manifest.get("files", []) if f in available]
+            except Exception:
+                ordered = []
+        if not ordered:
+            # Fallback: alphabetical scan over prefix matches (or legacy suffix).
+            matches = sorted(f for f in available if f.startswith(prefix + "_"))
+            if not matches:
+                matches = sorted(
+                    f for f in available if f.endswith("_" + prefix + ".png")
+                )
+            ordered = matches
+        if not ordered:
             return ""
         items = []
-        for f in imgs:
+        for f in ordered:
             src = f"{charts_dir_web}/{ticker}/{f}"
-            items.append(f'<div class="carousel-item"><img class="chart-img" src="{src}" alt="{f}"></div>')
-        return '<div class="carousel-container chart-block">\n' + "\n".join(items) + "\n</div>"
+            items.append(
+                f'<img class="chart-img chart-block" src="{src}" alt="{f}">'
+            )
+        return '<div class="segment-stack chart-block">\n' + "\n".join(items) + "\n</div>"
+
     return {"axis1": build("axis1"), "axis2": build("axis2")}
 
 # ───────── template creation ────────────────────────────────────
@@ -249,6 +276,13 @@ td{padding:4px;border:1px solid #8080FF}
     <img class="chart-img chart-block" src="{{ ticker_data.forecast_eps_chart_path }}" alt="EPS Forecast">
   </div>
 
+  <div class="chart-block">
+    <h2>Y/Y % Change</h2>
+    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
+    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
+    <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
+  </div>
+
   {% if ticker_data.forward_eps_history_chart_path or ticker_data.forward_revenue_history_chart_path %}
   <div class="chart-block">
     <h2>Forward Estimate History</h2>
@@ -264,13 +298,6 @@ td{padding:4px;border:1px solid #8080FF}
     {% endif %}
   </div>
   {% endif %}
-
-  <div class="chart-block">
-    <h2>Y/Y % Change</h2>
-    <img class="chart-img chart-block" src="{{ ticker_data.revenue_yoy_change_chart_path }}" alt="Revenue YoY Change">
-    <img class="chart-img chart-block" src="{{ ticker_data.eps_yoy_change_chart_path }}" alt="EPS YoY Change">
-    <div class="table-wrap">{{ ticker_data.yoy_growth_table_html | safe }}</div>
-  </div>
 
   <div class="chart-block">
     <h2>Expenses</h2>

@@ -559,7 +559,8 @@ def generate_yoy_line_chart(chart_type, data, title, ylabel, output_path, analys
         values = np.nan_to_num(values, nan=0.0, posinf=np.max(values[np.isfinite(values)]),
                                neginf=np.min(values[np.isfinite(values)]))
 
-    historical_color = 'blue' if chart_type == "revenue" else 'green'
+    # Match the rest of the site's convention: revenue = green, EPS/net_income = blue.
+    historical_color = 'green' if chart_type == "revenue" else 'blue'
     forecast_color = 'grey'
 
     forecast_years = analyst_counts['Year'].values if analyst_counts is not None and analyst_column else []

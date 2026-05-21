@@ -358,6 +358,25 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 rev_p = rev_p.sort_values(by=sort_col, ascending=False)
                 oi_p = oi_p.reindex(index=rev_p.index)
 
+            # Emit a manifest of segment filenames in size-desc order so the
+            # page template can render the chart stack from largest to smallest
+            # (the loop above iterates segments alphabetically when writing
+            # PNGs, but display order should follow business size).
+            try:
+                import json as _json
+                _sorted_segs = list(rev_p.index)
+                _ordered_files = [
+                    f"{axis_label}_{ticker}_{str(s).replace('/', '_').replace(' ', '_')}.png"
+                    for s in _sorted_segs
+                ]
+                manifest_path = out_dir / f"{axis_label}_order.json"
+                manifest_path.write_text(
+                    _json.dumps({"segments": _sorted_segs, "files": _ordered_files}),
+                    encoding="utf-8",
+                )
+            except Exception as _e:
+                print(f"[{VERSION}] could not write segment order manifest: {_e}")
+
             pct_series = None
             if "TTM" in rev_p.columns:
                 total_ttm = rev_p["TTM"].sum(skipna=True)
