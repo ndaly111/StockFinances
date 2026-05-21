@@ -2,135 +2,286 @@
 <html lang="en">
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5ZQMLMD9M8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5ZQMLMD9M8');
-</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5ZQMLMD9M8"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-5ZQMLMD9M8');
+  </script>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Ticker Info</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-        h1 {
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-        }
-        input[type="text"], input[type="submit"], select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input[type="submit"] {
-            background: #28a745;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background: #218838;
-        }
-        p {
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Ticker Assumptions</title>
+  <style>
+    :root {
+      --border: #d1d5db;
+      --muted: #6b7280;
+      --bg: #f4f4f4;
+      --panel: #ffffff;
+      --accent: #28a745;
+      --accent-hover: #218838;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-color: var(--bg);
+      margin: 0;
+    }
+    .container {
+      background: var(--panel);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 460px;
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
+    .lead { color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem; }
+    label { display: block; margin: 0.5rem 0 0.25rem; font-size: 0.9rem; font-weight: 600; }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
+    .current { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; min-height: 1em; }
+    .current .val { font-weight: 600; color: #111827; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    button {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .pat-block {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+    }
+    .pat-block details summary { cursor: pointer; font-weight: 600; }
+    .pat-block .pat-current { color: var(--muted); margin-top: 0.35rem; }
+    .pat-block input { margin-top: 0.4rem; }
+    .pat-block button {
+      margin-top: 0.5rem;
+      padding: 0.4rem;
+      font-size: 0.85rem;
+      background: #6b7280;
+    }
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .status.ok { display: block; background: #d1fae5; color: #065f46; }
+    .status.err { display: block; background: #fee2e2; color: #991b1b; }
+    .status.info { display: block; background: #dbeafe; color: #1e40af; }
+    .help { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.4; }
+    code { background: #f3f4f6; padding: 0.05rem 0.3rem; border-radius: 3px; font-size: 0.85em; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Manage Tickers</h1>
-        <form id="manage-form">
-            <label for="action">Action:</label>
-            <select id="action" name="action" required>
-                <option value="add">Add</option>
-                <option value="remove">Remove</option>
-            </select>
-            <label for="ticker">Ticker:</label>
-            <input type="text" id="ticker" name="ticker" required><br>
-            <input type="submit" value="Update">
-        </form>
-        <hr>
-        <h1>Update Growth Info</h1>
-        <form id="update-form">
-            <label for="update_ticker">Ticker:</label>
-            <input type="text" id="update_ticker" name="update_ticker" required><br>
-            <label for="growth_rate">Expected Growth (%):</label>
-            <input type="text" id="growth_rate" name="growth_rate" required><br>
-            <label for="profit_margin">Expected Profit Margin (%):</label>
-            <input type="text" id="profit_margin" name="profit_margin"><br>
-            <input type="submit" value="Update">
-        </form>
-        <p id="message"></p>
+  <div class="container">
+    <h1>Update Ticker Assumptions</h1>
+    <p class="lead">
+      Edit the valuation growth rate and projected profit margin for one
+      ticker. Submission triggers a GitHub Actions workflow that updates the
+      DB, opens an audit issue (emails repo owner), and queues a site refresh.
+    </p>
+
+    <form id="update-form" autocomplete="off">
+      <label for="update_ticker">Ticker</label>
+      <input type="text" id="update_ticker" name="update_ticker"
+             required placeholder="e.g. AAPL" maxlength="10">
+      <div class="current" id="current-display">&nbsp;</div>
+
+      <div class="row">
+        <div>
+          <label for="growth_rate">Expected Growth (%)</label>
+          <input type="text" id="growth_rate" name="growth_rate" required
+                 inputmode="decimal" placeholder="12.0">
+        </div>
+        <div>
+          <label for="profit_margin">Profit Margin (%)</label>
+          <input type="text" id="profit_margin" name="profit_margin"
+                 inputmode="decimal" placeholder="optional">
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn">Update</button>
+    </form>
+
+    <div class="pat-block">
+      <details>
+        <summary>GitHub token (one-time setup)</summary>
+        <p class="help">
+          Submitting calls the GitHub REST API directly. You need a fine-grained
+          personal access token scoped to the
+          <code>ndaly111/StockFinances</code> repo with
+          <code>Actions: read &amp; write</code> permission.
+          Generate one at <code>github.com/settings/tokens?type=beta</code>.
+          The token is stored only in this browser's localStorage; nothing
+          leaves your machine except the dispatch call to GitHub.
+        </p>
+        <div class="pat-current" id="pat-status">No token saved</div>
+        <input type="password" id="pat-input" placeholder="github_pat_...">
+        <button type="button" id="save-pat">Save token</button>
+        <button type="button" id="clear-pat" style="background:#991b1b;">Clear token</button>
+      </details>
     </div>
-    <script>
-        async function submitForm(url, data) {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
 
-            return response;
+    <div id="status" class="status"></div>
+    <p class="help" style="margin-top:1rem;">
+      After submit: wait ~25 minutes for the site to refresh, then hard-refresh
+      (Ctrl+F5) the ticker's page to see the new valuation chart. You'll also
+      get an email from GitHub when the audit issue is opened.
+    </p>
+  </div>
+
+  <script>
+    const REPO_OWNER = 'ndaly111';
+    const REPO_NAME = 'StockFinances';
+    const WORKFLOW_FILE = 'update-assumptions.yml';
+    const ASSUMPTIONS_URL =
+      `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/data/assumptions.json`;
+    const PAT_KEY = 'sf_update_form_pat';
+
+    const $ = id => document.getElementById(id);
+    const status = (msg, kind) => {
+      const el = $('status');
+      el.className = 'status ' + kind;
+      el.textContent = msg;
+    };
+
+    let assumptions = null;
+    async function loadAssumptions() {
+      try {
+        const r = await fetch(ASSUMPTIONS_URL + '?t=' + Date.now());
+        if (r.ok) {
+          assumptions = await r.json();
+        } else {
+          console.warn('Could not fetch assumptions.json:', r.status);
         }
+      } catch (e) {
+        console.warn('Assumptions fetch failed:', e);
+      }
+    }
 
-        document.getElementById('manage-form').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const action = document.getElementById('action').value;
-            const ticker = document.getElementById('ticker').value.toUpperCase();
+    function showCurrent() {
+      const t = $('update_ticker').value.trim().toUpperCase();
+      const disp = $('current-display');
+      if (!t || !assumptions || !assumptions.tickers) {
+        disp.innerHTML = '&nbsp;';
+        return;
+      }
+      const row = assumptions.tickers[t];
+      if (!row) {
+        disp.innerHTML = `Current: <span class="val">(not in Tickers_Info)</span>`;
+        return;
+      }
+      const g = row.growth_rate === null ? '—' : row.growth_rate + '%';
+      const m = row.profit_margin === null ? '—' : row.profit_margin + '%';
+      disp.innerHTML =
+        `Current &mdash; growth: <span class="val">${g}</span>, ` +
+        `margin: <span class="val">${m}</span>`;
+    }
 
-            const response = await submitForm('/manage_ticker', { action, ticker });
+    function updatePatStatus() {
+      const has = !!localStorage.getItem(PAT_KEY);
+      $('pat-status').textContent = has
+        ? 'Token saved (kept in localStorage on this device)'
+        : 'No token saved';
+    }
 
-            if (response.ok) {
-                document.getElementById('message').textContent = 'Update dispatched successfully.';
-                document.getElementById('message').style.color = 'green';
-            } else {
-                const errorData = await response.json();
-                document.getElementById('message').textContent = `Failed to dispatch update: ${errorData.message}`;
-                document.getElementById('message').style.color = 'red';
-            }
+    $('save-pat').addEventListener('click', () => {
+      const v = $('pat-input').value.trim();
+      if (!v) { status('Enter a token first.', 'err'); return; }
+      localStorage.setItem(PAT_KEY, v);
+      $('pat-input').value = '';
+      updatePatStatus();
+      status('Token saved.', 'ok');
+    });
+
+    $('clear-pat').addEventListener('click', () => {
+      localStorage.removeItem(PAT_KEY);
+      updatePatStatus();
+      status('Token cleared.', 'info');
+    });
+
+    $('update_ticker').addEventListener('input', showCurrent);
+
+    $('update-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const pat = localStorage.getItem(PAT_KEY);
+      if (!pat) {
+        status('No GitHub token saved. Open the token section and add one first.', 'err');
+        return;
+      }
+      const ticker = $('update_ticker').value.trim().toUpperCase();
+      const growth = $('growth_rate').value.trim();
+      const margin = $('profit_margin').value.trim();
+      if (!ticker || !growth) {
+        status('Ticker and growth rate are required.', 'err');
+        return;
+      }
+
+      $('submit-btn').disabled = true;
+      status('Dispatching workflow...', 'info');
+
+      const url =
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}` +
+        `/actions/workflows/${WORKFLOW_FILE}/dispatches`;
+      try {
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/vnd.github+json',
+            'Authorization': `Bearer ${pat}`,
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            ref: 'main',
+            inputs: { ticker, growth_rate: growth, profit_margin: margin }
+          })
         });
+        if (r.status === 204) {
+          status(
+            `Dispatched. ${ticker} update queued — watch for the audit issue ` +
+            `email in ~1 min and the refreshed chart in ~25 min.`,
+            'ok'
+          );
+          setTimeout(() => loadAssumptions().then(showCurrent), 90_000);
+        } else {
+          const body = await r.text();
+          status(`Dispatch failed (HTTP ${r.status}): ${body}`, 'err');
+        }
+      } catch (e) {
+        status(`Network error: ${e.message}`, 'err');
+      } finally {
+        $('submit-btn').disabled = false;
+      }
+    });
 
-        document.getElementById('update-form').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const ticker = document.getElementById('update_ticker').value.toUpperCase();
-            const growth_rate = document.getElementById('growth_rate').value;
-            const profit_margin = document.getElementById('profit_margin').value || null;
-
-            const response = await submitForm('/update_growth', { ticker, growth_rate, profit_margin });
-
-            if (response.ok) {
-                document.getElementById('message').textContent = 'Update dispatched successfully.';
-                document.getElementById('message').style.color = 'green';
-            } else {
-                const errorData = await response.json();
-                document.getElementById('message').textContent = `Failed to dispatch update: ${errorData.message}`;
-                document.getElementById('message').style.color = 'red';
-            }
-        });
-    </script>
+    loadAssumptions().then(showCurrent);
+    updatePatStatus();
+  </script>
 </body>
 </html>
