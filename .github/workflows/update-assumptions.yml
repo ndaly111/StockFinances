@@ -139,19 +139,26 @@ jobs:
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "no_change=false" >> "$GITHUB_OUTPUT"
 
+      # Don't use the existing repo's git for gh-pages — fetching that whole
+      # branch's history is what blew the run out to ~7 minutes. Instead, a
+      # depth-1 ref-specific clone of just gh-pages, dropping the deploy to
+      # the network round-trip (≈10s).
+      - name: Checkout gh-pages (shallow)
+        if: steps.commit.outputs.no_change != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages-deploy
+          fetch-depth: 1
+          persist-credentials: true
+
       - name: Deploy ticker artifacts to gh-pages
         if: steps.commit.outputs.no_change != 'true'
         env:
           TICKER: ${{ steps.prev.outputs.ticker }}
+        working-directory: gh-pages-deploy
         run: |
           set -e
-          git fetch origin gh-pages
-          git worktree add gh-pages-deploy origin/gh-pages
-          cd gh-pages-deploy
-          git checkout -B gh-pages
-
-          # Copy only the files touched by the per-ticker refresh — keeps the
-          # deploy minimal and avoids fighting site-refresh on unrelated files.
           mkdir -p charts pages data
           cp ../data/assumptions.json data/assumptions.json
           for f in ../charts/${TICKER}_*; do
@@ -168,8 +175,6 @@ jobs:
             git commit -m "deploy: refresh $TICKER after assumptions change"
             git push origin gh-pages
           fi
-          cd ..
-          git worktree remove gh-pages-deploy --force
 
       - name: Open audit issue
         if: steps.commit.outputs.no_change != 'true'
