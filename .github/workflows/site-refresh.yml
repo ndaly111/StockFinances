@@ -46,6 +46,7 @@ jobs:
         run: |
           python main_remote.py
           python generate_market_summary.py
+          python scripts/dump_assumptions.py
 
       - name: Check out gh-pages branch
         uses: actions/checkout@v4

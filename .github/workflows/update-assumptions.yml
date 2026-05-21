@@ -1,0 +1,170 @@
+name: Update assumptions
+
+# Triggered by update_form.html (unlisted) via GitHub REST API workflow_dispatch.
+# Updates one ticker's growth rate and/or profit margin in Tickers_Info, opens a
+# GitHub issue with the before/after diff (which auto-emails the repo owner),
+# regenerates the public assumptions.json, and queues a site refresh so the
+# valuation chart picks up the new values.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "Ticker symbol (e.g. AAPL)"
+        required: true
+        type: string
+      growth_rate:
+        description: "Nick's expected growth rate (%)"
+        required: true
+        type: string
+      profit_margin:
+        description: "Projected profit margin (%) — optional"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: update-assumptions-${{ inputs.ticker }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas
+
+      - name: Normalize inputs + capture previous values
+        id: prev
+        env:
+          TICKER: ${{ inputs.ticker }}
+          GROWTH_NEW: ${{ inputs.growth_rate }}
+          MARGIN_NEW: ${{ inputs.profit_margin }}
+        run: |
+          python - <<'PY'
+          import json, os, sqlite3, sys
+          ticker = os.environ["TICKER"].strip().upper()
+          if not ticker:
+              sys.exit("ticker is empty")
+          growth_new = os.environ["GROWTH_NEW"].strip()
+          margin_new = os.environ.get("MARGIN_NEW", "").strip()
+
+          con = sqlite3.connect("Stock Data.db")
+          cur = con.execute(
+              "SELECT nicks_growth_rate, projected_profit_margin "
+              "FROM Tickers_Info WHERE ticker = ?",
+              (ticker,),
+          )
+          row = cur.fetchone()
+          con.close()
+          if row is None:
+              sys.exit(f"ticker {ticker!r} not found in Tickers_Info")
+          growth_old, margin_old = row
+
+          def f(v):
+              return "" if v is None else str(v)
+
+          out = open(os.environ["GITHUB_OUTPUT"], "a")
+          out.write(f"ticker={ticker}\n")
+          out.write(f"growth_old={f(growth_old)}\n")
+          out.write(f"growth_new={growth_new}\n")
+          out.write(f"margin_old={f(margin_old)}\n")
+          out.write(f"margin_new={margin_new}\n")
+          out.close()
+          PY
+
+      - name: Apply update
+        env:
+          TICKER:        ${{ steps.prev.outputs.ticker }}
+          GROWTH_NEW:    ${{ steps.prev.outputs.growth_new }}
+          MARGIN_NEW:    ${{ steps.prev.outputs.margin_new }}
+        run: |
+          # update_tickers.py: action ticker [growth] [profit_margin]
+          if [ -n "$MARGIN_NEW" ]; then
+            python update_tickers.py update "$TICKER" "$GROWTH_NEW" "$MARGIN_NEW"
+          else
+            python update_tickers.py update "$TICKER" "$GROWTH_NEW"
+          fi
+
+      - name: Refresh data/assumptions.json
+        run: python scripts/dump_assumptions.py
+
+      - name: Commit & push
+        id: commit
+        env:
+          TICKER:     ${{ steps.prev.outputs.ticker }}
+          GROWTH_OLD: ${{ steps.prev.outputs.growth_old }}
+          GROWTH_NEW: ${{ steps.prev.outputs.growth_new }}
+          MARGIN_OLD: ${{ steps.prev.outputs.margin_old }}
+          MARGIN_NEW: ${{ steps.prev.outputs.margin_new }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Stock Data.db" tickers.csv data/assumptions.json
+          if git diff --cached --quiet; then
+            echo "No changes — submitted values match what's already in the DB."
+            echo "no_change=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          MSG="Assumptions: $TICKER growth $GROWTH_OLD -> $GROWTH_NEW"
+          if [ -n "$MARGIN_NEW" ]; then
+            MSG="$MSG, margin $MARGIN_OLD -> $MARGIN_NEW"
+          fi
+          git commit -m "$MSG"
+          git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "no_change=false" >> "$GITHUB_OUTPUT"
+
+      - name: Open audit issue
+        if: steps.commit.outputs.no_change != 'true'
+        env:
+          GH_TOKEN:   ${{ secrets.GITHUB_TOKEN }}
+          TICKER:     ${{ steps.prev.outputs.ticker }}
+          ACTOR:      ${{ github.actor }}
+          SHA:        ${{ steps.commit.outputs.sha }}
+          GROWTH_OLD: ${{ steps.prev.outputs.growth_old }}
+          GROWTH_NEW: ${{ steps.prev.outputs.growth_new }}
+          MARGIN_OLD: ${{ steps.prev.outputs.margin_old }}
+          MARGIN_NEW: ${{ steps.prev.outputs.margin_new }}
+        run: |
+          BODY="**Ticker:** $TICKER
+          **Triggered by:** @$ACTOR
+          **Commit:** [\`${SHA:0:7}\`](https://github.com/${{ github.repository }}/commit/$SHA)
+
+          | Field | Before | After |
+          |---|---|---|
+          | growth_rate | ${GROWTH_OLD:-_(unset)_} | $GROWTH_NEW |
+          | profit_margin | ${MARGIN_OLD:-_(unset)_} | ${MARGIN_NEW:-_(unchanged)_} |
+
+          The valuation chart will refresh after the next site refresh completes
+          (auto-triggered below; ~25 min)."
+          gh issue create \
+            --title "Assumptions changed: $TICKER" \
+            --body "$BODY" \
+            --label "assumptions-change" 2>&1 || \
+          gh issue create \
+            --title "Assumptions changed: $TICKER" \
+            --body "$BODY"
+
+      - name: Trigger site refresh
+        if: steps.commit.outputs.no_change != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run "Refresh site" --repo "${{ github.repository }}"

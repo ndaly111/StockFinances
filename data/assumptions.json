@@ -1,0 +1,429 @@
+{
+  "updated_at": "2026-05-21T01:48:44+00:00",
+  "tickers": {
+    "AAL": {
+      "growth_rate": 2.0,
+      "profit_margin": 2.0
+    },
+    "AAPL": {
+      "growth_rate": 10.0,
+      "profit_margin": 25.0
+    },
+    "ABBV": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "ADBE": {
+      "growth_rate": 12.0,
+      "profit_margin": 25.0
+    },
+    "AMAT": {
+      "growth_rate": 10.0,
+      "profit_margin": 25.0
+    },
+    "AMD": {
+      "growth_rate": 15.0,
+      "profit_margin": 10.0
+    },
+    "AMZN": {
+      "growth_rate": 20.0,
+      "profit_margin": 5.0
+    },
+    "AVGO": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "AXP": {
+      "growth_rate": 9.0,
+      "profit_margin": 14.0
+    },
+    "BA": {
+      "growth_rate": 3.0,
+      "profit_margin": 2.0
+    },
+    "BABA": {
+      "growth_rate": 10.0,
+      "profit_margin": 8.0
+    },
+    "BAC": {
+      "growth_rate": 10.0,
+      "profit_margin": 25.0
+    },
+    "BAH": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "BIRD": {
+      "growth_rate": 8.0,
+      "profit_margin": 5.0
+    },
+    "BRK-B": {
+      "growth_rate": 8.0,
+      "profit_margin": 14.0
+    },
+    "BUD": {
+      "growth_rate": 10.0,
+      "profit_margin": 9.0
+    },
+    "BYND": {
+      "growth_rate": -2.0,
+      "profit_margin": 3.0
+    },
+    "C": {
+      "growth_rate": 0.0,
+      "profit_margin": 20.0
+    },
+    "CCL": {
+      "growth_rate": 10.0,
+      "profit_margin": 2.0
+    },
+    "CELH": {
+      "growth_rate": 15.0,
+      "profit_margin": 10.0
+    },
+    "CMG": {
+      "growth_rate": 20.0,
+      "profit_margin": 13.0
+    },
+    "COIN": {
+      "growth_rate": 8.0,
+      "profit_margin": 10.0
+    },
+    "COST": {
+      "growth_rate": 12.0,
+      "profit_margin": 3.0
+    },
+    "CRM": {
+      "growth_rate": 8.0,
+      "profit_margin": 11.0
+    },
+    "CSCO": {
+      "growth_rate": 5.0,
+      "profit_margin": 23.0
+    },
+    "CVS": {
+      "growth_rate": 5.0,
+      "profit_margin": 2.0
+    },
+    "CVX": {
+      "growth_rate": 2.0,
+      "profit_margin": 10.0
+    },
+    "DAL": {
+      "growth_rate": 3.0,
+      "profit_margin": 8.0
+    },
+    "DIS": {
+      "growth_rate": 6.0,
+      "profit_margin": 3.0
+    },
+    "DJT": {
+      "growth_rate": 10.0,
+      "profit_margin": 10.0
+    },
+    "DKNG": {
+      "growth_rate": 20.0,
+      "profit_margin": 10.0
+    },
+    "DPZ": {
+      "growth_rate": 8.0,
+      "profit_margin": 12.0
+    },
+    "EVGO": {
+      "growth_rate": 20.0,
+      "profit_margin": 10.0
+    },
+    "F": {
+      "growth_rate": 5.0,
+      "profit_margin": 2.0
+    },
+    "FSLR": {
+      "growth_rate": 12.0,
+      "profit_margin": 25.0
+    },
+    "FSR": {
+      "growth_rate": 10.0,
+      "profit_margin": 5.0
+    },
+    "GE": {
+      "growth_rate": 2.0,
+      "profit_margin": 14.0
+    },
+    "GILD": {
+      "growth_rate": 2.0,
+      "profit_margin": 15.0
+    },
+    "GM": {
+      "growth_rate": 5.0,
+      "profit_margin": 6.0
+    },
+    "GME": {
+      "growth_rate": -3.0,
+      "profit_margin": 5.0
+    },
+    "GOOGL": {
+      "growth_rate": 12.0,
+      "profit_margin": 25.0
+    },
+    "GPI": {
+      "growth_rate": 3.0,
+      "profit_margin": 4.0
+    },
+    "GS": {
+      "growth_rate": 2.0,
+      "profit_margin": 10.0
+    },
+    "GTIM": {
+      "growth_rate": 8.0,
+      "profit_margin": 5.0
+    },
+    "HD": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "HOOD": {
+      "growth_rate": 20.0,
+      "profit_margin": 10.0
+    },
+    "INTC": {
+      "growth_rate": 5.0,
+      "profit_margin": 25.0
+    },
+    "JNJ": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "JPM": {
+      "growth_rate": 10.0,
+      "profit_margin": 30.0
+    },
+    "KHC": {
+      "growth_rate": 3.0,
+      "profit_margin": 10.0
+    },
+    "KO": {
+      "growth_rate": 5.0,
+      "profit_margin": 23.0
+    },
+    "KODK": {
+      "growth_rate": 2.0,
+      "profit_margin": 2.0
+    },
+    "LLY": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "LMT": {
+      "growth_rate": 1.0,
+      "profit_margin": 15.0
+    },
+    "LRCX": {
+      "growth_rate": 12.0,
+      "profit_margin": 25.0
+    },
+    "LULU": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "LUV": {
+      "growth_rate": 3.0,
+      "profit_margin": 2.0
+    },
+    "MA": {
+      "growth_rate": 12.0,
+      "profit_margin": 45.0
+    },
+    "MAMA": {
+      "growth_rate": 10.0,
+      "profit_margin": 5.0
+    },
+    "ME": {
+      "growth_rate": 2.0,
+      "profit_margin": 5.0
+    },
+    "MET": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "META": {
+      "growth_rate": 6.0,
+      "profit_margin": 30.0
+    },
+    "MPC": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "MRNA": {
+      "growth_rate": 8.0,
+      "profit_margin": 10.0
+    },
+    "MSFT": {
+      "growth_rate": 16.0,
+      "profit_margin": 35.0
+    },
+    "MU": {
+      "growth_rate": 12.0,
+      "profit_margin": 20.0
+    },
+    "NCLH": {
+      "growth_rate": 11.0,
+      "profit_margin": 4.0
+    },
+    "NET": {
+      "growth_rate": 20.0,
+      "profit_margin": 20.0
+    },
+    "NFLX": {
+      "growth_rate": 11.0,
+      "profit_margin": 14.0
+    },
+    "NOC": {
+      "growth_rate": 2.0,
+      "profit_margin": 10.0
+    },
+    "NUE": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "NVDA": {
+      "growth_rate": 20.0,
+      "profit_margin": 30.0
+    },
+    "OPEN": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "ORCL": {
+      "growth_rate": 13.0,
+      "profit_margin": 25.0
+    },
+    "PENN": {
+      "growth_rate": 3.0,
+      "profit_margin": 8.0
+    },
+    "PERI": {
+      "growth_rate": 4.0,
+      "profit_margin": 15.0
+    },
+    "PFE": {
+      "growth_rate": 2.0,
+      "profit_margin": 10.0
+    },
+    "PG": {
+      "growth_rate": null,
+      "profit_margin": null
+    },
+    "PINS": {
+      "growth_rate": 11.0,
+      "profit_margin": 8.0
+    },
+    "PLTR": {
+      "growth_rate": 15.0,
+      "profit_margin": 10.0
+    },
+    "PYPL": {
+      "growth_rate": 14.0,
+      "profit_margin": 14.0
+    },
+    "RCL": {
+      "growth_rate": 10.0,
+      "profit_margin": 12.0
+    },
+    "RDDT": {
+      "growth_rate": 10.0,
+      "profit_margin": 10.0
+    },
+    "RIVN": {
+      "growth_rate": 20.0,
+      "profit_margin": 8.0
+    },
+    "RTX": {
+      "growth_rate": 10.0,
+      "profit_margin": 5.0
+    },
+    "SAVE": {
+      "growth_rate": 0.0,
+      "profit_margin": 5.0
+    },
+    "SBUX": {
+      "growth_rate": 12.0,
+      "profit_margin": 10.0
+    },
+    "SCHW": {
+      "growth_rate": 5.0,
+      "profit_margin": 30.0
+    },
+    "SHOP": {
+      "growth_rate": 14.0,
+      "profit_margin": 10.0
+    },
+    "SNAP": {
+      "growth_rate": 5.0,
+      "profit_margin": 10.0
+    },
+    "SPOT": {
+      "growth_rate": 9.0,
+      "profit_margin": 10.0
+    },
+    "TEVA": {
+      "growth_rate": 0.0,
+      "profit_margin": 5.0
+    },
+    "TGT": {
+      "growth_rate": 4.0,
+      "profit_margin": 4.0
+    },
+    "TSLA": {
+      "growth_rate": 15.0,
+      "profit_margin": 8.0
+    },
+    "TSM": {
+      "growth_rate": 5.0,
+      "profit_margin": 40.0
+    },
+    "TSN": {
+      "growth_rate": 3.0,
+      "profit_margin": 5.0
+    },
+    "UAL": {
+      "growth_rate": 2.0,
+      "profit_margin": 7.0
+    },
+    "UBER": {
+      "growth_rate": 14.0,
+      "profit_margin": 15.0
+    },
+    "UNH": {
+      "growth_rate": 8.0,
+      "profit_margin": 6.0
+    },
+    "UPS": {
+      "growth_rate": 5.0,
+      "profit_margin": 8.0
+    },
+    "V": {
+      "growth_rate": 12.0,
+      "profit_margin": 50.0
+    },
+    "VLO": {
+      "growth_rate": 2.0,
+      "profit_margin": 6.0
+    },
+    "VRSN": {
+      "growth_rate": 3.0,
+      "profit_margin": 55.0
+    },
+    "VZ": {
+      "growth_rate": 1.0,
+      "profit_margin": 15.0
+    },
+    "WMT": {
+      "growth_rate": 4.0,
+      "profit_margin": 2.0
+    },
+    "XOM": {
+      "growth_rate": 2.0,
+      "profit_margin": 14.0
+    }
+  }
+}
