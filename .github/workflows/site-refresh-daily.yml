@@ -72,6 +72,7 @@ jobs:
           # refresh would clobber them.
           rsync -av --delete \
             --exclude ".git" \
+            --exclude ".github" \
             --exclude "gh-pages" \
             --exclude "microcaps.html" \
             --exclude "data/microcap_candidates*.csv" \
