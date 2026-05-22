@@ -39,6 +39,11 @@ from typing import Optional
 import pandas as pd
 import yfinance as yf
 
+# Import the EDGAR provider from the existing pipeline so we share the same
+# code path the watchlist uses for historical financials.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_providers.edgar import EdgarDataProvider, DataProviderError  # noqa: E402
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 log = logging.getLogger("microcap_screener")
 
@@ -58,6 +63,72 @@ DEBT_EQUITY_CEILING = 0.5
 # available; fall back to a reasonable static guess so screening still works
 # offline.
 DEFAULT_TREASURY_YIELD = 0.045
+
+# One shared EDGAR provider per process. The class caches CIK lookups in
+# memory; we pre-populate the cache once so each subsequent ticker lookup
+# doesn't re-download company_tickers.json.
+_EDGAR: Optional[EdgarDataProvider] = None
+
+
+def _get_edgar() -> EdgarDataProvider:
+    global _EDGAR
+    if _EDGAR is not None:
+        return _EDGAR
+    prov = EdgarDataProvider()
+    try:
+        log.info("Pre-warming EDGAR ticker -> CIK cache (one company_tickers.json download)...")
+        resp = prov.session.get(prov.TICKERS_URL, timeout=30)
+        resp.raise_for_status()
+        for rec in resp.json().values():
+            t = str(rec.get("ticker", "")).upper()
+            if t:
+                prov._cik_cache[t] = str(rec["cik_str"]).zfill(10)
+        log.info(f"  EDGAR cache: {len(prov._cik_cache)} ticker -> CIK mappings ready")
+    except Exception as exc:
+        log.warning(f"EDGAR cache pre-warm failed: {exc}; will lazy-resolve per ticker")
+    _EDGAR = prov
+    return _EDGAR
+
+
+def _edgar_annual_series(ticker: str, metric: str) -> Optional[pd.Series]:
+    """Pull a 5+ year annual series from EDGAR. metric is 'EPS' or 'Revenue'.
+
+    Returns a pd.Series indexed by fiscal year-end date string, oldest-first.
+    Returns None if EDGAR has no data for this ticker (foreign issuers,
+    private companies that just IPO'd, tickers not in EDGAR).
+    """
+    prov = _get_edgar()
+    try:
+        records = prov.fetch_annual_financials(ticker)
+    except DataProviderError:
+        return None
+    except Exception as exc:
+        log.debug(f"{ticker}: EDGAR fetch failed: {exc}")
+        return None
+
+    if not records:
+        return None
+
+    field = "EPS" if metric == "EPS" else "Revenue"
+    pairs: list[tuple[str, float]] = []
+    for r in records:
+        v = r.get(field)
+        if v is None:
+            continue
+        try:
+            pairs.append((str(r["Date"]), float(v)))
+        except (TypeError, ValueError):
+            continue
+
+    if not pairs:
+        return None
+
+    pairs.sort(key=lambda x: x[0])  # oldest-first
+    return pd.Series(
+        data=[p[1] for p in pairs],
+        index=[p[0] for p in pairs],
+        name=metric,
+    )
 
 
 @dataclass
@@ -119,11 +190,14 @@ def _annual_series(yticker: yf.Ticker, metric: str) -> Optional[pd.Series]:
     return None
 
 
-def _compute_5yr_cagr(series: pd.Series) -> tuple[Optional[float], int, str]:
+def _compute_5yr_cagr(series: pd.Series, window: int = 5) -> tuple[Optional[float], int, str]:
     """Return (cagr, years_positive_count, yoy_sequence_str) for a series.
 
-    Series is oldest-first. We use the first and last values that are at
-    least 5 years apart if possible; otherwise the full span.
+    Series is oldest-first. We use the most recent (window+1) values so the
+    CAGR is over exactly `window` YoY periods even when EDGAR gives us 10
+    years of history. If the series is shorter than window+1, we use the
+    full span (and the result is over fewer years — still reported, caller
+    can see it via the YoY sequence).
     """
     if series is None or len(series) < 2:
         return None, 0, ""
@@ -131,6 +205,11 @@ def _compute_5yr_cagr(series: pd.Series) -> tuple[Optional[float], int, str]:
     s = series.dropna().astype(float)
     if len(s) < 2:
         return None, 0, ""
+
+    # Restrict to the most recent (window+1) annual data points so 5-yr CAGR
+    # is actually 5 YoY periods, not 9 when EDGAR returns a deeper history.
+    if len(s) > window + 1:
+        s = s.iloc[-(window + 1):]
 
     first = float(s.iloc[0])
     last = float(s.iloc[-1])
@@ -203,6 +282,33 @@ def _current_treasury_yield() -> float:
     return DEFAULT_TREASURY_YIELD
 
 
+def _info_with_retry(yt: yf.Ticker, attempts: int = 4) -> dict:
+    """yfinance.Ticker.info routinely 429s under load. Retry with exponential
+    backoff (2s, 4s, 8s) on rate-limit errors; surface other errors normally
+    so we don't loop forever on permanent failures."""
+    last_exc: Exception | None = None
+    for i in range(attempts):
+        try:
+            info = yt.info
+            if info:
+                return info
+        except Exception as exc:
+            last_exc = exc
+            msg = str(exc).lower()
+            transient = (
+                "rate limit" in msg
+                or "429" in msg
+                or "too many" in msg
+                or "timeout" in msg
+            )
+            if not transient or i == attempts - 1:
+                raise
+        time.sleep(2 ** (i + 1))
+    if last_exc:
+        raise last_exc
+    return {}
+
+
 def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
     """Run the full analytic pipeline for one ticker. Always returns a
     Candidate; sets reasons_skipped if any disqualifying condition hit."""
@@ -210,11 +316,11 @@ def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
     skipped: list[str] = []
     try:
         yt = yf.Ticker(t)
-        info = yt.info or {}
+        info = _info_with_retry(yt) or {}
     except Exception as exc:
         log.debug(f"{t}: .info failed: {exc}")
         info = {}
-        skipped.append(f"info_fetch_failed:{exc}")
+        skipped.append(f"info_fetch_failed:{str(exc)[:60]}")
 
     market_cap = _safe_float(info.get("marketCap")) or 0.0
     if market_cap == 0:
@@ -239,12 +345,18 @@ def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
     pos_years = 0
     yoy_str = ""
     if not size_filtered:
-        # Try EPS first; fall back to Revenue if EPS series unusable.
-        series = _annual_series(yt, "EPS")
+        # EDGAR first (10-year history for proper 5-yr CAGR), yfinance as
+        # fallback for tickers EDGAR doesn't have (ADRs, foreign issuers,
+        # recent IPOs not yet in XBRL).
+        series = _edgar_annual_series(t, "EPS")
+        if series is None or series.empty:
+            series = _annual_series(yt, "EPS")
         cagr, pos_years, yoy_str = _compute_5yr_cagr(series)
         if cagr is None:
             metric_used = "Revenue"
-            series = _annual_series(yt, "Revenue")
+            series = _edgar_annual_series(t, "Revenue")
+            if series is None or series.empty:
+                series = _annual_series(yt, "Revenue")
             cagr, pos_years, yoy_str = _compute_5yr_cagr(series)
         if cagr is None:
             skipped.append("no_growth_data")
@@ -344,7 +456,8 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--limit", type=int, default=0,
                         help="Cap how many tickers to screen (0 = no cap)")
-    parser.add_argument("--workers", type=int, default=15)
+    parser.add_argument("--workers", type=int, default=4,
+                        help="Parallel workers. yfinance rate-limits hard above ~5; default 4 trades runtime for reliability.")
     args = parser.parse_args()
 
     if args.universe:
