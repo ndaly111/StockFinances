@@ -67,6 +67,7 @@ jobs:
             --exclude "gh-pages" \
             --exclude "microcaps.html" \
             --exclude "data/microcap_candidates*.csv" \
+            --exclude "data/microcap_appearances.json" \
             --exclude "charts/microcap_thesis_*.png" \
             ./ gh-pages/
 
