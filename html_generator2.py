@@ -186,6 +186,12 @@ td{padding:4px;border:1px solid #8080FF}
     </marquee>
   </div>
 
+  <p style="text-align:center;margin:8px 0;">
+    <a href="microcaps.html" class="button" style="background:#FFFFC0;border-color:#CCCC88;">
+      🔎 Microcap Candidates
+    </a>
+  </p>
+
   <nav class="navbar">
     {% for t in tickers %}
       <a href="pages/{{t}}_page.html" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}

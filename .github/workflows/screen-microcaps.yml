@@ -67,6 +67,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/microcap_candidates.csv data/microcap_candidates_skipped.csv microcaps.html
+          git add charts/microcap_thesis_*.png 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes."
             echo "no_change=true" >> "$GITHUB_OUTPUT"
@@ -90,14 +91,18 @@ jobs:
         working-directory: gh-pages-deploy
         run: |
           set -e
-          mkdir -p data
+          mkdir -p data charts
           cp ../data/microcap_candidates.csv data/
           cp ../data/microcap_candidates_skipped.csv data/ || true
           cp ../microcaps.html microcaps.html
+          # Per-candidate thesis charts. Glob may not match (e.g. if all
+          # chart renders failed); silence the cp error in that case.
+          cp ../charts/microcap_thesis_*.png charts/ 2>/dev/null || true
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/microcap_candidates.csv data/microcap_candidates_skipped.csv microcaps.html
+          git add charts/microcap_thesis_*.png 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "gh-pages already current."
           else
