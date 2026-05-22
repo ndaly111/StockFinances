@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>Microcap Candidates — Nick's Stock Financials</title>
+  <link rel="stylesheet" href="/static/css/retro.css">
+  <style>
+    .container { max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem 3rem; }
+    .lead { color:#000080; max-width: 70ch; }
+    .meta { color: #555; font-size: 0.9rem; margin: 0.5rem 0 1.5rem; }
+
+    .card {
+      border: 2px inset #C0C0C0;
+      background: #fff;
+      padding: 0.9rem 1rem;
+      margin: 0.75rem 0;
+      box-shadow: 1px 1px 0 #8080FF;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .card h3 { margin: 0; color: #FF0000; text-shadow: 1px 1px #000080; }
+    .card .subtle { color: #555; font-size: 0.9rem; margin: 0.2rem 0 0; }
+    .card .links { font-size: 0.85rem; color: #444; white-space: nowrap; }
+    .card .links a { margin: 0 0.25rem; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.5rem 1rem;
+      margin: 0.75rem 0;
+      padding: 0.6rem 0.8rem;
+      background: #f4f4ff;
+      border: 1px solid #ccccff;
+      border-radius: 4px;
+    }
+    .stats > div { display: flex; flex-direction: column; }
+    .stats .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #555; }
+    .stats .val { font-weight: 700; color: #000080; font-variant-numeric: tabular-nums; }
+    .stats .val.positive { color: #0a7000; }
+    .stats .val.negative { color: #B00020; }
+    .stats .val.seq { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.85rem; font-weight: 600; }
+
+    .biz { font-size: 0.92rem; color: #222; margin: 0.5rem 0 0; line-height: 1.4; }
+
+    table#candidates {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 1.5rem;
+    }
+    table#candidates th {
+      background: #C0C0FF;
+      padding: 6px;
+      border: 1px solid #8080FF;
+      text-align: left;
+      cursor: pointer;
+      user-select: none;
+      position: sticky;
+      top: 0;
+    }
+    table#candidates td {
+      padding: 4px 6px;
+      border: 1px solid #ddd;
+      white-space: nowrap;
+    }
+    table#candidates tr:nth-child(odd) td { background: #fafaff; }
+    table#candidates .seq { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.78rem; }
+  </style>
+</head><body><div class="container">
+
+  <h1>Microcap Candidates</h1>
+  <p class="lead">
+    NYSE + NASDAQ common stocks with market cap between $50M and $1B,
+    debt/equity below 0.5, ranked by the gap between 5-year historical
+    growth (EPS, or revenue if not profitable five years ago) and the
+    growth rate currently implied by the market price. A large positive
+    gap means the market is pricing the company as if its track record
+    won't continue — worth a closer look.
+  </p>
+  <p class="meta">Updated 2026-05-22 16:02 UTC · 41 candidates passed filters · top 20 shown as cards · <a href="/data/microcap_candidates.csv">CSV</a> · <a href="/data/microcap_candidates_skipped.csv">skipped (for tuning)</a></p>
+
+  <h2>Top 20 by Gap</h2>
+  
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>BKKT — Bakkt, Inc.</h3>
+      <p class="subtle">Technology · Software - Infrastructure · $548M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/BKKT" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=BKKT" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BKKT" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+200.9%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+7.1%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+193.8%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.046</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/4</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+91,+1232,+373,-32)</span></div>
+  </div>
+  <p class="biz">Bakkt, Inc. engages in digital building financial infrastructure. The company offers Bakkt Market solutions which enables institutions to launch secure, compliant, and advanced digital asset brokerage, trading and payment capabilities through a plug-and-play platform; Bakkt Agent provides programmable access to Bakkt&#x27;s financial infrastructure through an intelligent software layer that coordinates onboarding, account creation, funding, and global money movement; and Bakkt Global enables Bakkt to expand its technology and infrastructure into international markets through strategic investments i</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>AWF — Alliancebernstein Global High I</h3>
+      <p class="subtle">Financial Services · Asset Management · $884M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/AWF" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=AWF" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AWF" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+198.8%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+6.5%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+192.3%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.474</span></div>
+    <div><span class="label">Consistency</span><span class="val">0/2</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(-2033,?,-45)</span></div>
+  </div>
+  <p class="biz">AllianceBernstein Global High Income Fund is a close-ended fixed income mutual fund launched and managed by AllianceBernstein L.P. It invests in fixed income markets across the globe. The fund primarily invests in lower-rated corporate debt securities and government bonds. It employs a combination of fundamental and quantitative analysis to create its portfolio. The fund benchmarks the performance of its portfolio against a composite index comprised of JPMorgan Government Bond Index-Emerging Markets, JPMorgan Emerging Markets Bond Index Global, and the Barclays U.S. Corporate High Yield 2% Iss</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>AII — American Integrity Insurance Gr</h3>
+      <p class="subtle">Financial Services · Insurance - Property &amp; Casualty · $333M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/AII" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=AII" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AII" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+91.5%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">-5.4%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+96.9%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.098</span></div>
+    <div><span class="label">Consistency</span><span class="val">1/1</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+92)</span></div>
+  </div>
+  <p class="biz">American Integrity Insurance Group, Inc., together with its subsidiaries, operates as an insurance company in the United States. The company offers personal residential property insurance for single-family homeowners and condominium owners, as well as coverage for vacant dwellings and investment properties. It also provides manufactured home, commercial residential, dwelling property, and specialty insurance products. In addition, the company offers optional endorsements that provide higher levels of standard coverage and optional coverage, such as personal injury, animal liability, identity r</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>BANX — StoneCastle Financial Corp</h3>
+      <p class="subtle">Financial Services · Asset Management · $190M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/BANX" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=BANX" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BANX" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+48.8%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+2.3%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+46.5%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.146</span></div>
+    <div><span class="label">Consistency</span><span class="val">2/3</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+279,-17,+5)</span></div>
+  </div>
+  <p class="biz">ArrowMark Financial Corp. is a closed-end balanced mutual fund launched and managed by ArrowMark Asset Management, LLC. It invests in public equity and fixed income markets of global region. For its equity portion, the fund invests in stocks of companies operating across financials, banks sectors. It invests in growth and value stocks of companies across diversified market capitalization. For its fixed income portion, the fund invests in debt and subordinated debt, structured notes and securities, regulatory capital securities which are rated below investment grade. ArrowMark Financial Corp. w</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>BOW — Bowhead Specialty Holdings Inc.</h3>
+      <p class="subtle">Financial Services · Insurance - Property &amp; Casualty · $927M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/BOW" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=BOW" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BOW" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+50.1%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+9.6%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+40.5%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.324</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/3</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+121,+24,+23)</span></div>
+  </div>
+  <p class="biz">Bowhead Specialty Holdings Inc. provides commercial specialty property and casualty insurance products in the United States. It underwrites casualty insurance solutions for risks in the construction, distribution, heavy manufacturing, real estate, and hospitality segments; professional liability insurance solutions, including directors and officers liability, errors and omissions liability, employment practices liability, fiduciary liability, fidelity liability and miscellaneous professional liability, crime insurance, and cyber for financial institutions; and healthcare solutions for hospital</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>ALTI — AlTi Global, Inc.</h3>
+      <p class="subtle">Financial Services · Asset Management · $534M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/ALTI" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=ALTI" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ALTI" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+35.5%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+2.4%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+33.1%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.085</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/4</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+2,+188,-10,+29)</span></div>
+  </div>
+  <p class="biz">AlTi Global, Inc. provides wealth and asset management services in France, Hong Kong, Italy, Portugal, Singapore, Switzerland, the United Kingdom, the United States, the United Kingdom, and internationally. The company offers discretionary investment management and non-discretionary investment advisory services. Its trust services include creating or modifying trust instruments and acts as fiduciary. In addition, the company offers family office and administrative services comprising bookkeeping and back office, private foundation management and grant making, oversight of trust administration,</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>BHK — Blackrock Core Bond Trust Black</h3>
+      <p class="subtle">Financial Services · Asset Management · $642M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/BHK" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=BHK" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BHK" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+37.0%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+6.9%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+30.2%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.489</span></div>
+    <div><span class="label">Consistency</span><span class="val">0/2</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(-5471,?,-83)</span></div>
+  </div>
+  <p class="biz">BlackRock Core Bond Trust is a closed-ended fixed income mutual fund launched by BlackRock, Inc. The fund is managed by BlackRock Advisors, LLC. It invests in the fixed income markets of the United States. The fund primarily invests in investment grade quality bonds, including corporate bonds, government and agency securities, and mortgage-related securities. BlackRock Core Bond Trust was formed on November 30, 2001 and is domiciled in the United States.</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>AIFU — AIFU Inc.</h3>
+      <p class="subtle">Financial Services · Insurance Brokers · $256M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/AIFU" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=AIFU" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AIFU" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+22.9%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">-4.1%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+27.0%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.184</span></div>
+    <div><span class="label">Consistency</span><span class="val">2/3</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(-61,+189,+64)</span></div>
+  </div>
+  <p class="biz">AIFU Inc., through its subsidiary, distributes insurance products in China. The company provides life and health insurance products, such as individual whole life, individual health, individual annuity, individual term life, individual endowment life, and participating insurance products; and non-life insurance products primarily includes individual accident, travel, homeowner, indemnity medical, commercial property, cargo, hull, liability, construction and erection, and extended warranty insurance products. It also provides value-added services; elderly care services; healthcare services; and</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>AVNW — Aviat Networks, Inc.</h3>
+      <p class="subtle">Technology · Communication Equipment · $222M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/AVNW" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=AVNW" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AVNW" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+38.0%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+14.1%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+23.9%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.392</span></div>
+    <div><span class="label">Consistency</span><span class="val">1/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+47000,-81,-46,-11,-88)</span></div>
+  </div>
+  <p class="biz">Aviat Networks, Inc. provides microwave networking and wireless access networking solutions in North America, Africa, the Middle East, Europe, Latin America, and the Asia Pacific. The company offers outdoor, indoor, and split-mount radios; microwave routers, and trunking; private LTE/5G, virtual fiber, and network management products; narrow band multi-point radios, designed, and optimised for SCADA and telemetry applications; and hosted software products, such as aviat design, frequency assurance, aviatcloud, and health assurance software. It also provides project services, which include desi</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>AMPG — Amplitech Group, Inc.</h3>
+      <p class="subtle">Technology · Communication Equipment · $136M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/AMPG" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=AMPG" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AMPG" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+27.2%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+4.5%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+22.7%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.083</span></div>
+    <div><span class="label">Consistency</span><span class="val">1/2</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(-39,+165)</span></div>
+  </div>
+  <p class="biz">AmpliTech Group, Inc. designs, engineers, and assembles micro-wave component-based amplifiers. It operates in two segments, Manufacturing and Engineering, and Distribution. The company offers low noise amplifiers, medium power amplifiers, waveguide to coaxial adapters, cryogenic amplifiers, and cryogenic and non-cryogenic 4G/5G small cell subsystems; satellite access point block downconverter; 1:2 Tx protection switch panel subsystem; and desktop/benchtop and compact wideband power amplifiers. It also provides integrated circuit packaging; PHEMT MMIC technology LNA; coaxial in-line low noise a</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>AXR — AMREP Corporation</h3>
+      <p class="subtle">Real Estate · Real Estate - Development · $136M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/AXR" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=AXR" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AXR" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+21.5%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+5.2%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+16.3%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.015</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+113,+47,-17,+6,-3)</span></div>
+  </div>
+  <p class="biz">AMREP Corporation, through its subsidiaries, engages in the real estate business in the United States. It operates through two segments, Land Development and Homebuilding. The company offers land development services, including land and site planning, obtaining of governmental and environmental approvals, installing of utilities and storm drains, ensuring availability of water services, building or improving of roads for land development services, and constructing community amenities; and landscaping services to homebuilders, as well as acquiring lands, and selling of developed and undeveloped</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>ABEO — Abeona Therapeutics Inc.</h3>
+      <p class="subtle">Healthcare · Biotechnology · $316M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/ABEO" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=ABEO" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ABEO" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+14.2%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">-0.7%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+14.8%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.159</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+234,-70,-53,+148,+66)</span></div>
+  </div>
+  <p class="biz">Abeona Therapeutics Inc., a commercial-stage biopharmaceutical company, develops gene and cell therapies for life-threatening diseases in the United States. It develops ZEVASKYN, an autologous, cell-based gene therapy for the treatment of patients with recessive dystrophic epidermolysis bullosa. The company also develops ABO-503 to treat X-linked retinoschisis; ABO-504 for the treatment of stargardt disease; and ABO-505 to treat autosomal dominant optic atrophy. In addition, it is developing AAV-based gene therapy through its AIM vector platform programs. The company was formerly known as Plas</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>BOOM — DMC Global Inc.</h3>
+      <p class="subtle">Industrials · Conglomerates · $141M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/BOOM" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=BOOM" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BOOM" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+21.6%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+7.0%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+14.6%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.239</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+14,+151,+10,-11,-5)</span></div>
+  </div>
+  <p class="biz">DMC Global Inc. provides various products and engineered solutions for the construction, energy, and industrial processing markets worldwide. It operates through three segments: Arcadia Products, DynaEnergetics, and NobelClad. The Arcadia Products segment offers designed, engineered, fabricated, and finished aluminum framing systems, windows, curtain walls, storefronts, entrance systems, and other architectural components for use in commercial exteriors; and interior framing and partitions comprising framing systems, aluminum doors, sliding systems, and glazing systems. This segment also provi</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>ASUR — Asure Software Inc</h3>
+      <p class="subtle">Technology · Software - Application · $253M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/ASUR" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=ASUR" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ASUR" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+13.4%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+2.7%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+10.6%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.377</span></div>
+    <div><span class="label">Consistency</span><span class="val">4/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+15,-10,+16,+26,+24)</span></div>
+  </div>
+  <p class="biz">Asure Software, Inc. engages in the provision of cloud-based Human Capital Management (HCM) software solutions in the United States. It provides its human resources (HR) tool as Software-as-a-Service that helps various small and medium-sized businesses to build a productive workforce to help them stay compliant and allocate resources to grow their business. The company offers a comprehensive suite of HCM tools through its Asure HCM platform, which includes payroll and tax filing, HR management tools, time and attendance software, recruiting, and benefits administration. It provides technology-</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>BGT — BlackRock Floating Rate Income </h3>
+      <p class="subtle">Financial Services · Asset Management · $323M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/BGT" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=BGT" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BGT" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+10.6%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+8.9%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+1.7%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.202</span></div>
+    <div><span class="label">Consistency</span><span class="val">0/2</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(-132,?,-37)</span></div>
+  </div>
+  <p class="biz">BlackRock Floating Rate Income Trust is a close ended fixed income mutual fund launched by BlackRoack Inc. The fund is co-managed by BlackRock Advisors, LLC and BlackRock Financial Management, Inc. It invests in the fixed income markets across the globe while focusing on the United States. The fund invests in bonds of companies operating across diversified sectors. It invests in corporate bonds with average effective duration of its portfolio will be no more than 1.5 years. The fund was formerly known as BlackRock Global Floating Rate Income Trust. BlackRock Floating Rate Income Trust was form</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>APWC — Asia Pacific Wire &amp; Cable Corpo</h3>
+      <p class="subtle">Industrials · Electrical Equipment &amp; Parts · $62M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/APWC" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=APWC" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=APWC" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">-0.9%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">-2.1%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+1.2%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.185</span></div>
+    <div><span class="label">Consistency</span><span class="val">2/3</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+3,-11,+6)</span></div>
+  </div>
+  <p class="biz">Asia Pacific Wire &amp; Cable Corporation Limited, through its subsidiaries, manufactures and distributes enameled wire, power cable, and telecommunications products in Thailand, Singapore, Australia, the People&#x27;s Republic of China, Hong Kong, and the Asia Pacific region. The company offers copper rods; armored and unarmored low voltage power transmission cable, which is used to transmit electricity to and within commercial and residential buildings, as well as to outdoor installations, such as streetlights, traffic signals, and other signs; and telecommunications cable products, including copper-</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>ARL — American Realty Investors, Inc.</h3>
+      <p class="subtle">Real Estate · Real Estate Services · $229M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/ARL" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=ARL" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ARL" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+11.6%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+11.0%</span></div>
+    <div><span class="label">Gap</span><span class="val positive">+0.6%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.264</span></div>
+    <div><span class="label">Consistency</span><span class="val">1/4</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(-63,+10905,-99,-464,?)</span></div>
+  </div>
+  <p class="biz">American Realty Investors, Inc., together with its subsidiaries, acquires, develops, and owns multifamily and commercial real estate properties in the Southern United States. It operates through two segments: Residential and Commercial. The company leases apartment units to residents, and office, industrial, and retail space. It also offers tenant services, including parking and storage space rental; and acquires and sells land and properties. The company was incorporated in 1999 and is based in Dallas, Texas. American Realty Investors, Inc. is a subsidiary of Realty Advisors, Inc.</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>ALTO — Alto Ingredients, Inc.</h3>
+      <p class="subtle">Basic Materials · Specialty Chemicals · $360M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/ALTO" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=ALTO" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ALTO" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+0.5%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+6.9%</span></div>
+    <div><span class="label">Gap</span><span class="val negative">-6.4%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.365</span></div>
+    <div><span class="label">Consistency</span><span class="val">2/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+35,+11,-8,-21,-5)</span></div>
+  </div>
+  <p class="biz">Alto Ingredients, Inc. produces, distributes, and markets specialty alcohols, renewable fuel, and essential ingredients in the United States. The company operates in three segments: Marketing and Distribution, Pekin Campus Production, and Western Production. It offers specialty alcohols used in mouthwash, cosmetics, pharmaceuticals, hand sanitizers, disinfectants, and cleaners for health, home, and beauty markets; grain neutral spirits used in alcoholic beverages and vinegar, as well as corn germ used in corn oils in the food and beverage markets; alcohols and other products for paint applicat</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>AOUT — American Outdoor Brands, Inc.</h3>
+      <p class="subtle">Consumer Cyclical · Leisure · $120M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/AOUT" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=AOUT" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AOUT" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (Revenue)</span><span class="val">+5.8%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+14.2%</span></div>
+    <div><span class="label">Gap</span><span class="val negative">-8.4%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.197</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+65,-11,-23,+5,+11)</span></div>
+  </div>
+  <p class="biz">American Outdoor Brands, Inc. provides outdoor products and accessories for rugged outdoor enthusiasts in the United States and internationally. The company provides shooting sports accessories products, including rests, vaults, and other related accessories; outdoor lifestyle products, such as premium sportsman knives and tools for fishing and hunting; land management tools for hunting preparedness and for use in the backyard; outdoor cooking products; and camping, survival, and emergency preparedness products. It also offers electro-optical devices, including hunting optics, firearm aiming d</p>
+</div>
+
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3>ACU — Acme</h3>
+      <p class="subtle">Consumer Defensive · Household &amp; Personal Products · $161M</p>
+    </div>
+    <div class="links"><a href="https://finance.yahoo.com/quote/ACU" target="_blank">Yahoo</a> · <a href="https://finviz.com/quote.ashx?t=ACU" target="_blank">Finviz</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ACU" target="_blank">EDGAR</a></div>
+  </div>
+  <div class="stats">
+    <div><span class="label">5-yr CAGR (EPS)</span><span class="val">+1.5%</span></div>
+    <div><span class="label">Implied Growth</span><span class="val">+10.7%</span></div>
+    <div><span class="label">Gap</span><span class="val negative">-9.2%</span></div>
+    <div><span class="label">Debt / Equity</span><span class="val">0.423</span></div>
+    <div><span class="label">Consistency</span><span class="val">3/5</span></div>
+    <div><span class="label">YoY Sequence</span><span class="val seq">(+49,-76,+493,-50,+2)</span></div>
+  </div>
+  <p class="biz">Acme United Corporation supplies cutting, measuring, first aid, and sharpening products to the school, home, office, hardware, sporting goods, and industrial markets in the United States, Canada, Europe, and internationally. The company offers scissors, shears, knives, rulers, pencil sharpeners, paper trimmers, safety cutters, lettering products, glue guns, and other craft products under the Westcott brand name; and cutting tools under the Clauss brand. It also provides sharpening knives, scissors, chisels, skis, skates, and other edges under the DMT brand. In addition, the company offers firs</p>
+</div>
+
+
+  <h2>All Candidates</h2>
+  
+<table id="candidates">
+  <thead><tr><th data-key="ticker">Ticker</th><th data-key="name">Name</th><th data-key="sector">Sector</th><th data-key="market_cap">Market Cap</th><th data-key="metric_used">Metric</th><th data-key="cagr_5yr">5-yr CAGR</th><th data-key="implied_growth">Implied</th><th data-key="gap">Gap</th><th data-key="debt_equity">D/E</th><th data-key="years_positive">Pos</th><th data-key="yoy_sequence">YoY %</th></tr></thead>
+  <tbody>
+    <tr><td><strong>BKKT</strong></td><td>Bakkt, Inc.</td><td>Technology</td><td data-sort="548062464.0">$548M</td><td>Revenue</td><td data-sort="2.008782915501261">+200.9%</td><td data-sort="0.07068820310675439">+7.1%</td><td data-sort="1.9380947123945067">+193.8%</td><td>0.046</td><td>3/4</td><td class="seq">(+91,+1232,+373,-32)</td></tr><tr><td><strong>AWF</strong></td><td>Alliancebernstein Global High I</td><td>Financial Services</td><td data-sort="884285376.0">$884M</td><td>EPS</td><td data-sort="1.9876031643714431">+198.8%</td><td data-sort="0.06466718612725897">+6.5%</td><td data-sort="1.9229359782441842">+192.3%</td><td>0.474</td><td>0/2</td><td class="seq">(-2033,?,-45)</td></tr><tr><td><strong>AII</strong></td><td>American Integrity Insurance Gr</td><td>Financial Services</td><td data-sort="333239776.0">$333M</td><td>EPS</td><td data-sort="0.9152542372881356">+91.5%</td><td data-sort="-0.053568113984093224">-5.4%</td><td data-sort="0.9688223512722288">+96.9%</td><td>0.098</td><td>1/1</td><td class="seq">(+92)</td></tr><tr><td><strong>BANX</strong></td><td>StoneCastle Financial Corp</td><td>Financial Services</td><td data-sort="190179520.0">$190M</td><td>EPS</td><td data-sort="0.48780231440679445">+48.8%</td><td data-sort="0.023032372396228462">+2.3%</td><td data-sort="0.464769942010566">+46.5%</td><td>0.146</td><td>2/3</td><td class="seq">(+279,-17,+5)</td></tr><tr><td><strong>BOW</strong></td><td>Bowhead Specialty Holdings Inc.</td><td>Financial Services</td><td data-sort="926853568.0">$927M</td><td>EPS</td><td data-sort="0.5011811028502029">+50.1%</td><td data-sort="0.09588801702744787">+9.6%</td><td data-sort="0.40529308582275503">+40.5%</td><td>0.324</td><td>3/3</td><td class="seq">(+121,+24,+23)</td></tr><tr><td><strong>ALTI</strong></td><td>AlTi Global, Inc.</td><td>Financial Services</td><td data-sort="534452896.0">$534M</td><td>Revenue</td><td data-sort="0.35468410981958676">+35.5%</td><td data-sort="0.02379159517434082">+2.4%</td><td data-sort="0.33089251464524594">+33.1%</td><td>0.085</td><td>3/4</td><td class="seq">(+2,+188,-10,+29)</td></tr><tr><td><strong>BHK</strong></td><td>Blackrock Core Bond Trust Black</td><td>Financial Services</td><td data-sort="642434496.0">$642M</td><td>EPS</td><td data-sort="0.37001714645464157">+37.0%</td><td data-sort="0.06851539448694854">+6.9%</td><td data-sort="0.301501751967693">+30.2%</td><td>0.489</td><td>0/2</td><td class="seq">(-5471,?,-83)</td></tr><tr><td><strong>AIFU</strong></td><td>AIFU Inc.</td><td>Financial Services</td><td data-sort="255690272.0">$256M</td><td>EPS</td><td data-sort="0.22858597098120326">+22.9%</td><td data-sort="-0.04099510887991076">-4.1%</td><td data-sort="0.269581079861114">+27.0%</td><td>0.184</td><td>2/3</td><td class="seq">(-61,+189,+64)</td></tr><tr><td><strong>AVNW</strong></td><td>Aviat Networks, Inc.</td><td>Technology</td><td data-sort="221782384.0">$222M</td><td>EPS</td><td data-sort="0.3797296614612149">+38.0%</td><td data-sort="0.14097733333695817">+14.1%</td><td data-sort="0.23875232812425673">+23.9%</td><td>0.392</td><td>1/5</td><td class="seq">(+47000,-81,-46,-11,-88)</td></tr><tr><td><strong>AMPG</strong></td><td>Amplitech Group, Inc.</td><td>Technology</td><td data-sort="135689280.0">$136M</td><td>Revenue</td><td data-sort="0.2715038719829179">+27.2%</td><td data-sort="0.04488351835624749">+4.5%</td><td data-sort="0.22662035362667043">+22.7%</td><td>0.083</td><td>1/2</td><td class="seq">(-39,+165)</td></tr><tr><td><strong>AXR</strong></td><td>AMREP Corporation</td><td>Real Estate</td><td data-sort="135866144.0">$136M</td><td>Revenue</td><td data-sort="0.21480843683720452">+21.5%</td><td data-sort="0.05181559941780556">+5.2%</td><td data-sort="0.16299283741939896">+16.3%</td><td>0.015</td><td>3/5</td><td class="seq">(+113,+47,-17,+6,-3)</td></tr><tr><td><strong>ABEO</strong></td><td>Abeona Therapeutics Inc.</td><td>Healthcare</td><td data-sort="316323072.0">$316M</td><td>Revenue</td><td data-sort="0.14187422839245034">+14.2%</td><td data-sort="-0.006610422801194282">-0.7%</td><td data-sort="0.14848465119364462">+14.8%</td><td>0.159</td><td>3/5</td><td class="seq">(+234,-70,-53,+148,+66)</td></tr><tr><td><strong>BOOM</strong></td><td>DMC Global Inc.</td><td>Industrials</td><td data-sort="140620704.0">$141M</td><td>Revenue</td><td data-sort="0.21622811786359497">+21.6%</td><td data-sort="0.07008868489454612">+7.0%</td><td data-sort="0.14613943296904885">+14.6%</td><td>0.239</td><td>3/5</td><td class="seq">(+14,+151,+10,-11,-5)</td></tr><tr><td><strong>ASUR</strong></td><td>Asure Software Inc</td><td>Technology</td><td data-sort="253115392.0">$253M</td><td>Revenue</td><td data-sort="0.13355422448464016">+13.4%</td><td data-sort="0.027405820272502934">+2.7%</td><td data-sort="0.10614840421213723">+10.6%</td><td>0.377</td><td>4/5</td><td class="seq">(+15,-10,+16,+26,+24)</td></tr><tr><td><strong>BGT</strong></td><td>BlackRock Floating Rate Income </td><td>Financial Services</td><td data-sort="323070336.0">$323M</td><td>EPS</td><td data-sort="0.10620693158624173">+10.6%</td><td data-sort="0.08886873838186493">+8.9%</td><td data-sort="0.017338193204376795">+1.7%</td><td>0.202</td><td>0/2</td><td class="seq">(-132,?,-37)</td></tr><tr><td><strong>APWC</strong></td><td>Asia Pacific Wire &amp; Cable Corpo</td><td>Industrials</td><td data-sort="61848684.0">$62M</td><td>EPS</td><td data-sort="-0.00929486671151225">-0.9%</td><td data-sort="-0.021247008463192607">-2.1%</td><td data-sort="0.011952141751680356">+1.2%</td><td>0.185</td><td>2/3</td><td class="seq">(+3,-11,+6)</td></tr><tr><td><strong>ARL</strong></td><td>American Realty Investors, Inc.</td><td>Real Estate</td><td data-sort="229035968.0">$229M</td><td>EPS</td><td data-sort="0.11613503702063532">+11.6%</td><td data-sort="0.11007441701346954">+11.0%</td><td data-sort="0.0060606200071657845">+0.6%</td><td>0.264</td><td>1/4</td><td class="seq">(-63,+10905,-99,-464,?)</td></tr><tr><td><strong>ALTO</strong></td><td>Alto Ingredients, Inc.</td><td>Basic Materials</td><td data-sort="359922688.0">$360M</td><td>Revenue</td><td data-sort="0.004617902600992929">+0.5%</td><td data-sort="0.06872651434305821">+6.9%</td><td data-sort="-0.06410861174206528">-6.4%</td><td>0.365</td><td>2/5</td><td class="seq">(+35,+11,-8,-21,-5)</td></tr><tr><td><strong>AOUT</strong></td><td>American Outdoor Brands, Inc.</td><td>Consumer Cyclical</td><td data-sort="120428056.0">$120M</td><td>Revenue</td><td data-sort="0.05841575126517484">+5.8%</td><td data-sort="0.14237992040295078">+14.2%</td><td data-sort="-0.08396416913777593">-8.4%</td><td>0.197</td><td>3/5</td><td class="seq">(+65,-11,-23,+5,+11)</td></tr><tr><td><strong>ACU</strong></td><td>Acme</td><td>Consumer Defensive</td><td data-sort="160530432.0">$161M</td><td>EPS</td><td data-sort="0.015120208182922923">+1.5%</td><td data-sort="0.10719641256432633">+10.7%</td><td data-sort="-0.0920762043814034">-9.2%</td><td>0.423</td><td>3/5</td><td class="seq">(+49,-76,+493,-50,+2)</td></tr><tr><td><strong>ARQ</strong></td><td>Arq, Inc.</td><td>Industrials</td><td data-sort="105383952.0">$105M</td><td>Revenue</td><td data-sort="0.14653450825455505">+14.7%</td><td data-sort="0.2446646953222793">+24.5%</td><td data-sort="-0.09813018706772425">-9.8%</td><td>0.228</td><td>2/5</td><td class="seq">(-10,-47,+193,-4,+49)</td></tr><tr><td><strong>AVO</strong></td><td>Mission Produce, Inc.</td><td>Consumer Defensive</td><td data-sort="840237888.0">$840M</td><td>EPS</td><td data-sort="0.033267266109942906">+3.3%</td><td data-sort="0.14506165624162382">+14.5%</td><td data-sort="-0.11179439013168091">-11.2%</td><td>0.322</td><td>2/3</td><td class="seq">(+40,-178,?,?,+2)</td></tr><tr><td><strong>AIRG</strong></td><td>Airgain, Inc.</td><td>Technology</td><td data-sort="88983976.0">$89M</td><td>Revenue</td><td data-sort="0.013161789245801803">+1.3%</td><td data-sort="0.13088940121413528">+13.1%</td><td data-sort="-0.11772761196833348">-11.8%</td><td>0.161</td><td>3/5</td><td class="seq">(+33,+18,-26,+8,-15)</td></tr><tr><td><strong>ACIU</strong></td><td>AC Immune SA</td><td>Healthcare</td><td data-sort="292090144.0">$292M</td><td>Revenue</td><td data-sort="-0.031656533888240856">-3.2%</td><td data-sort="0.11465613438599886">+11.5%</td><td data-sort="-0.14631266827423972">-14.6%</td><td>0.136</td><td>2/3</td><td class="seq">(+276,+85,-87)</td></tr><tr><td><strong>ACIC</strong></td><td>American Coastal Insurance Corp</td><td>Financial Services</td><td data-sort="520503872.0">$521M</td><td>Revenue</td><td data-sort="-0.16903771499446874">-16.9%</td><td data-sort="-0.02089880740994532">-2.1%</td><td data-sort="-0.14813890758452342">-14.8%</td><td>0.459</td><td>3/5</td><td class="seq">(-73,-3,+19,+12,+13)</td></tr><tr><td><strong>BOE</strong></td><td>Blackrock Enhanced Global Divid</td><td>Financial Services</td><td data-sort="659973440.0">$660M</td><td>EPS</td><td data-sort="-0.1843933198552622">-18.4%</td><td data-sort="0.003354892291360212">+0.3%</td><td data-sort="-0.1877482121466224">-18.8%</td><td>0.002</td><td>0/2</td><td class="seq">(-189,?,-36)</td></tr><tr><td><strong>ANIK</strong></td><td>Anika Therapeutics Inc.</td><td>Healthcare</td><td data-sort="198453376.0">$198M</td><td>Revenue</td><td data-sort="-0.028633835332280255">-2.9%</td><td data-sort="0.1705490946270498">+17.1%</td><td data-sort="-0.19918292995933007">-19.9%</td><td>0.192</td><td>2/5</td><td class="seq">(+13,-23,+6,-1,-6)</td></tr><tr><td><strong>API</strong></td><td>Agora, Inc.</td><td>Technology</td><td data-sort="304801984.0">$305M</td><td>Revenue</td><td data-sort="-0.042468029902557936">-4.2%</td><td data-sort="0.20818939610901532">+20.8%</td><td data-sort="-0.25065742601157326">-25.1%</td><td>0.146</td><td>1/3</td><td class="seq">(-12,-6,+6)</td></tr><tr><td><strong>ACP</strong></td><td>Aberdeen Income Credit Strategi</td><td>Financial Services</td><td data-sort="660603136.0">$661M</td><td>EPS</td><td data-sort="-0.1597178596068728">-16.0%</td><td data-sort="0.09354423652566246">+9.4%</td><td data-sort="-0.25326209613253525">-25.3%</td><td>0.333</td><td>1/2</td><td class="seq">(-219,?,+19)</td></tr><tr><td><strong>BBSI</strong></td><td>Barrett Business Services, Inc.</td><td>Industrials</td><td data-sort="779277632.0">$779M</td><td>EPS</td><td data-sort="-0.13876878367532042">-13.9%</td><td data-sort="0.12138704624447327">+12.1%</td><td data-sort="-0.2601558299197937">-26.0%</td><td>0.124</td><td>4/5</td><td class="seq">(+14,+31,-72,+7,+5)</td></tr><tr><td><strong>ASYS</strong></td><td>Amtech Systems, Inc.</td><td>Technology</td><td data-sort="323257184.0">$323M</td><td>Revenue</td><td data-sort="0.039263151094014015">+3.9%</td><td data-sort="0.33187555188519924">+33.2%</td><td data-sort="-0.2926124007911852">-29.3%</td><td>0.334</td><td>3/5</td><td class="seq">(+30,+25,+7,-11,-22)</td></tr><tr><td><strong>ALLT</strong></td><td>Allot Ltd.</td><td>Technology</td><td data-sort="378664768.0">$379M</td><td>Revenue</td><td data-sort="-0.05984753847481106">-6.0%</td><td data-sort="0.24102782511202725">+24.1%</td><td data-sort="-0.3008753635868383">-30.1%</td><td>0.050</td><td>1/3</td><td class="seq">(-24,-1,+11)</td></tr><tr><td><strong>BME</strong></td><td>Blackrock Health Sciences Trust</td><td>Financial Services</td><td data-sort="513603872.0">$514M</td><td>EPS</td><td data-sort="-0.2994006109771279">-29.9%</td><td data-sort="0.006647487550690334">+0.7%</td><td data-sort="-0.3060480985278182">-30.6%</td><td>0.157</td><td>1/2</td><td class="seq">(-144,?,+13)</td></tr><tr><td><strong>ACNT</strong></td><td>Ascent Industries Co.</td><td>Basic Materials</td><td data-sort="129788768.0">$130M</td><td>Revenue</td><td data-sort="-0.21783736951788824">-21.8%</td><td data-sort="0.10596551223676665">+10.6%</td><td data-sort="-0.3238028817546549">-32.4%</td><td>0.161</td><td>1/5</td><td class="seq">(+31,-22,-26,-58,-7)</td></tr><tr><td><strong>BCV</strong></td><td>12944</td><td>Financial Services</td><td data-sort="148588448.0">$149M</td><td>EPS</td><td data-sort="-0.4478705416521319">-44.8%</td><td data-sort="-0.05490394413963062">-5.5%</td><td data-sort="-0.3929665975125013">-39.3%</td><td>0.0</td><td>0/1</td><td class="seq">(-206,?)</td></tr><tr><td><strong>APT</strong></td><td>Alpha Pro Tech, Ltd.</td><td>Industrials</td><td data-sort="63906912.0">$64M</td><td>EPS</td><td data-sort="-0.2968588058061824">-29.7%</td><td data-sort="0.10857700145843197">+10.9%</td><td data-sort="-0.40543580726461437">-40.5%</td><td>0.121</td><td>1/5</td><td class="seq">(-74,-48,+35,+0,-6)</td></tr><tr><td><strong>AWP</strong></td><td>Aberdeen Global Premier Propert</td><td>Financial Services</td><td data-sort="356990432.0">$357M</td><td>EPS</td><td data-sort="-0.19017303982465927">-19.0%</td><td data-sort="0.2326624753429618">+23.3%</td><td data-sort="-0.4228355151676211">-42.3%</td><td>0.090</td><td>0/1</td><td class="seq">(-202,?,?)</td></tr><tr><td><strong>ASC</strong></td><td>Ardmore Shipping Corporation</td><td>Industrials</td><td data-sort="772197632.0">$772M</td><td>EPS</td><td data-sort="-0.3741151193453368">-37.4%</td><td data-sort="0.08240461274015609">+8.2%</td><td data-sort="-0.4565197320854929">-45.7%</td><td>0.160</td><td>1/3</td><td class="seq">(-24,+12,-71)</td></tr><tr><td><strong>BGY</strong></td><td>Blackrock Enhanced Internationa</td><td>Financial Services</td><td data-sort="520580032.0">$521M</td><td>EPS</td><td data-sort="-0.4678632228523124">-46.8%</td><td data-sort="0.001823152329286426">+0.2%</td><td data-sort="-0.46968637518159884">-47.0%</td><td>0.002</td><td>0/2</td><td class="seq">(-185,?,-87)</td></tr><tr><td><strong>AUDC</strong></td><td>AudioCodes Ltd.</td><td>Technology</td><td data-sort="230454464.0">$230M</td><td>EPS</td><td data-sort="-0.29640313497446946">-29.6%</td><td data-sort="0.1877103781860736">+18.8%</td><td data-sort="-0.4841135131605431">-48.4%</td><td>0.242</td><td>1/3</td><td class="seq">(-69,+82,-39)</td></tr><tr><td><strong>ASLE</strong></td><td>AerSale Corporation</td><td>Industrials</td><td data-sort="291549952.0">$292M</td><td>EPS</td><td data-sort="-0.5243082566848809">-52.4%</td><td data-sort="0.159518395296401">+16.0%</td><td data-sort="-0.6838266519812819">-68.4%</td><td>0.404</td><td>2/4</td><td class="seq">(-90,+9,-118,?,+64)</td></tr>
+  </tbody>
+</table>
+
+
+</div>
+<script>
+  // Click any column header to sort. Numeric columns use data-sort
+  // attributes when set; otherwise fall back to text compare.
+  (function () {
+    var table = document.getElementById('candidates');
+    if (!table) return;
+    var headers = table.querySelectorAll('th');
+    var dir = {};
+    headers.forEach(function (h, idx) {
+      h.addEventListener('click', function () {
+        var rows = Array.from(table.tBodies[0].rows);
+        var d = dir[idx] = !dir[idx];
+        rows.sort(function (a, b) {
+          var av = a.cells[idx].getAttribute('data-sort');
+          var bv = b.cells[idx].getAttribute('data-sort');
+          var an = parseFloat(av), bn = parseFloat(bv);
+          var bothNum = !isNaN(an) && !isNaN(bn);
+          if (bothNum) return d ? an - bn : bn - an;
+          av = (av != null ? av : a.cells[idx].textContent).toLowerCase();
+          bv = (bv != null ? bv : b.cells[idx].textContent).toLowerCase();
+          if (av < bv) return d ? -1 : 1;
+          if (av > bv) return d ? 1 : -1;
+          return 0;
+        });
+        rows.forEach(function (r) { table.tBodies[0].appendChild(r); });
+      });
+    });
+  })();
+</script>
+</body></html>
