@@ -78,6 +78,11 @@ jobs:
             exit 0
           fi
           git commit -m "Microcap screener: refresh candidates $(date -u +%Y-%m-%d)"
+          # The screener takes ~30 min so by the time we push, another
+          # workflow (a refresh, an assumption update) may have landed on
+          # main. Pull --rebase --autostash before push to absorb their
+          # commits instead of failing with non-fast-forward.
+          git pull --rebase --autostash origin main || true
           git push
           echo "no_change=false" >> "$GITHUB_OUTPUT"
 
@@ -111,5 +116,7 @@ jobs:
             echo "gh-pages already current."
           else
             git commit -m "deploy: refresh microcap dashboard $(date -u +%Y-%m-%d)"
+            # Same race risk on gh-pages (site-refresh-daily also pushes here).
+            git pull --rebase --autostash origin gh-pages || true
             git push origin gh-pages
           fi
