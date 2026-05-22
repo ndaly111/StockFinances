@@ -647,11 +647,16 @@ def _build_html(df):
 def _write_legacy_tables(tk_lower: str, ig_table_html: str, pe_table_html: str, eps_table_html: str):
     """Persist legacy summary HTML fragments used by older templates."""
 
+    # Note: do NOT write {tk_lower}_implied_growth_summary.html here. The
+    # canonical {TICKER}_implied_growth_summary.html is written by
+    # implied_growth_summary.py with the original-case ticker. Writing a
+    # lowercase copy here created a case-collision pair in git (both
+    # spy_... and SPY_... tracked) that broke every rebase on case-
+    # insensitive filesystems. Nothing reads the lowercase file.
     legacy_paths = {
         f"{tk_lower}_growth_summary.html": ig_table_html,
         f"{tk_lower}_pe_summary.html": pe_table_html,
         f"{tk_lower}_eps_summary.html": eps_table_html,
-        f"{tk_lower}_implied_growth_summary.html": ig_table_html,
     }
 
     for filename, html in legacy_paths.items():
