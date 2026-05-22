@@ -148,6 +148,7 @@ class Candidate:
     debt_equity: float
     business_summary: str
     reasons_skipped: str       # diagnostic if this candidate was filtered out
+    current_price: float = float("nan")  # for performance tracking
 
 
 def _safe_float(v) -> Optional[float]:
@@ -323,6 +324,11 @@ def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
         skipped.append(f"info_fetch_failed:{str(exc)[:60]}")
 
     market_cap = _safe_float(info.get("marketCap")) or 0.0
+    current_price = (
+        _safe_float(info.get("currentPrice"))
+        or _safe_float(info.get("regularMarketPrice"))
+        or float("nan")
+    )
     if market_cap == 0:
         skipped.append("no_market_cap")
     elif market_cap > MARKET_CAP_CEILING:
@@ -388,6 +394,7 @@ def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
         debt_equity=de if de is not None else float("nan"),
         business_summary=(info.get("longBusinessSummary") or "")[:600],
         reasons_skipped=", ".join(skipped),
+        current_price=current_price,
     )
 
 

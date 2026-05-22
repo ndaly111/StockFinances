@@ -25,9 +25,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-# Same dir — for the thesis chart generator.
+# Same dir — for the thesis chart generator + appearances ledger.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from microcap_thesis_chart import render_thesis_chart  # noqa: E402
+from microcap_tracker import load_all_appearances  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 log = logging.getLogger("microcap_html")
@@ -104,6 +105,58 @@ def _card_html(row: dict, chart_path: Optional[str] = None) -> str:
   <p class="biz">{_safe(row.get("business_summary"))}</p>
   {chart_block}
 </div>
+"""
+
+
+def _appearances_table_html(rows: list[dict]) -> str:
+    """Performance ledger: every ticker we've ever surfaced, with first-seen
+    price, current price, current return %, peak return %, and a marker for
+    whether it's still on the current candidate list."""
+    if not rows:
+        return '<p class="subtle">No appearance history yet. After a few weekly runs this table will show how candidates have moved since the screener first surfaced them.</p>'
+    # Sort by current return desc; on-list candidates float above past picks
+    # at ties.
+    rows = sorted(
+        rows,
+        key=lambda r: (
+            -(r.get("current_return") if r.get("current_return") is not None else -999),
+            0 if r.get("on_current_list") else 1,
+        ),
+    )
+
+    body_rows = []
+    for r in rows:
+        cur_ret = r.get("current_return")
+        peak_ret = r.get("peak_return")
+        cur_cls = "positive" if (cur_ret or 0) >= 0 else "negative"
+        peak_cls = "positive" if (peak_ret or 0) >= 0 else "negative"
+        status = "✓ on list" if r.get("on_current_list") else "—"
+        body_rows.append("<tr>" + "".join([
+            f'<td><strong>{_safe(r.get("ticker"))}</strong></td>',
+            f'<td>{_safe(r.get("first_seen_date"))}</td>',
+            f'<td data-sort="{r.get("days_tracked")}">{r.get("days_tracked")}d</td>',
+            f'<td data-sort="{r.get("first_seen_price")}">${r.get("first_seen_price"):.2f}</td>',
+            f'<td data-sort="{r.get("last_seen_price")}">${r.get("last_seen_price"):.2f}</td>',
+            f'<td data-sort="{cur_ret if cur_ret is not None else -999}" class="{cur_cls}">{(cur_ret*100):+.1f}%</td>' if cur_ret is not None else '<td>—</td>',
+            f'<td data-sort="{peak_ret if peak_ret is not None else -999}" class="{peak_cls}">{(peak_ret*100):+.1f}%</td>' if peak_ret is not None else '<td>—</td>',
+            f'<td>{status}</td>',
+        ]) + "</tr>")
+    return f"""
+<table id="appearances">
+  <thead><tr>
+    <th>Ticker</th>
+    <th>First Seen</th>
+    <th>Days</th>
+    <th>First Price</th>
+    <th>Current Price</th>
+    <th>Current Return</th>
+    <th>Peak Return</th>
+    <th>Status</th>
+  </tr></thead>
+  <tbody>
+    {''.join(body_rows)}
+  </tbody>
+</table>
 """
 
 
@@ -195,6 +248,12 @@ def build(candidates_csv: Path, out_path: Path, top_n: int = 20) -> None:
         for r in top
     )
     table = _table_html(rows)
+
+    # Performance tracking for everything we've ever surfaced
+    appearances = load_all_appearances()
+    appearances_table = _appearances_table_html(appearances)
+    appearances_count = len(appearances)
+    on_list_count = sum(1 for r in appearances if r.get("on_current_list"))
 
     page = f"""<!DOCTYPE html>
 <html lang="en"><head>
@@ -290,6 +349,28 @@ def build(candidates_csv: Path, out_path: Path, top_n: int = 20) -> None:
     }}
     table#candidates tr:nth-child(odd) td {{ background: #fafaff; }}
     table#candidates .seq {{ font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.78rem; }}
+
+    table#appearances {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }}
+    table#appearances th {{
+      background: #C0C0FF;
+      padding: 6px;
+      border: 1px solid #8080FF;
+      text-align: left;
+    }}
+    table#appearances td {{
+      padding: 4px 6px;
+      border: 1px solid #ddd;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }}
+    table#appearances tr:nth-child(odd) td {{ background: #fafaff; }}
+    table#appearances td.positive {{ color: #0a7000; font-weight: 700; }}
+    table#appearances td.negative {{ color: #B00020; font-weight: 700; }}
   </style>
 </head><body><div class="container">
 
@@ -309,6 +390,16 @@ def build(candidates_csv: Path, out_path: Path, top_n: int = 20) -> None:
 
   <h2>All Candidates</h2>
   {table}
+
+  <h2>Performance Tracking</h2>
+  <p class="subtle">
+    Every ticker the screener has ever surfaced, with first-seen price,
+    current price, current return, and peak return since first appearance.
+    Status &ldquo;✓ on list&rdquo; means still passing all filters today;
+    &ldquo;—&rdquo; means it dropped off (still tracked).
+    {appearances_count} total ({on_list_count} currently on list).
+  </p>
+  {appearances_table}
 
 </div>
 <script>
