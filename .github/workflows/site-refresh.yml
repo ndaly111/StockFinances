@@ -58,9 +58,14 @@ jobs:
 
       - name: Copy site output into gh-pages
         run: |
+          # Exclude artifacts owned by other workflows so this --delete
+          # doesn't race-wipe them. screen-microcaps writes microcaps.html
+          # + data/microcap_candidates*.csv on its own cadence.
           rsync -av --delete \
             --exclude ".git" \
             --exclude "gh-pages" \
+            --exclude "microcaps.html" \
+            --exclude "data/microcap_candidates*.csv" \
             ./ gh-pages/
 
       - name: Commit & push changes to gh-pages

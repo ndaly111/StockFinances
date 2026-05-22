@@ -282,6 +282,33 @@ def _current_treasury_yield() -> float:
     return DEFAULT_TREASURY_YIELD
 
 
+def _info_with_retry(yt: yf.Ticker, attempts: int = 4) -> dict:
+    """yfinance.Ticker.info routinely 429s under load. Retry with exponential
+    backoff (2s, 4s, 8s) on rate-limit errors; surface other errors normally
+    so we don't loop forever on permanent failures."""
+    last_exc: Exception | None = None
+    for i in range(attempts):
+        try:
+            info = yt.info
+            if info:
+                return info
+        except Exception as exc:
+            last_exc = exc
+            msg = str(exc).lower()
+            transient = (
+                "rate limit" in msg
+                or "429" in msg
+                or "too many" in msg
+                or "timeout" in msg
+            )
+            if not transient or i == attempts - 1:
+                raise
+        time.sleep(2 ** (i + 1))
+    if last_exc:
+        raise last_exc
+    return {}
+
+
 def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
     """Run the full analytic pipeline for one ticker. Always returns a
     Candidate; sets reasons_skipped if any disqualifying condition hit."""
@@ -289,11 +316,11 @@ def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
     skipped: list[str] = []
     try:
         yt = yf.Ticker(t)
-        info = yt.info or {}
+        info = _info_with_retry(yt) or {}
     except Exception as exc:
         log.debug(f"{t}: .info failed: {exc}")
         info = {}
-        skipped.append(f"info_fetch_failed:{exc}")
+        skipped.append(f"info_fetch_failed:{str(exc)[:60]}")
 
     market_cap = _safe_float(info.get("marketCap")) or 0.0
     if market_cap == 0:
@@ -429,7 +456,8 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--limit", type=int, default=0,
                         help="Cap how many tickers to screen (0 = no cap)")
-    parser.add_argument("--workers", type=int, default=15)
+    parser.add_argument("--workers", type=int, default=4,
+                        help="Parallel workers. yfinance rate-limits hard above ~5; default 4 trades runtime for reliability.")
     args = parser.parse_args()
 
     if args.universe:
