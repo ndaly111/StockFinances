@@ -1,0 +1,106 @@
+name: Screen microcaps
+
+# Weekly: walk the NYSE + NASDAQ universe (~5,400 tickers), filter to
+# microcap survivors with healthy balance sheets, rank by gap between
+# 5-year historical growth and the implied growth currently priced in,
+# render the dashboard at /microcaps.html, and deploy directly to gh-pages.
+#
+# Runs Sunday afternoon, after the weekly site refresh has finished updating
+# the historicals. Total runtime ~10-15 min (the yfinance .info calls
+# dominate; EDGAR is faster once the CIK cache is pre-warmed).
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Cap on universe size for testing (0 = no cap)"
+        required: false
+        default: "0"
+        type: string
+  schedule:
+    - cron: "0 17 * * 0"   # 12:00 PM EST Sunday (after the weekly refresh at 13:00 UTC)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screen-microcaps
+  cancel-in-progress: false
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    env:
+      SEC_EMAIL: ${{ secrets.EMAIL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run screener (full NYSE + NASDAQ universe)
+        run: |
+          LIMIT="${{ inputs.limit || '0' }}"
+          if [ "$LIMIT" = "0" ] || [ -z "$LIMIT" ]; then
+            python scripts/microcap_screener.py --universe
+          else
+            python scripts/microcap_screener.py --universe --limit "$LIMIT"
+          fi
+
+      - name: Render HTML dashboard
+        run: python scripts/microcap_html.py
+
+      - name: Commit & push to main
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/microcap_candidates.csv data/microcap_candidates_skipped.csv microcaps.html
+          if git diff --cached --quiet; then
+            echo "No changes."
+            echo "no_change=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "Microcap screener: refresh candidates $(date -u +%Y-%m-%d)"
+          git push
+          echo "no_change=false" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout gh-pages (shallow)
+        if: steps.commit.outputs.no_change != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages-deploy
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Deploy microcap artifacts to gh-pages
+        if: steps.commit.outputs.no_change != 'true'
+        working-directory: gh-pages-deploy
+        run: |
+          set -e
+          mkdir -p data
+          cp ../data/microcap_candidates.csv data/
+          cp ../data/microcap_candidates_skipped.csv data/ || true
+          cp ../microcaps.html microcaps.html
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/microcap_candidates.csv data/microcap_candidates_skipped.csv microcaps.html
+          if git diff --cached --quiet; then
+            echo "gh-pages already current."
+          else
+            git commit -m "deploy: refresh microcap dashboard $(date -u +%Y-%m-%d)"
+            git push origin gh-pages
+          fi
