@@ -59,6 +59,12 @@ MARKET_CAP_CEILING = 1_000_000_000
 MARKET_CAP_FLOOR = 50_000_000
 # Balance-sheet gate.
 DEBT_EQUITY_CEILING = 0.5
+# Data-quality gates. Without these the top of the list is dominated by
+# tiny-base growers (e.g. a company that scaled from $1M to $50M revenue
+# in 3 years shows a "+200% CAGR" which is mathematically real but
+# economically a one-time effect, not a track record worth betting on).
+MIN_ANNUAL_DATA_POINTS = 4   # require >=4 years of annual data
+MAX_REASONABLE_CAGR = 1.0    # 100%/yr; anything above is almost always artifact
 # Treasury yield used in implied-growth formula. Pull dynamically when
 # available; fall back to a reasonable static guess so screening still works
 # offline.
@@ -366,6 +372,15 @@ def screen_ticker(ticker: str, treasury_yield: float) -> Candidate:
             cagr, pos_years, yoy_str = _compute_5yr_cagr(series)
         if cagr is None:
             skipped.append("no_growth_data")
+        else:
+            # Quality gates on the chosen series.
+            data_points = len(series.dropna()) if series is not None else 0
+            if data_points < MIN_ANNUAL_DATA_POINTS:
+                skipped.append(f"insufficient_history:{data_points}yr")
+            if abs(cagr) > MAX_REASONABLE_CAGR:
+                # Almost always a tiny-base artifact (company scaling from
+                # near-zero) rather than a sustainable track record.
+                skipped.append(f"cagr_artifact:{cagr*100:.0f}pct")
 
     pe = _safe_float(info.get("trailingPE")) or _safe_float(info.get("forwardPE"))
     implied = _implied_growth(pe, treasury_yield)
