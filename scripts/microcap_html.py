@@ -25,9 +25,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-# Same dir — for the appearances ledger.
+# Same dir — for the appearances ledger + per-card chart generation.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from microcap_tracker import load_all_appearances  # noqa: E402
+from microcap_charts import generate_for_tickers  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 log = logging.getLogger("microcap_html")
@@ -71,12 +72,9 @@ def _research_links(ticker: str) -> str:
     )
 
 
-def _card_html(row: dict) -> str:
+def _card_html(row: dict, charts: dict | None = None) -> str:
     """One candidate card: header, stats grid, short business description,
-    research links. Charts are not yet wired in for this build — the prior
-    thesis chart was misleading on a stretched axis when CAGR was large,
-    and the 4 watchlist-style charts (Rev YoY, EPS YoY, Balance Sheet,
-    Forecast) are coming in a follow-up commit."""
+    the 4 watchlist-style charts inline, and outbound research links."""
     gap_class = "positive" if (row.get("gap") and float(row["gap"]) > 0) else "negative"
     # Trim the 600-char yfinance description to ~250 chars + ellipsis so the
     # card is scannable.
@@ -84,6 +82,26 @@ def _card_html(row: dict) -> str:
     if len(biz) > 250:
         cut = biz[:250].rsplit(" ", 1)[0]
         biz = cut + "…"
+
+    charts = charts or {}
+    chart_blocks: list[str] = []
+    chart_order = [
+        ("revenue_yoy",   "Revenue YoY Change"),
+        ("eps_yoy",       "EPS YoY Change"),
+        ("forecast_rni",  "Revenue / Net Income Forecast"),
+        ("balance_sheet", "Balance Sheet"),
+    ]
+    for key, label in chart_order:
+        path = charts.get(key)
+        if path:
+            chart_blocks.append(
+                f'<figure class="card-chart"><img loading="lazy" src="{_safe(path)}" '
+                f'alt="{_safe(row.get("ticker"))} {label}"></figure>'
+            )
+    charts_html = (
+        f'<div class="card-charts">{"".join(chart_blocks)}</div>' if chart_blocks else ""
+    )
+
     return f"""
 <div class="card">
   <div class="card-head">
@@ -102,6 +120,7 @@ def _card_html(row: dict) -> str:
     <div><span class="label">YoY Sequence</span><span class="val seq">{_safe(row.get("yoy_sequence"))}</span></div>
   </div>
   <p class="biz">{_safe(biz)}</p>
+  {charts_html}
 </div>
 """
 
@@ -222,7 +241,20 @@ def build(candidates_csv: Path, out_path: Path, top_n: int = 20) -> None:
     top = rows[:top_n]
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    cards = "\n".join(_card_html(r) for r in top)
+    # Generate the 4 watchlist-style charts (Rev YoY, EPS YoY, Forecast,
+    # Balance Sheet) for each top candidate. ~3-5 minutes for 20 tickers,
+    # paid only on the screener's weekly cron.
+    top_tickers = [
+        (r.get("ticker") or "").strip().upper() for r in top
+    ]
+    top_tickers = [t for t in top_tickers if t]
+    log.info(f"Generating charts for top {len(top_tickers)} candidates...")
+    charts_by_ticker = generate_for_tickers(top_tickers)
+
+    cards = "\n".join(
+        _card_html(r, charts_by_ticker.get((r.get("ticker") or "").strip().upper()))
+        for r in top
+    )
     table = _table_html(rows)
 
     # Performance tracking for everything we've ever surfaced
@@ -278,6 +310,24 @@ def build(candidates_csv: Path, out_path: Path, top_n: int = 20) -> None:
     .stats .val.seq {{ font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.85rem; font-weight: 600; }}
 
     .biz {{ font-size: 0.92rem; color: #222; margin: 0.5rem 0 0; line-height: 1.4; }}
+
+    .card-charts {{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem;
+      margin-top: 0.9rem;
+    }}
+    .card-charts figure {{ margin: 0; }}
+    .card-charts img {{
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid #d0d0d0;
+      background: #fff;
+    }}
+    @media (max-width: 720px) {{
+      .card-charts {{ grid-template-columns: 1fr; }}
+    }}
 
     table#candidates {{
       width: 100%;

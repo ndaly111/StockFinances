@@ -78,6 +78,7 @@ jobs:
             --exclude "data/microcap_candidates*.csv" \
             --exclude "data/microcap_appearances.json" \
             --exclude "charts/microcap_thesis_*.png" \
+            --exclude "charts/microcap/" \
             ./ gh-pages/
 
       - name: Commit & push changes to gh-pages

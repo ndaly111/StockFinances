@@ -70,7 +70,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/microcap_candidates.csv data/microcap_candidates_skipped.csv microcaps.html
-          git add charts/microcap_thesis_*.png 2>/dev/null || true
+          git add charts/microcap/*.png 2>/dev/null || true
+          git add charts/microcap/*.html 2>/dev/null || true
           git add data/microcap_appearances.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes."
@@ -100,20 +101,21 @@ jobs:
         working-directory: gh-pages-deploy
         run: |
           set -e
-          mkdir -p data charts
+          mkdir -p data charts/microcap
           cp ../data/microcap_candidates.csv data/
           cp ../data/microcap_candidates_skipped.csv data/ || true
           cp ../data/microcap_appearances.json data/ 2>/dev/null || true
           cp ../microcaps.html microcaps.html
-          # Per-candidate thesis charts. Glob may not match (e.g. if all
-          # chart renders failed); silence the cp error in that case.
-          cp ../charts/microcap_thesis_*.png charts/ 2>/dev/null || true
+          # The 4 watchlist-style chart PNGs (plus the yoy_growth_tbl HTML)
+          # for each top candidate. Glob may not match if no candidate
+          # produced any charts; silence the cp error then.
+          cp -r ../charts/microcap/. charts/microcap/ 2>/dev/null || true
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/microcap_candidates.csv data/microcap_candidates_skipped.csv microcaps.html
           git add data/microcap_appearances.json 2>/dev/null || true
-          git add charts/microcap_thesis_*.png 2>/dev/null || true
+          git add charts/microcap/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "gh-pages already current."
           else
