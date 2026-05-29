@@ -25,9 +25,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-# Same dir — for the thesis chart generator + appearances ledger.
+# Same dir — for the appearances ledger.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from microcap_thesis_chart import render_thesis_chart  # noqa: E402
 from microcap_tracker import load_all_appearances  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
@@ -72,19 +71,19 @@ def _research_links(ticker: str) -> str:
     )
 
 
-def _card_html(row: dict, chart_path: Optional[str] = None) -> str:
-    """One candidate card: header, stats grid, business summary, optional
-    chart in an expandable <details> block, links."""
+def _card_html(row: dict) -> str:
+    """One candidate card: header, stats grid, short business description,
+    research links. Charts are not yet wired in for this build — the prior
+    thesis chart was misleading on a stretched axis when CAGR was large,
+    and the 4 watchlist-style charts (Rev YoY, EPS YoY, Balance Sheet,
+    Forecast) are coming in a follow-up commit."""
     gap_class = "positive" if (row.get("gap") and float(row["gap"]) > 0) else "negative"
-    chart_block = ""
-    if chart_path:
-        # chart_path is the gh-pages-relative path (e.g. /charts/microcap_thesis_AAPL.png)
-        chart_block = f"""
-  <details class="chart-drop">
-    <summary>Show growth chart</summary>
-    <img class="chart-img" src="{_safe(chart_path)}" alt="{_safe(row.get("ticker"))} growth chart" loading="lazy">
-  </details>
-"""
+    # Trim the 600-char yfinance description to ~250 chars + ellipsis so the
+    # card is scannable.
+    biz = (row.get("business_summary") or "").strip()
+    if len(biz) > 250:
+        cut = biz[:250].rsplit(" ", 1)[0]
+        biz = cut + "…"
     return f"""
 <div class="card">
   <div class="card-head">
@@ -102,8 +101,7 @@ def _card_html(row: dict, chart_path: Optional[str] = None) -> str:
     <div><span class="label">Consistency</span><span class="val">{_safe(row.get("years_positive"))}</span></div>
     <div><span class="label">YoY Sequence</span><span class="val seq">{_safe(row.get("yoy_sequence"))}</span></div>
   </div>
-  <p class="biz">{_safe(row.get("business_summary"))}</p>
-  {chart_block}
+  <p class="biz">{_safe(biz)}</p>
 </div>
 """
 
@@ -224,29 +222,7 @@ def build(candidates_csv: Path, out_path: Path, top_n: int = 20) -> None:
     top = rows[:top_n]
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    # Generate one thesis chart per top-N candidate. These take 1-2s each,
-    # so ~20-40s for top 20. Output paths are gh-pages-relative (/charts/...).
-    chart_paths: dict[str, str] = {}
-    for r in top:
-        ticker = (r.get("ticker") or "").strip().upper()
-        if not ticker:
-            continue
-        try:
-            cagr = float(r.get("cagr_5yr") or "nan")
-            implied = float(r.get("implied_growth") or "nan")
-            metric = r.get("metric_used") or "EPS"
-            path = render_thesis_chart(ticker, metric, cagr, implied)
-            if path is not None:
-                # Web path served by GitHub Pages
-                chart_paths[ticker] = f"/charts/{path.name}"
-                log.info(f"  thesis chart: {ticker} -> {path.name}")
-        except Exception as exc:
-            log.warning(f"thesis chart for {ticker} failed: {exc}")
-
-    cards = "\n".join(
-        _card_html(r, chart_paths.get((r.get("ticker") or "").strip().upper()))
-        for r in top
-    )
+    cards = "\n".join(_card_html(r) for r in top)
     table = _table_html(rows)
 
     # Performance tracking for everything we've ever surfaced
@@ -302,29 +278,6 @@ def build(candidates_csv: Path, out_path: Path, top_n: int = 20) -> None:
     .stats .val.seq {{ font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.85rem; font-weight: 600; }}
 
     .biz {{ font-size: 0.92rem; color: #222; margin: 0.5rem 0 0; line-height: 1.4; }}
-
-    .chart-drop {{
-      margin-top: 0.75rem;
-      border-top: 1px dashed #ccccff;
-      padding-top: 0.5rem;
-    }}
-    .chart-drop summary {{
-      cursor: pointer;
-      font-weight: 700;
-      color: #000080;
-      padding: 0.25rem 0;
-      user-select: none;
-    }}
-    .chart-drop summary:hover {{ color: #0000FF; }}
-    .chart-drop[open] summary {{ margin-bottom: 0.4rem; }}
-    .chart-drop .chart-img {{
-      max-width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-      border: 1px solid #d0d0d0;
-      background: #fff;
-    }}
 
     table#candidates {{
       width: 100%;
