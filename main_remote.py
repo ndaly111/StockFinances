@@ -505,9 +505,13 @@ def mini_main():
             maybe_backfill_index_eps(DB_PATH)
             generate_earnings_tables()
             ensure_spy_monthly_eps_and_derived_pe(DB_PATH)
-            for idx in ("SPY", "QQQ"):
-                render_index_growth_charts(idx)
-            backfill_index_growth()
+        # Index growth charts and implied-growth recompute also run in daily
+        # mode: the chart artifacts (charts/{spy,qqq}_valuation_bundle_chart.*)
+        # are tracked in main, and the daily rsync would otherwise re-deploy
+        # the stale committed versions and overwrite the weekly's output.
+        backfill_index_growth()
+        for idx in ("SPY", "QQQ"):
+            render_index_growth_charts(idx)
 
         try:
             generate_market_summary()
