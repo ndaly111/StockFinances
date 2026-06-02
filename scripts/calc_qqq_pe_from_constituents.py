@@ -1,77 +1,94 @@
 #!/usr/bin/env python3
-"""Calculate QQQ trailing P/E from NDX-100 constituent earnings.
+"""Calculate QQQ trailing P/E and EPS from NDX-100 constituent earnings.
 
 Method:
-1. Load current QQQ holdings + weights (from a CSV of (ticker, weight_pct)).
+1. Fetch current NDX-100 holdings + weights live from slickcharts.com.
 2. For each constituent, pull annual diluted EPS (yfinance income_stmt, 4-5
    fiscal years) and daily close history.
-3. Build a per-stock TTM EPS daily series by forward-filling the most recent
-   reported annual EPS until the next fiscal year-end.
-4. Aggregate to NDX-weighted P/E via earnings-yield averaging:
-   weighted_yield(t) = Σ w_i × EPS_i(t) / Price_i(t)
-   NDX_PE(t) = 1 / weighted_yield(t)
-5. Upsert into Index_PE_History (QQQ, TTM). Implied growth must be recomputed
-   afterward by running backfill_index_growth.py.
+3. Build a per-stock TTM EPS daily series by carrying forward the most recent
+   reported annual EPS once it would be publicly available (FY end + 60 days).
+4. Aggregate to NDX-weighted trailing P/E via earnings-yield averaging:
+       weighted_yield(t) = Σ w_i × EPS_i(t) / Price_i(t)
+       NDX_PE(t)         = 1 / weighted_yield(t)
+5. Upsert Index_PE_History (QQQ, TTM) and Index_EPS_History
+   (QQQ, IMPLIED_FROM_PE = QQQ_close / NDX_PE). Implied growth must be
+   recomputed afterward by running backfill_index_growth.py.
 
 Caveats:
-  - Uses CURRENT constituents and weights (survivorship bias). Companies that
-    left QQQ are not represented; weights drift in reality.
-  - Annual EPS, not quarterly, so the series steps once per fiscal year per
-    stock. With ~100 stocks staggered, the aggregate is reasonably smooth.
-  - Free yfinance gives at most ~5 fiscal years per stock. Older dates have
-    no calculation possible; this script only writes rows where we have
-    sufficient coverage (default: >=80% of index weight covered).
+  - Uses CURRENT constituents and weights (survivorship bias).
+  - Annual EPS, not quarterly: per-stock series steps once per fiscal year.
+    With ~100 staggered FY ends, the aggregate is reasonably smooth.
+  - Free yfinance gives at most ~5 fiscal years per stock. Older dates with
+    <80% weight coverage are skipped.
+
+No CSV dependency: holdings are fetched fresh on each run.
 """
 
 from __future__ import annotations
 
 import argparse
+import re
 import sqlite3
 import sys
 import time
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import requests
 import yfinance as yf
 
 
 DB_PATH = "Stock Data.db"
 TICKER = "QQQ"
-HOLDINGS_CSV_DEFAULT = "data/ndx_holdings.csv"
 MIN_COVERAGE = 0.80
+SLICKCHARTS_URL = "https://www.slickcharts.com/nasdaq100"
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
 
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--db", default=DB_PATH)
-    p.add_argument("--holdings", default=HOLDINGS_CSV_DEFAULT)
-    p.add_argument("--start", default="2020-01-01", help="Earliest date to consider.")
+    p.add_argument("--start", default="2021-01-01", help="Earliest date to consider.")
     p.add_argument("--end", default=None, help="Latest date (default: today).")
     p.add_argument("--min-coverage", type=float, default=MIN_COVERAGE,
-                   help="Minimum fraction of index weight that must have data on a date to write it.")
-    p.add_argument("--dry-run", action="store_true", help="Print result, don't write to DB.")
-    p.add_argument("--delay", type=float, default=0.3, help="Seconds between yfinance calls.")
+                   help="Minimum fraction of index weight required on a date to write it.")
+    p.add_argument("--dry-run", action="store_true", help="Print result without writing to DB.")
+    p.add_argument("--delay", type=float, default=0.2, help="Seconds between yfinance calls.")
     return p.parse_args()
 
 
-def _load_holdings(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    df.columns = [c.strip().lower() for c in df.columns]
-    if "ticker" not in df or "weight_pct" not in df:
-        raise SystemExit(f"{path} must have columns ticker,weight_pct")
-    df["weight"] = df["weight_pct"].astype(float) / 100.0
-    return df[["ticker", "weight"]].copy()
+def _fetch_holdings() -> pd.DataFrame:
+    """Return DataFrame (ticker, weight) from slickcharts NDX-100 page."""
+    resp = requests.get(SLICKCHARTS_URL, headers={"User-Agent": USER_AGENT}, timeout=30)
+    resp.raise_for_status()
+    rows = re.findall(
+        r'<td>(\d+)</td>.*?/symbol/([A-Z\.]+)".*?<td>([0-9.]+)%</td>',
+        resp.text,
+        re.DOTALL,
+    )
+    seen, out = set(), []
+    for _rank, tk, wt in rows:
+        if tk in seen:
+            continue
+        seen.add(tk)
+        out.append((tk, float(wt) / 100.0))
+    if not out:
+        raise RuntimeError("Failed to parse slickcharts NDX-100 page.")
+    df = pd.DataFrame(out, columns=["ticker", "weight"])
+    return df.sort_values("weight", ascending=False).reset_index(drop=True)
 
 
 def _pull_ticker(symbol: str, start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame | None:
-    """Return DataFrame indexed by date with columns Price, TTM_EPS."""
+    """Return DataFrame indexed by date with columns Price, TTM_EPS for `symbol`."""
     try:
         tk = yf.Ticker(symbol)
         ist = tk.income_stmt
         hist = tk.history(start=start, end=end + pd.Timedelta(days=1), auto_adjust=False, actions=False)
-    except Exception as e:
-        print(f"  [{symbol}] fetch err: {e}")
+    except Exception as exc:
+        print(f"  [{symbol}] fetch err: {exc}")
         return None
     if hist is None or hist.empty:
         return None
@@ -80,17 +97,14 @@ def _pull_ticker(symbol: str, start: pd.Timestamp, end: pd.Timestamp) -> pd.Data
     price = hist["Close"].astype(float)
     price.index = pd.DatetimeIndex(price.index.date)
 
-    # EPS from annual income statement.
     if ist is None or ist.empty or "Diluted EPS" not in ist.index:
         return None
     eps_row = ist.loc["Diluted EPS"].dropna()
     if eps_row.empty:
         return None
-    # Index is fiscal year-end Timestamps. Sort ascending.
     eps_row.index = pd.DatetimeIndex([pd.Timestamp(d).normalize() for d in eps_row.index])
     eps_row = eps_row.sort_index()
-    # For each date in price.index, find the most recent fiscal year-end whose
-    # report would be public (assume reports become available ~60 days after FY end).
+
     report_lag = pd.Timedelta(days=60)
     eps_series = pd.Series(index=price.index, dtype=float)
     for ts in price.index:
@@ -99,15 +113,24 @@ def _pull_ticker(symbol: str, start: pd.Timestamp, end: pd.Timestamp) -> pd.Data
     return pd.DataFrame({"Price": price, "TTM_EPS": eps_series}).dropna()
 
 
+def _qqq_prices(start: pd.Timestamp, end: pd.Timestamp) -> pd.Series:
+    """Return QQQ daily close, used to derive ETF-level implied EPS."""
+    hist = yf.Ticker("QQQ").history(start=start, end=end + pd.Timedelta(days=1), auto_adjust=False, actions=False)
+    if getattr(hist.index, "tz", None) is not None:
+        hist.index = hist.index.tz_localize(None)
+    s = hist["Close"].astype(float)
+    s.index = pd.DatetimeIndex(s.index.date)
+    return s[~s.index.duplicated(keep="last")].sort_index()
+
+
 def main() -> int:
     args = _parse_args()
     start = pd.Timestamp(args.start)
     end = pd.Timestamp(args.end) if args.end else pd.Timestamp.today().normalize()
     print(f"Window: {start.date()} → {end.date()}")
 
-    holdings = _load_holdings(args.holdings)
-    holdings = holdings.sort_values("weight", ascending=False).reset_index(drop=True)
-    print(f"Loaded {len(holdings)} holdings; total weight = {holdings['weight'].sum():.4f}")
+    holdings = _fetch_holdings()
+    print(f"Fetched {len(holdings)} NDX-100 holdings (total weight {holdings['weight'].sum():.4f}) from slickcharts.")
 
     full_idx = pd.date_range(start=start, end=end, freq="B")
     yield_acc = pd.Series(0.0, index=full_idx)
@@ -119,45 +142,55 @@ def main() -> int:
         df = _pull_ticker(sym, start, end)
         time.sleep(args.delay)
         if df is None or df.empty:
-            print(f"   skipped (no data)")
+            print("   skipped (no data)")
             continue
-        df = df.reindex(full_idx).ffill()
-        df = df.dropna()
+        df = df.reindex(full_idx).ffill().dropna()
         if df.empty:
-            print(f"   skipped (no data after reindex)")
+            print("   skipped (no data after reindex)")
             continue
-        # Earnings yield contribution: w_i × EPS_i / Price_i, only where EPS > 0
         valid = df[df["TTM_EPS"] > 0]
+        if valid.empty:
+            continue
         contrib_yield = (w * valid["TTM_EPS"] / valid["Price"]).reindex(full_idx).fillna(0.0)
         contrib_weight = pd.Series(w, index=valid.index).reindex(full_idx).fillna(0.0)
         yield_acc = yield_acc.add(contrib_yield, fill_value=0.0)
         weight_acc = weight_acc.add(contrib_weight, fill_value=0.0)
 
-    # NDX P/E only valid where coverage is above threshold
-    ndx_pe = pd.Series(index=full_idx, dtype=float)
     sufficient = weight_acc >= args.min_coverage
-    ndx_pe[sufficient] = weight_acc[sufficient] / yield_acc[sufficient]   # = 1 / (yield / weight) renormalized
+    ndx_pe = pd.Series(index=full_idx, dtype=float)
+    ndx_pe[sufficient] = weight_acc[sufficient] / yield_acc[sufficient]
+    ndx_pe = ndx_pe.dropna()
 
-    valid = ndx_pe.dropna()
-    print(f"\nComputed P/E rows: {len(valid)}")
-    if not valid.empty:
-        print(f"  Date range:  {valid.index.min().date()} → {valid.index.max().date()}")
-        print(f"  PE min/avg/max: {valid.min():.2f} / {valid.mean():.2f} / {valid.max():.2f}")
-        print(f"  First 5: {valid.head().round(2).to_dict()}")
-        print(f"  Last 5:  {valid.tail().round(2).to_dict()}")
+    print(f"\nComputed P/E rows: {len(ndx_pe)}")
+    if ndx_pe.empty:
+        print("Nothing to write.")
+        return 0
+    print(f"  Date range: {ndx_pe.index.min().date()} → {ndx_pe.index.max().date()}")
+    print(f"  PE min/avg/max: {ndx_pe.min():.2f} / {ndx_pe.mean():.2f} / {ndx_pe.max():.2f}")
 
-    if args.dry_run or valid.empty:
+    qqq_px = _qqq_prices(start, end)
+    aligned = pd.DataFrame({"PE": ndx_pe, "Close": qqq_px}).dropna()
+    aligned["EPS_ETF"] = aligned["Close"] / aligned["PE"]
+    print(f"  EPS (ETF-level) min/avg/max: {aligned['EPS_ETF'].min():.2f} / {aligned['EPS_ETF'].mean():.2f} / {aligned['EPS_ETF'].max():.2f}")
+
+    if args.dry_run:
         return 0
 
-    rows = [(d.strftime("%Y-%m-%d"), TICKER, "TTM", float(v)) for d, v in valid.items()]
+    pe_rows  = [(d.strftime("%Y-%m-%d"), TICKER, "TTM",                 float(r["PE"]))      for d, r in aligned.iterrows()]
+    eps_rows = [(d.strftime("%Y-%m-%d"), TICKER, "IMPLIED_FROM_PE",     float(r["EPS_ETF"])) for d, r in aligned.iterrows()]
+
     with sqlite3.connect(args.db) as conn:
         cur = conn.cursor()
         cur.executemany(
             "INSERT OR REPLACE INTO Index_PE_History(Date,Ticker,PE_Type,PE_Ratio) VALUES (?,?,?,?)",
-            rows,
+            pe_rows,
+        )
+        cur.executemany(
+            "INSERT OR REPLACE INTO Index_EPS_History(Date,Ticker,EPS_Type,EPS) VALUES (?,?,?,?)",
+            eps_rows,
         )
         conn.commit()
-    print(f"\nWrote {len(rows)} P/E rows. Run backfill_index_growth.py next.")
+    print(f"\nWrote {len(pe_rows)} PE rows and {len(eps_rows)} EPS rows. Run backfill_index_growth.py next.")
     return 0
 
 
