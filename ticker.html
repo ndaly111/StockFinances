@@ -466,33 +466,12 @@
     padding:5px 11px 4px 13px;
   }
   .back-btn::before{ content:"« " }
-  /* Ticker navbar — inline pipe-separated buttons (matches index.html style) */
-  .tk-navbar{
-    margin:0 -6px 10px; padding:6px 8px;
-    background:var(--gray-bg, #DDDDDD);
-    border:2px inset var(--gray, #C0C0C0);
-    font-family:Arial,sans-serif; font-size:11px;
-    line-height:1.9; text-align:left; word-spacing:0;
-  }
-  .tk-navbar .button{
-    display:inline-block; padding:2px 7px 3px;
-    background:#C0C0C0; border:2px outset #C0C0C0;
-    color:#000; text-decoration:none; font-weight:700;
-    text-shadow:1px 1px 0 #FFFFFF; margin:1px 0;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .tk-navbar .button:hover{ background:#D8D8D8 }
-  .tk-navbar .button.active{
-    border:2px inset #C0C0C0; background:#FFFF99;
-    color:#000080; text-shadow:none;
-  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <div class="back-bar"><a class="back-btn" href="index.html" onclick="if(document.referrer&&history.length>1){history.back();return false}">Back</a></div>
-  <nav class="navbar tk-navbar"><a href="ticker.html?t=AAL" class="button" data-tk="AAL">AAL</a> | <a href="ticker.html?t=AAPL" class="button" data-tk="AAPL">AAPL</a> | <a href="ticker.html?t=ABBV" class="button" data-tk="ABBV">ABBV</a> | <a href="ticker.html?t=ADBE" class="button" data-tk="ADBE">ADBE</a> | <a href="ticker.html?t=AMAT" class="button" data-tk="AMAT">AMAT</a> | <a href="ticker.html?t=AMD" class="button" data-tk="AMD">AMD</a> | <a href="ticker.html?t=AMZN" class="button" data-tk="AMZN">AMZN</a> | <a href="ticker.html?t=AVGO" class="button" data-tk="AVGO">AVGO</a> | <a href="ticker.html?t=AXP" class="button" data-tk="AXP">AXP</a> | <a href="ticker.html?t=BA" class="button" data-tk="BA">BA</a> | <a href="ticker.html?t=BABA" class="button" data-tk="BABA">BABA</a> | <a href="ticker.html?t=BAC" class="button" data-tk="BAC">BAC</a> | <a href="ticker.html?t=BAH" class="button" data-tk="BAH">BAH</a> | <a href="ticker.html?t=BIRD" class="button" data-tk="BIRD">BIRD</a> | <a href="ticker.html?t=BRK-B" class="button" data-tk="BRK-B">BRK-B</a> | <a href="ticker.html?t=BUD" class="button" data-tk="BUD">BUD</a> | <a href="ticker.html?t=BYND" class="button" data-tk="BYND">BYND</a> | <a href="ticker.html?t=C" class="button" data-tk="C">C</a> | <a href="ticker.html?t=CCL" class="button" data-tk="CCL">CCL</a> | <a href="ticker.html?t=CELH" class="button" data-tk="CELH">CELH</a> | <a href="ticker.html?t=CMG" class="button" data-tk="CMG">CMG</a> | <a href="ticker.html?t=COIN" class="button" data-tk="COIN">COIN</a> | <a href="ticker.html?t=COST" class="button" data-tk="COST">COST</a> | <a href="ticker.html?t=CRM" class="button" data-tk="CRM">CRM</a> | <a href="ticker.html?t=CVS" class="button" data-tk="CVS">CVS</a> | <a href="ticker.html?t=CVX" class="button" data-tk="CVX">CVX</a> | <a href="ticker.html?t=DAL" class="button" data-tk="DAL">DAL</a> | <a href="ticker.html?t=DIS" class="button" data-tk="DIS">DIS</a> | <a href="ticker.html?t=DJT" class="button" data-tk="DJT">DJT</a> | <a href="ticker.html?t=DKNG" class="button" data-tk="DKNG">DKNG</a> | <a href="ticker.html?t=DPZ" class="button" data-tk="DPZ">DPZ</a> | <a href="ticker.html?t=EVGO" class="button" data-tk="EVGO">EVGO</a> | <a href="ticker.html?t=F" class="button" data-tk="F">F</a> | <a href="ticker.html?t=FSLR" class="button" data-tk="FSLR">FSLR</a> | <a href="ticker.html?t=GE" class="button" data-tk="GE">GE</a> | <a href="ticker.html?t=GILD" class="button" data-tk="GILD">GILD</a> | <a href="ticker.html?t=GM" class="button" data-tk="GM">GM</a> | <a href="ticker.html?t=GME" class="button" data-tk="GME">GME</a> | <a href="ticker.html?t=GOOGL" class="button" data-tk="GOOGL">GOOGL</a> | <a href="ticker.html?t=GPI" class="button" data-tk="GPI">GPI</a> | <a href="ticker.html?t=GS" class="button" data-tk="GS">GS</a> | <a href="ticker.html?t=GTIM" class="button" data-tk="GTIM">GTIM</a> | <a href="ticker.html?t=HD" class="button" data-tk="HD">HD</a> | <a href="ticker.html?t=HOOD" class="button" data-tk="HOOD">HOOD</a> | <a href="ticker.html?t=INTC" class="button" data-tk="INTC">INTC</a> | <a href="ticker.html?t=JNJ" class="button" data-tk="JNJ">JNJ</a> | <a href="ticker.html?t=JPM" class="button" data-tk="JPM">JPM</a> | <a href="ticker.html?t=KHC" class="button" data-tk="KHC">KHC</a> | <a href="ticker.html?t=KO" class="button" data-tk="KO">KO</a> | <a href="ticker.html?t=KODK" class="button" data-tk="KODK">KODK</a> | <a href="ticker.html?t=LLY" class="button" data-tk="LLY">LLY</a> | <a href="ticker.html?t=LMT" class="button" data-tk="LMT">LMT</a> | <a href="ticker.html?t=LRCX" class="button" data-tk="LRCX">LRCX</a> | <a href="ticker.html?t=LULU" class="button" data-tk="LULU">LULU</a> | <a href="ticker.html?t=LUV" class="button" data-tk="LUV">LUV</a> | <a href="ticker.html?t=MA" class="button" data-tk="MA">MA</a> | <a href="ticker.html?t=MAMA" class="button" data-tk="MAMA">MAMA</a> | <a href="ticker.html?t=ME" class="button" data-tk="ME">ME</a> | <a href="ticker.html?t=MET" class="button" data-tk="MET">MET</a> | <a href="ticker.html?t=META" class="button" data-tk="META">META</a> | <a href="ticker.html?t=MPC" class="button" data-tk="MPC">MPC</a> | <a href="ticker.html?t=MRNA" class="button" data-tk="MRNA">MRNA</a> | <a href="ticker.html?t=MSFT" class="button" data-tk="MSFT">MSFT</a> | <a href="ticker.html?t=MU" class="button" data-tk="MU">MU</a> | <a href="ticker.html?t=NCLH" class="button" data-tk="NCLH">NCLH</a> | <a href="ticker.html?t=NET" class="button" data-tk="NET">NET</a> | <a href="ticker.html?t=NFLX" class="button" data-tk="NFLX">NFLX</a> | <a href="ticker.html?t=NOC" class="button" data-tk="NOC">NOC</a> | <a href="ticker.html?t=NUE" class="button" data-tk="NUE">NUE</a> | <a href="ticker.html?t=NVDA" class="button" data-tk="NVDA">NVDA</a> | <a href="ticker.html?t=OPEN" class="button" data-tk="OPEN">OPEN</a> | <a href="ticker.html?t=ORCL" class="button" data-tk="ORCL">ORCL</a> | <a href="ticker.html?t=PENN" class="button" data-tk="PENN">PENN</a> | <a href="ticker.html?t=PERI" class="button" data-tk="PERI">PERI</a> | <a href="ticker.html?t=PFE" class="button" data-tk="PFE">PFE</a> | <a href="ticker.html?t=PG" class="button" data-tk="PG">PG</a> | <a href="ticker.html?t=PINS" class="button" data-tk="PINS">PINS</a> | <a href="ticker.html?t=PLTR" class="button" data-tk="PLTR">PLTR</a> | <a href="ticker.html?t=PYPL" class="button" data-tk="PYPL">PYPL</a> | <a href="ticker.html?t=RCL" class="button" data-tk="RCL">RCL</a> | <a href="ticker.html?t=RDDT" class="button" data-tk="RDDT">RDDT</a> | <a href="ticker.html?t=RIVN" class="button" data-tk="RIVN">RIVN</a> | <a href="ticker.html?t=RTX" class="button" data-tk="RTX">RTX</a> | <a href="ticker.html?t=SBUX" class="button" data-tk="SBUX">SBUX</a> | <a href="ticker.html?t=SCHW" class="button" data-tk="SCHW">SCHW</a> | <a href="ticker.html?t=SHOP" class="button" data-tk="SHOP">SHOP</a> | <a href="ticker.html?t=SNAP" class="button" data-tk="SNAP">SNAP</a> | <a href="ticker.html?t=SPOT" class="button" data-tk="SPOT">SPOT</a> | <a href="ticker.html?t=TEVA" class="button" data-tk="TEVA">TEVA</a> | <a href="ticker.html?t=TGT" class="button" data-tk="TGT">TGT</a> | <a href="ticker.html?t=TSLA" class="button" data-tk="TSLA">TSLA</a> | <a href="ticker.html?t=TSN" class="button" data-tk="TSN">TSN</a> | <a href="ticker.html?t=UAL" class="button" data-tk="UAL">UAL</a> | <a href="ticker.html?t=UBER" class="button" data-tk="UBER">UBER</a> | <a href="ticker.html?t=UNH" class="button" data-tk="UNH">UNH</a> | <a href="ticker.html?t=UPS" class="button" data-tk="UPS">UPS</a> | <a href="ticker.html?t=V" class="button" data-tk="V">V</a> | <a href="ticker.html?t=VLO" class="button" data-tk="VLO">VLO</a> | <a href="ticker.html?t=VRSN" class="button" data-tk="VRSN">VRSN</a> | <a href="ticker.html?t=VZ" class="button" data-tk="VZ">VZ</a> | <a href="ticker.html?t=WMT" class="button" data-tk="WMT">WMT</a> | <a href="ticker.html?t=XOM" class="button" data-tk="XOM">XOM</a></nav>
   <div class="ticker-status" id="ticker-status">› LOADING TICKER DATA…</div>
 
   <!-- Ticker header + metric grid -->
@@ -619,17 +598,7 @@
 
   var ticker = (getQuery('t') || getQuery('ticker') || 'AAPL').toUpperCase();
   document.title = ticker + " — Nick's Stock Financials";
-
-  // Highlight the active button in the navbar and scroll it into view
-  (function(){
-    var btn = document.querySelector('.tk-navbar [data-tk="' + ticker + '"]');
-    if(btn){
-      btn.classList.add('active');
-      try { btn.scrollIntoView({inline:'center', block:'nearest'}); } catch(e){}
-    }
-  })();
-
-  fetch('ticker_data/' + ticker + '.json', {cache: 'no-cache'})
+fetch('ticker_data/' + ticker + '.json', {cache: 'no-cache'})
     .then(function(r){
       if(!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
