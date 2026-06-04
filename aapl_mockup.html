@@ -5,88 +5,439 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>AAPL — Facilities / D&A (Plotly mockup)</title>
 <style>
-  :root {
-    --frame:#003366; --grid:#B0B0B0; --bg:#FFFFFF; --text:#1a2c47;
-    --positive:#0a7; --negative:#c33; --highlight:#1f77b4;
+  /* =========================================================================
+     CORPORATE SAPPHIRE TERMINAL · 2003 Aqua-meets-Bloomberg aesthetic
+     Brushed silver chrome, sapphire title strips with glass highlights,
+     gel buttons, amber LCD price displays, hairline borders. Trebuchet MS,
+     Verdana, Lucida Console — the holy trinity of 2003 corporate web.
+     ========================================================================= */
+  :root{
+    --frame:#0c3978; --frame2:#1851a5; --frame-hi:#4a82d6; --frame-shine:#9bc4f7;
+    --steel-1:#e8edf3; --steel-2:#cfd7e2; --steel-3:#a8b3c2; --steel-4:#7c8a9d;
+    --chrome-edge:#adb7c4; --chrome-bright:#ffffff;
+    --lcd-bg-1:#0a2348; --lcd-bg-2:#0c2e62; --lcd-amber:#ffae3d; --lcd-amber-glow:rgba(255,174,61,.35);
+    --lcd-mint:#6df7c4;
+    --positive:#00a651; --positive-shadow:rgba(0,166,81,.25);
+    --negative:#cc0000; --negative-shadow:rgba(204,0,0,.25);
+    --text:#13243f; --text-soft:#4a5a78; --hairline:#9faab9;
+    --aqua-top:#a9d2f9; --aqua-mid:#3c87d6; --aqua-low:#1a5aa2;
   }
   *{box-sizing:border-box}
-  body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Verdana,Arial,sans-serif;background:#f6f8fb;color:var(--text);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:980px;margin:0 auto;padding:12px}
-  .ticker-card{background:white;border:2px solid var(--frame);border-radius:12px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
-  .ticker-name{font-size:20px;font-weight:700;margin:0 0 10px;color:var(--frame)}
-  .metrics{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px 6px}
-  .m{background:#f7faff;border:1px solid #dde7f5;border-radius:6px;padding:8px 6px;text-align:center;min-height:60px;display:flex;flex-direction:column;justify-content:center}
-  .m-lbl{font-size:11px;color:#557;line-height:1.15;margin-bottom:3px;font-weight:500}
-  .m-val{font-size:16px;font-weight:700;color:var(--frame);line-height:1.1}
-  .m-sub{display:block;font-size:11px;font-weight:500;color:#557;margin-top:1px}
-  .m-footnote{font-size:11px;color:#888;margin:8px 0 0;text-align:center;font-style:italic}
-  @media (min-width:640px){ .metrics{grid-template-columns:repeat(8, 1fr)} }
-  /* Mobile-friendly Revenue/NI/EPS data table */
-  .data-table{background:white;border:2px solid var(--frame);border-radius:12px;padding:12px;margin-bottom:12px}
-  .data-table h2{font-size:16px;color:var(--frame);margin:0 0 10px;font-weight:700}
-  .ft{width:100%;border-collapse:collapse;font-size:13px}
-  .ft th{background:#f2f2f2;padding:6px 4px;border:1px solid #B0B0B0;font-weight:600;color:var(--frame);white-space:nowrap}
-  /* Compact tables (e.g. valuation assumptions) allow header wrapping so
-     all columns fit on a phone without horizontal scroll. */
-  .ft.ft-wrap th{white-space:normal;line-height:1.15;font-size:11px;padding:5px 3px}
-  .ft.ft-wrap td{font-size:11px;padding:5px 3px;vertical-align:middle}
-  .ft td{padding:6px 4px;border:1px solid #d0d8ea;text-align:center}
-  .ft td.year{font-weight:600;background:#fafbff;text-align:left;padding-left:8px}
-  .ft td .delta{display:block;font-size:11px;margin-top:1px;font-weight:600}
-  .ft .pos{color:var(--positive)}
-  .ft .neg{color:var(--negative)}
-  .ft tr.ttm-row td{background:#fff8e1;border-color:#e8d68a}
-  .ft tr.ttm-row td.year{background:#fff3cc}
-  /* Forecast rows — light blue so they're visually distinct from actuals */
-  .ft tr.forecast-row td{background:#f0f6ff;border-color:#cbd9ee}
-  .ft tr.forecast-row td.year{background:#dde8f7;font-weight:700}
-  /* Collapse rows beyond the first 6 (TTM + 5y) by default */
-  .ft.collapsed tr.extra-row{display:none}
-  .expand-row{text-align:center;padding:10px 6px 2px}
-  .expand-btn{appearance:none;border:1px solid #B0B0B0;background:#f4f8ff;color:var(--frame);font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .expand-btn:active{background:var(--highlight);color:white;border-color:var(--highlight)}
-  .chart-card{background:white;border:1px solid #d0d8ea;border-radius:12px;padding:8px;margin-bottom:12px}
-  /* Stop page scroll being captured by Plotly drag inside any chart */
-  #aapl-chart,#aapl-forecast-chart,#aapl-yoy-chart,#aapl-expenses-chart,#aapl-segments-prod-chart,#aapl-segments-geo-chart,#aapl-fwd-est-chart,#aapl-balance-chart,#aapl-epsdiv-chart,#aapl-valuation-chart,#aapl-impliedgrowth-chart{touch-action:pan-y; -webkit-user-select:none; user-select:none}
-  /* Segments custom HTML legend strip (per chart) */
-  .seg-strip{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:center;
-    font-size:11px;color:var(--frame);margin:6px 0 0;font-weight:600}
-  .seg-key{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
-  .seg-dot{display:inline-block;width:10px;height:10px;border-radius:50%}
-  .seg-divider{border-top:1px dashed #cbd9ee;margin:14px 0 6px}
-  /* YoY table cell coloring (positive growth / decline) */
-  .ft td.pos{color:var(--positive);font-weight:600}
-  .ft td.neg{color:var(--negative);font-weight:600}
-  /* YoY custom legend strip (outside the plot area) */
-  .yoy-strip{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
-    font-size:12px;color:var(--frame);margin:0 0 6px;font-weight:600}
-  .yoy-key{display:inline-flex;align-items:center;gap:5px}
-  .yoy-dot{display:inline-block;width:10px;height:10px;border-radius:50%}
-  /* Latest Headlines — fixed-height scrollable window */
-  .headlines-card h2{margin-bottom:8px}
-  .hl-list{display:flex;flex-direction:column;gap:6px;
-    max-height:240px;overflow-y:auto;
-    border:1px solid #dde7f5;border-radius:6px;padding:6px;
-    background:#fbfcff;
+  html,body{margin:0;padding:0}
+
+  /* ---- Page background: brushed silver with pinstripes + vignette ------ */
+  body{
+    font-family:Verdana,Geneva,Tahoma,sans-serif;
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    background:
+      /* Faint pinstripes */
+      repeating-linear-gradient(0deg, rgba(255,255,255,.32) 0 1px, transparent 1px 3px),
+      /* Vignette */
+      radial-gradient(ellipse at 50% 0%, #f4f7fb 0%, #cfd7e2 60%, #a8b3c2 100%) fixed;
+    min-height:100vh;
+  }
+
+  /* Subtle CRT scanlines, very low opacity, fixed under everything */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1;
+    background:repeating-linear-gradient(0deg, rgba(8,30,72,.04) 0 1px, transparent 1px 3px);
+    mix-blend-mode:multiply;
+  }
+
+  .wrap{max-width:980px; margin:0 auto; padding:14px 12px 32px; position:relative; z-index:2}
+
+  /* =====================================================================
+     CARD CHASSIS · the universal panel shape
+     ===================================================================== */
+  .ticker-card, .data-table, .chart-card{
+    position:relative; margin-bottom:14px;
+    background:linear-gradient(180deg, #fbfcfd 0%, #eef2f7 100%);
+    border:1px solid var(--chrome-edge);
+    border-radius:6px;
+    box-shadow:
+      inset 0 1px 0 var(--chrome-bright),
+      inset 0 0 0 1px #f2f5f9,
+      0 1px 0 rgba(255,255,255,.7),
+      0 2px 0 rgba(0,0,0,.04),
+      0 4px 12px rgba(12,57,120,.14),
+      0 1px 30px rgba(12,57,120,.06);
+    padding:10px 12px 12px;
+  }
+
+  /* All h2 headers get a chrome sapphire title strip with glass-shine top */
+  .data-table > h2{
+    font-family:"Trebuchet MS",Verdana,sans-serif;
+    font-weight:700; font-size:13px; letter-spacing:.4px; text-transform:uppercase;
+    color:#fff;
+    margin:-10px -12px 12px;
+    padding:7px 14px 7px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.45) 0%, rgba(255,255,255,0) 50%),
+      linear-gradient(180deg, var(--frame-hi) 0%, var(--frame2) 48%, var(--frame) 100%);
+    border-radius:6px 6px 0 0;
+    border-bottom:1px solid #062251;
+    box-shadow:
+      inset 0 1px 0 var(--frame-shine),
+      inset 0 -1px 0 rgba(0,0,0,.18);
+    text-shadow:0 -1px 0 rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.15);
+    position:relative;
+  }
+  /* Tiny diamond accent on the title strip (very 2003) */
+  .data-table > h2::before{
+    content:"◆"; color:var(--lcd-amber); margin-right:8px;
+    text-shadow:0 0 6px var(--lcd-amber-glow), 0 1px 0 rgba(0,0,0,.4);
+    font-size:9px; vertical-align:1px;
+  }
+
+  /* =====================================================================
+     TICKER HERO CARD · the big LCD readout up top
+     ===================================================================== */
+  .ticker-card{
+    padding-top:0; overflow:hidden;
+  }
+  .ticker-name{
+    font-family:"Trebuchet MS",Verdana,sans-serif;
+    font-weight:700;
+    font-size:18px; letter-spacing:.6px;
+    color:#fff;
+    margin:0 -12px 12px;
+    padding:9px 14px 8px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 50%),
+      linear-gradient(180deg, var(--frame-hi) 0%, var(--frame2) 48%, var(--frame) 100%);
+    border-bottom:1px solid #062251;
+    box-shadow:
+      inset 0 1px 0 var(--frame-shine),
+      inset 0 -1px 0 rgba(0,0,0,.18);
+    text-shadow:0 -1px 0 rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.15);
+    border-radius:6px 6px 0 0;
+    position:relative;
+  }
+  .ticker-name::after{
+    content:"LIVE"; position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    font-family:"Lucida Console",monospace; font-size:9px; letter-spacing:1.5px;
+    color:var(--lcd-amber); padding:2px 6px;
+    background:rgba(0,0,0,.35); border:1px solid var(--lcd-amber); border-radius:2px;
+    text-shadow:0 0 6px var(--lcd-amber-glow); font-weight:400;
+    box-shadow:inset 0 0 8px rgba(255,174,61,.15);
+    animation:pulseLive 2.4s ease-in-out infinite;
+  }
+  @keyframes pulseLive{
+    0%,100%{ opacity:1; box-shadow:inset 0 0 8px rgba(255,174,61,.15)}
+    50%{ opacity:.55; box-shadow:inset 0 0 14px rgba(255,174,61,.45)}
+  }
+
+  /* Metrics grid · LCD-style dark navy readouts */
+  .metrics{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+  .m{
+    position:relative;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 35%),
+      linear-gradient(180deg, var(--lcd-bg-2) 0%, var(--lcd-bg-1) 100%);
+    border:1px solid #08183a;
+    border-radius:3px;
+    padding:8px 6px 7px;
+    text-align:center; min-height:62px;
+    display:flex; flex-direction:column; justify-content:center;
+    box-shadow:
+      inset 0 1px 0 rgba(100,160,255,.3),
+      inset 0 0 14px rgba(255,174,61,.04),
+      0 1px 0 rgba(255,255,255,.6);
+    overflow:hidden;
+  }
+  /* LCD pixel scanlines inside metric cells */
+  .m::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, transparent 1px 2px);
+  }
+  .m-lbl{
+    font-family:"Trebuchet MS",Verdana,sans-serif;
+    font-size:9px; letter-spacing:.8px; text-transform:uppercase;
+    color:#94b5e6; line-height:1.1; margin-bottom:4px; font-weight:700;
+    text-shadow:0 1px 0 #000;
+    position:relative; z-index:1;
+  }
+  .m-val{
+    font-family:"Lucida Console","Courier New",monospace;
+    font-size:15px; font-weight:700; line-height:1.05;
+    color:var(--lcd-amber);
+    text-shadow:0 0 8px var(--lcd-amber-glow), 0 1px 0 #000;
+    position:relative; z-index:1;
+  }
+  .m-sub{
+    display:block; font-family:"Lucida Console",monospace;
+    font-size:9px; color:var(--lcd-mint); margin-top:2px; font-weight:400;
+    text-shadow:0 0 4px rgba(109,247,196,.4);
+  }
+  .m-footnote{
+    font-family:Georgia,"Times New Roman",serif;
+    font-style:italic;
+    font-size:11px; color:#5b6a85;
+    margin:10px 0 0; text-align:center;
+    padding-top:8px; border-top:1px dotted var(--hairline);
+  }
+  @media (min-width:640px){ .metrics{ grid-template-columns:repeat(8,1fr) } }
+
+  /* =====================================================================
+     LATEST HEADLINES · brushed steel news ticker window
+     ===================================================================== */
+  .hl-list{
+    display:flex; flex-direction:column; gap:4px;
+    max-height:248px; overflow-y:auto;
+    background:
+      linear-gradient(180deg, #d8e0eb 0%, #c4cedb 100%);
+    border:1px solid var(--steel-4);
+    border-radius:3px;
+    padding:5px;
+    box-shadow:
+      inset 0 1px 2px rgba(0,0,0,.18),
+      inset 0 0 0 1px rgba(255,255,255,.4);
     -webkit-overflow-scrolling:touch;
   }
-  /* Subtle scroll indicator on the right */
-  .hl-list::-webkit-scrollbar{width:6px}
-  .hl-list::-webkit-scrollbar-thumb{background:#c8d4e6;border-radius:3px}
-  .hl-list::-webkit-scrollbar-track{background:transparent}
-  .hl{display:block;padding:8px 10px;background:white;border:1px solid #e6ecf5;border-radius:5px;text-decoration:none;color:inherit;flex-shrink:0}
-  .hl:active{background:#eaf1fb}
-  .hl-title{font-size:13px;line-height:1.35;font-weight:600;color:var(--frame)}
-  .hl-meta{font-size:11px;color:#667;margin-top:2px}
-  .range-row{display:flex;gap:8px;justify-content:center;padding:10px 6px 4px;flex-wrap:wrap}
-  .range-btn{appearance:none;border:1px solid #B0B0B0;background:#f4f8ff;color:var(--frame);font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;min-width:60px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .range-btn:active,.range-btn.active{background:var(--highlight);color:white;border-color:var(--highlight)}
-  .meta{font-size:12px;color:#666;text-align:center;padding:10px}
-  @media (max-width:640px){
-    .ticker-name{font-size:16px} .v-num{font-size:16px}
-    .values{grid-template-columns:repeat(2,1fr)}
+  .hl-list::-webkit-scrollbar{ width:11px }
+  .hl-list::-webkit-scrollbar-track{
+    background:linear-gradient(180deg,#9aa6b8,#b6c1d1);
+    border-left:1px solid #6c7a8e;
   }
-  a{color:var(--highlight)}
+  .hl-list::-webkit-scrollbar-thumb{
+    background:linear-gradient(180deg, #6b94d4 0%, var(--frame2) 50%, var(--frame) 100%);
+    border-radius:2px;
+    border:1px solid #062251;
+    box-shadow:inset 0 1px 0 var(--frame-shine);
+  }
+  .hl{
+    display:block; padding:7px 9px;
+    background:linear-gradient(180deg,#ffffff 0%, #f0f4fa 100%);
+    border:1px solid #b7c2d3;
+    border-radius:2px;
+    text-decoration:none; color:inherit; flex-shrink:0;
+    box-shadow:inset 0 1px 0 #fff, 0 1px 0 rgba(255,255,255,.6);
+    transition:background .12s;
+  }
+  .hl:hover{
+    background:linear-gradient(180deg,#fffcf2 0%, #fff2d8 100%);
+    border-color:#d0a850;
+  }
+  .hl:active{
+    background:linear-gradient(180deg,#ffeac4 0%, #ffd58a 100%);
+    box-shadow:inset 0 1px 2px rgba(180,120,0,.3);
+  }
+  .hl-title{
+    font-family:"Trebuchet MS",Verdana,sans-serif;
+    font-size:12.5px; line-height:1.35; font-weight:700;
+    color:var(--frame);
+  }
+  .hl-meta{
+    font-family:Verdana,sans-serif; font-size:10px;
+    color:var(--text-soft); margin-top:2px;
+  }
+  .hl-meta::before{ content:"▸ "; color:var(--lcd-amber) }
+
+  /* =====================================================================
+     TABLES · classic chrome headers, alternating row tints
+     ===================================================================== */
+  .ft{
+    width:100%; border-collapse:separate; border-spacing:0;
+    font-family:Verdana,sans-serif; font-size:12px;
+    border:1px solid var(--frame); border-radius:3px; overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);
+  }
+  .ft th{
+    font-family:"Trebuchet MS",Verdana,sans-serif;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 50%),
+      linear-gradient(180deg, var(--frame-hi) 0%, var(--frame2) 50%, var(--frame) 100%);
+    color:#fff; font-weight:700;
+    padding:7px 5px;
+    border:none; border-right:1px solid #062251;
+    text-shadow:0 -1px 0 rgba(0,0,0,.4);
+    box-shadow:inset 0 1px 0 var(--frame-shine), inset 0 -1px 0 rgba(0,0,0,.2);
+    white-space:nowrap; letter-spacing:.3px; font-size:11px;
+  }
+  .ft th:last-child{ border-right:none }
+  .ft td{
+    padding:6px 5px;
+    border-right:1px solid #d8dfe9;
+    border-bottom:1px solid #d8dfe9;
+    background:#fbfcfd;
+    text-align:center;
+    font-family:"Lucida Console","Courier New",monospace; font-size:11.5px;
+  }
+  .ft td:last-child{ border-right:none }
+  .ft tbody tr:nth-child(even) td{ background:#eef3f9 }
+  .ft tbody tr:hover td{ background:#fff6d8 }
+  .ft tbody tr:last-child td{ border-bottom:none }
+  .ft td.year{
+    font-family:"Trebuchet MS",Verdana,sans-serif;
+    background:linear-gradient(180deg, #e4ebf3 0%, #cfd9e6 100%) !important;
+    color:var(--frame); font-weight:700; text-align:left; padding-left:9px;
+    border-right:1px solid var(--steel-3);
+    text-shadow:0 1px 0 rgba(255,255,255,.7);
+    font-size:11px;
+  }
+  .ft td .delta{
+    display:block; font-size:10px; margin-top:1px; font-weight:700;
+    font-family:Verdana,sans-serif;
+  }
+  .ft .pos, .ft td.pos{
+    color:var(--positive); font-weight:700;
+    text-shadow:0 0 4px var(--positive-shadow);
+  }
+  .ft .neg, .ft td.neg{
+    color:var(--negative); font-weight:700;
+    text-shadow:0 0 4px var(--negative-shadow);
+  }
+  .ft tr.ttm-row td{
+    background:linear-gradient(180deg, #fff6d4 0%, #ffeba0 100%) !important;
+    color:#6b4500; font-weight:700;
+    border-color:#d8b449;
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+  .ft tr.ttm-row td.year{
+    background:linear-gradient(180deg, #ffe896 0%, #ffd860 100%) !important;
+    color:#3a2400; font-size:11px;
+  }
+  .ft tr.forecast-row td{
+    background:linear-gradient(180deg, #e8f1ff 0%, #d3e3fa 100%) !important;
+    color:var(--frame); font-style:italic;
+  }
+  .ft tr.forecast-row td.year{
+    background:linear-gradient(180deg, #bcd2f0 0%, #a4c0e8 100%) !important;
+    font-weight:700; font-style:normal;
+  }
+
+  /* Compact tables — let headers wrap to fit on phone */
+  .ft.ft-wrap th{ white-space:normal; line-height:1.2; font-size:10.5px; padding:6px 4px }
+  .ft.ft-wrap td{ font-size:10.5px; padding:5px 4px; vertical-align:middle }
+
+  /* Collapse extra rows */
+  .ft.collapsed tr.extra-row{ display:none }
+
+  /* =====================================================================
+     GEL BUTTONS · the centerpiece of 2003 UI
+     ===================================================================== */
+  .expand-row{ text-align:center; padding:12px 6px 4px }
+  .expand-btn, .range-btn{
+    appearance:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    font-family:"Trebuchet MS",Verdana,sans-serif; font-weight:700;
+    color:#fff;
+    border:1px solid var(--aqua-low);
+    border-radius:11px;
+    padding:8px 18px 9px;
+    min-width:64px;
+    text-shadow:0 -1px 0 rgba(0,0,0,.35);
+    background:
+      linear-gradient(180deg,
+        var(--aqua-top) 0%,
+        #79b3eb 48%,
+        var(--aqua-mid) 49%,
+        var(--aqua-low) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.85),
+      inset 0 -10px 14px -10px rgba(0,0,0,.25),
+      0 1px 0 rgba(255,255,255,.8),
+      0 2px 3px rgba(12,57,120,.35);
+    position:relative;
+    overflow:hidden;
+    transition:filter .12s, transform .04s;
+  }
+  /* Aqua glass highlight strip across the top half */
+  .expand-btn::before, .range-btn::before{
+    content:""; position:absolute; left:6%; right:6%; top:1px; height:42%;
+    background:linear-gradient(180deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.1) 100%);
+    border-radius:9px 9px 9px 9px / 12px 12px 30px 30px;
+    pointer-events:none;
+  }
+  .expand-btn:hover, .range-btn:hover{ filter:brightness(1.07) }
+  .expand-btn:active, .range-btn:active{
+    transform:translateY(1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.4),
+      inset 0 2px 4px rgba(0,0,0,.25),
+      0 1px 0 rgba(255,255,255,.8);
+  }
+  /* The "pressed in" active state — pumpkin amber gel */
+  .range-btn.active{
+    background:
+      linear-gradient(180deg,
+        #ffd385 0%,
+        #ffae3d 48%,
+        #e88600 49%,
+        #b35e00 100%);
+    border-color:#8a4500;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.7),
+      inset 0 2px 3px rgba(0,0,0,.18),
+      0 1px 0 rgba(255,255,255,.5);
+  }
+  .range-row{ display:flex; gap:8px; justify-content:center; padding:14px 6px 6px; flex-wrap:wrap }
+
+  /* Chart card — same chassis but slimmer padding */
+  .chart-card{ padding:6px 4px 4px }
+
+  /* =====================================================================
+     CHART SUPPORT · stop Plotly drag stealing page scroll
+     ===================================================================== */
+  #aapl-chart,#aapl-forecast-chart,#aapl-yoy-chart,#aapl-expenses-chart,
+  #aapl-segments-prod-chart,#aapl-segments-geo-chart,#aapl-fwd-est-chart,
+  #aapl-balance-chart,#aapl-epsdiv-chart,#aapl-valuation-chart,#aapl-impliedgrowth-chart{
+    touch-action:pan-y; -webkit-user-select:none; user-select:none;
+  }
+
+  /* =====================================================================
+     LEGEND STRIPS · chrome plate readouts
+     ===================================================================== */
+  .seg-strip, .yoy-strip{
+    display:flex; flex-wrap:wrap; gap:6px 14px; justify-content:center;
+    font-family:"Trebuchet MS",Verdana,sans-serif;
+    font-size:11px; color:var(--frame); font-weight:700;
+    margin:2px 0 8px; padding:6px 10px;
+    background:linear-gradient(180deg,#fbfcfd 0%, #e6ecf3 100%);
+    border:1px solid var(--steel-3);
+    border-radius:3px;
+    box-shadow:
+      inset 0 1px 0 #fff,
+      inset 0 -1px 0 rgba(0,0,0,.04);
+    letter-spacing:.2px;
+  }
+  .seg-key, .yoy-key{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap }
+  .seg-dot, .yoy-dot{
+    display:inline-block; width:10px; height:10px; border-radius:50%;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.7),
+      inset 0 -2px 2px rgba(0,0,0,.2),
+      0 0 0 1px rgba(0,0,0,.15);
+  }
+  .seg-divider{
+    border:none; height:2px;
+    background:linear-gradient(90deg, transparent 0%, var(--steel-3) 50%, transparent 100%);
+    margin:18px 4px 10px;
+  }
+
+  /* =====================================================================
+     LINKS · anchored corporate hover treatment
+     ===================================================================== */
+  a{ color:var(--frame2); text-decoration:none; border-bottom:1px dotted var(--frame-hi) }
+  a:hover{ color:var(--frame); border-bottom-color:var(--frame) }
+  .hl{ border-bottom:none }
+  .hl-title{ border-bottom:none }
+  .meta{
+    font-family:Georgia,serif; font-style:italic;
+    font-size:12px; color:#5b6a85; text-align:center; padding:10px;
+  }
+
+  /* =====================================================================
+     RESPONSIVE
+     ===================================================================== */
+  @media (max-width:640px){
+    .ticker-name{ font-size:15px; padding:8px 12px 7px }
+    .ticker-name::after{ font-size:8px; padding:2px 5px; right:10px }
+    .m-val{ font-size:13.5px }
+    .m-lbl{ font-size:8.5px }
+    .data-table > h2{ font-size:12px; padding:6px 12px }
+    .wrap{ padding:10px 8px 28px }
+  }
 </style>
 </head>
 <body>
