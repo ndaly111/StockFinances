@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Loading… — Nick's Stock Financials</title>
+<script src="https://cdn.plot.ly/plotly-3.6.0.min.js" charset="utf-8"></script>
+<style>
+  /* =========================================================================
+     NASDAQ ON THE WEB · 1999 dot-com terminal aesthetic
+     Beveled Windows 95 chrome, Times New Roman bodies, Arial Black headers,
+     Courier New tickers, ▲▼ arrows, yellow price highlights, navy title bars,
+     a marquee at the top, dotted dividers, and a blinking LIVE indicator.
+     Best viewed in 800x600. © 1999. All quotes delayed 20 minutes.
+     ========================================================================= */
+  :root{
+    --navy:#000080;          /* THE 1999 color */
+    --navy-dim:#000060;
+    --navy-bright:#3333AA;
+    --gray:#C0C0C0;          /* Windows 95 chrome */
+    --gray-shade:#808080;
+    --gray-deep:#404040;
+    --gray-bg:#DDDDDD;
+    --bg-yellow:#FFFFCC;     /* highlight cells */
+    --hi-yellow:#FFFF00;     /* hot highlights */
+    --mustard:#FFCC00;       /* rule lines */
+    --tick-up:#008000;       /* stock-ticker green */
+    --tick-up-bg:#CCFFCC;
+    --tick-down:#CC0000;     /* stock-ticker red */
+    --tick-down-bg:#FFCCCC;
+    --link:#0000EE;          /* unvisited blue */
+    --link-visited:#551A8B;  /* visited purple */
+    --text:#000000;
+  }
+  *{ box-sizing:border-box }
+  html,body{ margin:0; padding:0 }
+
+  /* ---- Page background: TILED diagonal "weave" pattern ---------------- */
+  body{
+    font-family:"Times New Roman",Times,serif;
+    color:var(--text); font-size:13px; line-height:1.35;
+    /* Faux-tiled background — diagonal weave that REPEATS like a 1999 BG image */
+    background-color:#9999BB;
+    background-image:
+      repeating-linear-gradient( 45deg, rgba(255,255,255,.18) 0 2px, transparent 2px 8px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,.10)        0 2px, transparent 2px 8px),
+      linear-gradient(180deg, #9faabe 0%, #7e8aa6 100%);
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+
+  .wrap{ max-width:980px; margin:0 auto; padding:0 6px 0 }
+
+  /* =====================================================================
+     MARQUEE BANNER at the very top — pure 1999 ticker tape
+     ===================================================================== */
+  .wrap::before{
+    content:"◄ ▌NASDAQ +1.42% ▲   ▌DJIA -0.31% ▼   ▌S&P 500 +0.88% ▲   ▌AAPL $310.26 ▲ +1.24   ▌MSFT $427.34 ▲ +0.42   ▌DELAYED 20 MIN. ALL QUOTES IN US$.   ▌STREAMING QUOTES. POWERED BY NICK'S STOCK FINANCIALS™   ►";
+    display:block;
+    background:#000000;
+    color:var(--hi-yellow);
+    font-family:"Courier New",Courier,monospace;
+    font-size:12px; font-weight:700; letter-spacing:.5px;
+    white-space:nowrap; overflow:hidden;
+    padding:5px 0;
+    border-top:2px solid var(--navy);
+    border-bottom:2px solid var(--navy);
+    box-shadow:inset 0 -1px 0 #FFFFFF, inset 0 1px 0 #FFFFFF;
+    margin:0 -6px 6px;
+    text-shadow:0 0 4px rgba(255,255,0,.5);
+    /* CSS-only marquee — animated translate */
+    animation:ticker 38s linear infinite;
+    transform:translateX(100%);
+  }
+  @keyframes ticker{
+    from{ transform:translateX(100%) }
+    to  { transform:translateX(-100%) }
+  }
+
+  /* ===================================================================== */
+  /* CARD CHASSIS · Windows 95 raised bevel — outset borders                */
+  /* ===================================================================== */
+  .ticker-card, .data-table, .chart-card{
+    background:#FFFFFF;
+    border:2px outset var(--gray);
+    margin-bottom:8px;
+    padding:0;
+    position:relative;
+  }
+  .data-table, .chart-card{
+    padding:0;
+  }
+
+  /* All section H2 = NAVY title bar with WHITE Arial Black text */
+  .data-table > h2{
+    font-family:Arial Black,Arial,sans-serif;
+    font-weight:900; font-size:13px;
+    color:#FFFFFF;
+    background:var(--navy);
+    border-bottom:2px ridge var(--gray);
+    margin:0;
+    padding:4px 8px 3px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    /* drop-down arrow + slash decoration, very 1999 */
+    border-top:1px solid #4444CC;
+    box-shadow:inset 0 1px 0 #4444CC;
+    position:relative;
+  }
+  .data-table > h2::before{
+    content:"» "; color:var(--hi-yellow);
+    text-shadow:0 0 4px rgba(255,255,0,.6);
+  }
+  .data-table > h2::after{
+    content:"[ UPDATED ]"; position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    font-family:"Courier New",monospace; font-size:9px; letter-spacing:1px;
+    color:var(--hi-yellow); font-weight:700;
+    background:var(--navy-dim); padding:1px 4px;
+    border:1px solid #4444CC;
+    animation:blink 1.6s steps(2) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:.25 } }
+
+  /* mustard accent rule under titles */
+  .data-table > h2 + *{ margin-top:0 }
+
+  /* Internal padding for sections */
+  .data-table > *:not(h2){ margin-left:6px; margin-right:6px }
+  .data-table > p.m-footnote{ margin-bottom:6px }
+  .data-table > div[style*="overflow-x"]{ margin-top:6px; margin-bottom:6px }
+  .data-table > .seg-strip, .data-table > .yoy-strip{ margin-left:6px; margin-right:6px }
+
+  /* =====================================================================
+     TICKER HERO CARD — navy bar + Arial Black + Win95 metric cells
+     ===================================================================== */
+  .ticker-card{ padding:0 }
+  .ticker-name{
+    font-family:Arial Black,Arial,sans-serif;
+    font-weight:900; font-size:16px;
+    color:#FFFFFF;
+    background:var(--navy);
+    margin:0;
+    padding:5px 10px 4px;
+    letter-spacing:.5px;
+    border-bottom:2px ridge var(--gray);
+    border-top:1px solid #4444CC;
+    box-shadow:inset 0 1px 0 #4444CC;
+    position:relative;
+    text-transform:uppercase;
+  }
+  .ticker-name::before{
+    content:"› "; color:var(--hi-yellow);
+  }
+  .ticker-name::after{
+    content:"◉ LIVE"; position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-family:"Courier New",monospace; font-size:10px; letter-spacing:1px;
+    color:#FF3333; font-weight:700;
+    background:#000000; padding:2px 5px;
+    border:1px solid #FF3333;
+    box-shadow:0 0 4px rgba(255,0,0,.5);
+    animation:blink 1.2s steps(2) infinite;
+  }
+
+  .metrics{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:3px;
+    background:var(--gray); padding:4px;
+    border-top:1px solid #FFFFFF;
+  }
+  .m{
+    background:#000000;
+    border:2px inset var(--gray);   /* sunken LCD bezel */
+    padding:5px 4px;
+    text-align:center; min-height:54px;
+    display:flex; flex-direction:column; justify-content:center;
+    box-shadow:inset 0 0 0 1px #222;
+  }
+  .m-lbl{
+    font-family:Arial,sans-serif;
+    font-size:9px; letter-spacing:1px; text-transform:uppercase;
+    color:#88CCFF; line-height:1.05; margin-bottom:3px; font-weight:700;
+  }
+  .m-val{
+    font-family:"Courier New",Courier,monospace;
+    font-size:15px; font-weight:700; line-height:1;
+    color:#33FF33;   /* terminal green */
+    text-shadow:0 0 5px rgba(51,255,51,.6);
+  }
+  .m-sub{
+    display:block; font-family:"Courier New",monospace;
+    font-size:9px; color:#FFCC33; margin-top:2px; font-weight:700;
+    text-shadow:0 0 3px rgba(255,204,51,.5);
+  }
+  .m-footnote{
+    font-family:"Times New Roman",serif; font-style:italic;
+    font-size:11px; color:#444; text-align:center;
+    padding:6px 6px;
+    margin:0;
+    border-top:1px dashed var(--gray-shade);
+    background:var(--gray-bg);
+  }
+  @media (min-width:640px){ .metrics{ grid-template-columns:repeat(8,1fr) } }
+
+  /* =====================================================================
+     LATEST HEADLINES — beige notepad with bullet markers
+     ===================================================================== */
+  .hl-list{
+    display:block;
+    max-height:250px; overflow-y:auto;
+    background:#FFFFEE;        /* legal-pad yellow */
+    border:2px inset var(--gray);
+    margin:6px;
+    padding:4px 6px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .hl-list::-webkit-scrollbar{ width:16px }
+  .hl-list::-webkit-scrollbar-track{
+    background:var(--gray);
+    border-left:1px solid var(--gray-shade);
+  }
+  .hl-list::-webkit-scrollbar-thumb{
+    background:var(--gray);
+    border:2px outset var(--gray);
+  }
+  .hl{
+    display:block;
+    padding:4px 4px 5px 18px;
+    background:transparent;
+    border:none;
+    border-bottom:1px dotted var(--gray-shade);
+    text-decoration:none; color:inherit;
+    position:relative;
+    font-family:"Times New Roman",Times,serif;
+    margin:0;
+    border-radius:0;
+  }
+  .hl:last-child{ border-bottom:none }
+  .hl::before{
+    content:"►"; position:absolute; left:4px; top:5px;
+    color:var(--navy); font-size:10px;
+  }
+  .hl:hover{ background:#FFFFCC }
+  .hl:active{ background:var(--hi-yellow) }
+  .hl-title{
+    font-family:"Times New Roman",Times,serif;
+    font-size:13px; line-height:1.3; font-weight:700;
+    color:var(--link); text-decoration:underline;
+  }
+  .hl:visited .hl-title, .hl-title:visited{ color:var(--link-visited) }
+  .hl-meta{
+    font-family:Arial,sans-serif; font-size:10px;
+    color:#555; margin-top:1px; font-style:italic;
+  }
+  .hl-meta::before{ content:"— "; color:var(--gray-shade); font-style:normal }
+
+  /* =====================================================================
+     TABLES — hard 1px black borders, navy headers, yellow value cells
+     ===================================================================== */
+  .ft{
+    width:100%; border-collapse:collapse;
+    font-family:Arial,Helvetica,sans-serif; font-size:11px;
+    border:2px solid var(--navy);
+    background:#FFFFFF;
+  }
+  .ft th{
+    font-family:Arial Black,Arial,sans-serif; font-weight:900;
+    background:var(--navy); color:#FFFFFF;
+    padding:4px 4px;
+    border:1px solid var(--navy);
+    border-right:1px solid #4444AA;
+    text-transform:uppercase; letter-spacing:.3px; font-size:10px;
+    white-space:nowrap;
+  }
+  .ft td{
+    padding:3px 4px;
+    border:1px solid #888;
+    text-align:center;
+    background:#FFFFFF;
+    font-family:"Courier New",Courier,monospace; font-size:11px;
+    color:#000;
+  }
+  .ft tbody tr:nth-child(even) td{ background:#EAEEF5 }   /* zebra */
+  .ft tbody tr:hover td{ background:var(--bg-yellow) }
+  .ft td.year{
+    font-family:Arial Black,Arial,sans-serif;
+    background:var(--gray) !important; color:#000;
+    font-weight:900; text-align:left; padding-left:6px; font-size:10px;
+    border:1px solid var(--gray-deep);
+  }
+  .ft td .delta{
+    display:block; font-size:9px; margin-top:1px; font-weight:700;
+    font-family:Arial,sans-serif;
+  }
+  .ft .pos, .ft td.pos{
+    color:var(--tick-up); font-weight:700; background:var(--tick-up-bg) !important;
+  }
+  .ft .neg, .ft td.neg{
+    color:var(--tick-down); font-weight:700; background:var(--tick-down-bg) !important;
+  }
+  .ft .pos::before, .ft td.pos > .delta::before{ content:"▲ " }
+  .ft .neg::before, .ft td.neg > .delta::before{ content:"▼ " }
+  /* On YoY table, the cells themselves carry pos/neg class */
+  .ft td.pos > .delta::before, .ft td.neg > .delta::before{ content:"" }
+  .ft tr.ttm-row td{
+    background:var(--hi-yellow) !important; color:#000; font-weight:900;
+    border:1px solid #998800;
+  }
+  .ft tr.ttm-row td.year{
+    background:#FFCC00 !important; color:#000; font-size:10px;
+  }
+  .ft tr.forecast-row td{
+    background:#E6E6FF !important; color:var(--navy);
+    font-style:italic; border:1px solid #6666CC;
+  }
+  .ft tr.forecast-row td.year{
+    background:#9999CC !important; color:#FFFFFF; font-weight:900; font-style:normal;
+  }
+
+  .ft.ft-wrap th{ white-space:normal; line-height:1.15; font-size:10px; padding:4px 3px }
+  .ft.ft-wrap td{ font-size:10px; padding:3px 3px; vertical-align:middle }
+  .ft.collapsed tr.extra-row{ display:none }
+
+  /* =====================================================================
+     BEVELED WIN95 BUTTONS — outset/inset toggle
+     ===================================================================== */
+  .expand-row{ text-align:center; padding:8px 6px 6px; background:var(--gray-bg) }
+  .expand-btn, .range-btn{
+    appearance:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    font-family:Arial,sans-serif; font-weight:700; font-size:12px;
+    color:#000;
+    background:var(--gray);
+    border:2px outset var(--gray);
+    padding:5px 14px 6px;
+    min-width:58px;
+    border-radius:0;
+    /* draw a 1px dotted black focus ring inside, very Win95 */
+    box-shadow:inset 0 0 0 1px var(--gray);
+    text-shadow:1px 1px 0 #FFFFFF;
+  }
+  .expand-btn:hover, .range-btn:hover{
+    background:#D8D8D8;
+  }
+  .expand-btn:active, .range-btn:active{
+    border:2px inset var(--gray);
+    background:#B8B8B8;
+    padding:6px 13px 5px 15px;   /* tiny shift so text moves down-right when pressed */
+  }
+  .range-btn.active{
+    border:2px inset var(--gray);
+    background:var(--hi-yellow);
+    color:#000;
+    box-shadow:inset 0 0 0 1px #998800;
+  }
+  .range-row{
+    display:flex; gap:6px; justify-content:center;
+    padding:8px 6px 8px; flex-wrap:wrap;
+    background:var(--gray-bg);
+    border-top:1px solid var(--gray-shade);
+  }
+
+  /* Chart card — bevel with white inset */
+  .chart-card{ padding:6px 4px 4px; background:#FFFFFF }
+
+  /* =====================================================================
+     CHART support — keep page scroll over Plotly
+     ===================================================================== */
+  #aapl-chart,#chart-forecast-chart,#chart-yoy-chart,#chart-expenses-chart,
+  #chart-segments-prod-chart,#chart-segments-geo-chart,#chart-fwd-est-chart,
+  #chart-balance-chart,#chart-epsdiv-chart,#chart-valuation-chart,#chart-impliedgrowth-chart{
+    touch-action:pan-y; -webkit-user-select:none; user-select:none;
+  }
+
+  /* =====================================================================
+     LEGEND STRIPS — beveled gray plate
+     ===================================================================== */
+  .seg-strip, .yoy-strip{
+    display:flex; flex-wrap:wrap; gap:4px 12px; justify-content:center;
+    font-family:Arial,sans-serif; font-size:10px;
+    color:#000; font-weight:700; letter-spacing:.3px;
+    margin:6px 6px; padding:4px 6px;
+    background:var(--gray-bg);
+    border:2px inset var(--gray);
+    text-transform:uppercase;
+  }
+  .seg-key, .yoy-key{ display:inline-flex; align-items:center; gap:4px; white-space:nowrap }
+  .seg-dot, .yoy-dot{
+    display:inline-block; width:10px; height:10px;
+    border:1px solid #000;
+    border-radius:0;   /* SQUARE in 1999, no rounded blobs */
+  }
+  .seg-divider{
+    border:none; height:0; padding:0;
+    margin:14px 6px 6px;
+    border-top:2px groove var(--gray);
+  }
+
+  /* =====================================================================
+     LINKS — underlined blue, visited purple. CLASSIC.
+     ===================================================================== */
+  a{
+    color:var(--link); text-decoration:underline; border:none;
+  }
+  a:visited{ color:var(--link-visited) }
+  a:hover{ color:#FF0000 }
+  .hl{ text-decoration:none }
+  .meta{
+    font-family:"Times New Roman",serif; font-style:italic;
+    font-size:11px; color:#000; text-align:center; padding:10px;
+    background:var(--gray-bg);
+    border:1px solid var(--gray-shade);
+  }
+
+  /* =====================================================================
+     "Best viewed in..." footer (purely vibes)
+     ===================================================================== */
+  .wrap::after{
+    content:"Best viewed in Netscape Navigator 4.7 or Internet Explorer 5 at 800×600. © 1999 Nick's Stock Financials. All quotes delayed at least 20 minutes. Hit Counter: 0008142";
+    display:block;
+    font-family:"Times New Roman",serif; font-size:10px; font-style:italic;
+    color:#222;
+    background:var(--gray);
+    border:2px ridge var(--gray);
+    padding:6px 10px;
+    text-align:center;
+    margin:6px -6px 0;
+    box-shadow:inset 0 1px 0 #FFFFFF;
+  }
+
+  /* =====================================================================
+     RESPONSIVE
+     ===================================================================== */
+  @media (max-width:640px){
+    .wrap{ padding:0 4px 0 }
+    .wrap::before{ font-size:10px; padding:4px 0 }
+    .ticker-name{ font-size:13px; padding:5px 8px 4px }
+    .ticker-name::after{ font-size:9px; padding:1px 4px; right:6px }
+    .m-val{ font-size:13px }
+    .m-lbl{ font-size:8px }
+    .data-table > h2{ font-size:11px; padding:4px 8px 3px }
+    .data-table > h2::after{ font-size:8px; padding:1px 3px; right:4px }
+    .hl-list{ margin:4px }
+  }
+
+  /* All Plotly chart containers — block page-scroll capture */
+  [id^="chart-"]{ touch-action:pan-y; -webkit-user-select:none; user-select:none; }
+  .ticker-status{
+    font-family:"Courier New",monospace; font-size:10px; color:#FFFFAA;
+    background:#000080; padding:6px 10px; text-align:center;
+    border:2px ridge #C0C0C0; margin:0 -6px 6px;
+    text-shadow:0 0 4px rgba(255,255,170,.5);
+  }
+  .ticker-status.error{ color:#FF6666; background:#660000; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="ticker-status" id="ticker-status">› LOADING TICKER DATA…</div>
+
+  <!-- Ticker header + metric grid -->
+  <div class="ticker-card">
+    <h1 class="ticker-name" id="sect-ticker-name">—</h1>
+    <div class="metrics" id="sect-metrics"></div>
+    <p class="m-footnote" id="sect-metrics-footnote"></p>
+  </div>
+
+  <!-- All section containers, hidden until populated -->
+  <div class="data-table headlines-card" id="sect-headlines-card" style="display:none">
+    <h2>Latest Headlines</h2>
+    <div class="hl-list" id="sect-headlines"></div>
+  </div>
+
+  <div class="data-table" id="sect-financial-card" style="display:none">
+    <h2>Revenue, Net Income, EPS</h2>
+    <div class="chart-card">
+      <div id="chart-financial" style="height:620px"></div>
+      <div class="range-row" id="sect-financial-buttons">
+        <button class="range-btn" data-years="5">5Y</button>
+        <button class="range-btn active" data-years="10">10Y</button>
+        <button class="range-btn" data-years="15">15Y</button>
+        <button class="range-btn" data-years="0">MAX</button>
+      </div>
+    </div>
+    <div id="sect-financial-table"></div>
+  </div>
+
+  <div class="data-table" id="sect-forecast-card" style="display:none">
+    <h2>Forecasts</h2>
+    <div id="chart-forecast" style="height:520px"></div>
+    <div id="sect-forecast-table"></div>
+    <p class="m-footnote" id="sect-forecast-footnote"></p>
+  </div>
+
+  <div class="data-table" id="sect-yoy-card" style="display:none">
+    <h2>Y/Y % Change</h2>
+    <div id="sect-yoy-legend"></div>
+    <div id="chart-yoy" style="height:360px"></div>
+    <div id="sect-yoy-table"></div>
+    <p class="m-footnote">YoY % change of annual values. Forecast years (E) use analyst consensus. Cells coloured green for growth, red for decline.</p>
+  </div>
+
+  <div class="data-table" id="sect-expenses-card" style="display:none">
+    <h2>Expenses</h2>
+    <div id="chart-expenses" style="height:720px"></div>
+    <div id="sect-expenses-table-abs"></div>
+    <div id="sect-expenses-table-chg"></div>
+    <p class="m-footnote">From SEC 10-K filings (EDGAR). Top chart compares revenue alongside each operating-expense category. Bottom chart shows each expense as a % of revenue (stacked); the gap to 100% is operating margin.</p>
+  </div>
+
+  <div class="data-table" id="sect-segments-card" style="display:none">
+    <h2>Segment Performance</h2>
+    <div id="sect-prod-legend"></div>
+    <div id="chart-segments-prod" style="height:320px"></div>
+    <div id="sect-prod-table"></div>
+    <div class="seg-divider"></div>
+    <div id="sect-geo-legend"></div>
+    <div id="chart-segments-geo" style="height:320px"></div>
+    <div id="sect-geo-table"></div>
+    <p class="m-footnote" id="sect-segments-footnote"></p>
+  </div>
+
+  <div class="data-table" id="sect-fwdest-card" style="display:none">
+    <h2>Forward Estimate History</h2>
+    <div id="sect-fwdest-legend"></div>
+    <div id="chart-fwd-est" style="height:480px"></div>
+    <div id="sect-fwdest-table"></div>
+    <p class="m-footnote">How analyst consensus for each fiscal year has evolved over the last six months. Dotted vertical lines mark quarterly earnings releases.</p>
+  </div>
+
+  <div class="data-table" id="sect-balance-card" style="display:none">
+    <h2>Balance Sheet</h2>
+    <div id="sect-balance-legend"></div>
+    <div id="chart-balance" style="height:320px"></div>
+    <div id="sect-balance-table"></div>
+    <p class="m-footnote">Latest FY 10-K snapshot from EDGAR.</p>
+  </div>
+
+  <div class="data-table" id="sect-epsdiv-card" style="display:none">
+    <h2>EPS &amp; Dividend</h2>
+    <div id="sect-epsdiv-legend"></div>
+    <div id="chart-epsdiv" style="height:380px"></div>
+    <p class="m-footnote" id="sect-epsdiv-footnote"></p>
+  </div>
+
+  <div class="data-table" id="sect-valuation-card" style="display:none">
+    <h2>Valuation</h2>
+    <div id="sect-valuation-legend"></div>
+    <div id="chart-valuation" style="height:320px"></div>
+    <div id="sect-valuation-assumptions"></div>
+    <div id="sect-valuation-table"></div>
+    <p class="m-footnote">Valuation comparison using illustrative target P/E multiples applied to TTM and forward EPS.</p>
+  </div>
+
+  <div class="data-table" id="sect-impliedgrowth-card" style="display:none">
+    <h2>Implied Growth</h2>
+    <div id="sect-impliedgrowth-legend"></div>
+    <div id="chart-impliedgrowth" style="height:320px"></div>
+    <div id="sect-impliedgrowth-table"></div>
+    <p class="m-footnote">Implied growth = (P/E ÷ 10)<sup>0.1</sup> + 10Y yield − 1, computed daily.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function setStatus(msg, isErr){
+    var el = $('ticker-status');
+    if(!el) return;
+    el.textContent = msg;
+    el.classList.toggle('error', !!isErr);
+    el.style.display = '';
+  }
+  function getQuery(name){
+    var m = location.search.match(new RegExp('[?&]'+name+'=([^&]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function show(id){ var e = $(id); if(e) e.style.display = ''; }
+
+  var ticker = (getQuery('t') || getQuery('ticker') || 'AAPL').toUpperCase();
+  document.title = ticker + " — Nick's Stock Financials";
+
+  fetch('ticker_data/' + ticker + '.json', {cache: 'no-cache'})
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(d){ render(d); var t=$('ticker-status'); if(t) t.style.display='none'; })
+    .catch(function(err){
+      setStatus('› ERROR loading ' + ticker + ': ' + err.message, true);
+      console.error(err);
+    });
+
+  function render(d){
+    $('sect-ticker-name').textContent = d.name || d.ticker;
+
+    // Metrics
+    var metricsEl = $('sect-metrics');
+    metricsEl.innerHTML = '';
+    (d.metrics || []).forEach(function(m){
+      var sub = m.sub ? '<span class="m-sub">' + m.sub + '</span>' : '';
+      metricsEl.insertAdjacentHTML('beforeend',
+        '<div class="m"><div class="m-lbl">' + m.label + '</div>' +
+        '<div class="m-val">' + m.value + sub + '</div></div>');
+    });
+    if(d.metrics_footnote) $('sect-metrics-footnote').innerHTML = d.metrics_footnote;
+
+    // Headlines
+    if((d.headlines || []).length){
+      var hl = $('sect-headlines');
+      d.headlines.forEach(function(h){
+        hl.insertAdjacentHTML('beforeend',
+          '<a class="hl" href="' + h.url + '" target="_blank" rel="noopener">' +
+          '<div class="hl-title">' + h.title + '</div>' +
+          '<div class="hl-meta">' + h.src + ' • ' + h.time_ago + '</div></a>');
+      });
+      show('sect-headlines-card');
+    }
+
+    // HTML strings -> innerHTML on target elements
+    var htmlMap = d.html || {};
+    var sections = [
+      ['financial', 'sect-financial-table'],
+      ['forecast', 'sect-forecast-table'],
+      ['forecast_footnote', 'sect-forecast-footnote'],
+      ['yoy_legend', 'sect-yoy-legend'],
+      ['yoy_table', 'sect-yoy-table'],
+      ['expenses_abs', 'sect-expenses-table-abs'],
+      ['expenses_chg', 'sect-expenses-table-chg'],
+      ['prod_legend', 'sect-prod-legend'],
+      ['prod_table', 'sect-prod-table'],
+      ['geo_legend', 'sect-geo-legend'],
+      ['geo_table', 'sect-geo-table'],
+      ['segments_footnote', 'sect-segments-footnote'],
+      ['fwdest_legend', 'sect-fwdest-legend'],
+      ['fwdest_table', 'sect-fwdest-table'],
+      ['balance_legend', 'sect-balance-legend'],
+      ['balance_table', 'sect-balance-table'],
+      ['epsdiv_legend', 'sect-epsdiv-legend'],
+      ['epsdiv_footnote', 'sect-epsdiv-footnote'],
+      ['valuation_legend', 'sect-valuation-legend'],
+      ['valuation_assumptions', 'sect-valuation-assumptions'],
+      ['valuation_table', 'sect-valuation-table'],
+      ['impliedgrowth_legend', 'sect-impliedgrowth-legend'],
+      ['impliedgrowth_table', 'sect-impliedgrowth-table']
+    ];
+    sections.forEach(function(s){
+      var val = htmlMap[s[0]];
+      if(val != null){ var el = $(s[1]); if(el) el.innerHTML = val; }
+    });
+
+    // Plotly figures
+    var figs = d.figures || {};
+    var cfg = {
+      displayModeBar: false, responsive: true, scrollZoom: false,
+      doubleClick: false, showAxisDragHandles: false, staticPlot: false
+    };
+    Object.keys(figs).forEach(function(divId){
+      var fig = figs[divId];
+      var el = document.getElementById(divId);
+      if(!fig || !el) return;
+      try { Plotly.newPlot(divId, fig.data, fig.layout, cfg); }
+      catch(e){ console.error('Plotly error on ' + divId, e); return; }
+      var card = el.closest('.data-table');
+      if(card) card.style.display = '';
+    });
+
+    // Force-show cards that only have tables (no chart)
+    ['fwdest_table','balance_table','valuation_table','impliedgrowth_table','epsdiv_footnote']
+      .forEach(function(k){
+        if(htmlMap[k]){
+          var section = {fwdest_table:'sect-fwdest-card', balance_table:'sect-balance-card',
+                          valuation_table:'sect-valuation-card',
+                          impliedgrowth_table:'sect-impliedgrowth-card',
+                          epsdiv_footnote:'sect-epsdiv-card'}[k];
+          if(section) show(section);
+        }
+      });
+
+    if(d.financial_meta) wireRangeButtons(d.financial_meta);
+    wireFinancialTableToggle();
+  }
+
+  function wireRangeButtons(meta){
+    var N = meta.n;
+    var REV_FULL = meta.rev_labels_full, REV_SHORT = meta.rev_labels_short;
+    var EPS_FULL = meta.eps_labels_full, EPS_SHORT = meta.eps_labels_short;
+    var chart = $('chart-financial');
+    var buttons = document.querySelectorAll('#sect-financial-buttons .range-btn');
+    function setRange(y){
+      var startIdx = y === 0 ? 0 : Math.max(0, N - y);
+      var range = [startIdx - 0.5, N - 0.5];
+      var span = (y === 0 ? N : y);
+      var useShort = span > 10;
+      Plotly.relayout(chart, {
+        'xaxis.range': range, 'xaxis2.range': range,
+        'xaxis.ticktext': useShort ? REV_SHORT : REV_FULL,
+        'xaxis2.ticktext': useShort ? EPS_SHORT : EPS_FULL,
+        'xaxis.tickangle': useShort ? -45 : 0,
+        'xaxis2.tickangle': useShort ? -45 : 0
+      });
+      buttons.forEach(function(b){ b.classList.toggle('active', String(y) === b.dataset.years); });
+    }
+    buttons.forEach(function(b){
+      b.addEventListener('click', function(){ setRange(parseInt(b.dataset.years, 10)); });
+    });
+  }
+
+  function wireFinancialTableToggle(){
+    var ftTbl = document.querySelector('#sect-financial-table table.ft');
+    var ftBtn = document.querySelector('#sect-financial-table #ft-toggle');
+    if(ftBtn && ftTbl){
+      ftTbl.classList.add('collapsed');
+      var total = ftBtn.dataset.total || '20';
+      ftBtn.textContent = 'Show all ' + total + ' years';
+      ftBtn.addEventListener('click', function(){
+        if(ftTbl.classList.contains('collapsed')){
+          ftTbl.classList.remove('collapsed'); ftBtn.textContent = 'Collapse';
+        } else {
+          ftTbl.classList.add('collapsed'); ftBtn.textContent = 'Show all ' + total + ' years';
+        }
+      });
+    }
+  }
+})();
+</script>
+</body>
+</html>
