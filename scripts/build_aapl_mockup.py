@@ -27,7 +27,10 @@ from plotly.subplots import make_subplots
 
 
 HEADERS = {"User-Agent": "Nick Daly StockFinances ndaly111@gmail.com"}
-EDGAR_CONCEPT = "https://data.sec.gov/api/xbrl/companyconcept/CIK{cik}/us-gaap/{concept}.json"
+# Try us-gaap first (standard US issuers), then ifrs-full (foreign issuers
+# filing 20-F under IFRS — e.g. BUD, SPOT).
+EDGAR_CONCEPT_TAXONOMIES = ("us-gaap", "ifrs-full")
+EDGAR_CONCEPT = "https://data.sec.gov/api/xbrl/companyconcept/CIK{cik}/{taxonomy}/{concept}.json"
 CIK = "0000320193"  # AAPL
 TICKER = "AAPL"
 OUT_FILE = Path(__file__).resolve().parents[1] / "aapl_mockup.html"
@@ -35,26 +38,28 @@ OUT_FILE = Path(__file__).resolve().parents[1] / "aapl_mockup.html"
 
 # -------------------------- EDGAR helpers ----------------------------------
 def fetch_concept(concept: str, fallbacks: tuple[str, ...] = ()) -> list[dict]:
-    """Merge results from concept + fallbacks (companies often switch tag names
-    over time, e.g. AAPL Revenues → RevenueFromContractWithCustomer at ASC 606
-    adoption in 2018)."""
+    """Merge results from concept + fallbacks across us-gaap and ifrs-full
+    taxonomies. Companies switch tag names over time (e.g. AAPL
+    Revenues → RevenueFromContractWithCustomer at ASC 606 adoption in 2018);
+    foreign filers (20-F) report under ifrs-full rather than us-gaap."""
     combined: list[dict] = []
     seen_keys: set = set()
     for c in (concept, *fallbacks):
-        url = EDGAR_CONCEPT.format(cik=CIK, concept=c)
-        r = requests.get(url, headers=HEADERS, timeout=30)
-        if r.status_code != 200:
-            continue
-        units = r.json().get("units", {})
-        for key in ("USD", "USD/shares"):
-            if key in units and units[key]:
-                for v in units[key]:
-                    dedupe = (v.get("start"), v.get("end"), v.get("form"))
-                    if dedupe in seen_keys:
-                        continue
-                    seen_keys.add(dedupe)
-                    combined.append(v)
-                break  # take first matching unit per concept
+        for tax in EDGAR_CONCEPT_TAXONOMIES:
+            url = EDGAR_CONCEPT.format(cik=CIK, taxonomy=tax, concept=c)
+            r = requests.get(url, headers=HEADERS, timeout=30)
+            if r.status_code != 200:
+                continue
+            units = r.json().get("units", {})
+            for key in ("USD", "USD/shares"):
+                if key in units and units[key]:
+                    for v in units[key]:
+                        dedupe = (v.get("start"), v.get("end"), v.get("form"))
+                        if dedupe in seen_keys:
+                            continue
+                        seen_keys.add(dedupe)
+                        combined.append(v)
+                    break  # take first matching unit per concept
     return combined
 
 
@@ -70,12 +75,16 @@ def fy_label(ts) -> str:
     return str(d.year)
 
 
+_ANNUAL_FORMS = ("10-K", "20-F", "40-F")
+
+
 def annual_series(entries: list[dict]) -> pd.Series:
-    """Annual values from 10-K filings (span ~363 days)."""
+    """Annual values from 10-K (US issuers), 20-F (foreign), or 40-F
+    (Canadian) filings — span ~363 days."""
     out: dict[pd.Timestamp, float] = {}
     for v in entries:
         sd, ed, val = v.get("start"), v.get("end"), v.get("val")
-        if not sd or not ed or val is None or v.get("form") != "10-K":
+        if not sd or not ed or val is None or v.get("form") not in _ANNUAL_FORMS:
             continue
         try:
             span = (dt.date.fromisoformat(ed) - dt.date.fromisoformat(sd)).days
@@ -119,8 +128,13 @@ def main() -> int:
                           "RevenueFromContractWithCustomerIncludingAssessedTax",
                           # Banks net interest income against interest expense (GS, etc.)
                           "RevenuesNetOfInterestExpense",
-                          "SalesRevenueNet"))
-    ni = fetch_concept("NetIncomeLoss")
+                          "SalesRevenueNet",
+                          # IFRS naming (20-F foreign filers under ifrs-full): BUD, SPOT
+                          "Revenue"))
+    # IFRS uses ProfitLoss for net income (BUD, SPOT). ProfitLossFromContinuingOperations
+    # is sometimes the cleaner figure when companies have discontinued operations.
+    ni = fetch_concept("NetIncomeLoss",
+                       ("ProfitLoss", "ProfitLossFromContinuingOperations"))
     eps_entries = fetch_concept("EarningsPerShareDiluted",
                                 ("EarningsPerShareBasic",))
 
@@ -303,6 +317,11 @@ def main() -> int:
     def append_ttm(annual: pd.Series, ttm: pd.Series) -> pd.Series:
         ttm = ttm.dropna()
         annual_max = annual.index.max() if not annual.empty else None
+        # Foreign filers (20-F) only file annual data, so ttm comes back empty
+        # with a RangeIndex that can't be compared to a Timestamp. Skip the
+        # post-FY filter in that case and just return the annuals.
+        if ttm.empty or not isinstance(ttm.index, pd.DatetimeIndex):
+            return annual if annual_max is not None else ttm
         # Take the TTM points reported AFTER the most recent FY end
         if annual_max is not None:
             post = ttm[ttm.index > annual_max]
@@ -1302,7 +1321,10 @@ def main() -> int:
         edpe_eps.append(float(v))
         edpe_div.append(float(div_a.get(div_yr, 0.0)))
         edpe_fc.append(0)
-    # TTM EPS
+    # TTM EPS — foreign filers (20-F) only file annual data, so last_eps_ttm
+    # may be None. Use the last annual EPS as the fallback in that case.
+    if last_eps_ttm is None:
+        last_eps_ttm = float(eps_a.iloc[-1]) if not eps_a.empty else 0.0
     edpe_x.append("TTM")
     edpe_eps.append(float(last_eps_ttm))
     edpe_div.append(float(div_a.tail(4).sum()) if not div_a.empty else 0.0)
