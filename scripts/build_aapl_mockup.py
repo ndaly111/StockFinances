@@ -114,6 +114,11 @@ def main() -> int:
     print("Fetching AAPL EDGAR data...")
     rev = fetch_concept("Revenues",
                          ("RevenueFromContractWithCustomerExcludingAssessedTax",
+                          # IncludingAssessedTax catches retailers/consumer cos that report
+                          # gross-of-excise-tax (BIRD, VLO, KHC, …)
+                          "RevenueFromContractWithCustomerIncludingAssessedTax",
+                          # Banks net interest income against interest expense (GS, etc.)
+                          "RevenuesNetOfInterestExpense",
                           "SalesRevenueNet"))
     ni = fetch_concept("NetIncomeLoss")
     eps_entries = fetch_concept("EarningsPerShareDiluted",
