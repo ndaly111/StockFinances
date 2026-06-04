@@ -6,378 +6,361 @@
 <title>AAPL — Facilities / D&A (Plotly mockup)</title>
 <style>
   /* =========================================================================
-     CORPORATE SAPPHIRE TERMINAL · 2003 Aqua-meets-Bloomberg aesthetic
-     Brushed silver chrome, sapphire title strips with glass highlights,
-     gel buttons, amber LCD price displays, hairline borders. Trebuchet MS,
-     Verdana, Lucida Console — the holy trinity of 2003 corporate web.
+     NASDAQ ON THE WEB · 1999 dot-com terminal aesthetic
+     Beveled Windows 95 chrome, Times New Roman bodies, Arial Black headers,
+     Courier New tickers, ▲▼ arrows, yellow price highlights, navy title bars,
+     a marquee at the top, dotted dividers, and a blinking LIVE indicator.
+     Best viewed in 800x600. © 1999. All quotes delayed 20 minutes.
      ========================================================================= */
   :root{
-    --frame:#0c3978; --frame2:#1851a5; --frame-hi:#4a82d6; --frame-shine:#9bc4f7;
-    --steel-1:#e8edf3; --steel-2:#cfd7e2; --steel-3:#a8b3c2; --steel-4:#7c8a9d;
-    --chrome-edge:#adb7c4; --chrome-bright:#ffffff;
-    --lcd-bg-1:#0a2348; --lcd-bg-2:#0c2e62; --lcd-amber:#ffae3d; --lcd-amber-glow:rgba(255,174,61,.35);
-    --lcd-mint:#6df7c4;
-    --positive:#00a651; --positive-shadow:rgba(0,166,81,.25);
-    --negative:#cc0000; --negative-shadow:rgba(204,0,0,.25);
-    --text:#13243f; --text-soft:#4a5a78; --hairline:#9faab9;
-    --aqua-top:#a9d2f9; --aqua-mid:#3c87d6; --aqua-low:#1a5aa2;
+    --navy:#000080;          /* THE 1999 color */
+    --navy-dim:#000060;
+    --navy-bright:#3333AA;
+    --gray:#C0C0C0;          /* Windows 95 chrome */
+    --gray-shade:#808080;
+    --gray-deep:#404040;
+    --gray-bg:#DDDDDD;
+    --bg-yellow:#FFFFCC;     /* highlight cells */
+    --hi-yellow:#FFFF00;     /* hot highlights */
+    --mustard:#FFCC00;       /* rule lines */
+    --tick-up:#008000;       /* stock-ticker green */
+    --tick-up-bg:#CCFFCC;
+    --tick-down:#CC0000;     /* stock-ticker red */
+    --tick-down-bg:#FFCCCC;
+    --link:#0000EE;          /* unvisited blue */
+    --link-visited:#551A8B;  /* visited purple */
+    --text:#000000;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
+  *{ box-sizing:border-box }
+  html,body{ margin:0; padding:0 }
 
-  /* ---- Page background: brushed silver with pinstripes + vignette ------ */
+  /* ---- Page background: TILED diagonal "weave" pattern ---------------- */
   body{
-    font-family:Verdana,Geneva,Tahoma,sans-serif;
-    color:var(--text);
-    -webkit-font-smoothing:antialiased;
-    background:
-      /* Faint pinstripes */
-      repeating-linear-gradient(0deg, rgba(255,255,255,.32) 0 1px, transparent 1px 3px),
-      /* Vignette */
-      radial-gradient(ellipse at 50% 0%, #f4f7fb 0%, #cfd7e2 60%, #a8b3c2 100%) fixed;
+    font-family:"Times New Roman",Times,serif;
+    color:var(--text); font-size:13px; line-height:1.35;
+    /* Faux-tiled background — diagonal weave that REPEATS like a 1999 BG image */
+    background-color:#9999BB;
+    background-image:
+      repeating-linear-gradient( 45deg, rgba(255,255,255,.18) 0 2px, transparent 2px 8px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,.10)        0 2px, transparent 2px 8px),
+      linear-gradient(180deg, #9faabe 0%, #7e8aa6 100%);
+    background-attachment:fixed;
     min-height:100vh;
   }
 
-  /* Subtle CRT scanlines, very low opacity, fixed under everything */
-  body::before{
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:1;
-    background:repeating-linear-gradient(0deg, rgba(8,30,72,.04) 0 1px, transparent 1px 3px);
-    mix-blend-mode:multiply;
-  }
-
-  .wrap{max-width:980px; margin:0 auto; padding:14px 12px 32px; position:relative; z-index:2}
+  .wrap{ max-width:980px; margin:0 auto; padding:0 6px 0 }
 
   /* =====================================================================
-     CARD CHASSIS · the universal panel shape
+     MARQUEE BANNER at the very top — pure 1999 ticker tape
      ===================================================================== */
+  .wrap::before{
+    content:"◄ ▌NASDAQ +1.42% ▲   ▌DJIA -0.31% ▼   ▌S&P 500 +0.88% ▲   ▌AAPL $310.26 ▲ +1.24   ▌MSFT $427.34 ▲ +0.42   ▌DELAYED 20 MIN. ALL QUOTES IN US$.   ▌STREAMING QUOTES. POWERED BY NICK'S STOCK FINANCIALS™   ►";
+    display:block;
+    background:#000000;
+    color:var(--hi-yellow);
+    font-family:"Courier New",Courier,monospace;
+    font-size:12px; font-weight:700; letter-spacing:.5px;
+    white-space:nowrap; overflow:hidden;
+    padding:5px 0;
+    border-top:2px solid var(--navy);
+    border-bottom:2px solid var(--navy);
+    box-shadow:inset 0 -1px 0 #FFFFFF, inset 0 1px 0 #FFFFFF;
+    margin:0 -6px 6px;
+    text-shadow:0 0 4px rgba(255,255,0,.5);
+    /* CSS-only marquee — animated translate */
+    animation:ticker 38s linear infinite;
+    transform:translateX(100%);
+  }
+  @keyframes ticker{
+    from{ transform:translateX(100%) }
+    to  { transform:translateX(-100%) }
+  }
+
+  /* ===================================================================== */
+  /* CARD CHASSIS · Windows 95 raised bevel — outset borders                */
+  /* ===================================================================== */
   .ticker-card, .data-table, .chart-card{
-    position:relative; margin-bottom:14px;
-    background:linear-gradient(180deg, #fbfcfd 0%, #eef2f7 100%);
-    border:1px solid var(--chrome-edge);
-    border-radius:6px;
-    box-shadow:
-      inset 0 1px 0 var(--chrome-bright),
-      inset 0 0 0 1px #f2f5f9,
-      0 1px 0 rgba(255,255,255,.7),
-      0 2px 0 rgba(0,0,0,.04),
-      0 4px 12px rgba(12,57,120,.14),
-      0 1px 30px rgba(12,57,120,.06);
-    padding:10px 12px 12px;
-  }
-
-  /* All h2 headers get a chrome sapphire title strip with glass-shine top */
-  .data-table > h2{
-    font-family:"Trebuchet MS",Verdana,sans-serif;
-    font-weight:700; font-size:13px; letter-spacing:.4px; text-transform:uppercase;
-    color:#fff;
-    margin:-10px -12px 12px;
-    padding:7px 14px 7px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.45) 0%, rgba(255,255,255,0) 50%),
-      linear-gradient(180deg, var(--frame-hi) 0%, var(--frame2) 48%, var(--frame) 100%);
-    border-radius:6px 6px 0 0;
-    border-bottom:1px solid #062251;
-    box-shadow:
-      inset 0 1px 0 var(--frame-shine),
-      inset 0 -1px 0 rgba(0,0,0,.18);
-    text-shadow:0 -1px 0 rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.15);
+    background:#FFFFFF;
+    border:2px outset var(--gray);
+    margin-bottom:8px;
+    padding:0;
     position:relative;
   }
-  /* Tiny diamond accent on the title strip (very 2003) */
-  .data-table > h2::before{
-    content:"◆"; color:var(--lcd-amber); margin-right:8px;
-    text-shadow:0 0 6px var(--lcd-amber-glow), 0 1px 0 rgba(0,0,0,.4);
-    font-size:9px; vertical-align:1px;
+  .data-table, .chart-card{
+    padding:0;
   }
+
+  /* All section H2 = NAVY title bar with WHITE Arial Black text */
+  .data-table > h2{
+    font-family:Arial Black,Arial,sans-serif;
+    font-weight:900; font-size:13px;
+    color:#FFFFFF;
+    background:var(--navy);
+    border-bottom:2px ridge var(--gray);
+    margin:0;
+    padding:4px 8px 3px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    /* drop-down arrow + slash decoration, very 1999 */
+    border-top:1px solid #4444CC;
+    box-shadow:inset 0 1px 0 #4444CC;
+    position:relative;
+  }
+  .data-table > h2::before{
+    content:"» "; color:var(--hi-yellow);
+    text-shadow:0 0 4px rgba(255,255,0,.6);
+  }
+  .data-table > h2::after{
+    content:"[ UPDATED ]"; position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    font-family:"Courier New",monospace; font-size:9px; letter-spacing:1px;
+    color:var(--hi-yellow); font-weight:700;
+    background:var(--navy-dim); padding:1px 4px;
+    border:1px solid #4444CC;
+    animation:blink 1.6s steps(2) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:.25 } }
+
+  /* mustard accent rule under titles */
+  .data-table > h2 + *{ margin-top:0 }
+
+  /* Internal padding for sections */
+  .data-table > *:not(h2){ margin-left:6px; margin-right:6px }
+  .data-table > p.m-footnote{ margin-bottom:6px }
+  .data-table > div[style*="overflow-x"]{ margin-top:6px; margin-bottom:6px }
+  .data-table > .seg-strip, .data-table > .yoy-strip{ margin-left:6px; margin-right:6px }
 
   /* =====================================================================
-     TICKER HERO CARD · the big LCD readout up top
+     TICKER HERO CARD — navy bar + Arial Black + Win95 metric cells
      ===================================================================== */
-  .ticker-card{
-    padding-top:0; overflow:hidden;
-  }
+  .ticker-card{ padding:0 }
   .ticker-name{
-    font-family:"Trebuchet MS",Verdana,sans-serif;
-    font-weight:700;
-    font-size:18px; letter-spacing:.6px;
-    color:#fff;
-    margin:0 -12px 12px;
-    padding:9px 14px 8px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 50%),
-      linear-gradient(180deg, var(--frame-hi) 0%, var(--frame2) 48%, var(--frame) 100%);
-    border-bottom:1px solid #062251;
-    box-shadow:
-      inset 0 1px 0 var(--frame-shine),
-      inset 0 -1px 0 rgba(0,0,0,.18);
-    text-shadow:0 -1px 0 rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.15);
-    border-radius:6px 6px 0 0;
+    font-family:Arial Black,Arial,sans-serif;
+    font-weight:900; font-size:16px;
+    color:#FFFFFF;
+    background:var(--navy);
+    margin:0;
+    padding:5px 10px 4px;
+    letter-spacing:.5px;
+    border-bottom:2px ridge var(--gray);
+    border-top:1px solid #4444CC;
+    box-shadow:inset 0 1px 0 #4444CC;
     position:relative;
+    text-transform:uppercase;
+  }
+  .ticker-name::before{
+    content:"› "; color:var(--hi-yellow);
   }
   .ticker-name::after{
-    content:"LIVE"; position:absolute; right:14px; top:50%; transform:translateY(-50%);
-    font-family:"Lucida Console",monospace; font-size:9px; letter-spacing:1.5px;
-    color:var(--lcd-amber); padding:2px 6px;
-    background:rgba(0,0,0,.35); border:1px solid var(--lcd-amber); border-radius:2px;
-    text-shadow:0 0 6px var(--lcd-amber-glow); font-weight:400;
-    box-shadow:inset 0 0 8px rgba(255,174,61,.15);
-    animation:pulseLive 2.4s ease-in-out infinite;
-  }
-  @keyframes pulseLive{
-    0%,100%{ opacity:1; box-shadow:inset 0 0 8px rgba(255,174,61,.15)}
-    50%{ opacity:.55; box-shadow:inset 0 0 14px rgba(255,174,61,.45)}
+    content:"◉ LIVE"; position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-family:"Courier New",monospace; font-size:10px; letter-spacing:1px;
+    color:#FF3333; font-weight:700;
+    background:#000000; padding:2px 5px;
+    border:1px solid #FF3333;
+    box-shadow:0 0 4px rgba(255,0,0,.5);
+    animation:blink 1.2s steps(2) infinite;
   }
 
-  /* Metrics grid · LCD-style dark navy readouts */
-  .metrics{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
-  .m{
-    position:relative;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 35%),
-      linear-gradient(180deg, var(--lcd-bg-2) 0%, var(--lcd-bg-1) 100%);
-    border:1px solid #08183a;
-    border-radius:3px;
-    padding:8px 6px 7px;
-    text-align:center; min-height:62px;
-    display:flex; flex-direction:column; justify-content:center;
-    box-shadow:
-      inset 0 1px 0 rgba(100,160,255,.3),
-      inset 0 0 14px rgba(255,174,61,.04),
-      0 1px 0 rgba(255,255,255,.6);
-    overflow:hidden;
+  .metrics{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:3px;
+    background:var(--gray); padding:4px;
+    border-top:1px solid #FFFFFF;
   }
-  /* LCD pixel scanlines inside metric cells */
-  .m::before{
-    content:""; position:absolute; inset:0; pointer-events:none;
-    background:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, transparent 1px 2px);
+  .m{
+    background:#000000;
+    border:2px inset var(--gray);   /* sunken LCD bezel */
+    padding:5px 4px;
+    text-align:center; min-height:54px;
+    display:flex; flex-direction:column; justify-content:center;
+    box-shadow:inset 0 0 0 1px #222;
   }
   .m-lbl{
-    font-family:"Trebuchet MS",Verdana,sans-serif;
-    font-size:9px; letter-spacing:.8px; text-transform:uppercase;
-    color:#94b5e6; line-height:1.1; margin-bottom:4px; font-weight:700;
-    text-shadow:0 1px 0 #000;
-    position:relative; z-index:1;
+    font-family:Arial,sans-serif;
+    font-size:9px; letter-spacing:1px; text-transform:uppercase;
+    color:#88CCFF; line-height:1.05; margin-bottom:3px; font-weight:700;
   }
   .m-val{
-    font-family:"Lucida Console","Courier New",monospace;
-    font-size:15px; font-weight:700; line-height:1.05;
-    color:var(--lcd-amber);
-    text-shadow:0 0 8px var(--lcd-amber-glow), 0 1px 0 #000;
-    position:relative; z-index:1;
+    font-family:"Courier New",Courier,monospace;
+    font-size:15px; font-weight:700; line-height:1;
+    color:#33FF33;   /* terminal green */
+    text-shadow:0 0 5px rgba(51,255,51,.6);
   }
   .m-sub{
-    display:block; font-family:"Lucida Console",monospace;
-    font-size:9px; color:var(--lcd-mint); margin-top:2px; font-weight:400;
-    text-shadow:0 0 4px rgba(109,247,196,.4);
+    display:block; font-family:"Courier New",monospace;
+    font-size:9px; color:#FFCC33; margin-top:2px; font-weight:700;
+    text-shadow:0 0 3px rgba(255,204,51,.5);
   }
   .m-footnote{
-    font-family:Georgia,"Times New Roman",serif;
-    font-style:italic;
-    font-size:11px; color:#5b6a85;
-    margin:10px 0 0; text-align:center;
-    padding-top:8px; border-top:1px dotted var(--hairline);
+    font-family:"Times New Roman",serif; font-style:italic;
+    font-size:11px; color:#444; text-align:center;
+    padding:6px 6px;
+    margin:0;
+    border-top:1px dashed var(--gray-shade);
+    background:var(--gray-bg);
   }
   @media (min-width:640px){ .metrics{ grid-template-columns:repeat(8,1fr) } }
 
   /* =====================================================================
-     LATEST HEADLINES · brushed steel news ticker window
+     LATEST HEADLINES — beige notepad with bullet markers
      ===================================================================== */
   .hl-list{
-    display:flex; flex-direction:column; gap:4px;
-    max-height:248px; overflow-y:auto;
-    background:
-      linear-gradient(180deg, #d8e0eb 0%, #c4cedb 100%);
-    border:1px solid var(--steel-4);
-    border-radius:3px;
-    padding:5px;
-    box-shadow:
-      inset 0 1px 2px rgba(0,0,0,.18),
-      inset 0 0 0 1px rgba(255,255,255,.4);
+    display:block;
+    max-height:250px; overflow-y:auto;
+    background:#FFFFEE;        /* legal-pad yellow */
+    border:2px inset var(--gray);
+    margin:6px;
+    padding:4px 6px;
     -webkit-overflow-scrolling:touch;
   }
-  .hl-list::-webkit-scrollbar{ width:11px }
+  .hl-list::-webkit-scrollbar{ width:16px }
   .hl-list::-webkit-scrollbar-track{
-    background:linear-gradient(180deg,#9aa6b8,#b6c1d1);
-    border-left:1px solid #6c7a8e;
+    background:var(--gray);
+    border-left:1px solid var(--gray-shade);
   }
   .hl-list::-webkit-scrollbar-thumb{
-    background:linear-gradient(180deg, #6b94d4 0%, var(--frame2) 50%, var(--frame) 100%);
-    border-radius:2px;
-    border:1px solid #062251;
-    box-shadow:inset 0 1px 0 var(--frame-shine);
+    background:var(--gray);
+    border:2px outset var(--gray);
   }
   .hl{
-    display:block; padding:7px 9px;
-    background:linear-gradient(180deg,#ffffff 0%, #f0f4fa 100%);
-    border:1px solid #b7c2d3;
-    border-radius:2px;
-    text-decoration:none; color:inherit; flex-shrink:0;
-    box-shadow:inset 0 1px 0 #fff, 0 1px 0 rgba(255,255,255,.6);
-    transition:background .12s;
+    display:block;
+    padding:4px 4px 5px 18px;
+    background:transparent;
+    border:none;
+    border-bottom:1px dotted var(--gray-shade);
+    text-decoration:none; color:inherit;
+    position:relative;
+    font-family:"Times New Roman",Times,serif;
+    margin:0;
+    border-radius:0;
   }
-  .hl:hover{
-    background:linear-gradient(180deg,#fffcf2 0%, #fff2d8 100%);
-    border-color:#d0a850;
+  .hl:last-child{ border-bottom:none }
+  .hl::before{
+    content:"►"; position:absolute; left:4px; top:5px;
+    color:var(--navy); font-size:10px;
   }
-  .hl:active{
-    background:linear-gradient(180deg,#ffeac4 0%, #ffd58a 100%);
-    box-shadow:inset 0 1px 2px rgba(180,120,0,.3);
-  }
+  .hl:hover{ background:#FFFFCC }
+  .hl:active{ background:var(--hi-yellow) }
   .hl-title{
-    font-family:"Trebuchet MS",Verdana,sans-serif;
-    font-size:12.5px; line-height:1.35; font-weight:700;
-    color:var(--frame);
+    font-family:"Times New Roman",Times,serif;
+    font-size:13px; line-height:1.3; font-weight:700;
+    color:var(--link); text-decoration:underline;
   }
+  .hl:visited .hl-title, .hl-title:visited{ color:var(--link-visited) }
   .hl-meta{
-    font-family:Verdana,sans-serif; font-size:10px;
-    color:var(--text-soft); margin-top:2px;
+    font-family:Arial,sans-serif; font-size:10px;
+    color:#555; margin-top:1px; font-style:italic;
   }
-  .hl-meta::before{ content:"▸ "; color:var(--lcd-amber) }
+  .hl-meta::before{ content:"— "; color:var(--gray-shade); font-style:normal }
 
   /* =====================================================================
-     TABLES · classic chrome headers, alternating row tints
+     TABLES — hard 1px black borders, navy headers, yellow value cells
      ===================================================================== */
   .ft{
-    width:100%; border-collapse:separate; border-spacing:0;
-    font-family:Verdana,sans-serif; font-size:12px;
-    border:1px solid var(--frame); border-radius:3px; overflow:hidden;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);
+    width:100%; border-collapse:collapse;
+    font-family:Arial,Helvetica,sans-serif; font-size:11px;
+    border:2px solid var(--navy);
+    background:#FFFFFF;
   }
   .ft th{
-    font-family:"Trebuchet MS",Verdana,sans-serif;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 50%),
-      linear-gradient(180deg, var(--frame-hi) 0%, var(--frame2) 50%, var(--frame) 100%);
-    color:#fff; font-weight:700;
-    padding:7px 5px;
-    border:none; border-right:1px solid #062251;
-    text-shadow:0 -1px 0 rgba(0,0,0,.4);
-    box-shadow:inset 0 1px 0 var(--frame-shine), inset 0 -1px 0 rgba(0,0,0,.2);
-    white-space:nowrap; letter-spacing:.3px; font-size:11px;
+    font-family:Arial Black,Arial,sans-serif; font-weight:900;
+    background:var(--navy); color:#FFFFFF;
+    padding:4px 4px;
+    border:1px solid var(--navy);
+    border-right:1px solid #4444AA;
+    text-transform:uppercase; letter-spacing:.3px; font-size:10px;
+    white-space:nowrap;
   }
-  .ft th:last-child{ border-right:none }
   .ft td{
-    padding:6px 5px;
-    border-right:1px solid #d8dfe9;
-    border-bottom:1px solid #d8dfe9;
-    background:#fbfcfd;
+    padding:3px 4px;
+    border:1px solid #888;
     text-align:center;
-    font-family:"Lucida Console","Courier New",monospace; font-size:11.5px;
+    background:#FFFFFF;
+    font-family:"Courier New",Courier,monospace; font-size:11px;
+    color:#000;
   }
-  .ft td:last-child{ border-right:none }
-  .ft tbody tr:nth-child(even) td{ background:#eef3f9 }
-  .ft tbody tr:hover td{ background:#fff6d8 }
-  .ft tbody tr:last-child td{ border-bottom:none }
+  .ft tbody tr:nth-child(even) td{ background:#EAEEF5 }   /* zebra */
+  .ft tbody tr:hover td{ background:var(--bg-yellow) }
   .ft td.year{
-    font-family:"Trebuchet MS",Verdana,sans-serif;
-    background:linear-gradient(180deg, #e4ebf3 0%, #cfd9e6 100%) !important;
-    color:var(--frame); font-weight:700; text-align:left; padding-left:9px;
-    border-right:1px solid var(--steel-3);
-    text-shadow:0 1px 0 rgba(255,255,255,.7);
-    font-size:11px;
+    font-family:Arial Black,Arial,sans-serif;
+    background:var(--gray) !important; color:#000;
+    font-weight:900; text-align:left; padding-left:6px; font-size:10px;
+    border:1px solid var(--gray-deep);
   }
   .ft td .delta{
-    display:block; font-size:10px; margin-top:1px; font-weight:700;
-    font-family:Verdana,sans-serif;
+    display:block; font-size:9px; margin-top:1px; font-weight:700;
+    font-family:Arial,sans-serif;
   }
   .ft .pos, .ft td.pos{
-    color:var(--positive); font-weight:700;
-    text-shadow:0 0 4px var(--positive-shadow);
+    color:var(--tick-up); font-weight:700; background:var(--tick-up-bg) !important;
   }
   .ft .neg, .ft td.neg{
-    color:var(--negative); font-weight:700;
-    text-shadow:0 0 4px var(--negative-shadow);
+    color:var(--tick-down); font-weight:700; background:var(--tick-down-bg) !important;
   }
+  .ft .pos::before, .ft td.pos > .delta::before{ content:"▲ " }
+  .ft .neg::before, .ft td.neg > .delta::before{ content:"▼ " }
+  /* On YoY table, the cells themselves carry pos/neg class */
+  .ft td.pos > .delta::before, .ft td.neg > .delta::before{ content:"" }
   .ft tr.ttm-row td{
-    background:linear-gradient(180deg, #fff6d4 0%, #ffeba0 100%) !important;
-    color:#6b4500; font-weight:700;
-    border-color:#d8b449;
-    text-shadow:0 1px 0 rgba(255,255,255,.6);
+    background:var(--hi-yellow) !important; color:#000; font-weight:900;
+    border:1px solid #998800;
   }
   .ft tr.ttm-row td.year{
-    background:linear-gradient(180deg, #ffe896 0%, #ffd860 100%) !important;
-    color:#3a2400; font-size:11px;
+    background:#FFCC00 !important; color:#000; font-size:10px;
   }
   .ft tr.forecast-row td{
-    background:linear-gradient(180deg, #e8f1ff 0%, #d3e3fa 100%) !important;
-    color:var(--frame); font-style:italic;
+    background:#E6E6FF !important; color:var(--navy);
+    font-style:italic; border:1px solid #6666CC;
   }
   .ft tr.forecast-row td.year{
-    background:linear-gradient(180deg, #bcd2f0 0%, #a4c0e8 100%) !important;
-    font-weight:700; font-style:normal;
+    background:#9999CC !important; color:#FFFFFF; font-weight:900; font-style:normal;
   }
 
-  /* Compact tables — let headers wrap to fit on phone */
-  .ft.ft-wrap th{ white-space:normal; line-height:1.2; font-size:10.5px; padding:6px 4px }
-  .ft.ft-wrap td{ font-size:10.5px; padding:5px 4px; vertical-align:middle }
-
-  /* Collapse extra rows */
+  .ft.ft-wrap th{ white-space:normal; line-height:1.15; font-size:10px; padding:4px 3px }
+  .ft.ft-wrap td{ font-size:10px; padding:3px 3px; vertical-align:middle }
   .ft.collapsed tr.extra-row{ display:none }
 
   /* =====================================================================
-     GEL BUTTONS · the centerpiece of 2003 UI
+     BEVELED WIN95 BUTTONS — outset/inset toggle
      ===================================================================== */
-  .expand-row{ text-align:center; padding:12px 6px 4px }
+  .expand-row{ text-align:center; padding:8px 6px 6px; background:var(--gray-bg) }
   .expand-btn, .range-btn{
     appearance:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
-    font-family:"Trebuchet MS",Verdana,sans-serif; font-weight:700;
-    color:#fff;
-    border:1px solid var(--aqua-low);
-    border-radius:11px;
-    padding:8px 18px 9px;
-    min-width:64px;
-    text-shadow:0 -1px 0 rgba(0,0,0,.35);
-    background:
-      linear-gradient(180deg,
-        var(--aqua-top) 0%,
-        #79b3eb 48%,
-        var(--aqua-mid) 49%,
-        var(--aqua-low) 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.85),
-      inset 0 -10px 14px -10px rgba(0,0,0,.25),
-      0 1px 0 rgba(255,255,255,.8),
-      0 2px 3px rgba(12,57,120,.35);
-    position:relative;
-    overflow:hidden;
-    transition:filter .12s, transform .04s;
+    font-family:Arial,sans-serif; font-weight:700; font-size:12px;
+    color:#000;
+    background:var(--gray);
+    border:2px outset var(--gray);
+    padding:5px 14px 6px;
+    min-width:58px;
+    border-radius:0;
+    /* draw a 1px dotted black focus ring inside, very Win95 */
+    box-shadow:inset 0 0 0 1px var(--gray);
+    text-shadow:1px 1px 0 #FFFFFF;
   }
-  /* Aqua glass highlight strip across the top half */
-  .expand-btn::before, .range-btn::before{
-    content:""; position:absolute; left:6%; right:6%; top:1px; height:42%;
-    background:linear-gradient(180deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.1) 100%);
-    border-radius:9px 9px 9px 9px / 12px 12px 30px 30px;
-    pointer-events:none;
+  .expand-btn:hover, .range-btn:hover{
+    background:#D8D8D8;
   }
-  .expand-btn:hover, .range-btn:hover{ filter:brightness(1.07) }
   .expand-btn:active, .range-btn:active{
-    transform:translateY(1px);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.4),
-      inset 0 2px 4px rgba(0,0,0,.25),
-      0 1px 0 rgba(255,255,255,.8);
+    border:2px inset var(--gray);
+    background:#B8B8B8;
+    padding:6px 13px 5px 15px;   /* tiny shift so text moves down-right when pressed */
   }
-  /* The "pressed in" active state — pumpkin amber gel */
   .range-btn.active{
-    background:
-      linear-gradient(180deg,
-        #ffd385 0%,
-        #ffae3d 48%,
-        #e88600 49%,
-        #b35e00 100%);
-    border-color:#8a4500;
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.7),
-      inset 0 2px 3px rgba(0,0,0,.18),
-      0 1px 0 rgba(255,255,255,.5);
+    border:2px inset var(--gray);
+    background:var(--hi-yellow);
+    color:#000;
+    box-shadow:inset 0 0 0 1px #998800;
   }
-  .range-row{ display:flex; gap:8px; justify-content:center; padding:14px 6px 6px; flex-wrap:wrap }
+  .range-row{
+    display:flex; gap:6px; justify-content:center;
+    padding:8px 6px 8px; flex-wrap:wrap;
+    background:var(--gray-bg);
+    border-top:1px solid var(--gray-shade);
+  }
 
-  /* Chart card — same chassis but slimmer padding */
-  .chart-card{ padding:6px 4px 4px }
+  /* Chart card — bevel with white inset */
+  .chart-card{ padding:6px 4px 4px; background:#FFFFFF }
 
   /* =====================================================================
-     CHART SUPPORT · stop Plotly drag stealing page scroll
+     CHART support — keep page scroll over Plotly
      ===================================================================== */
   #aapl-chart,#aapl-forecast-chart,#aapl-yoy-chart,#aapl-expenses-chart,
   #aapl-segments-prod-chart,#aapl-segments-geo-chart,#aapl-fwd-est-chart,
@@ -386,57 +369,74 @@
   }
 
   /* =====================================================================
-     LEGEND STRIPS · chrome plate readouts
+     LEGEND STRIPS — beveled gray plate
      ===================================================================== */
   .seg-strip, .yoy-strip{
-    display:flex; flex-wrap:wrap; gap:6px 14px; justify-content:center;
-    font-family:"Trebuchet MS",Verdana,sans-serif;
-    font-size:11px; color:var(--frame); font-weight:700;
-    margin:2px 0 8px; padding:6px 10px;
-    background:linear-gradient(180deg,#fbfcfd 0%, #e6ecf3 100%);
-    border:1px solid var(--steel-3);
-    border-radius:3px;
-    box-shadow:
-      inset 0 1px 0 #fff,
-      inset 0 -1px 0 rgba(0,0,0,.04);
-    letter-spacing:.2px;
+    display:flex; flex-wrap:wrap; gap:4px 12px; justify-content:center;
+    font-family:Arial,sans-serif; font-size:10px;
+    color:#000; font-weight:700; letter-spacing:.3px;
+    margin:6px 6px; padding:4px 6px;
+    background:var(--gray-bg);
+    border:2px inset var(--gray);
+    text-transform:uppercase;
   }
-  .seg-key, .yoy-key{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap }
+  .seg-key, .yoy-key{ display:inline-flex; align-items:center; gap:4px; white-space:nowrap }
   .seg-dot, .yoy-dot{
-    display:inline-block; width:10px; height:10px; border-radius:50%;
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.7),
-      inset 0 -2px 2px rgba(0,0,0,.2),
-      0 0 0 1px rgba(0,0,0,.15);
+    display:inline-block; width:10px; height:10px;
+    border:1px solid #000;
+    border-radius:0;   /* SQUARE in 1999, no rounded blobs */
   }
   .seg-divider{
-    border:none; height:2px;
-    background:linear-gradient(90deg, transparent 0%, var(--steel-3) 50%, transparent 100%);
-    margin:18px 4px 10px;
+    border:none; height:0; padding:0;
+    margin:14px 6px 6px;
+    border-top:2px groove var(--gray);
   }
 
   /* =====================================================================
-     LINKS · anchored corporate hover treatment
+     LINKS — underlined blue, visited purple. CLASSIC.
      ===================================================================== */
-  a{ color:var(--frame2); text-decoration:none; border-bottom:1px dotted var(--frame-hi) }
-  a:hover{ color:var(--frame); border-bottom-color:var(--frame) }
-  .hl{ border-bottom:none }
-  .hl-title{ border-bottom:none }
+  a{
+    color:var(--link); text-decoration:underline; border:none;
+  }
+  a:visited{ color:var(--link-visited) }
+  a:hover{ color:#FF0000 }
+  .hl{ text-decoration:none }
   .meta{
-    font-family:Georgia,serif; font-style:italic;
-    font-size:12px; color:#5b6a85; text-align:center; padding:10px;
+    font-family:"Times New Roman",serif; font-style:italic;
+    font-size:11px; color:#000; text-align:center; padding:10px;
+    background:var(--gray-bg);
+    border:1px solid var(--gray-shade);
+  }
+
+  /* =====================================================================
+     "Best viewed in..." footer (purely vibes)
+     ===================================================================== */
+  .wrap::after{
+    content:"Best viewed in Netscape Navigator 4.7 or Internet Explorer 5 at 800×600. © 1999 Nick's Stock Financials. All quotes delayed at least 20 minutes. Hit Counter: 0008142";
+    display:block;
+    font-family:"Times New Roman",serif; font-size:10px; font-style:italic;
+    color:#222;
+    background:var(--gray);
+    border:2px ridge var(--gray);
+    padding:6px 10px;
+    text-align:center;
+    margin:6px -6px 0;
+    box-shadow:inset 0 1px 0 #FFFFFF;
   }
 
   /* =====================================================================
      RESPONSIVE
      ===================================================================== */
   @media (max-width:640px){
-    .ticker-name{ font-size:15px; padding:8px 12px 7px }
-    .ticker-name::after{ font-size:8px; padding:2px 5px; right:10px }
-    .m-val{ font-size:13.5px }
-    .m-lbl{ font-size:8.5px }
-    .data-table > h2{ font-size:12px; padding:6px 12px }
-    .wrap{ padding:10px 8px 28px }
+    .wrap{ padding:0 4px 0 }
+    .wrap::before{ font-size:10px; padding:4px 0 }
+    .ticker-name{ font-size:13px; padding:5px 8px 4px }
+    .ticker-name::after{ font-size:9px; padding:1px 4px; right:6px }
+    .m-val{ font-size:13px }
+    .m-lbl{ font-size:8px }
+    .data-table > h2{ font-size:11px; padding:4px 8px 3px }
+    .data-table > h2::after{ font-size:8px; padding:1px 3px; right:4px }
+    .hl-list{ margin:4px }
   }
 </style>
 </head>
