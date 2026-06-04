@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Per-Ticker Mockups — diversity preview</title>
+<style>
+  body{margin:0;padding:14px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Verdana,Arial,sans-serif;background:#f6f8fb;color:#1a2c47;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto}
+  h1{font-size:20px;color:#003366;margin:0 0 4px}
+  p{font-size:13px;color:#557;margin:0 0 16px;line-height:1.4}
+  .card{display:block;background:white;border:2px solid #003366;border-radius:12px;
+    padding:14px 16px;margin-bottom:10px;text-decoration:none;color:inherit;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);-webkit-tap-highlight-color:transparent}
+  .card:active{background:#eaf1fb}
+  .tk{font-size:18px;font-weight:700;color:#003366}
+  .name{font-size:13px;color:#557;margin-top:2px}
+  .meta{font-size:11px;color:#888;margin-top:4px}
+</style>
+</head>
+<body><div class="wrap">
+  <h1>Per-Ticker Mockup Previews</h1>
+  <p>Same template, different companies. Wide sector diversity so you can see how the
+    page handles different business shapes (high-margin tech, low-margin retail, financial,
+    pharma, dividend aristocrat, hyper-growth semis).</p>
+
+  <a class="card" href="aapl_mockup.html">
+    <div class="tk">AAPL</div>
+    <div class="name">Apple Inc.</div>
+    <div class="meta">Consumer tech · 25% net margin · dividend payer · $4.5T mcap</div>
+  </a>
+  <a class="card" href="msft_mockup.html">
+    <div class="tk">MSFT</div>
+    <div class="name">Microsoft</div>
+    <div class="meta">Enterprise software/cloud · 36% net margin · dividend · $3.2T mcap</div>
+  </a>
+  <a class="card" href="nvda_mockup.html">
+    <div class="tk">NVDA</div>
+    <div class="name">NVIDIA</div>
+    <div class="meta">Semiconductors · AI hyper-growth · big stock splits in dataset</div>
+  </a>
+  <a class="card" href="jnj_mockup.html">
+    <div class="tk">JNJ</div>
+    <div class="name">Johnson &amp; Johnson</div>
+    <div class="meta">Pharma/medical · stable mature business · dividend aristocrat</div>
+  </a>
+  <a class="card" href="jpm_mockup.html">
+    <div class="tk">JPM</div>
+    <div class="name">JPMorgan Chase</div>
+    <div class="meta">Money-center bank · entirely different income-statement shape</div>
+  </a>
+  <a class="card" href="wmt_mockup.html">
+    <div class="tk">WMT</div>
+    <div class="name">Walmart</div>
+    <div class="meta">Retail · ~$700B revenue · ~2% net margin · low-multiple incumbent</div>
+  </a>
+  <a class="card" href="ko_mockup.html">
+    <div class="tk">KO</div>
+    <div class="name">Coca-Cola</div>
+    <div class="meta">Consumer staples · ~22% net margin · 60+ year dividend grower</div>
+  </a>
+
+  <p style="margin-top:16px;font-size:11px;color:#888;text-align:center">
+    Note: Segment Performance section only renders for AAPL (hardcoded sample data).
+    Other sections pull live from EDGAR + yfinance per ticker.
+  </p>
+</div></body>
+</html>
