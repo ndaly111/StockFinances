@@ -256,6 +256,25 @@ def main() -> int:
     ni_combined = append_ttm(ni_a, ni_ttm)
     eps_combined = append_ttm(eps_a, eps_ttm)
 
+    # Right-align all three series so they share a single x-axis indexing.
+    # EDGAR can return more historical depth for EPS than Revenue (JNJ has
+    # ~19 years of EPS but only ~10 of Revenue). Without right-alignment the
+    # range-button JS applies the same [N-y, N] window to both subplots and
+    # the EPS panel ends up showing 2013-2017 while Revenue shows 2021-TTM.
+    max_n = max(len(rev_combined), len(ni_combined), len(eps_combined))
+    canonical_combined = max(
+        [rev_combined, ni_combined, eps_combined], key=len,
+    )
+    canonical_annual_max = max(rev_a.index.max(), ni_a.index.max(), eps_a.index.max())
+
+    def pad_left(vals, target_len):
+        pad = target_len - len(vals)
+        return ([None] * pad) + list(vals) if pad > 0 else list(vals)
+
+    rev_vals = pad_left(rev_combined.values, max_n)
+    ni_vals  = pad_left(ni_combined.values,  max_n)
+    eps_vals = pad_left(eps_combined.values, max_n)
+
     # Label x-axis values: years for annual, "TTM" for the latest.
     # We need TWO label sets: full ("2014") for 5Y/10Y views, short ("'14")
     # for 15Y/MAX where the labels otherwise collide.
@@ -264,15 +283,17 @@ def main() -> int:
     def labels_short(combined: pd.Series, annual_max: pd.Timestamp) -> list[str]:
         return [f"'{d.strftime('%y')}" if d <= annual_max else "TTM" for d in combined.index]
 
-    rev_labels_full  = labels_full(rev_combined, rev_a.index.max())
-    rev_labels_short = labels_short(rev_combined, rev_a.index.max())
-    eps_labels_full  = labels_full(eps_combined, eps_a.index.max())
-    eps_labels_short = labels_short(eps_combined, eps_a.index.max())
+    # One label set for both subplots — derived from the longest series so
+    # tick labels stay aligned to the right edge (TTM).
+    rev_labels_full  = labels_full(canonical_combined, canonical_annual_max)
+    rev_labels_short = labels_short(canonical_combined, canonical_annual_max)
+    eps_labels_full  = rev_labels_full
+    eps_labels_short = rev_labels_short
 
     # Trace x values are integer indices so we can swap tick text per view
-    rev_x = list(range(len(rev_combined)))
-    ni_x  = list(range(len(ni_combined)))
-    eps_x = list(range(len(eps_combined)))
+    rev_x = list(range(max_n))
+    ni_x  = list(range(max_n))
+    eps_x = list(range(max_n))
 
     fig = make_subplots(
         rows=2, cols=1, shared_xaxes=False, vertical_spacing=0.09,
@@ -286,30 +307,30 @@ def main() -> int:
     # customdata carries the full year label for tooltips so swapping tick
     # text doesn't lose the "2024 / 2025" context.
     fig.add_trace(go.Bar(
-        x=rev_x, y=rev_combined.values, name="Revenue",
+        x=rev_x, y=rev_vals, name="Revenue",
         marker_color=rev_color,
         customdata=rev_labels_full,
-        text=[f"{v:,.0f}" for v in rev_combined.values], textposition="outside", textfont=dict(size=10),
+        text=[f"{v:,.0f}" if v is not None else "" for v in rev_vals], textposition="outside", textfont=dict(size=10),
         hovertemplate="<b>%{customdata}</b><br>Revenue: $%{y:,.1f}B<extra></extra>",
     ), row=1, col=1)
     fig.add_trace(go.Bar(
-        x=ni_x, y=ni_combined.values, name="Net Income",
+        x=ni_x, y=ni_vals, name="Net Income",
         marker_color=ni_color,
         customdata=rev_labels_full,
-        text=[f"{v:,.0f}" for v in ni_combined.values], textposition="outside", textfont=dict(size=10),
+        text=[f"{v:,.0f}" if v is not None else "" for v in ni_vals], textposition="outside", textfont=dict(size=10),
         hovertemplate="<b>%{customdata}</b><br>Net Income: $%{y:,.1f}B<extra></extra>",
     ), row=1, col=1)
 
     fig.add_trace(go.Bar(
-        x=eps_x, y=eps_combined.values, name="EPS", showlegend=False,
+        x=eps_x, y=eps_vals, name="EPS", showlegend=False,
         marker_color=eps_color,
         customdata=eps_labels_full,
-        text=[f"{v:.2f}" for v in eps_combined.values], textposition="outside", textfont=dict(size=10),
+        text=[f"{v:.2f}" if v is not None else "" for v in eps_vals], textposition="outside", textfont=dict(size=10),
         hovertemplate="<b>%{customdata}</b><br>EPS: $%{y:.2f}<extra></extra>",
     ), row=2, col=1)
 
     # Layout: default to last 10 periods, full visible via MAX
-    n = len(rev_combined)
+    n = max_n
     n_chart = n   # preserved for the JS template — `n` gets clobbered by
                   #  later `for ..., n in fwd_eps` analyst-count loops
     default_start_idx = max(0, n - 10)
