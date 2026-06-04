@@ -44,6 +44,13 @@
   /* YoY table cell coloring (positive growth / decline) */
   .ft td.pos{color:var(--positive);font-weight:600}
   .ft td.neg{color:var(--negative);font-weight:600}
+  /* Latest Headlines */
+  .headlines-card h2{margin-bottom:8px}
+  .hl-list{display:flex;flex-direction:column;gap:6px}
+  .hl{display:block;padding:8px 10px;background:#f7faff;border:1px solid #dde7f5;border-radius:6px;text-decoration:none;color:inherit}
+  .hl:active{background:#eaf1fb}
+  .hl-title{font-size:13px;line-height:1.35;font-weight:600;color:var(--frame)}
+  .hl-meta{font-size:11px;color:#667;margin-top:2px}
   .range-row{display:flex;gap:8px;justify-content:center;padding:10px 6px 4px;flex-wrap:wrap}
   .range-btn{appearance:none;border:1px solid #B0B0B0;background:#f4f8ff;color:var(--frame);font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;min-width:60px;cursor:pointer;-webkit-tap-highlight-color:transparent}
   .range-btn:active,.range-btn.active{background:var(--highlight);color:white;border-color:var(--highlight)}
@@ -72,6 +79,8 @@
     </div>
     <p class="m-footnote">* Implied growth = (P/E ÷ 10)<sup>0.1</sup> + 10Y yield − 1, using 10Y = 4.49%.</p>
   </div>
+
+  <div class="data-table headlines-card"><h2>Latest Headlines</h2><div class="hl-list"><a class="hl" href="https://finance.yahoo.com/video/apples-feature-takes-pain-splitting-195914495.html" target="_blank" rel="noopener"><div class="hl-title">Apple's new feature takes the pain out of splitting the check</div><div class="hl-meta">Yahoo Finance Video • 4h ago</div></a><a class="hl" href="https://finance.yahoo.com/video/apple-ceo-tim-cook-explains-195727340.html" target="_blank" rel="noopener"><div class="hl-title">Apple CEO Tim Cook explains why he's stepping down</div><div class="hl-meta">Yahoo Finance Video • 4h ago</div></a><a class="hl" href="https://finance.yahoo.com/markets/stocks/articles/warren-buffetts-berkshire-hathaway-doubles-231700359.html" target="_blank" rel="noopener"><div class="hl-title">Warren Buffett's Berkshire Hathaway doubles down on Google</div><div class="hl-meta">TheStreet • 1h ago</div></a><a class="hl" href="https://finance.yahoo.com/markets/stocks/articles/apple-stock-hot-lately-ai-210224156.html" target="_blank" rel="noopener"><div class="hl-title">Apple Stock Has Been Hot Lately. New AI Features Could Provide the Next Boost</div><div class="hl-meta">Investopedia • 3h ago</div></a><a class="hl" href="https://www.investors.com/research/breakout-stocks-technical-analysis/apple-stock-google-how-to-stay-grounded-in-frothy-stock-market/?src=A00220&yptr=yahoo" target="_blank" rel="noopener"><div class="hl-title">Apple Stock, Google And More Lure Investors In Frothy Market. How To Stay Grounded.</div><div class="hl-meta">Investor's Business Daily • 4h ago</div></a><a class="hl" href="https://finance.yahoo.com/markets/stocks/articles/broadcom-adds-280-billion-earnings-201243662.html" target="_blank" rel="noopener"><div class="hl-title">Broadcom Adds $280 Billion Before Earnings as AI Rally Faces Test</div><div class="hl-meta">GuruFocus.com • 4h ago</div></a><a class="hl" href="https://www.barrons.com/livecoverage/stock-market-news-today-060326/card/s-p-500-falls-for-first-time-in-2-weeks-big-tech-is-a-big-loser--6R8aMfCshG8NL8qBeBqu?siteid=yhoof2&yptr=yahoo" target="_blank" rel="noopener"><div class="hl-title">S&P 500 Falls for First Time in 2 Weeks. Big Tech Is a Big Loser.</div><div class="hl-meta">Barrons.com • 4h ago</div></a><a class="hl" href="https://finance.yahoo.com/markets/stocks/articles/sector-tech-stocks-mixed-afternoon-195058778.html" target="_blank" rel="noopener"><div class="hl-title">Sector Update: Tech Stocks Mixed Late Afternoon</div><div class="hl-meta">MT Newswires • 4h ago</div></a></div></div>
 
   <div class="chart-card">
     <div style="height:620px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
@@ -146,7 +155,7 @@
   <div class="meta">
     <strong>What this demonstrates:</strong> SEC EDGAR data (15+ year history) + Plotly interactive (mobile-friendly touch, range selector, sticky values up top, annotation on the latest TTM point).
     Pinch-zoom is disabled in the chart pane — drag the range buttons instead. Tap any bar/line for the value.
-    <br><br>Generated 2026-06-04 00:47 UTC.
+    <br><br>Generated 2026-06-04 00:49 UTC.
   </div>
 
 </div>
