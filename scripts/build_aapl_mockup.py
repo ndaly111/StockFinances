@@ -131,6 +131,31 @@ def main() -> int:
     eps_q = quarterly_series(eps_entries)
     eps_ttm = ttm_from_quarterly(eps_q)
 
+    # Derive EPS from NI / shares when EDGAR returns no usable EPS rows.
+    # This catches:
+    #   - V (Visa): EPS tagged under a company-specific XBRL extension, not
+    #     in us-gaap at all
+    #   - BRK-B (Berkshire): EPS reported quarterly inside 10-K's, never
+    #     annually, and in Class A units
+    # The approximation uses CURRENT shares outstanding from yfinance — it
+    # ignores year-over-year buybacks, so historical EPS may drift ~5% from
+    # the company's reported figure. Better than no EPS at all.
+    _tk_for_shares = yf.Ticker(TICKER)
+    _shares_now = None
+    try:
+        _info_for_shares = _tk_for_shares.info if isinstance(_tk_for_shares.info, dict) else {}
+        _shares_now = _info_for_shares.get("sharesOutstanding") or _info_for_shares.get("impliedSharesOutstanding")
+    except Exception:
+        pass
+    if eps_a.empty and _shares_now and _shares_now > 0:
+        eps_a = ni_a * 1e9 / _shares_now   # ni_a is in $B, shares is raw count
+        print(f"  EPS derived from NI/shares (no EDGAR EPS concept available, "
+              f"using {_shares_now/1e6:.0f}M shares)")
+    if eps_q.empty and _shares_now and _shares_now > 0:
+        eps_q = ni_q * 1e9 / _shares_now
+    if eps_ttm.empty and _shares_now and _shares_now > 0:
+        eps_ttm = ni_ttm * 1e9 / _shares_now
+
     # Split-adjust EPS using yfinance splits
     tk = yf.Ticker(TICKER)
     splits = tk.splits
@@ -249,10 +274,23 @@ def main() -> int:
     if len(eps_a) >= 2:
         eps_yoy = (eps_a.iloc[-1] / eps_a.iloc[-2] - 1.0) * 100
 
-    print(f"  revenue annual rows: {len(rev_a)}  ({rev_a.index.min().date()} → {rev_a.index.max().date()})")
+    def _date_range(s):
+        if s.empty:
+            return "empty"
+        try:
+            return f"{s.index.min().date()} → {s.index.max().date()}"
+        except (AttributeError, TypeError):
+            return f"{s.index.min()} → {s.index.max()}"
+    print(f"  revenue annual rows: {len(rev_a)}  ({_date_range(rev_a)})")
     print(f"  net income annual rows: {len(ni_a)}")
     print(f"  EPS annual rows: {len(eps_a)}")
     print(f"  current price: {price}, mcap: {market_cap}, PE: {pe}")
+    if rev_a.empty:
+        # No annual revenue means EDGAR returned nothing usable.
+        raise RuntimeError(
+            f"{TICKER}: no annual revenue rows from EDGAR — likely a foreign "
+            f"filer or doesn't report under us-gaap"
+        )
 
     # -------------------- Plotly chart ----------------------------------
     # Append the latest TTM as a "TTM" bar at the right edge of each series,
