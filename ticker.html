@@ -449,11 +449,29 @@
     text-shadow:0 0 4px rgba(255,255,170,.5);
   }
   .ticker-status.error{ color:#FF6666; background:#660000; }
+  /* Beveled back button — Win95 style */
+  .back-bar{ margin:0 -6px 6px; display:flex; justify-content:flex-start; padding:0 6px }
+  .back-btn{
+    display:inline-block; text-decoration:none;
+    font-family:Arial,sans-serif; font-weight:700; font-size:11px;
+    color:#000; background:#C0C0C0;
+    border:2px outset #C0C0C0; padding:4px 12px 5px;
+    text-shadow:1px 1px 0 #FFFFFF;
+    text-transform:uppercase; letter-spacing:.4px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .back-btn:hover{ background:#D8D8D8 }
+  .back-btn:active{
+    border:2px inset #C0C0C0; background:#B8B8B8;
+    padding:5px 11px 4px 13px;
+  }
+  .back-btn::before{ content:"« " }
 </style>
 </head>
 <body>
 <div class="wrap">
 
+  <div class="back-bar"><a class="back-btn" href="mockups.html">Back</a></div>
   <div class="ticker-status" id="ticker-status">› LOADING TICKER DATA…</div>
 
   <!-- Ticker header + metric grid -->
