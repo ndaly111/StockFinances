@@ -51,7 +51,7 @@
 
   <nav class="navbar">
     {% for t in tickers %}
-      <a href="pages/{{t}}_page.html" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}
+      <a href="ticker.html?t={{t}}" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}
     {% endfor %}
   </nav>
 

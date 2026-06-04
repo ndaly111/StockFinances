@@ -38,3 +38,10 @@ Untitled*.png
 .venv/
 venv/
 env/
+
+# Generated ticker shell data — written by scripts/gen_ticker_json.py
+# during the weekly refresh, deployed directly to gh-pages.
+ticker_data/
+
+# Local-only artifact written by gen_ticker_json.py during the build
+_*_temp.html

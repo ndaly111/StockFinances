@@ -27,35 +27,109 @@ from plotly.subplots import make_subplots
 
 
 HEADERS = {"User-Agent": "Nick Daly StockFinances ndaly111@gmail.com"}
-EDGAR_CONCEPT = "https://data.sec.gov/api/xbrl/companyconcept/CIK{cik}/us-gaap/{concept}.json"
+# Try us-gaap first (standard US issuers), then ifrs-full (foreign issuers
+# filing 20-F under IFRS — e.g. BUD, SPOT).
+EDGAR_CONCEPT_TAXONOMIES = ("us-gaap", "ifrs-full")
+EDGAR_CONCEPT = "https://data.sec.gov/api/xbrl/companyconcept/CIK{cik}/{taxonomy}/{concept}.json"
 CIK = "0000320193"  # AAPL
 TICKER = "AAPL"
 OUT_FILE = Path(__file__).resolve().parents[1] / "aapl_mockup.html"
 
 
 # -------------------------- EDGAR helpers ----------------------------------
+# Currency units in priority order — try USD first (US issuers + foreign that
+# also report in USD), then major non-USD currencies for IFRS filers that
+# only report in their home currency (e.g. SPOT in EUR).
+_MONETARY_UNITS = ("USD", "EUR", "GBP", "CAD", "CHF", "JPY", "CNY")
+_PER_SHARE_UNITS = ("USD/shares", "EUR/shares", "GBP/shares", "CAD/shares")
+
+
 def fetch_concept(concept: str, fallbacks: tuple[str, ...] = ()) -> list[dict]:
-    """Merge results from concept + fallbacks (companies often switch tag names
-    over time, e.g. AAPL Revenues → RevenueFromContractWithCustomer at ASC 606
-    adoption in 2018)."""
+    """Merge results from concept + fallbacks across us-gaap and ifrs-full
+    taxonomies. Companies switch tag names over time (e.g. AAPL
+    Revenues → RevenueFromContractWithCustomer at ASC 606 adoption in 2018);
+    foreign filers (20-F) report under ifrs-full rather than us-gaap.
+    Each entry is tagged with the source unit so a caller can FX-convert."""
     combined: list[dict] = []
     seen_keys: set = set()
     for c in (concept, *fallbacks):
-        url = EDGAR_CONCEPT.format(cik=CIK, concept=c)
-        r = requests.get(url, headers=HEADERS, timeout=30)
-        if r.status_code != 200:
-            continue
-        units = r.json().get("units", {})
-        for key in ("USD", "USD/shares"):
-            if key in units and units[key]:
-                for v in units[key]:
-                    dedupe = (v.get("start"), v.get("end"), v.get("form"))
-                    if dedupe in seen_keys:
-                        continue
-                    seen_keys.add(dedupe)
-                    combined.append(v)
-                break  # take first matching unit per concept
+        for tax in EDGAR_CONCEPT_TAXONOMIES:
+            url = EDGAR_CONCEPT.format(cik=CIK, taxonomy=tax, concept=c)
+            r = requests.get(url, headers=HEADERS, timeout=30)
+            if r.status_code != 200:
+                continue
+            units = r.json().get("units", {})
+            for key in _MONETARY_UNITS + _PER_SHARE_UNITS:
+                if key in units and units[key]:
+                    for v in units[key]:
+                        dedupe = (v.get("start"), v.get("end"), v.get("form"))
+                        if dedupe in seen_keys:
+                            continue
+                        seen_keys.add(dedupe)
+                        v = dict(v)
+                        v["_unit"] = key
+                        combined.append(v)
+                    break  # take first matching unit per concept
     return combined
+
+
+_FX_CACHE: dict[str, pd.Series] = {}
+
+
+def _fx_to_usd(currency: str) -> pd.Series | None:
+    """Daily Close of <currency>USD=X — USD per 1 unit of currency."""
+    if currency == "USD":
+        return None
+    if currency in _FX_CACHE:
+        return _FX_CACHE[currency]
+    try:
+        pair = f"{currency}USD=X"
+        hist = yf.Ticker(pair).history(period="max", auto_adjust=True)["Close"]
+        if hist.empty:
+            return None
+        if getattr(hist.index, "tz", None) is not None:
+            hist.index = hist.index.tz_localize(None)
+        hist.index = pd.DatetimeIndex(hist.index.date)
+        _FX_CACHE[currency] = hist
+        return hist
+    except Exception:
+        return None
+
+
+def convert_to_usd(entries: list[dict]) -> list[dict]:
+    """If entries are tagged with a non-USD unit, FX-convert each `val` to
+    USD using the historical rate at the entry's period-end date."""
+    if not entries:
+        return entries
+    currencies = {v.get("_unit", "USD").split("/")[0] for v in entries}
+    non_usd = currencies - {"USD"}
+    if not non_usd:
+        return entries
+    fx_map: dict[str, pd.Series] = {}
+    for cur in non_usd:
+        s = _fx_to_usd(cur)
+        if s is not None:
+            fx_map[cur] = s
+    out: list[dict] = []
+    for v in entries:
+        unit = v.get("_unit", "USD")
+        base_ccy = unit.split("/")[0]
+        if base_ccy == "USD":
+            out.append(v)
+            continue
+        fx = fx_map.get(base_ccy)
+        if fx is None or v.get("val") is None:
+            continue
+        end = pd.Timestamp(v["end"])
+        prior = fx[fx.index <= end]
+        rate = float(prior.iloc[-1]) if not prior.empty else float(fx.iloc[0])
+        v2 = dict(v)
+        v2["val"] = float(v["val"]) * rate
+        v2["_fx_rate"] = rate
+        v2["_orig_unit"] = unit
+        v2["_unit"] = "USD" if "/" not in unit else "USD/shares"
+        out.append(v2)
+    return out
 
 
 def fy_label(ts) -> str:
@@ -70,12 +144,16 @@ def fy_label(ts) -> str:
     return str(d.year)
 
 
+_ANNUAL_FORMS = ("10-K", "20-F", "40-F")
+
+
 def annual_series(entries: list[dict]) -> pd.Series:
-    """Annual values from 10-K filings (span ~363 days)."""
+    """Annual values from 10-K (US issuers), 20-F (foreign), or 40-F
+    (Canadian) filings — span ~363 days."""
     out: dict[pd.Timestamp, float] = {}
     for v in entries:
         sd, ed, val = v.get("start"), v.get("end"), v.get("val")
-        if not sd or not ed or val is None or v.get("form") != "10-K":
+        if not sd or not ed or val is None or v.get("form") not in _ANNUAL_FORMS:
             continue
         try:
             span = (dt.date.fromisoformat(ed) - dt.date.fromisoformat(sd)).days
@@ -112,12 +190,22 @@ def ttm_from_quarterly(q: pd.Series) -> pd.Series:
 # ---------------------- assemble ------------------------------------------
 def main() -> int:
     print("Fetching AAPL EDGAR data...")
-    rev = fetch_concept("Revenues",
+    rev = convert_to_usd(fetch_concept("Revenues",
                          ("RevenueFromContractWithCustomerExcludingAssessedTax",
-                          "SalesRevenueNet"))
-    ni = fetch_concept("NetIncomeLoss")
-    eps_entries = fetch_concept("EarningsPerShareDiluted",
-                                ("EarningsPerShareBasic",))
+                          # IncludingAssessedTax catches retailers/consumer cos that report
+                          # gross-of-excise-tax (BIRD, VLO, KHC, …)
+                          "RevenueFromContractWithCustomerIncludingAssessedTax",
+                          # Banks net interest income against interest expense (GS, etc.)
+                          "RevenuesNetOfInterestExpense",
+                          "SalesRevenueNet",
+                          # IFRS naming (20-F foreign filers under ifrs-full): BUD, SPOT
+                          "Revenue")))
+    # IFRS uses ProfitLoss for net income (BUD, SPOT). ProfitLossFromContinuingOperations
+    # is sometimes the cleaner figure when companies have discontinued operations.
+    ni = convert_to_usd(fetch_concept("NetIncomeLoss",
+                       ("ProfitLoss", "ProfitLossFromContinuingOperations")))
+    eps_entries = convert_to_usd(fetch_concept("EarningsPerShareDiluted",
+                                ("EarningsPerShareBasic",)))
 
     rev_a = annual_series(rev) / 1e9   # billions
     rev_q = quarterly_series(rev) / 1e9
@@ -130,6 +218,31 @@ def main() -> int:
     eps_a = annual_series(eps_entries)
     eps_q = quarterly_series(eps_entries)
     eps_ttm = ttm_from_quarterly(eps_q)
+
+    # Derive EPS from NI / shares when EDGAR returns no usable EPS rows.
+    # This catches:
+    #   - V (Visa): EPS tagged under a company-specific XBRL extension, not
+    #     in us-gaap at all
+    #   - BRK-B (Berkshire): EPS reported quarterly inside 10-K's, never
+    #     annually, and in Class A units
+    # The approximation uses CURRENT shares outstanding from yfinance — it
+    # ignores year-over-year buybacks, so historical EPS may drift ~5% from
+    # the company's reported figure. Better than no EPS at all.
+    _tk_for_shares = yf.Ticker(TICKER)
+    _shares_now = None
+    try:
+        _info_for_shares = _tk_for_shares.info if isinstance(_tk_for_shares.info, dict) else {}
+        _shares_now = _info_for_shares.get("sharesOutstanding") or _info_for_shares.get("impliedSharesOutstanding")
+    except Exception:
+        pass
+    if eps_a.empty and _shares_now and _shares_now > 0:
+        eps_a = ni_a * 1e9 / _shares_now   # ni_a is in $B, shares is raw count
+        print(f"  EPS derived from NI/shares (no EDGAR EPS concept available, "
+              f"using {_shares_now/1e6:.0f}M shares)")
+    if eps_q.empty and _shares_now and _shares_now > 0:
+        eps_q = ni_q * 1e9 / _shares_now
+    if eps_ttm.empty and _shares_now and _shares_now > 0:
+        eps_ttm = ni_ttm * 1e9 / _shares_now
 
     # Split-adjust EPS using yfinance splits
     tk = yf.Ticker(TICKER)
@@ -180,9 +293,24 @@ def main() -> int:
     ig = implied_growth(pe)
     ig_fwd = implied_growth(forward_pe)
 
-    last_rev_ttm = rev_ttm.dropna().iloc[-1]
-    last_ni_ttm = ni_ttm.dropna().iloc[-1]
-    last_eps_ttm = eps_ttm.dropna().iloc[-1]
+    def _last_or_none(s):
+        s2 = s.dropna() if hasattr(s, "dropna") else s
+        try:
+            return s2.iloc[-1]
+        except (IndexError, AttributeError):
+            return None
+
+    last_rev_ttm = _last_or_none(rev_ttm)
+    last_ni_ttm = _last_or_none(ni_ttm)
+    last_eps_ttm = _last_or_none(eps_ttm)
+    if rev_a.empty and eps_a.empty:
+        # Truly no EDGAR data (e.g. BABA, foreign filers). Bail out cleanly so
+        # the outer gen catches it as FAILED. Tickers with annual-only data
+        # (no TTM) still build — we just won't show a TTM bar.
+        raise RuntimeError(
+            f"{TICKER}: no EDGAR revenue/EPS data — likely a non-US filer "
+            f"with no us-gaap concept matches"
+        )
 
     # ---------- forward estimates (yfinance) -----------------------------
     last_fy = rev_a.index.max()
@@ -234,10 +362,23 @@ def main() -> int:
     if len(eps_a) >= 2:
         eps_yoy = (eps_a.iloc[-1] / eps_a.iloc[-2] - 1.0) * 100
 
-    print(f"  revenue annual rows: {len(rev_a)}  ({rev_a.index.min().date()} → {rev_a.index.max().date()})")
+    def _date_range(s):
+        if s.empty:
+            return "empty"
+        try:
+            return f"{s.index.min().date()} → {s.index.max().date()}"
+        except (AttributeError, TypeError):
+            return f"{s.index.min()} → {s.index.max()}"
+    print(f"  revenue annual rows: {len(rev_a)}  ({_date_range(rev_a)})")
     print(f"  net income annual rows: {len(ni_a)}")
     print(f"  EPS annual rows: {len(eps_a)}")
     print(f"  current price: {price}, mcap: {market_cap}, PE: {pe}")
+    if rev_a.empty:
+        # No annual revenue means EDGAR returned nothing usable.
+        raise RuntimeError(
+            f"{TICKER}: no annual revenue rows from EDGAR — likely a foreign "
+            f"filer or doesn't report under us-gaap"
+        )
 
     # -------------------- Plotly chart ----------------------------------
     # Append the latest TTM as a "TTM" bar at the right edge of each series,
@@ -245,6 +386,11 @@ def main() -> int:
     def append_ttm(annual: pd.Series, ttm: pd.Series) -> pd.Series:
         ttm = ttm.dropna()
         annual_max = annual.index.max() if not annual.empty else None
+        # Foreign filers (20-F) only file annual data, so ttm comes back empty
+        # with a RangeIndex that can't be compared to a Timestamp. Skip the
+        # post-FY filter in that case and just return the annuals.
+        if ttm.empty or not isinstance(ttm.index, pd.DatetimeIndex):
+            return annual if annual_max is not None else ttm
         # Take the TTM points reported AFTER the most recent FY end
         if annual_max is not None:
             post = ttm[ttm.index > annual_max]
@@ -265,7 +411,10 @@ def main() -> int:
     canonical_combined = max(
         [rev_combined, ni_combined, eps_combined], key=len,
     )
-    canonical_annual_max = max(rev_a.index.max(), ni_a.index.max(), eps_a.index.max())
+    # Skip empty series whose .index.max() can be NaT/NaN — BRK-B has no
+    # EPS via the standard concepts and would otherwise crash here.
+    _annual_maxes = [s.index.max() for s in (rev_a, ni_a, eps_a) if len(s) > 0]
+    canonical_annual_max = max(_annual_maxes) if _annual_maxes else rev_a.index.max()
 
     def pad_left(vals, target_len):
         pad = target_len - len(vals)
@@ -484,12 +633,14 @@ def main() -> int:
             row_classes.append("extra-row")
         visible_count += 1
         cls = (" ".join(row_classes)) if row_classes else ""
+        def _fmt(v, spec):
+            return f"${v:{spec}}" if isinstance(v, (int, float)) else "—"
         table_rows.append(
             f'<tr class="{cls}">'
             f'<td class="year">{year_lbl}</td>'
-            f'<td>${rev_v:,.1f}B{delta_html(rev_v, prev_rev)}</td>'
-            f'<td>${ni_v:,.1f}B{delta_html(ni_v, prev_ni)}</td>'
-            f'<td>${eps_v:,.2f}{delta_html(eps_v, prev_eps)}</td>'
+            f'<td>{_fmt(rev_v, ",.1f")}{"B" if isinstance(rev_v,(int,float)) else ""}{delta_html(rev_v, prev_rev)}</td>'
+            f'<td>{_fmt(ni_v, ",.1f")}{"B" if isinstance(ni_v,(int,float)) else ""}{delta_html(ni_v, prev_ni)}</td>'
+            f'<td>{_fmt(eps_v, ",.2f")}{delta_html(eps_v, prev_eps)}</td>'
             f'</tr>'
         )
     total_rows = len(rev_series)
@@ -1239,7 +1390,10 @@ def main() -> int:
         edpe_eps.append(float(v))
         edpe_div.append(float(div_a.get(div_yr, 0.0)))
         edpe_fc.append(0)
-    # TTM EPS
+    # TTM EPS — foreign filers (20-F) only file annual data, so last_eps_ttm
+    # may be None. Use the last annual EPS as the fallback in that case.
+    if last_eps_ttm is None:
+        last_eps_ttm = float(eps_a.iloc[-1]) if not eps_a.empty else 0.0
     edpe_x.append("TTM")
     edpe_eps.append(float(last_eps_ttm))
     edpe_div.append(float(div_a.tail(4).sum()) if not div_a.empty else 0.0)
@@ -1377,10 +1531,10 @@ def main() -> int:
         '<thead><tr><th>Share<br>Price</th><th>Treasury<br>Yield</th><th>Estimates</th>'
         '<th>Fair Value<br>P/E</th><th>Current<br>P/E</th></tr></thead><tbody>'
         f'<tr><td class="year">${cur_px:,.2f}</td><td>{ten_yr*100:.1f}%</td>'
-        f'<td>Nick: {int(nicks_growth*100)}% growth, {int(nicks_margin*100)}% margin<br>'
-        f'Finviz: {int(finviz_growth*100)}% growth</td>'
+        f'<td>Nick: {int((nicks_growth or 0)*100)}% growth, {int((nicks_margin or 0)*100)}% margin<br>'
+        f'Finviz: {int((finviz_growth or 0)*100)}% growth</td>'
         f'<td>Nick: {target_pe_nick:.1f}<br>Finviz: {target_pe_finviz:.1f}</td>'
-        f'<td>{pe:.1f}</td></tr></tbody></table>'
+        f'<td>{("%.1f" % pe) if isinstance(pe,(int,float)) else "—"}</td></tr></tbody></table>'
     )
 
     valuation_html = (

@@ -194,7 +194,7 @@ td{padding:4px;border:1px solid #8080FF}
 
   <nav class="navbar">
     {% for t in tickers %}
-      <a href="pages/{{t}}_page.html" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}
+      <a href="ticker.html?t={{t}}" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}
     {% endfor %}
   </nav>
 
@@ -409,7 +409,7 @@ def generate_dashboard_table(raw_rows):
             return '<a href="spy_growth.html">SPY</a>'
         if t == "QQQ":
             return '<a href="qqq_growth.html">QQQ</a>'
-        return f'<a href="pages/{t}_page.html">{t}</a>'
+        return f'<a href="ticker.html?t={t}">{t}</a>'
 
     df["Ticker"] = df["Ticker"].apply(link)
     df.sort_values("Nick's TTM Value_num", ascending=False, inplace=True)
