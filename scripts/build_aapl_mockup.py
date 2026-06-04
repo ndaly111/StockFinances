@@ -37,11 +37,19 @@ OUT_FILE = Path(__file__).resolve().parents[1] / "aapl_mockup.html"
 
 
 # -------------------------- EDGAR helpers ----------------------------------
+# Currency units in priority order — try USD first (US issuers + foreign that
+# also report in USD), then major non-USD currencies for IFRS filers that
+# only report in their home currency (e.g. SPOT in EUR).
+_MONETARY_UNITS = ("USD", "EUR", "GBP", "CAD", "CHF", "JPY", "CNY")
+_PER_SHARE_UNITS = ("USD/shares", "EUR/shares", "GBP/shares", "CAD/shares")
+
+
 def fetch_concept(concept: str, fallbacks: tuple[str, ...] = ()) -> list[dict]:
     """Merge results from concept + fallbacks across us-gaap and ifrs-full
     taxonomies. Companies switch tag names over time (e.g. AAPL
     Revenues → RevenueFromContractWithCustomer at ASC 606 adoption in 2018);
-    foreign filers (20-F) report under ifrs-full rather than us-gaap."""
+    foreign filers (20-F) report under ifrs-full rather than us-gaap.
+    Each entry is tagged with the source unit so a caller can FX-convert."""
     combined: list[dict] = []
     seen_keys: set = set()
     for c in (concept, *fallbacks):
@@ -51,16 +59,77 @@ def fetch_concept(concept: str, fallbacks: tuple[str, ...] = ()) -> list[dict]:
             if r.status_code != 200:
                 continue
             units = r.json().get("units", {})
-            for key in ("USD", "USD/shares"):
+            for key in _MONETARY_UNITS + _PER_SHARE_UNITS:
                 if key in units and units[key]:
                     for v in units[key]:
                         dedupe = (v.get("start"), v.get("end"), v.get("form"))
                         if dedupe in seen_keys:
                             continue
                         seen_keys.add(dedupe)
+                        v = dict(v)
+                        v["_unit"] = key
                         combined.append(v)
                     break  # take first matching unit per concept
     return combined
+
+
+_FX_CACHE: dict[str, pd.Series] = {}
+
+
+def _fx_to_usd(currency: str) -> pd.Series | None:
+    """Daily Close of <currency>USD=X — USD per 1 unit of currency."""
+    if currency == "USD":
+        return None
+    if currency in _FX_CACHE:
+        return _FX_CACHE[currency]
+    try:
+        pair = f"{currency}USD=X"
+        hist = yf.Ticker(pair).history(period="max", auto_adjust=True)["Close"]
+        if hist.empty:
+            return None
+        if getattr(hist.index, "tz", None) is not None:
+            hist.index = hist.index.tz_localize(None)
+        hist.index = pd.DatetimeIndex(hist.index.date)
+        _FX_CACHE[currency] = hist
+        return hist
+    except Exception:
+        return None
+
+
+def convert_to_usd(entries: list[dict]) -> list[dict]:
+    """If entries are tagged with a non-USD unit, FX-convert each `val` to
+    USD using the historical rate at the entry's period-end date."""
+    if not entries:
+        return entries
+    currencies = {v.get("_unit", "USD").split("/")[0] for v in entries}
+    non_usd = currencies - {"USD"}
+    if not non_usd:
+        return entries
+    fx_map: dict[str, pd.Series] = {}
+    for cur in non_usd:
+        s = _fx_to_usd(cur)
+        if s is not None:
+            fx_map[cur] = s
+    out: list[dict] = []
+    for v in entries:
+        unit = v.get("_unit", "USD")
+        base_ccy = unit.split("/")[0]
+        if base_ccy == "USD":
+            out.append(v)
+            continue
+        fx = fx_map.get(base_ccy)
+        if fx is None or v.get("val") is None:
+            continue
+        end = pd.Timestamp(v["end"])
+        prior = fx[fx.index <= end]
+        rate = float(prior.iloc[-1]) if not prior.empty else float(fx.iloc[0])
+        v2 = dict(v)
+        v2["val"] = float(v["val"]) * rate
+        v2["_fx_rate"] = rate
+        v2["_orig_unit"] = unit
+        v2["_unit"] = "USD" if "/" not in unit else "USD/shares"
+        out.append(v2)
+    return out
 
 
 def fy_label(ts) -> str:
@@ -121,7 +190,7 @@ def ttm_from_quarterly(q: pd.Series) -> pd.Series:
 # ---------------------- assemble ------------------------------------------
 def main() -> int:
     print("Fetching AAPL EDGAR data...")
-    rev = fetch_concept("Revenues",
+    rev = convert_to_usd(fetch_concept("Revenues",
                          ("RevenueFromContractWithCustomerExcludingAssessedTax",
                           # IncludingAssessedTax catches retailers/consumer cos that report
                           # gross-of-excise-tax (BIRD, VLO, KHC, …)
@@ -130,13 +199,13 @@ def main() -> int:
                           "RevenuesNetOfInterestExpense",
                           "SalesRevenueNet",
                           # IFRS naming (20-F foreign filers under ifrs-full): BUD, SPOT
-                          "Revenue"))
+                          "Revenue")))
     # IFRS uses ProfitLoss for net income (BUD, SPOT). ProfitLossFromContinuingOperations
     # is sometimes the cleaner figure when companies have discontinued operations.
-    ni = fetch_concept("NetIncomeLoss",
-                       ("ProfitLoss", "ProfitLossFromContinuingOperations"))
-    eps_entries = fetch_concept("EarningsPerShareDiluted",
-                                ("EarningsPerShareBasic",))
+    ni = convert_to_usd(fetch_concept("NetIncomeLoss",
+                       ("ProfitLoss", "ProfitLossFromContinuingOperations")))
+    eps_entries = convert_to_usd(fetch_concept("EarningsPerShareDiluted",
+                                ("EarningsPerShareBasic",)))
 
     rev_a = annual_series(rev) / 1e9   # billions
     rev_q = quarterly_series(rev) / 1e9
