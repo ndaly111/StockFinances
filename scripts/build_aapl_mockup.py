@@ -180,9 +180,24 @@ def main() -> int:
     ig = implied_growth(pe)
     ig_fwd = implied_growth(forward_pe)
 
-    last_rev_ttm = rev_ttm.dropna().iloc[-1]
-    last_ni_ttm = ni_ttm.dropna().iloc[-1]
-    last_eps_ttm = eps_ttm.dropna().iloc[-1]
+    def _last_or_none(s):
+        s2 = s.dropna() if hasattr(s, "dropna") else s
+        try:
+            return s2.iloc[-1]
+        except (IndexError, AttributeError):
+            return None
+
+    last_rev_ttm = _last_or_none(rev_ttm)
+    last_ni_ttm = _last_or_none(ni_ttm)
+    last_eps_ttm = _last_or_none(eps_ttm)
+    if rev_a.empty and eps_a.empty:
+        # Truly no EDGAR data (e.g. BABA, foreign filers). Bail out cleanly so
+        # the outer gen catches it as FAILED. Tickers with annual-only data
+        # (no TTM) still build — we just won't show a TTM bar.
+        raise RuntimeError(
+            f"{TICKER}: no EDGAR revenue/EPS data — likely a non-US filer "
+            f"with no us-gaap concept matches"
+        )
 
     # ---------- forward estimates (yfinance) -----------------------------
     last_fy = rev_a.index.max()
@@ -265,7 +280,10 @@ def main() -> int:
     canonical_combined = max(
         [rev_combined, ni_combined, eps_combined], key=len,
     )
-    canonical_annual_max = max(rev_a.index.max(), ni_a.index.max(), eps_a.index.max())
+    # Skip empty series whose .index.max() can be NaT/NaN — BRK-B has no
+    # EPS via the standard concepts and would otherwise crash here.
+    _annual_maxes = [s.index.max() for s in (rev_a, ni_a, eps_a) if len(s) > 0]
+    canonical_annual_max = max(_annual_maxes) if _annual_maxes else rev_a.index.max()
 
     def pad_left(vals, target_len):
         pad = target_len - len(vals)
@@ -484,12 +502,14 @@ def main() -> int:
             row_classes.append("extra-row")
         visible_count += 1
         cls = (" ".join(row_classes)) if row_classes else ""
+        def _fmt(v, spec):
+            return f"${v:{spec}}" if isinstance(v, (int, float)) else "—"
         table_rows.append(
             f'<tr class="{cls}">'
             f'<td class="year">{year_lbl}</td>'
-            f'<td>${rev_v:,.1f}B{delta_html(rev_v, prev_rev)}</td>'
-            f'<td>${ni_v:,.1f}B{delta_html(ni_v, prev_ni)}</td>'
-            f'<td>${eps_v:,.2f}{delta_html(eps_v, prev_eps)}</td>'
+            f'<td>{_fmt(rev_v, ",.1f")}{"B" if isinstance(rev_v,(int,float)) else ""}{delta_html(rev_v, prev_rev)}</td>'
+            f'<td>{_fmt(ni_v, ",.1f")}{"B" if isinstance(ni_v,(int,float)) else ""}{delta_html(ni_v, prev_ni)}</td>'
+            f'<td>{_fmt(eps_v, ",.2f")}{delta_html(eps_v, prev_eps)}</td>'
             f'</tr>'
         )
     total_rows = len(rev_series)
@@ -1377,10 +1397,10 @@ def main() -> int:
         '<thead><tr><th>Share<br>Price</th><th>Treasury<br>Yield</th><th>Estimates</th>'
         '<th>Fair Value<br>P/E</th><th>Current<br>P/E</th></tr></thead><tbody>'
         f'<tr><td class="year">${cur_px:,.2f}</td><td>{ten_yr*100:.1f}%</td>'
-        f'<td>Nick: {int(nicks_growth*100)}% growth, {int(nicks_margin*100)}% margin<br>'
-        f'Finviz: {int(finviz_growth*100)}% growth</td>'
+        f'<td>Nick: {int((nicks_growth or 0)*100)}% growth, {int((nicks_margin or 0)*100)}% margin<br>'
+        f'Finviz: {int((finviz_growth or 0)*100)}% growth</td>'
         f'<td>Nick: {target_pe_nick:.1f}<br>Finviz: {target_pe_finviz:.1f}</td>'
-        f'<td>{pe:.1f}</td></tr></tbody></table>'
+        f'<td>{("%.1f" % pe) if isinstance(pe,(int,float)) else "—"}</td></tr></tbody></table>'
     )
 
     valuation_html = (

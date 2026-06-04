@@ -49,6 +49,14 @@ jobs:
           python generate_market_summary.py
           python scripts/dump_assumptions.py
 
+      - name: Generate ticker JSONs (shell data)
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
+        run: |
+          TICKERS=$(tail -n +2 tickers.csv | tr -d '\r' | tr '\n' ' ')
+          python scripts/gen_ticker_json.py $TICKERS || true
+
       - name: Check out gh-pages branch
         uses: actions/checkout@v4
         with:
@@ -70,8 +78,6 @@ jobs:
             --exclude "data/microcap_appearances.json" \
             --exclude "charts/microcap_thesis_*.png" \
             --exclude "charts/microcap/" \
-            --exclude "ticker.html" \
-            --exclude "ticker_data/" \
             ./ gh-pages/
 
       - name: Commit & push changes to gh-pages
