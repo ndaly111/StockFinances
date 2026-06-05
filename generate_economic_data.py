@@ -53,6 +53,34 @@ INDICATORS = {
     "FEDFUNDS": {"name":"Fed Funds Target","units":"%","group":"rates"},
 }
 
+# Investor-focused indicators added for the stock-investor dashboard.
+# Fetched as simple raw series; the page generator builds composites
+# (recession risk, real rate, risk pricing) on top.
+EQUITY_INVESTOR_INDICATORS = {
+    # ── Cycle / recession risk ───────────────────────────────────────────
+    "T10Y3M":         {"name":"10Y-3M Yield Spread","units":"%","group":"cycle"},
+    "SAHMREALTIME":   {"name":"Sahm Rule Recession Indicator","units":"pp","group":"cycle"},
+    "RECPROUSM156N":  {"name":"NY Fed 12-Mo Recession Probability","units":"%","group":"cycle"},
+    "USSLIND":        {"name":"Leading Index (US)","units":"%","group":"cycle"},
+    # ── Fed policy stance ────────────────────────────────────────────────
+    "DFF":            {"name":"Effective Federal Funds Rate","units":"%","group":"fed"},
+    "PCEPILFE":       {"name":"Core PCE Price Index","units":"idx","group":"fed"},
+    "T10YIE":         {"name":"10Y Breakeven Inflation","units":"%","group":"fed"},
+    # ── Risk pricing ─────────────────────────────────────────────────────
+    "BAMLH0A0HYM2":   {"name":"High Yield OAS (Credit Spread)","units":"%","group":"risk"},
+    "VIXCLS":         {"name":"VIX (Equity Volatility)","units":"idx","group":"risk"},
+    "STLFSI4":        {"name":"St. Louis Fed Financial Stress","units":"idx","group":"risk"},
+    "DTWEXBGS":       {"name":"Trade-Weighted Dollar Index","units":"idx","group":"risk"},
+    "DCOILWTICO":     {"name":"WTI Crude Oil","units":"$/bbl","group":"risk"},
+    # ── Earnings drivers ─────────────────────────────────────────────────
+    # NAPM (ISM Manufacturing PMI) was discontinued by FRED; use PCU3331-
+    # equivalent or live ISM. INDPRO is a reasonable industrial-output proxy
+    # and is free + reliable.
+    "INDPRO":         {"name":"Industrial Production","units":"idx","group":"earnings"},
+    "PAYEMS":         {"name":"Nonfarm Payrolls","units":"K","group":"earnings"},
+    "PCEC96":         {"name":"Real Consumer Spending","units":"$B","group":"earnings"},
+}
+
 # ───────── DB helpers ─────────
 def _ensure_tables(c):
     c.execute("""CREATE TABLE IF NOT EXISTS economic_data(
@@ -166,14 +194,27 @@ def generate_economic_data():
 
         # ---- fetch core series ----
         start = (dt.date.today() - dt.timedelta(days=15 * 365)).strftime("%Y-%m-%d")
+        # Longer history for the investor-dashboard composites \u2014 recession
+        # risk / real-rate / risk-pricing percentiles need ~50 years for context.
+        long_start = "1970-01-01"
 
-        def _fred_series(sid: str) -> pd.Series:
+        def _fred_series(sid: str, observation_start: str | None = None) -> pd.Series:
             """Fetch a FRED series, returning an empty Series on error."""
             try:
-                return fred.get_series(sid, observation_start=start)
+                return fred.get_series(sid, observation_start=observation_start or start)
             except Exception as e:
                 print(f"\u26a0\ufe0f FRED: failed to fetch {sid}: {e}")
                 return pd.Series(dtype=float)
+
+        # ---- fetch investor-dashboard series (long history) ----
+        for sid in EQUITY_INVESTOR_INDICATORS:
+            ser = _fred_series(sid, observation_start=long_start)
+            if ser is None or ser.empty:
+                continue
+            df = ser.to_frame("value").reset_index().rename(columns={"index": "date"})
+            df["indicator"] = sid
+            df["date"] = pd.to_datetime(df["date"]).dt.date.astype(str)
+            _upsert(conn, df)
 
         unrate = _fred_series("UNRATE")
         cpi_ix = _fred_series("CPIAUCSL")  # raw index; convert to YoY %
