@@ -1548,27 +1548,44 @@ def main() -> int:
         + '</div>'
     )
 
-    # =============== Implied Growth history (synthetic for mockup) ===========
-    # Mirror the Forward Estimate History pattern: 365 daily points showing
-    # TTM-implied growth and Forward-implied growth over the last year.
-    import random as _random
-    _random.seed(9)
-    ig_n = 365
-    ig_start = dt.date.today() - dt.timedelta(days=ig_n - 1)
-    ig_dates = []
-    ig_ttm, ig_fwd = [], []
-    g_ttm, g_fwd = 0.165, 0.142
-    for i in range(ig_n):
-        d = ig_start + dt.timedelta(days=i)
-        g_ttm += _random.gauss(0.00008, 0.0015)
-        g_fwd += _random.gauss(0.00010, 0.0017)
-        # Earnings step-changes (synthetic)
-        if i in (90, 180, 270, 360):
-            g_ttm += _random.gauss(0.003, 0.002)
-            g_fwd += _random.gauss(0.003, 0.002)
-        ig_dates.append(d.isoformat())
-        ig_ttm.append(round(g_ttm * 100, 3))
-        ig_fwd.append(round(g_fwd * 100, 3))
+    # =============== Implied Growth history (real, from DB) ===========
+    # Plot the genuine per-ticker daily TTM + Forward implied growth that the
+    # daily refresh logs to Implied_Growth_History (same formula as the tiles).
+    # Only dates with BOTH series are kept so the two lines stay aligned.
+    # Falls back to a single current-value point if this ticker has no history
+    # yet (e.g. a newly added symbol). gen_ticker_json.py runs this from the
+    # repo root, so the DB resolves from the current working directory.
+    import sqlite3 as _ig_sqlite3
+    _ig_scalar_ttm = ig
+    _ig_scalar_fwd = ig_fwd
+    _ig_db = Path.cwd() / "Stock Data.db"
+    ig_dates, ig_ttm, ig_fwd = [], [], []
+    try:
+        with _ig_sqlite3.connect(str(_ig_db)) as _ig_conn:
+            _ig_rows = _ig_conn.execute(
+                "SELECT date_recorded, growth_type, growth_value "
+                "FROM Implied_Growth_History WHERE ticker = ? "
+                "ORDER BY date_recorded",
+                (TICKER,),
+            ).fetchall()
+        _ig_by_date = {}
+        for _d, _gt, _gv in _ig_rows:
+            if _gv is None:
+                continue
+            _ig_by_date.setdefault(_d, {})[_gt] = float(_gv) * 100
+        for _d in sorted(_ig_by_date):
+            _row = _ig_by_date[_d]
+            if "TTM" not in _row or "Forward" not in _row:
+                continue
+            ig_dates.append(_d)
+            ig_ttm.append(round(_row["TTM"], 3))
+            ig_fwd.append(round(_row["Forward"], 3))
+    except Exception as _ig_e:
+        print(f"  [implied_growth] history query failed for {TICKER}: {_ig_e}")
+    if not ig_dates:
+        ig_dates = [dt.date.today().isoformat()]
+        ig_ttm = [round((_ig_scalar_ttm or 0) * 100, 3)]
+        ig_fwd = [round((_ig_scalar_fwd or 0) * 100, 3)]
 
     ig_fig = go.Figure()
     ig_fig.add_trace(go.Scatter(
@@ -1652,8 +1669,7 @@ def main() -> int:
         + ig_legend + ig_chart
         + '<div style="overflow-x:auto">' + ig_table + '</div>'
         + '<p class="m-footnote">Implied growth = (P/E ÷ 10)<sup>0.1</sup> + 10Y yield − 1, '
-        'computed daily from price × TTM (or forward) EPS. Dotted reference lines = window averages. '
-        '(Mockup data; production would compute from your historical price/EPS series.)</p>'
+        'computed daily from price × TTM (or forward) EPS. Dotted reference lines = window averages.</p>'
         + '</div>'
     )
 
