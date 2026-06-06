@@ -1204,91 +1204,98 @@ def main() -> int:
             + '</div>'
         )
 
-    # ------------- Segment Performance (AAPL hardcoded 10-K data) -------
-    seg_years   = ["2020", "2021", "2022", "2023", "2024", "2025"]
-    seg_products = {
-        "iPhone":            [137.78, 191.97, 205.49, 200.58, 201.18, 201.18],
-        "Services":          [ 53.77,  68.43,  78.13,  85.20,  96.17, 104.30],
-        "Mac":               [ 28.62,  35.19,  40.18,  29.36,  29.98,  40.20],
-        "Wearables/Home":    [ 30.62,  38.37,  41.24,  39.85,  37.01,  40.50],
-        "iPad":              [ 23.72,  31.86,  29.29,  28.30,  26.69,  30.42],
-    }
-    seg_geo = {
-        "Americas":            [124.56, 153.31, 169.66, 162.56, 167.04, 174.95],
-        "Europe":              [ 68.64,  89.31, 95.12,  94.29, 101.33, 105.96],
-        "Greater China":       [ 40.31,  68.37, 74.20,  72.56,  66.95,  65.06],
-        "Japan":               [ 21.42,  28.48, 25.98,  24.26,  25.05,  27.07],
-        "Rest of Asia Pacific":[ 19.59,  26.36, 29.38,  29.62,  30.66,  43.13],
-    }
-    prod_colors = ["#1f77b4", "#2ca02c", "#ff7f0e", "#9467bd", "#17becf"]
-    geo_colors  = ["#1f77b4", "#2ca02c", "#d62728", "#9467bd", "#ff7f0e"]
+    # Segment data is only available (hardcoded from 10-K) for AAPL; for
+    # every other ticker emit nothing so we never render AAPL's segments
+    # under the wrong company.
+    if TICKER == "AAPL":
+        # ------------- Segment Performance (AAPL hardcoded 10-K data) -------
+        seg_years   = ["2020", "2021", "2022", "2023", "2024", "2025"]
+        seg_products = {
+            "iPhone":            [137.78, 191.97, 205.49, 200.58, 201.18, 201.18],
+            "Services":          [ 53.77,  68.43,  78.13,  85.20,  96.17, 104.30],
+            "Mac":               [ 28.62,  35.19,  40.18,  29.36,  29.98,  40.20],
+            "Wearables/Home":    [ 30.62,  38.37,  41.24,  39.85,  37.01,  40.50],
+            "iPad":              [ 23.72,  31.86,  29.29,  28.30,  26.69,  30.42],
+        }
+        seg_geo = {
+            "Americas":            [124.56, 153.31, 169.66, 162.56, 167.04, 174.95],
+            "Europe":              [ 68.64,  89.31, 95.12,  94.29, 101.33, 105.96],
+            "Greater China":       [ 40.31,  68.37, 74.20,  72.56,  66.95,  65.06],
+            "Japan":               [ 21.42,  28.48, 25.98,  24.26,  25.05,  27.07],
+            "Rest of Asia Pacific":[ 19.59,  26.36, 29.38,  29.62,  30.66,  43.13],
+        }
+        prod_colors = ["#1f77b4", "#2ca02c", "#ff7f0e", "#9467bd", "#17becf"]
+        geo_colors  = ["#1f77b4", "#2ca02c", "#d62728", "#9467bd", "#ff7f0e"]
 
-    # Build each dimension (Product, Geography) as its OWN figure with its OWN
-    # custom HTML legend strip right above it. Avoids the
-    # one-legend-two-charts-with-overlapping-colors confusion.
-    def _build_seg_chart(data, colors, title, div_id):
-        fig = go.Figure()
-        for (name, vals), color in zip(data.items(), colors):
-            fig.add_trace(go.Bar(
-                x=seg_years, y=vals, name=name, marker_color=color,
-                hovertemplate=f"<b>%{{x}}</b><br>{name}: $%{{y:,.1f}}B<extra></extra>",
-            ))
-        fig.update_layout(
-            title=dict(text=title, x=0.5, xanchor="center", y=0.98, yanchor="top",
-                       font=dict(size=14)),
-            height=320, margin=dict(l=10, r=10, t=30, b=10),
-            barmode="stack", bargap=0.18,
-            plot_bgcolor="white", paper_bgcolor="white",
-            showlegend=False, dragmode=False, hovermode="closest",
+        # Build each dimension (Product, Geography) as its OWN figure with its OWN
+        # custom HTML legend strip right above it. Avoids the
+        # one-legend-two-charts-with-overlapping-colors confusion.
+        def _build_seg_chart(data, colors, title, div_id):
+            fig = go.Figure()
+            for (name, vals), color in zip(data.items(), colors):
+                fig.add_trace(go.Bar(
+                    x=seg_years, y=vals, name=name, marker_color=color,
+                    hovertemplate=f"<b>%{{x}}</b><br>{name}: $%{{y:,.1f}}B<extra></extra>",
+                ))
+            fig.update_layout(
+                title=dict(text=title, x=0.5, xanchor="center", y=0.98, yanchor="top",
+                           font=dict(size=14)),
+                height=320, margin=dict(l=10, r=10, t=30, b=10),
+                barmode="stack", bargap=0.18,
+                plot_bgcolor="white", paper_bgcolor="white",
+                showlegend=False, dragmode=False, hovermode="closest",
+            )
+            fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=11))
+            fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc")
+            return fig.to_html(include_plotlyjs=False, full_html=False, config={
+                "displayModeBar": False, "responsive": True, "scrollZoom": False,
+                "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
+            }, div_id=div_id)
+
+        def _seg_legend(data, colors):
+            cells = "".join(
+                f'<span class="seg-key"><span class="seg-dot" style="background:{c}"></span>{n}</span>'
+                for (n, _), c in zip(data.items(), colors)
+            )
+            return f'<div class="seg-strip">{cells}</div>'
+
+        prod_chart = _build_seg_chart(seg_products, prod_colors,
+                                       "Revenue by Product ($B)", "aapl-segments-prod-chart")
+        geo_chart  = _build_seg_chart(seg_geo, geo_colors,
+                                       "Revenue by Geography ($B)", "aapl-segments-geo-chart")
+        prod_legend = _seg_legend(seg_products, prod_colors)
+        geo_legend  = _seg_legend(seg_geo, geo_colors)
+
+        # Latest fiscal year mix tables
+        def mix_table(data, title):
+            latest_vals = {k: v[-1] for k, v in data.items()}
+            total = sum(latest_vals.values())
+            rows = ''.join(
+                f'<tr><td class="year">{k}</td><td>${v:,.1f}B</td>'
+                f'<td><span class="delta">{v/total*100:.1f}%</span></td></tr>'
+                for k, v in sorted(latest_vals.items(), key=lambda kv: -kv[1])
+            )
+            return (
+                f'<table class="ft" style="margin-top:10px;font-size:12px">'
+                f'<thead><tr><th>{title}</th><th>FY{seg_years[-1]} ($B)</th><th>% of total</th></tr></thead>'
+                f'<tbody>{rows}</tbody></table>'
+            )
+
+        segments_html = (
+            '<div class="data-table"><h2>Segment Performance</h2>'
+            + prod_legend + prod_chart
+            + '<div style="overflow-x:auto">' + mix_table(seg_products, "Product") + '</div>'
+            + '<div class="seg-divider"></div>'
+            + geo_legend + geo_chart
+            + '<div style="overflow-x:auto">' + mix_table(seg_geo, "Geography") + '</div>'
+            + '<p class="m-footnote">Segment values from Apple 10-K filings. FY2025 services hit a new record '
+            '($104B) while iPhone was roughly flat; Greater China softened against domestic competition. '
+            '(Production version would source these from your existing segment pipeline rather than hardcoded.)</p>'
+            + '</div>'
         )
-        fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=11))
-        fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc")
-        return fig.to_html(include_plotlyjs=False, full_html=False, config={
-            "displayModeBar": False, "responsive": True, "scrollZoom": False,
-            "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
-        }, div_id=div_id)
 
-    def _seg_legend(data, colors):
-        cells = "".join(
-            f'<span class="seg-key"><span class="seg-dot" style="background:{c}"></span>{n}</span>'
-            for (n, _), c in zip(data.items(), colors)
-        )
-        return f'<div class="seg-strip">{cells}</div>'
-
-    prod_chart = _build_seg_chart(seg_products, prod_colors,
-                                   "Revenue by Product ($B)", "aapl-segments-prod-chart")
-    geo_chart  = _build_seg_chart(seg_geo, geo_colors,
-                                   "Revenue by Geography ($B)", "aapl-segments-geo-chart")
-    prod_legend = _seg_legend(seg_products, prod_colors)
-    geo_legend  = _seg_legend(seg_geo, geo_colors)
-
-    # Latest fiscal year mix tables
-    def mix_table(data, title):
-        latest_vals = {k: v[-1] for k, v in data.items()}
-        total = sum(latest_vals.values())
-        rows = ''.join(
-            f'<tr><td class="year">{k}</td><td>${v:,.1f}B</td>'
-            f'<td><span class="delta">{v/total*100:.1f}%</span></td></tr>'
-            for k, v in sorted(latest_vals.items(), key=lambda kv: -kv[1])
-        )
-        return (
-            f'<table class="ft" style="margin-top:10px;font-size:12px">'
-            f'<thead><tr><th>{title}</th><th>FY{seg_years[-1]} ($B)</th><th>% of total</th></tr></thead>'
-            f'<tbody>{rows}</tbody></table>'
-        )
-
-    segments_html = (
-        '<div class="data-table"><h2>Segment Performance</h2>'
-        + prod_legend + prod_chart
-        + '<div style="overflow-x:auto">' + mix_table(seg_products, "Product") + '</div>'
-        + '<div class="seg-divider"></div>'
-        + geo_legend + geo_chart
-        + '<div style="overflow-x:auto">' + mix_table(seg_geo, "Geography") + '</div>'
-        + '<p class="m-footnote">Segment values from Apple 10-K filings. FY2025 services hit a new record '
-        '($104B) while iPhone was roughly flat; Greater China softened against domestic competition. '
-        '(Production version would source these from your existing segment pipeline rather than hardcoded.)</p>'
-        + '</div>'
-    )
+    else:
+        segments_html = ''
 
     # =============== Balance Sheet ==========================================
     bs_assets   = fetch_concept("Assets")

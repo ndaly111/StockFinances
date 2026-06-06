@@ -57,11 +57,8 @@ def patched_build(ticker: str, cik: str) -> dict:
     for old, new in sorted(chart_id_map.items(), key=lambda kv: -len(kv[0])):
         src = src.replace(old, new)
     src = src.replace('"Apple Inc."', f'"{ticker.upper()}"')
-    if ticker.upper() != "AAPL":
-        src = src.replace(
-            "    segments_html = (\n        '<div class=\"data-table\"><h2>Segment Performance</h2>'",
-            "    segments_html = ''\n    _skip = (\n        '<div class=\"data-table\"><h2>Segment Performance</h2>'",
-        )
+    # (Segments are now gated on TICKER=="AAPL" inside build_aapl_mockup.py, so
+    # no per-ticker source rewrite is needed to suppress AAPL's hardcoded data.)
 
     tmp = pathlib.Path(f"/tmp/build_{ticker.lower()}_json.py")
     tmp.write_text(src, encoding="utf-8")
