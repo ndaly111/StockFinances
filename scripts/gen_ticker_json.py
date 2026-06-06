@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import pathlib
 import re
 import sys
@@ -341,23 +342,94 @@ def cik_for(ticker: str) -> str | None:
     return None
 
 
-def main():
-    tickers = sys.argv[1:] or ["AAPL"]
-    for tk in tickers:
-        cik = cik_for(tk)
+def load_cik_map() -> dict:
+    """Download SEC's company_tickers.json once and return {TICKER: cik}.
+
+    cik_for() previously re-downloaded this ~1MB file for every ticker; doing it
+    once removes ~N redundant SEC round-trips and avoids rate-limiting when the
+    builds run in parallel.
+    """
+    import requests
+    r = requests.get(
+        "https://www.sec.gov/files/company_tickers.json",
+        headers={"User-Agent": "Nick Daly ndaly111@gmail.com"},
+        timeout=30,
+    )
+    r.raise_for_status()
+    out = {}
+    for entry in r.json().values():
+        t = str(entry.get("ticker", "")).upper()
+        if t:
+            out[t] = f"{int(entry['cik_str']):010d}"
+    return out
+
+
+def _build_one(args):
+    """Build + write one ticker's JSON. Runs in a worker process; returns a
+    (ticker, size_or_None, error_or_None) tuple. Self-contained error handling
+    so one bad ticker can never abort the batch."""
+    tk, cik = args
+    try:
         if not cik:
-            print(f"[{tk}] no CIK")
-            continue
-        try:
-            d = build_data(tk, cik)
-        except Exception as e:
-            print(f"[{tk}] FAILED: {e}")
-            import traceback; traceback.print_exc()
-            continue
+            return (tk, None, "no CIK")
+        d = build_data(tk, cik)
         out_path = OUT_DIR / f"{tk.upper()}.json"
         out_path.write_text(json.dumps(d, separators=(",", ":"), default=str), encoding="utf-8")
-        print(f"[{tk}] wrote {out_path}: {out_path.stat().st_size:,} bytes "
-              f"({len(d.get('figures',{}))} figures, {len(d.get('headlines',[]))} headlines)")
+        return (tk, out_path.stat().st_size, None)
+    except Exception as e:  # noqa: BLE001 - isolate per-ticker failures
+        import traceback
+        traceback.print_exc()
+        return (tk, None, str(e))
+
+
+def main():
+    tickers = sys.argv[1:] or ["AAPL"]
+
+    # Resolve CIKs once (single SEC download) instead of per ticker.
+    try:
+        cik_map = load_cik_map()
+    except Exception as e:  # noqa: BLE001
+        print(f"[gen_ticker_json] CIK map load failed ({e}); per-ticker fallback")
+        cik_map = None
+    work = [(tk, (cik_map.get(tk.upper()) if cik_map is not None else cik_for(tk)))
+            for tk in tickers]
+
+    def run_sequential():
+        n = 0
+        for w in work:
+            tk, size, err = _build_one(w)
+            if err:
+                print(f"[{tk}] FAILED: {err}")
+            else:
+                n += 1
+                print(f"[{tk}] wrote {size:,} bytes")
+        return n
+
+    # Each ticker build is independent and network-bound, so fan out across
+    # processes (the build monkey-patches a global Plotly method, so processes —
+    # not threads — keep them isolated). GEN_WORKERS=1 forces sequential.
+    workers = int(os.environ.get("GEN_WORKERS", "4") or "4")
+    ok = 0
+    if workers > 1 and len(work) > 1:
+        try:
+            from concurrent.futures import ProcessPoolExecutor, as_completed
+            with ProcessPoolExecutor(max_workers=workers) as ex:
+                futs = [ex.submit(_build_one, w) for w in work]
+                for fut in as_completed(futs):
+                    tk, size, err = fut.result()
+                    if err:
+                        print(f"[{tk}] FAILED: {err}")
+                    else:
+                        ok += 1
+                        print(f"[{tk}] wrote {size:,} bytes")
+        except Exception as e:  # noqa: BLE001 - never leave pages unbuilt
+            print(f"[gen_ticker_json] parallel run failed ({e}); retrying sequentially")
+            ok = run_sequential()
+    else:
+        ok = run_sequential()
+
+    print(f"[gen_ticker_json] {ok}/{len(work)} tickers built "
+          f"({workers} workers)")
 
 
 if __name__ == "__main__":
