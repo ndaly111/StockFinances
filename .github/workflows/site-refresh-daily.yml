@@ -56,6 +56,22 @@ jobs:
           python generate_market_summary.py
           python scripts/dump_assumptions.py
 
+      # Rebuild the per-ticker JSON the site shell (ticker.html) reads — once a
+      # day at market close (the 4:30pm ET cron) or on manual dispatch. main_remote
+      # above just refreshed the DB, so this reads fresh data. The other 3 daily
+      # runs skip this and leave ticker_data untouched (the rsync below excludes
+      # it), so they cannot wipe it.
+      - name: Generate ticker JSONs (market close)
+        if: github.event.schedule == '30 21 * * 1-5' || github.event_name == 'workflow_dispatch'
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
+          GEN_WORKERS: "1"
+        run: |
+          TICKERS=$(tail -n +2 tickers.csv | tr -d '\r' | tr '\n' ' ')
+          python scripts/gen_ticker_json.py $TICKERS || true
+          echo "built $(ls ticker_data/*.json 2>/dev/null | wc -l) ticker JSONs"
+
       - name: Check out gh-pages branch
         uses: actions/checkout@v4
         with:
@@ -92,5 +108,30 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "Deploy to GitHub Pages (daily)"
+            git push origin gh-pages
+          fi
+
+      # Deploy the freshly-built ticker JSON separately from the rsync above
+      # (which always excludes ticker_data/). Guarded: if the build produced too
+      # few files, skip rather than let --delete wipe the live data.
+      - name: Deploy ticker_data (market close)
+        if: github.event.schedule == '30 21 * * 1-5' || github.event_name == 'workflow_dispatch'
+        run: |
+          COUNT=$(ls ticker_data/*.json 2>/dev/null | wc -l)
+          echo "ticker_data files built: $COUNT"
+          if [ "$COUNT" -lt 90 ]; then
+            echo "Fewer than 90 JSONs built — skipping deploy to avoid wiping live data."
+            exit 0
+          fi
+          mkdir -p gh-pages/ticker_data
+          rsync -a --delete ticker_data/ gh-pages/ticker_data/
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ticker_data
+          if git diff --cached --quiet; then
+            echo "No ticker_data changes."
+          else
+            git commit -m "Deploy ticker_data (daily market close)"
             git push origin gh-pages
           fi
