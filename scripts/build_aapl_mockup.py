@@ -1498,17 +1498,59 @@ def main() -> int:
     )
 
     # =============== Valuation Comparison ===================================
-    nicks_growth = 0.10; nicks_margin = 0.25
-    finviz_growth = 0.12
-    # Simple fair-value using P/E target — illustrative
-    target_pe_nick   = 17.0
-    target_pe_finviz = 22.0
-    val_years = ["TTM", "2026E", "2027E"]
-    val_eps   = [float(last_eps_ttm),
-                 fwd_eps[0][1] if fwd_eps else float(last_eps_ttm),
-                 fwd_eps[1][1] if fwd_eps and len(fwd_eps) > 1 else float(last_eps_ttm)]
-    val_nick   = [e * target_pe_nick   for e in val_eps]
-    val_finviz = [e * target_pe_finviz for e in val_eps]
+    # Real per-ticker assumptions from Tickers_Info + the repo fair-P/E formula
+    # (matches valuation_update.py):  fair_pe = ((growth - 10Y + 1) ** 10) * 10.
+    # Profitable: value = EPS * fair_pe. Unprofitable: value = RPS * fair_pe * margin.
+    import sqlite3 as _val_sqlite3
+    nicks_growth = finviz_growth = nicks_margin = None
+    try:
+        with _val_sqlite3.connect(str(Path.cwd() / "Stock Data.db")) as _vc:
+            _vrow = _vc.execute(
+                "SELECT nicks_growth_rate, FINVIZ_5yr_gwth, projected_profit_margin "
+                "FROM Tickers_Info WHERE ticker = ?", (TICKER,),
+            ).fetchone()
+        if _vrow:
+            nicks_growth  = (_vrow[0] / 100.0) if _vrow[0] is not None else None
+            finviz_growth = (_vrow[1] / 100.0) if _vrow[1] is not None else None
+            nicks_margin  = (_vrow[2] / 100.0) if _vrow[2] is not None else None
+    except Exception as _ve:
+        print(f"  [valuation] assumptions query failed for {TICKER}: {_ve}")
+
+    def _fair_pe(growth):
+        if growth is None:
+            return None
+        try:
+            return ((growth - ten_yr + 1) ** 10) * 10
+        except Exception:
+            return None
+
+    target_pe_nick   = _fair_pe(nicks_growth)
+    target_pe_finviz = _fair_pe(finviz_growth)
+
+    # revenue-per-share for the P/S valuation path (unprofitable companies)
+    _ps_ratio = info.get("priceToSalesTrailing12Months")
+    _rps = (float(price) / _ps_ratio) if (_ps_ratio and isinstance(price, (int, float)) and _ps_ratio > 0) else None
+
+    def _value_at(eps, fair_pe):
+        if fair_pe is None:
+            return None
+        if isinstance(eps, (int, float)) and eps > 0:
+            return eps * fair_pe
+        # unprofitable: value on sales — RPS * fair P/S, fair P/S = fair_pe * margin
+        if _rps is not None and nicks_margin:
+            return _rps * fair_pe * nicks_margin
+        return None
+
+    val_years = ["TTM"]
+    for _fe in (fwd_eps[:2] if fwd_eps else []):
+        val_years.append(str(_fe[0]))
+    while len(val_years) < 3:
+        val_years.append("—")
+    val_eps = [float(last_eps_ttm),
+               fwd_eps[0][1] if fwd_eps else float(last_eps_ttm),
+               fwd_eps[1][1] if fwd_eps and len(fwd_eps) > 1 else float(last_eps_ttm)]
+    val_nick   = [_value_at(e, target_pe_nick)   for e in val_eps]
+    val_finviz = [_value_at(e, target_pe_finviz) for e in val_eps]
     cur_px = float(price) if isinstance(price, (int, float)) else 0.0
 
     val_fig = go.Figure()
@@ -1549,10 +1591,17 @@ def main() -> int:
     )
 
     def _vs_cell(v, px):
-        if not px: return '<td>—</td>'
-        diff = (v/px - 1.0) * 100
+        if not px or v is None:
+            return '<td>—</td>'
+        diff = (v / px - 1.0) * 100
         cls = "pos" if diff >= 0 else "neg"
         return f'<td class="{cls}">{diff:+.1f}%</td>'
+
+    def _val_cell(v):
+        return f'${v:,.2f}' if v is not None else '—'
+
+    def _pct_or_dash(x):
+        return f'{x*100:.1f}%' if x is not None else '—'
 
     val_table = (
         '<table class="ft" style="margin-top:10px;font-size:12px">'
@@ -1560,8 +1609,8 @@ def main() -> int:
         '<th>vs Price</th><th>Finviz Valuation</th><th>vs Price</th></tr></thead><tbody>'
         + ''.join(
             f'<tr><td class="year">${e:.2f} EPS</td><td>{yr}</td>'
-            f'<td>${n:,.2f}</td>{_vs_cell(n, cur_px)}'
-            f'<td>${f:,.2f}</td>{_vs_cell(f, cur_px)}</tr>'
+            f'<td>{_val_cell(n)}</td>{_vs_cell(n, cur_px)}'
+            f'<td>{_val_cell(f)}</td>{_vs_cell(f, cur_px)}</tr>'
             for yr, e, n, f in zip(val_years, val_eps, val_nick, val_finviz)
         )
         + '</tbody></table>'
@@ -1572,9 +1621,10 @@ def main() -> int:
         '<thead><tr><th>Share<br>Price</th><th>Treasury<br>Yield</th><th>Estimates</th>'
         '<th>Fair Value<br>P/E</th><th>Current<br>P/E</th></tr></thead><tbody>'
         f'<tr><td class="year">${cur_px:,.2f}</td><td>{ten_yr*100:.1f}%</td>'
-        f'<td>Nick: {int((nicks_growth or 0)*100)}% growth, {int((nicks_margin or 0)*100)}% margin<br>'
-        f'Finviz: {int((finviz_growth or 0)*100)}% growth</td>'
-        f'<td>Nick: {target_pe_nick:.1f}<br>Finviz: {target_pe_finviz:.1f}</td>'
+        f'<td>Nick: {_pct_or_dash(nicks_growth)} growth, {_pct_or_dash(nicks_margin)} margin<br>'
+        f'Finviz: {_pct_or_dash(finviz_growth)} 5yr growth</td>'
+        f'<td>Nick: {("%.1f" % target_pe_nick) if target_pe_nick is not None else "—"}<br>'
+        f'Finviz: {("%.1f" % target_pe_finviz) if target_pe_finviz is not None else "—"}</td>'
         f'<td>{("%.1f" % pe) if isinstance(pe,(int,float)) else "—"}</td></tr></tbody></table>'
     )
 
@@ -1583,9 +1633,10 @@ def main() -> int:
         + val_legend + val_chart
         + '<div style="overflow-x:auto">' + val_assumptions + '</div>'
         + '<div style="overflow-x:auto">' + val_table + '</div>'
-        + '<p class="m-footnote">Valuation comparison using illustrative target P/E multiples '
-        '(Nick = 17, Finviz = 22) applied to TTM and forward EPS. Real version sources Nick\'s growth/margin '
-        'assumptions and Finviz\'s growth estimate from your existing inputs.</p>'
+        + '<p class="m-footnote">Fair value = EPS &times; fair P/E, where fair P/E = '
+        '((growth &minus; 10Y yield + 1)<sup>10</sup>) &times; 10, using your per-ticker growth '
+        '(Nick\'s &amp; Finviz 5-yr) and projected margin. Unprofitable names are valued on sales. '
+        'Dashes mean an assumption is not set for this ticker.</p>'
         + '</div>'
     )
 
