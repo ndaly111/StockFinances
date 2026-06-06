@@ -1,4 +1,32 @@
-#This is chart_generator
+# chart_generator.py
+# =============================================================================
+# LEGACY / SUPERSEDED — output is no longer used by the live site.
+#
+# What this is:
+#   The original desktop chart generator. It renders per-ticker MATPLOTLIB PNGs
+#   (charts/{ticker}_revenue_net_income_chart.png, {ticker}_eps_chart.png) and a
+#   few financial-data HTML tables. These fed the old per-ticker pages
+#   (pages/{ticker}_page.html), back when each ticker had its own statically
+#   generated HTML page.
+#
+# Why it was decommissioned:
+#   The site moved to a single static shell — ticker.html?t=<TICKER> — that loads
+#   ticker_data/<TICKER>.json and renders every chart INTERACTIVELY with Plotly.
+#   That JSON is built by scripts/build_aapl_mockup.py (via scripts/gen_ticker_json.py),
+#   which produces its own revenue/net-income and EPS charts. Nothing links to the
+#   matplotlib PNGs or the old per-ticker pages anymore, so this output is dead.
+#
+# Status / safety notes (read before touching):
+#   - Code is intentionally KEPT, not deleted (reference / possible reuse).
+#   - It writes NO data the JSON pipeline depends on. Its only DB interaction is
+#     ensure_splits_table() (a CREATE TABLE IF NOT EXISTS schema check) and reads;
+#     the data the shells read (Implied_Growth_History, Forward_EPS_FY_History,
+#     EDGAR financials) is produced elsewhere.
+#   - As of 2026-06 it is still invoked by main_remote.py's refresh loop
+#     (generate_financial_charts / prepare_data_for_charts). It can be dropped
+#     from that loop later with no data impact — only the unused PNGs stop being
+#     written.
+# =============================================================================
 
 import numpy as np
 import pandas as pd
