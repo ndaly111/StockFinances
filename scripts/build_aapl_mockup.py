@@ -1204,91 +1204,98 @@ def main() -> int:
             + '</div>'
         )
 
-    # ------------- Segment Performance (AAPL hardcoded 10-K data) -------
-    seg_years   = ["2020", "2021", "2022", "2023", "2024", "2025"]
-    seg_products = {
-        "iPhone":            [137.78, 191.97, 205.49, 200.58, 201.18, 201.18],
-        "Services":          [ 53.77,  68.43,  78.13,  85.20,  96.17, 104.30],
-        "Mac":               [ 28.62,  35.19,  40.18,  29.36,  29.98,  40.20],
-        "Wearables/Home":    [ 30.62,  38.37,  41.24,  39.85,  37.01,  40.50],
-        "iPad":              [ 23.72,  31.86,  29.29,  28.30,  26.69,  30.42],
-    }
-    seg_geo = {
-        "Americas":            [124.56, 153.31, 169.66, 162.56, 167.04, 174.95],
-        "Europe":              [ 68.64,  89.31, 95.12,  94.29, 101.33, 105.96],
-        "Greater China":       [ 40.31,  68.37, 74.20,  72.56,  66.95,  65.06],
-        "Japan":               [ 21.42,  28.48, 25.98,  24.26,  25.05,  27.07],
-        "Rest of Asia Pacific":[ 19.59,  26.36, 29.38,  29.62,  30.66,  43.13],
-    }
-    prod_colors = ["#1f77b4", "#2ca02c", "#ff7f0e", "#9467bd", "#17becf"]
-    geo_colors  = ["#1f77b4", "#2ca02c", "#d62728", "#9467bd", "#ff7f0e"]
+    # Segment data is only available (hardcoded from 10-K) for AAPL; for
+    # every other ticker emit nothing so we never render AAPL's segments
+    # under the wrong company.
+    if TICKER == "AAPL":
+        # ------------- Segment Performance (AAPL hardcoded 10-K data) -------
+        seg_years   = ["2020", "2021", "2022", "2023", "2024", "2025"]
+        seg_products = {
+            "iPhone":            [137.78, 191.97, 205.49, 200.58, 201.18, 201.18],
+            "Services":          [ 53.77,  68.43,  78.13,  85.20,  96.17, 104.30],
+            "Mac":               [ 28.62,  35.19,  40.18,  29.36,  29.98,  40.20],
+            "Wearables/Home":    [ 30.62,  38.37,  41.24,  39.85,  37.01,  40.50],
+            "iPad":              [ 23.72,  31.86,  29.29,  28.30,  26.69,  30.42],
+        }
+        seg_geo = {
+            "Americas":            [124.56, 153.31, 169.66, 162.56, 167.04, 174.95],
+            "Europe":              [ 68.64,  89.31, 95.12,  94.29, 101.33, 105.96],
+            "Greater China":       [ 40.31,  68.37, 74.20,  72.56,  66.95,  65.06],
+            "Japan":               [ 21.42,  28.48, 25.98,  24.26,  25.05,  27.07],
+            "Rest of Asia Pacific":[ 19.59,  26.36, 29.38,  29.62,  30.66,  43.13],
+        }
+        prod_colors = ["#1f77b4", "#2ca02c", "#ff7f0e", "#9467bd", "#17becf"]
+        geo_colors  = ["#1f77b4", "#2ca02c", "#d62728", "#9467bd", "#ff7f0e"]
 
-    # Build each dimension (Product, Geography) as its OWN figure with its OWN
-    # custom HTML legend strip right above it. Avoids the
-    # one-legend-two-charts-with-overlapping-colors confusion.
-    def _build_seg_chart(data, colors, title, div_id):
-        fig = go.Figure()
-        for (name, vals), color in zip(data.items(), colors):
-            fig.add_trace(go.Bar(
-                x=seg_years, y=vals, name=name, marker_color=color,
-                hovertemplate=f"<b>%{{x}}</b><br>{name}: $%{{y:,.1f}}B<extra></extra>",
-            ))
-        fig.update_layout(
-            title=dict(text=title, x=0.5, xanchor="center", y=0.98, yanchor="top",
-                       font=dict(size=14)),
-            height=320, margin=dict(l=10, r=10, t=30, b=10),
-            barmode="stack", bargap=0.18,
-            plot_bgcolor="white", paper_bgcolor="white",
-            showlegend=False, dragmode=False, hovermode="closest",
+        # Build each dimension (Product, Geography) as its OWN figure with its OWN
+        # custom HTML legend strip right above it. Avoids the
+        # one-legend-two-charts-with-overlapping-colors confusion.
+        def _build_seg_chart(data, colors, title, div_id):
+            fig = go.Figure()
+            for (name, vals), color in zip(data.items(), colors):
+                fig.add_trace(go.Bar(
+                    x=seg_years, y=vals, name=name, marker_color=color,
+                    hovertemplate=f"<b>%{{x}}</b><br>{name}: $%{{y:,.1f}}B<extra></extra>",
+                ))
+            fig.update_layout(
+                title=dict(text=title, x=0.5, xanchor="center", y=0.98, yanchor="top",
+                           font=dict(size=14)),
+                height=320, margin=dict(l=10, r=10, t=30, b=10),
+                barmode="stack", bargap=0.18,
+                plot_bgcolor="white", paper_bgcolor="white",
+                showlegend=False, dragmode=False, hovermode="closest",
+            )
+            fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=11))
+            fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc")
+            return fig.to_html(include_plotlyjs=False, full_html=False, config={
+                "displayModeBar": False, "responsive": True, "scrollZoom": False,
+                "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
+            }, div_id=div_id)
+
+        def _seg_legend(data, colors):
+            cells = "".join(
+                f'<span class="seg-key"><span class="seg-dot" style="background:{c}"></span>{n}</span>'
+                for (n, _), c in zip(data.items(), colors)
+            )
+            return f'<div class="seg-strip">{cells}</div>'
+
+        prod_chart = _build_seg_chart(seg_products, prod_colors,
+                                       "Revenue by Product ($B)", "aapl-segments-prod-chart")
+        geo_chart  = _build_seg_chart(seg_geo, geo_colors,
+                                       "Revenue by Geography ($B)", "aapl-segments-geo-chart")
+        prod_legend = _seg_legend(seg_products, prod_colors)
+        geo_legend  = _seg_legend(seg_geo, geo_colors)
+
+        # Latest fiscal year mix tables
+        def mix_table(data, title):
+            latest_vals = {k: v[-1] for k, v in data.items()}
+            total = sum(latest_vals.values())
+            rows = ''.join(
+                f'<tr><td class="year">{k}</td><td>${v:,.1f}B</td>'
+                f'<td><span class="delta">{v/total*100:.1f}%</span></td></tr>'
+                for k, v in sorted(latest_vals.items(), key=lambda kv: -kv[1])
+            )
+            return (
+                f'<table class="ft" style="margin-top:10px;font-size:12px">'
+                f'<thead><tr><th>{title}</th><th>FY{seg_years[-1]} ($B)</th><th>% of total</th></tr></thead>'
+                f'<tbody>{rows}</tbody></table>'
+            )
+
+        segments_html = (
+            '<div class="data-table"><h2>Segment Performance</h2>'
+            + prod_legend + prod_chart
+            + '<div style="overflow-x:auto">' + mix_table(seg_products, "Product") + '</div>'
+            + '<div class="seg-divider"></div>'
+            + geo_legend + geo_chart
+            + '<div style="overflow-x:auto">' + mix_table(seg_geo, "Geography") + '</div>'
+            + '<p class="m-footnote">Segment values from Apple 10-K filings. FY2025 services hit a new record '
+            '($104B) while iPhone was roughly flat; Greater China softened against domestic competition. '
+            '(Production version would source these from your existing segment pipeline rather than hardcoded.)</p>'
+            + '</div>'
         )
-        fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=11))
-        fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc")
-        return fig.to_html(include_plotlyjs=False, full_html=False, config={
-            "displayModeBar": False, "responsive": True, "scrollZoom": False,
-            "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
-        }, div_id=div_id)
 
-    def _seg_legend(data, colors):
-        cells = "".join(
-            f'<span class="seg-key"><span class="seg-dot" style="background:{c}"></span>{n}</span>'
-            for (n, _), c in zip(data.items(), colors)
-        )
-        return f'<div class="seg-strip">{cells}</div>'
-
-    prod_chart = _build_seg_chart(seg_products, prod_colors,
-                                   "Revenue by Product ($B)", "aapl-segments-prod-chart")
-    geo_chart  = _build_seg_chart(seg_geo, geo_colors,
-                                   "Revenue by Geography ($B)", "aapl-segments-geo-chart")
-    prod_legend = _seg_legend(seg_products, prod_colors)
-    geo_legend  = _seg_legend(seg_geo, geo_colors)
-
-    # Latest fiscal year mix tables
-    def mix_table(data, title):
-        latest_vals = {k: v[-1] for k, v in data.items()}
-        total = sum(latest_vals.values())
-        rows = ''.join(
-            f'<tr><td class="year">{k}</td><td>${v:,.1f}B</td>'
-            f'<td><span class="delta">{v/total*100:.1f}%</span></td></tr>'
-            for k, v in sorted(latest_vals.items(), key=lambda kv: -kv[1])
-        )
-        return (
-            f'<table class="ft" style="margin-top:10px;font-size:12px">'
-            f'<thead><tr><th>{title}</th><th>FY{seg_years[-1]} ($B)</th><th>% of total</th></tr></thead>'
-            f'<tbody>{rows}</tbody></table>'
-        )
-
-    segments_html = (
-        '<div class="data-table"><h2>Segment Performance</h2>'
-        + prod_legend + prod_chart
-        + '<div style="overflow-x:auto">' + mix_table(seg_products, "Product") + '</div>'
-        + '<div class="seg-divider"></div>'
-        + geo_legend + geo_chart
-        + '<div style="overflow-x:auto">' + mix_table(seg_geo, "Geography") + '</div>'
-        + '<p class="m-footnote">Segment values from Apple 10-K filings. FY2025 services hit a new record '
-        '($104B) while iPhone was roughly flat; Greater China softened against domestic competition. '
-        '(Production version would source these from your existing segment pipeline rather than hardcoded.)</p>'
-        + '</div>'
-    )
+    else:
+        segments_html = ''
 
     # =============== Balance Sheet ==========================================
     bs_assets   = fetch_concept("Assets")
@@ -1707,138 +1714,126 @@ def main() -> int:
         + '</div>'
     )
 
-    # ----------- Forward Estimate History (synthetic for mockup) --------
-    # Daily granularity over the last 6 months. Each day's value reflects
-    # small individual-analyst revisions; earnings dates produce visible step
-    # changes when consensus gets re-anchored.
-    import random as _random
-    _random.seed(7)
-    start_d = dt.date.today() - dt.timedelta(days=183)
-    fe_dates, fe_eps_fy26, fe_eps_fy27, fe_rev_fy26, fe_rev_fy27 = [], [], [], [], []
-    eps26, eps27 = 8.40, 9.18
-    rev26, rev27 = 464.5, 502.2
-    # Place "earnings" steps roughly 90 and 30 days back
-    q1_idx, q2_idx = 90, 154
-    for i in range(184):
-        d = start_d + dt.timedelta(days=i)
-        # Daily Brownian-style nudge: tiny mean upward drift + noise
-        eps26 += _random.gauss(0.0018, 0.006)
-        eps27 += _random.gauss(0.0024, 0.008)
-        rev26 += _random.gauss(0.060, 0.18)
-        rev27 += _random.gauss(0.085, 0.22)
-        # Quarterly earnings step changes (Q1 beat, Q2 modest beat)
-        if i == q1_idx:
-            eps26 += 0.08; eps27 += 0.10
-            rev26 += 2.3;  rev27 += 3.1
-        elif i == q2_idx:
-            eps26 += 0.04; eps27 += 0.05
-            rev26 += 1.2;  rev27 += 1.6
-        fe_dates.append(d.isoformat())
-        fe_eps_fy26.append(round(eps26, 3))
-        fe_eps_fy27.append(round(eps27, 3))
-        fe_rev_fy26.append(round(rev26, 2))
-        fe_rev_fy27.append(round(rev27, 2))
+    # ----------- Forward Estimate History (real, from DB) --------
+    # How analyst consensus for the two nearest forward fiscal years has evolved,
+    # from Forward_EPS_FY_History (date_recorded, ticker, fiscal_year,
+    # forward_eps, forward_revenue), recorded daily by the forward snapshot job.
+    import sqlite3 as _fe_sqlite3
+    _fe_db = Path.cwd() / "Stock Data.db"
+    _fe_rows = []
+    try:
+        with _fe_sqlite3.connect(str(_fe_db)) as _fe_conn:
+            _fe_rows = _fe_conn.execute(
+                "SELECT date_recorded, fiscal_year, forward_eps, forward_revenue "
+                "FROM Forward_EPS_FY_History WHERE ticker = ? AND fiscal_year IS NOT NULL "
+                "ORDER BY date_recorded",
+                (TICKER,),
+            ).fetchall()
+    except Exception as _fe_e:
+        print(f"  [forward_est] history query failed for {TICKER}: {_fe_e}")
 
-    # Calculate the actual ISO date of the step events for the dotted lines
-    q1_date = (start_d + dt.timedelta(days=q1_idx)).isoformat()
-    q2_date = (start_d + dt.timedelta(days=q2_idx)).isoformat()
+    # The two fiscal years to show = those present on the most recent snapshot
+    # date (the current "This FY" and "Next FY").
+    fe_years = []
+    if _fe_rows:
+        _fe_last = _fe_rows[-1][0]
+        fe_years = sorted({fy for (d, fy, e, r) in _fe_rows
+                           if d == _fe_last and fy is not None})[:2]
 
-    fe_fig = make_subplots(
-        rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.16,
-        subplot_titles=("FY EPS Estimate History ($)", "FY Revenue Estimate History ($B)"),
-    )
-    fy26_color = "#1f77b4"; fy27_color = "#ff7f0e"
-    # Lines only — 184 daily points would be cluttered with markers.
-    fe_fig.add_trace(go.Scatter(
-        x=fe_dates, y=fe_eps_fy26, mode="lines", name="FY26 EPS",
-        line=dict(color=fy26_color, width=1.8),
-        hovertemplate="<b>%{x}</b><br>FY26 EPS est: $%{y:.2f}<extra></extra>",
-    ), row=1, col=1)
-    fe_fig.add_trace(go.Scatter(
-        x=fe_dates, y=fe_eps_fy27, mode="lines", name="FY27 EPS",
-        line=dict(color=fy27_color, width=1.8),
-        hovertemplate="<b>%{x}</b><br>FY27 EPS est: $%{y:.2f}<extra></extra>",
-    ), row=1, col=1)
-    fe_fig.add_trace(go.Scatter(
-        x=fe_dates, y=fe_rev_fy26, mode="lines", name="FY26 Revenue", showlegend=False,
-        line=dict(color=fy26_color, width=1.8),
-        hovertemplate="<b>%{x}</b><br>FY26 Rev est: $%{y:,.1f}B<extra></extra>",
-    ), row=2, col=1)
-    fe_fig.add_trace(go.Scatter(
-        x=fe_dates, y=fe_rev_fy27, mode="lines", name="FY27 Revenue", showlegend=False,
-        line=dict(color=fy27_color, width=1.8),
-        hovertemplate="<b>%{x}</b><br>FY27 Rev est: $%{y:,.1f}B<extra></extra>",
-    ), row=2, col=1)
+    def _fe_series(fy):
+        ds, eps, rev = [], [], []
+        for (d, y, e, r) in _fe_rows:
+            if y != fy:
+                continue
+            ds.append(d)
+            eps.append(round(e, 3) if e is not None else None)
+            rev.append(round(r / 1e9, 2) if r is not None else None)  # $ -> $B
+        return ds, eps, rev
 
-    # Earnings-date dotted vertical lines
-    fe_shapes = [
-        dict(type="line", xref="x",  yref="paper", x0=q1_date, x1=q1_date, y0=0, y1=1,
-             line=dict(color="#aaa", width=1, dash="dot")),
-        dict(type="line", xref="x",  yref="paper", x0=q2_date, x1=q2_date, y0=0, y1=1,
-             line=dict(color="#aaa", width=1, dash="dot")),
-        dict(type="line", xref="x2", yref="paper", x0=q1_date, x1=q1_date, y0=0, y1=1,
-             line=dict(color="#aaa", width=1, dash="dot")),
-        dict(type="line", xref="x2", yref="paper", x0=q2_date, x1=q2_date, y0=0, y1=1,
-             line=dict(color="#aaa", width=1, dash="dot")),
-    ]
+    fe_specs = []  # (label, dates, eps, rev, color)
+    _fe_colors = ("#1f77b4", "#ff7f0e")
+    for _i, _fy in enumerate(fe_years):
+        _ds, _eps, _rev = _fe_series(_fy)
+        if _ds:
+            fe_specs.append((f"FY{_fy}", _ds, _eps, _rev, _fe_colors[_i]))
 
-    fe_fig.update_layout(
-        height=480, margin=dict(l=10, r=10, t=44, b=10),
-        plot_bgcolor="white", paper_bgcolor="white",
-        showlegend=False,        # custom HTML strip
-        dragmode=False, hovermode="x",
-        shapes=fe_shapes,
-        annotations=[
-            dict(x=q1_date, y=1.02, xref="x", yref="paper",
-                 text="Q1 report", showarrow=False, font=dict(size=9, color="#666")),
-            dict(x=q2_date, y=1.02, xref="x", yref="paper",
-                 text="Q2 report", showarrow=False, font=dict(size=9, color="#666")),
-        ],
-    )
-    fe_fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=10), tickangle=-30)
-    fe_fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc")
+    if not fe_specs:
+        forward_est_html = (
+            '<div class="data-table"><h2>Forward Estimate History</h2>'
+            '<p class="m-footnote">Not enough forward-estimate history recorded yet for '
+            'this ticker. The chart fills in as daily consensus snapshots accumulate.</p>'
+            '</div>'
+        )
+    else:
+        fe_fig = make_subplots(
+            rows=2, cols=1, shared_xaxes=False, vertical_spacing=0.16,
+            subplot_titles=("FY EPS Estimate History ($)", "FY Revenue Estimate History ($B)"),
+        )
+        for (_lbl, _ds, _eps, _rev, _col) in fe_specs:
+            fe_fig.add_trace(go.Scatter(
+                x=_ds, y=_eps, mode="lines", name=f"{_lbl} EPS",
+                line=dict(color=_col, width=1.8),
+                hovertemplate="<b>%{x}</b><br>" + _lbl + " EPS est: $%{y:.2f}<extra></extra>",
+            ), row=1, col=1)
+            fe_fig.add_trace(go.Scatter(
+                x=_ds, y=_rev, mode="lines", name=f"{_lbl} Revenue", showlegend=False,
+                line=dict(color=_col, width=1.8),
+                hovertemplate="<b>%{x}</b><br>" + _lbl + " Rev est: $%{y:,.1f}B<extra></extra>",
+            ), row=2, col=1)
 
-    fe_chart = fe_fig.to_html(include_plotlyjs=False, full_html=False, config={
-        "displayModeBar": False, "responsive": True, "scrollZoom": False,
-        "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
-    }, div_id="aapl-fwd-est-chart")
+        fe_fig.update_layout(
+            height=480, margin=dict(l=10, r=10, t=44, b=10),
+            plot_bgcolor="white", paper_bgcolor="white",
+            showlegend=False, dragmode=False, hovermode="x",
+        )
+        fe_fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=10), tickangle=-30)
+        fe_fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc")
 
-    fe_legend = (
-        '<div class="seg-strip">'
-        f'<span class="seg-key"><span class="seg-dot" style="background:{fy26_color}"></span>FY2026</span>'
-        f'<span class="seg-key"><span class="seg-dot" style="background:{fy27_color}"></span>FY2027</span>'
-        '</div>'
-    )
+        fe_chart = fe_fig.to_html(include_plotlyjs=False, full_html=False, config={
+            "displayModeBar": False, "responsive": True, "scrollZoom": False,
+            "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
+        }, div_id="aapl-fwd-est-chart")
 
-    # Show change since 6 months ago
-    fe_eps26_delta = fe_eps_fy26[-1] - fe_eps_fy26[0]
-    fe_eps27_delta = fe_eps_fy27[-1] - fe_eps_fy27[0]
-    fe_rev26_delta = fe_rev_fy26[-1] - fe_rev_fy26[0]
-    fe_rev27_delta = fe_rev_fy27[-1] - fe_rev_fy27[0]
-    def _delta_html(v, fmt="${:+.2f}"):
-        cls = "pos" if v >= 0 else "neg"
-        return f'<span class="{cls}">{fmt.format(v)}</span>'
-    fe_summary = (
-        '<table class="ft" style="margin-top:10px;font-size:12px">'
-        '<thead><tr><th>FY</th><th>Current EPS est</th><th>6mo change</th>'
-        '<th>Current Rev est</th><th>6mo change</th></tr></thead>'
-        '<tbody>'
-        f'<tr><td class="year">FY2026</td><td>${fe_eps_fy26[-1]:.2f}</td><td>{_delta_html(fe_eps26_delta)}</td>'
-        f'<td>${fe_rev_fy26[-1]:,.1f}B</td><td>{_delta_html(fe_rev26_delta, "${:+.1f}B")}</td></tr>'
-        f'<tr><td class="year">FY2027</td><td>${fe_eps_fy27[-1]:.2f}</td><td>{_delta_html(fe_eps27_delta)}</td>'
-        f'<td>${fe_rev_fy27[-1]:,.1f}B</td><td>{_delta_html(fe_rev27_delta, "${:+.1f}B")}</td></tr>'
-        '</tbody></table>'
-    )
+        fe_legend = '<div class="seg-strip">' + "".join(
+            f'<span class="seg-key"><span class="seg-dot" style="background:{_col}"></span>{_lbl}</span>'
+            for (_lbl, _ds, _eps, _rev, _col) in fe_specs
+        ) + '</div>'
 
-    forward_est_html = (
-        '<div class="data-table"><h2>Forward Estimate History</h2>'
-        + fe_legend + fe_chart
-        + '<div style="overflow-x:auto">' + fe_summary + '</div>'
-        + '<p class="m-footnote">How analyst consensus for each fiscal year has evolved over the last six months. '
-        'Dotted vertical lines mark quarterly earnings releases — typical inflection points for revisions. '
-        '(Mockup data; production would source from your existing snapshot pipeline that records consensus daily.)</p>'
-        + '</div>'
-    )
+        def _fe_first_last(vals):
+            nn = [v for v in vals if v is not None]
+            return (nn[0], nn[-1]) if nn else (None, None)
+
+        def _fe_delta_html(v, fmt="${:+.2f}"):
+            if v is None:
+                return "–"
+            cls = "pos" if v >= 0 else "neg"
+            return f'<span class="{cls}">{fmt.format(v)}</span>'
+
+        _fe_rows_html = ""
+        for (_lbl, _ds, _eps, _rev, _col) in fe_specs:
+            e0, e1 = _fe_first_last(_eps)
+            r0, r1 = _fe_first_last(_rev)
+            e_cur = f"${e1:.2f}" if e1 is not None else "–"
+            e_chg = _fe_delta_html((e1 - e0) if (e0 is not None and e1 is not None) else None)
+            r_cur = f"${r1:,.1f}B" if r1 is not None else "–"
+            r_chg = _fe_delta_html((r1 - r0) if (r0 is not None and r1 is not None) else None, "${:+.1f}B")
+            _fe_rows_html += (f'<tr><td class="year">{_lbl}</td><td>{e_cur}</td><td>{e_chg}</td>'
+                              f'<td>{r_cur}</td><td>{r_chg}</td></tr>')
+        fe_summary = (
+            '<table class="ft" style="margin-top:10px;font-size:12px">'
+            '<thead><tr><th>FY</th><th>Current EPS est</th><th>Change</th>'
+            '<th>Current Rev est</th><th>Change</th></tr></thead>'
+            '<tbody>' + _fe_rows_html + '</tbody></table>'
+        )
+
+        forward_est_html = (
+            '<div class="data-table"><h2>Forward Estimate History</h2>'
+            + fe_legend + fe_chart
+            + '<div style="overflow-x:auto">' + fe_summary + '</div>'
+            + '<p class="m-footnote">How analyst consensus for each fiscal year has evolved '
+            'since daily snapshots began, from recorded forward EPS and revenue estimates.</p>'
+            + '</div>'
+        )
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
