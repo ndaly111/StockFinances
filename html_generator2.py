@@ -605,7 +605,11 @@ def html_generator2(
         get_file_or_placeholder("charts/economic_data.html", "No economic data available."),
         daily_market_summary_html
     )
-    prepare_and_generate_ticker_pages(tickers)
+    # Per-ticker pages/*.html are retired: the site now serves a single static
+    # shell (ticker.html?t=<TICKER>) that loads ticker_data/<TICKER>.json. Nothing
+    # links to pages/*.html anymore, so we no longer write them. (Pure rendering —
+    # no DB writes here. Re-enable by uncommenting if a static page is needed.)
+    # prepare_and_generate_ticker_pages(tickers)
     render_spy_qqq_growth_pages()
 
 if __name__ == "__main__":
