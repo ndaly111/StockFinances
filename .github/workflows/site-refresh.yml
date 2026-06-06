@@ -30,7 +30,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          # Shallow: nothing in this job reads git history, and we only push to
+          # gh-pages (below), never to main. Full history of a repo with a 22MB
+          # binary DB committed thousands of times was ~3.5 min to fetch.
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -53,6 +56,7 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: "1"
+          GEN_WORKERS: "4"   # build tickers in parallel; set 1 to force sequential
         run: |
           TICKERS=$(tail -n +2 tickers.csv | tr -d '\r' | tr '\n' ' ')
           python scripts/gen_ticker_json.py $TICKERS || true
@@ -62,7 +66,10 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-          fetch-depth: 0
+          # Shallow: we only rsync + commit the latest tree; gh-pages history
+          # isn't needed and was ~3.5 min to fetch (same lesson as
+          # update-assumptions.yml). The push works fine from a depth-1 clone.
+          fetch-depth: 1
 
       - name: Copy site output into gh-pages
         run: |
