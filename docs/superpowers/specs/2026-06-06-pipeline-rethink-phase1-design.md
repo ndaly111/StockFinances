@@ -41,6 +41,24 @@ Verified during exploration:
    agreed freshness target — daily at market close), parallelize it safely, and
    tidy `main_remote.py` into data-only jobs.
 
+## Relationship to the overall goal
+
+The objective has two halves:
+1. **Stop writing individual ticker pages.** Delivered by Phase 1.
+2. **A data pipeline that stores into JSON so the charts show the right data.**
+   Delivered by Phase 2 (build the JSON from the DB, the single source of truth,
+   instead of re-fetching live and duplicating `main_remote`'s work).
+
+Phase 1 is the safe enabler, not the payoff. Two concrete ways it pays into the
+"right data" goal rather than being throwaway cleanup:
+- The **verification harness** built here (regenerate all JSON + live pages,
+  diff against a baseline) is **reused in Phase 2 as the correctness oracle** —
+  it's how we'll prove the DB-backed build produces the *same or better* data,
+  not subtly different charts.
+- Removing the dead per-ticker render path shrinks `main_remote` so Phase 2's
+  refactor has a smaller, clearer surface and the data-writes are easier to
+  isolate from rendering.
+
 ## Phase 1 goal
 
 Stop `main_remote.py` from producing per-ticker artifacts that no live page
