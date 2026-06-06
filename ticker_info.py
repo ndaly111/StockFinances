@@ -1,10 +1,52 @@
 import yfinance as yf
 import os
+import json
 import sqlite3
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 DB_PATH = "Stock Data.db"
+
+_ASSUMPTIONS_CACHE = None
+
+
+def _load_assumptions():
+    """Load Nick's per-ticker assumptions (growth_rate, profit_margin) once."""
+    global _ASSUMPTIONS_CACHE
+    if _ASSUMPTIONS_CACHE is None:
+        try:
+            with open(os.path.join("data", "assumptions.json"), encoding="utf-8") as f:
+                _ASSUMPTIONS_CACHE = json.load(f).get("tickers", {})
+        except Exception:
+            _ASSUMPTIONS_CACHE = {}
+    return _ASSUMPTIONS_CACHE
+
+
+def synthetic_pe_from_ps(ticker, raw_info, marketcap):
+    """Margin-normalized synthetic P/E for companies with no real trailing P/E.
+
+    normalized EPS = revenue-per-share * Nick's estimated net margin, so
+    synthetic P/E = price / normalized EPS = (P/S) / margin. Returns None when
+    P/S or the margin assumption is missing, so callers fall back to '-'.
+    """
+    margin_pct = (_load_assumptions().get(str(ticker).upper()) or {}).get("profit_margin")
+    try:
+        margin = float(margin_pct) / 100.0
+    except (TypeError, ValueError):
+        return None
+    if margin <= 0:
+        return None
+    ps = raw_info.get("priceToSalesTrailing12Months")
+    if not ps:
+        revenue = raw_info.get("totalRevenue")
+        if marketcap and revenue:
+            try:
+                ps = marketcap / revenue
+            except ZeroDivisionError:
+                ps = None
+    if not ps or ps <= 0:
+        return None
+    return ps / margin
 
 def fetch_stock_data(ticker, treasury_yield):
     try:
@@ -41,7 +83,15 @@ def fetch_stock_data(ticker, treasury_yield):
     forward_pe_ratio = current_price / forward_eps if current_price and forward_eps else None
     treasury_yield = float(treasury_yield) / 100 if treasury_yield and treasury_yield != '-' else None
 
-    implied_growth = calculate_implied_growth(pe_ratio, treasury_yield) if pe_ratio else '-'
+    # Use the real trailing P/E for implied growth; if the company has no
+    # positive trailing earnings, fall back to a margin-normalized synthetic
+    # P/E = (P/S) / Nick's margin so the implied-growth line still has a value.
+    # The displayed "P/E Ratio" tile below keeps showing the real (or '-') P/E.
+    pe_for_growth = pe_ratio if isinstance(pe_ratio, (int, float)) and pe_ratio > 0 else None
+    if pe_for_growth is None:
+        pe_for_growth = synthetic_pe_from_ps(ticker, raw_info, marketcap)
+
+    implied_growth = calculate_implied_growth(pe_for_growth, treasury_yield) if pe_for_growth else '-'
     implied_growth_formatted = f"{implied_growth * 100:.1f}%" if isinstance(implied_growth, (int, float)) else 'N/A'
 
     implied_forward_growth = calculate_implied_growth(forward_pe_ratio, treasury_yield) if forward_pe_ratio else '-'
