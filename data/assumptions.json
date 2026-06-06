@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-21T23:08:58+00:00",
+  "updated_at": "2026-06-06T01:44:27+00:00",
   "tickers": {
     "AAL": {
       "growth_rate": 2.0,
@@ -291,7 +291,7 @@
     },
     "OPEN": {
       "growth_rate": null,
-      "profit_margin": null
+      "profit_margin": 5.0
     },
     "ORCL": {
       "growth_rate": 13.0,
