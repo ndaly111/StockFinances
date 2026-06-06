@@ -290,7 +290,41 @@ def main() -> int:
         if not isinstance(pe_val, (int, float)) or pe_val <= 0:
             return None
         return (pe_val / 10.0) ** 0.1 + ten_yr - 1.0
+
+    def _synthetic_pe_from_ps(tkr, info_d, mcap):
+        """Margin-normalized synthetic P/E = (P/S) / Nick's net margin, for
+        companies with no real trailing P/E. Returns None if data is missing."""
+        import json as _json
+        try:
+            _assum = _json.loads(
+                (Path.cwd() / "data" / "assumptions.json").read_text(encoding="utf-8")
+            ).get("tickers", {})
+        except Exception:
+            _assum = {}
+        margin_pct = (_assum.get(str(tkr).upper()) or {}).get("profit_margin")
+        try:
+            margin = float(margin_pct) / 100.0
+        except (TypeError, ValueError):
+            return None
+        if margin <= 0:
+            return None
+        ps = info_d.get("priceToSalesTrailing12Months")
+        if not ps:
+            rev = info_d.get("totalRevenue")
+            if mcap and rev:
+                try:
+                    ps = mcap / rev
+                except ZeroDivisionError:
+                    ps = None
+        if not ps or ps <= 0:
+            return None
+        return ps / margin
+
     ig = implied_growth(pe)
+    if ig is None:
+        # No real trailing P/E (unprofitable): use a margin-normalized synthetic
+        # P/E = (P/S) / Nick's margin so the tile matches the implied-growth chart.
+        ig = implied_growth(_synthetic_pe_from_ps(TICKER, info, market_cap))
     ig_fwd = implied_growth(forward_pe)
 
     def _last_or_none(s):
