@@ -57,12 +57,13 @@ jobs:
           python scripts/dump_assumptions.py
 
       # Rebuild the per-ticker JSON the site shell (ticker.html) reads — once a
-      # day at market close (the 4:30pm ET cron) or on manual dispatch. main_remote
-      # above just refreshed the DB, so this reads fresh data. The other 3 daily
-      # runs skip this and leave ticker_data untouched (the rsync below excludes
-      # it), so they cannot wipe it.
-      - name: Generate ticker JSONs (market close)
-        if: github.event.schedule == '30 21 * * 1-5' || github.event_name == 'workflow_dispatch'
+      # day on the morning run (the 0 11 UTC cron, ~6-7 AM ET) or on manual
+      # dispatch. By morning the prior day's close is fully settled and any
+      # overnight filings are in; main_remote above just refreshed the DB, so
+      # this reads fresh data. The other 3 daily runs skip this and leave
+      # ticker_data untouched (the rsync below excludes it), so they can't wipe it.
+      - name: Generate ticker JSONs (morning)
+        if: github.event.schedule == '0 11 * * 1-5' || github.event_name == 'workflow_dispatch'
         env:
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: "1"
@@ -114,8 +115,8 @@ jobs:
       # Deploy the freshly-built ticker JSON separately from the rsync above
       # (which always excludes ticker_data/). Guarded: if the build produced too
       # few files, skip rather than let --delete wipe the live data.
-      - name: Deploy ticker_data (market close)
-        if: github.event.schedule == '30 21 * * 1-5' || github.event_name == 'workflow_dispatch'
+      - name: Deploy ticker_data (morning)
+        if: github.event.schedule == '0 11 * * 1-5' || github.event_name == 'workflow_dispatch'
         run: |
           COUNT=$(ls ticker_data/*.json 2>/dev/null | wc -l)
           echo "ticker_data files built: $COUNT"
