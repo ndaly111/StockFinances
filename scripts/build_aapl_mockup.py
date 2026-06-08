@@ -35,6 +35,16 @@ CIK = "0000320193"  # AAPL
 TICKER = "AAPL"
 OUT_FILE = Path(__file__).resolve().parents[1] / "aapl_mockup.html"
 
+# Canonical series colors — used consistently across EVERY chart so a given
+# metric is always the same color: Revenue = green, Net Income = blue,
+# EPS = a slightly darker blue. (_LT = lighter shade for forecast/estimate bars.)
+COLOR_REVENUE       = "#2ca02c"  # green
+COLOR_REVENUE_LT    = "#a1d99b"
+COLOR_NET_INCOME    = "#1f77b4"  # blue
+COLOR_NET_INCOME_LT = "#9ecae1"
+COLOR_EPS           = "#14507a"  # darker blue
+COLOR_EPS_LT        = "#8fb4d4"
+
 
 # -------------------------- EDGAR helpers ----------------------------------
 # Currency units in priority order — try USD first (US issuers + foreign that
@@ -483,9 +493,9 @@ def main() -> int:
         subplot_titles=("Revenue &amp; Net Income ($B)", "Diluted EPS ($)"),
     )
 
-    rev_color = "#1f77b4"
-    ni_color  = "#2ca02c"
-    eps_color = "#1f77b4"
+    rev_color = COLOR_REVENUE
+    ni_color  = COLOR_NET_INCOME
+    eps_color = COLOR_EPS
 
     # customdata carries the full year label for tooltips so swapping tick
     # text doesn't lose the "2024 / 2025" context.
@@ -704,8 +714,9 @@ def main() -> int:
             subplot_titles=("Revenue &amp; Net Income: Actual vs Forecast ($B)",
                             "Diluted EPS: Actual vs Forecast ($)"),
         )
-        rev_dark, rev_light = "#1f77b4", "#9ecae1"
-        ni_dark,  ni_light  = "#2ca02c", "#a1d99b"
+        rev_dark, rev_light = COLOR_REVENUE, COLOR_REVENUE_LT
+        ni_dark,  ni_light  = COLOR_NET_INCOME, COLOR_NET_INCOME_LT
+        eps_dark, eps_light = COLOR_EPS, COLOR_EPS_LT
 
         # Split actual / forecast into separate traces (so error bars stay off
         # actuals) and use offsetgroup so Plotly groups them into a single lane
@@ -783,14 +794,14 @@ def main() -> int:
         # EPS
         fc_fig.add_trace(go.Bar(
             x=eps_a_x, y=eps_a_y, name="EPS", showlegend=False,
-            marker_color=rev_dark, offsetgroup="eps", legendgroup="eps",
+            marker_color=eps_dark, offsetgroup="eps", legendgroup="eps",
             text=[f"{v:.2f}" for v in eps_a_y], textposition="outside", textfont=dict(size=10),
             hovertemplate="<b>%{x}</b> EPS<br>Actual: $%{y:.2f}<extra></extra>",
         ), row=2, col=1)
         if eps_f_x:
             fc_fig.add_trace(go.Bar(
                 x=eps_f_x, y=eps_f_y, name="EPS forecast", showlegend=False,
-                marker_color=rev_light, marker_line=dict(color=rev_dark, width=1.2),
+                marker_color=eps_light, marker_line=dict(color=eps_dark, width=1.2),
                 offsetgroup="eps", legendgroup="eps",
                 error_y=dict(type="data", symmetric=False,
                              array=[h-a for h,a in zip(eps_f_hi, eps_f_y)],
@@ -912,7 +923,7 @@ def main() -> int:
             prev_eps = avg
 
     yoy_fig = go.Figure()
-    rev_color = "#1f77b4"; ni_color = "#2ca02c"; eps_color = "#ff7f0e"
+    rev_color = COLOR_REVENUE; ni_color = COLOR_NET_INCOME; eps_color = COLOR_EPS
     n_actual = sum(1 for x in yoy_rev_x if not x.endswith("E"))
 
     # Lines + markers per metric. Actual segment is a solid line, forecast
@@ -1448,10 +1459,10 @@ def main() -> int:
             edpe_fc.append(1)
 
     edpe_fig = go.Figure()
-    edpe_eps_colors = ["#1f77b4" if not f else "#9ecae1" for f in edpe_fc]
+    edpe_eps_colors = [COLOR_EPS if not f else COLOR_EPS_LT for f in edpe_fc]
     edpe_fig.add_trace(go.Bar(
         x=edpe_x, y=edpe_eps, name="EPS",
-        marker=dict(color=edpe_eps_colors, line=dict(color="#1f77b4", width=1)),
+        marker=dict(color=edpe_eps_colors, line=dict(color=COLOR_EPS, width=1)),
         offsetgroup="eps", text=[f"{v:.2f}" for v in edpe_eps],
         textposition="outside", textfont=dict(size=10),
         hovertemplate="<b>%{x}</b><br>EPS: $%{y:.2f}<extra></extra>",
