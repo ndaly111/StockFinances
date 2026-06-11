@@ -144,6 +144,7 @@ td{padding:4px;border:1px solid #8080FF}
     home_tpl = """<!DOCTYPE html>
 <html lang="en"><head>
   <meta charset="UTF-8"><title>Nick's Stock Financials</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/static/css/retro.css">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
@@ -236,6 +237,7 @@ td{padding:4px;border:1px solid #8080FF}
     # Ticker page (all legacy sections + segments + dividend)
     ticker_tpl = """<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8"><title>{{ ticker_data.company_name }} ({{ ticker_data.ticker }})</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/static/css/retro.css">
   <style>
     .news-headlines{border:2px inset #C0C0C0;background:#FFFFFF;padding:10px;box-shadow:1px 1px 0 #8080FF;}
