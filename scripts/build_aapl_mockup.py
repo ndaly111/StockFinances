@@ -464,8 +464,28 @@ def main() -> int:
         pad = target_len - len(vals)
         return ([None] * pad) + list(vals) if pad > 0 else list(vals)
 
+    def money_unit_for(values):
+        """Pick a display unit for dollar values held in $B.
+        Small caps rendered in $B label every bar "0" or "0.1" (useless), so
+        scale to $M or $K until the biggest bar reads in sensible digits.
+        Returns (unit_suffix, multiplier, label_formatter)."""
+        vmax = max((abs(v) for v in values if v is not None), default=0.0)
+        if vmax >= 1.0:
+            unit, mult = "B", 1.0
+        elif vmax >= 0.001:
+            unit, mult = "M", 1e3
+        else:
+            unit, mult = "K", 1e6
+        scaled_max = vmax * mult
+        fmt = (lambda v: f"{v:,.1f}") if scaled_max < 20 else (lambda v: f"{v:,.0f}")
+        return unit, mult, fmt
+
     rev_vals = pad_left(rev_combined.values, max_n)
     ni_vals  = pad_left(ni_combined.values,  max_n)
+
+    money_unit, money_mult, money_lab = money_unit_for(rev_vals + ni_vals)
+    rev_vals = [None if v is None else v * money_mult for v in rev_vals]
+    ni_vals  = [None if v is None else v * money_mult for v in ni_vals]
     eps_vals = pad_left(eps_combined.values, max_n)
 
     # Label x-axis values: years for annual, "TTM" for the latest.
@@ -490,7 +510,7 @@ def main() -> int:
 
     fig = make_subplots(
         rows=2, cols=1, shared_xaxes=False, vertical_spacing=0.09,
-        subplot_titles=("Revenue &amp; Net Income ($B)", "Diluted EPS ($)"),
+        subplot_titles=(f"Revenue &amp; Net Income (${money_unit})", "Diluted EPS ($)"),
     )
 
     rev_color = COLOR_REVENUE
@@ -503,15 +523,15 @@ def main() -> int:
         x=rev_x, y=rev_vals, name="Revenue",
         marker_color=rev_color,
         customdata=rev_labels_full,
-        text=[f"{v:,.0f}" if v is not None else "" for v in rev_vals], textposition="outside", textfont=dict(size=10),
-        hovertemplate="<b>%{customdata}</b><br>Revenue: $%{y:,.1f}B<extra></extra>",
+        text=[money_lab(v) if v is not None else "" for v in rev_vals], textposition="outside", textfont=dict(size=10),
+        hovertemplate="<b>%{customdata}</b><br>Revenue: $%{y:,.1f}" + money_unit + "<extra></extra>",
     ), row=1, col=1)
     fig.add_trace(go.Bar(
         x=ni_x, y=ni_vals, name="Net Income",
         marker_color=ni_color,
         customdata=rev_labels_full,
-        text=[f"{v:,.0f}" if v is not None else "" for v in ni_vals], textposition="outside", textfont=dict(size=10),
-        hovertemplate="<b>%{customdata}</b><br>Net Income: $%{y:,.1f}B<extra></extra>",
+        text=[money_lab(v) if v is not None else "" for v in ni_vals], textposition="outside", textfont=dict(size=10),
+        hovertemplate="<b>%{customdata}</b><br>Net Income: $%{y:,.1f}" + money_unit + "<extra></extra>",
     ), row=1, col=1)
 
     fig.add_trace(go.Bar(
@@ -711,7 +731,7 @@ def main() -> int:
         hist_eps = eps_a.tail(5)
         fc_fig = make_subplots(
             rows=2, cols=1, shared_xaxes=False, vertical_spacing=0.15,
-            subplot_titles=("Revenue &amp; Net Income: Actual vs Forecast ($B)",
+            subplot_titles=("Revenue &amp; Net Income: Actual vs Forecast ($UNIT$)",
                             "Diluted EPS: Actual vs Forecast ($)"),
         )
         rev_dark, rev_light = COLOR_REVENUE, COLOR_REVENUE_LT
@@ -737,6 +757,18 @@ def main() -> int:
         ni_f_hi= [r[3] for r in (fwd_ni or [])]
         ni_f_n = [r[4] for r in (fwd_ni or [])]
 
+        # Same adaptive unit as the history chart — $B labels on a small cap
+        # read "0". Scale plotted values AND the error-bar bounds together.
+        fc_unit, fc_mult, fc_lab = money_unit_for(
+            list(rev_a_y) + list(rev_f_y) + list(ni_a_y) + list(ni_f_y))
+        if fc_mult != 1.0:
+            _sc = lambda xs: [None if v is None else v * fc_mult for v in xs]
+            rev_a_y, rev_f_y, rev_f_lo, rev_f_hi = _sc(rev_a_y), _sc(rev_f_y), _sc(rev_f_lo), _sc(rev_f_hi)
+            ni_a_y, ni_f_y, ni_f_lo, ni_f_hi = _sc(ni_a_y), _sc(ni_f_y), _sc(ni_f_lo), _sc(ni_f_hi)
+        # The subplot title was created before the unit was known ($UNIT$).
+        fc_fig.layout.annotations[0].text = (
+            f"Revenue &amp; Net Income: Actual vs Forecast (${fc_unit})")
+
         eps_a_x = [fy_label(d) for d in hist_eps.index]
         eps_a_y = list(hist_eps.values)
         eps_f_x = [r[0] for r in (fwd_eps or [])]
@@ -749,8 +781,8 @@ def main() -> int:
         fc_fig.add_trace(go.Bar(
             x=rev_a_x, y=rev_a_y, name="Revenue",
             marker_color=rev_dark, offsetgroup="rev", legendgroup="rev",
-            text=[f"{v:,.0f}" for v in rev_a_y], textposition="outside", textfont=dict(size=10),
-            hovertemplate="<b>%{x}</b> Revenue<br>Actual: $%{y:,.1f}B<extra></extra>",
+            text=[fc_lab(v) for v in rev_a_y], textposition="outside", textfont=dict(size=10),
+            hovertemplate="<b>%{x}</b> Revenue<br>Actual: $%{y:,.1f}" + fc_unit + "<extra></extra>",
         ), row=1, col=1)
         if rev_f_x:
             fc_fig.add_trace(go.Bar(
@@ -761,10 +793,11 @@ def main() -> int:
                              array=[h-a for h,a in zip(rev_f_hi, rev_f_y)],
                              arrayminus=[a-l for a,l in zip(rev_f_y, rev_f_lo)],
                              color="#444", thickness=1.5, width=8),
-                text=[f"{v:,.0f}" for v in rev_f_y], textposition="outside", textfont=dict(size=10),
+                text=[fc_lab(v) for v in rev_f_y], textposition="outside", textfont=dict(size=10),
                 customdata=[[lo, hi, n] for lo, hi, n in zip(rev_f_lo, rev_f_hi, rev_f_n)],
-                hovertemplate=("<b>%{x}</b> Revenue<br>Consensus: $%{y:,.1f}B"
-                               "<br>Range: $%{customdata[0]:,.1f}B – $%{customdata[1]:,.1f}B"
+                hovertemplate=("<b>%{x}</b> Revenue<br>Consensus: $%{y:,.1f}" + fc_unit +
+                               "<br>Range: $%{customdata[0]:,.1f}" + fc_unit +
+                               " – $%{customdata[1]:,.1f}" + fc_unit +
                                "<br>(%{customdata[2]} analysts)<extra></extra>"),
             ), row=1, col=1)
 
@@ -772,8 +805,8 @@ def main() -> int:
         fc_fig.add_trace(go.Bar(
             x=ni_a_x, y=ni_a_y, name="Net Income",
             marker_color=ni_dark, offsetgroup="ni", legendgroup="ni",
-            text=[f"{v:,.0f}" for v in ni_a_y], textposition="outside", textfont=dict(size=10),
-            hovertemplate="<b>%{x}</b> Net Income<br>Actual: $%{y:,.1f}B<extra></extra>",
+            text=[fc_lab(v) for v in ni_a_y], textposition="outside", textfont=dict(size=10),
+            hovertemplate="<b>%{x}</b> Net Income<br>Actual: $%{y:,.1f}" + fc_unit + "<extra></extra>",
         ), row=1, col=1)
         if ni_f_x:
             fc_fig.add_trace(go.Bar(
@@ -784,10 +817,11 @@ def main() -> int:
                              array=[h-a for h,a in zip(ni_f_hi, ni_f_y)],
                              arrayminus=[a-l for a,l in zip(ni_f_y, ni_f_lo)],
                              color="#444", thickness=1.5, width=8),
-                text=[f"{v:,.0f}" for v in ni_f_y], textposition="outside", textfont=dict(size=10),
+                text=[fc_lab(v) for v in ni_f_y], textposition="outside", textfont=dict(size=10),
                 customdata=[[lo, hi, n] for lo, hi, n in zip(ni_f_lo, ni_f_hi, ni_f_n)],
-                hovertemplate=("<b>%{x}</b> Net Income<br>Consensus: $%{y:,.1f}B"
-                               "<br>Range: $%{customdata[0]:,.1f}B – $%{customdata[1]:,.1f}B"
+                hovertemplate=("<b>%{x}</b> Net Income<br>Consensus: $%{y:,.1f}" + fc_unit +
+                               "<br>Range: $%{customdata[0]:,.1f}" + fc_unit +
+                               " – $%{customdata[1]:,.1f}" + fc_unit +
                                "<br>(%{customdata[2]} analysts)<extra></extra>"),
             ), row=1, col=1)
 
