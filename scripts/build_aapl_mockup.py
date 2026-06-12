@@ -347,17 +347,18 @@ def main() -> int:
     last_rev_ttm = _last_or_none(rev_ttm)
     last_ni_ttm = _last_or_none(ni_ttm)
     last_eps_ttm = _last_or_none(eps_ttm)
-    if rev_a.empty and eps_a.empty:
-        # Truly no EDGAR data (e.g. BABA, foreign filers). Bail out cleanly so
-        # the outer gen catches it as FAILED. Tickers with annual-only data
-        # (no TTM) still build — we just won't show a TTM bar.
-        raise RuntimeError(
-            f"{TICKER}: no EDGAR revenue/EPS data — likely a non-US filer "
-            f"with no us-gaap concept matches"
-        )
+    # Truly no EDGAR data: either a non-US filer (BABA) or a fresh IPO that
+    # hasn't filed its first 10-Q yet (SPCX, 2026-06-12). Don't abort — build
+    # the page from what exists (price, metrics, forward estimates, news) and
+    # the history sections fill in automatically once filings land.
+    NO_FUNDAMENTALS = bool(rev_a.empty and eps_a.empty)
+    if NO_FUNDAMENTALS:
+        print(f"  {TICKER}: no EDGAR fundamentals yet — building reduced page "
+              f"(fresh IPO or non-US filer)")
 
     # ---------- forward estimates (yfinance) -----------------------------
-    last_fy = rev_a.index.max()
+    # With no reported history, anchor forward FY labels on the calendar year.
+    last_fy = rev_a.index.max() if not rev_a.empty else pd.Timestamp.today() - pd.DateOffset(years=1)
     fwd_rev = None    # (FY_label, avg, low, high, n_analysts)
     fwd_eps = None
     fwd_ni  = None    # derived: avg = EPS_avg × diluted_shares, etc.
@@ -417,7 +418,7 @@ def main() -> int:
     print(f"  net income annual rows: {len(ni_a)}")
     print(f"  EPS annual rows: {len(eps_a)}")
     print(f"  current price: {price}, mcap: {market_cap}, PE: {pe}")
-    if rev_a.empty:
+    if rev_a.empty and not NO_FUNDAMENTALS:
         # No annual revenue means EDGAR returned nothing usable.
         raise RuntimeError(
             f"{TICKER}: no annual revenue rows from EDGAR — likely a foreign "
@@ -458,7 +459,9 @@ def main() -> int:
     # Skip empty series whose .index.max() can be NaT/NaN — BRK-B has no
     # EPS via the standard concepts and would otherwise crash here.
     _annual_maxes = [s.index.max() for s in (rev_a, ni_a, eps_a) if len(s) > 0]
-    canonical_annual_max = max(_annual_maxes) if _annual_maxes else rev_a.index.max()
+    # All-empty (fresh IPO): use today so downstream label logic gets a real
+    # Timestamp instead of NaT.
+    canonical_annual_max = max(_annual_maxes) if _annual_maxes else pd.Timestamp.today()
 
     def pad_left(vals, target_len):
         pad = target_len - len(vals)
@@ -596,7 +599,11 @@ def main() -> int:
     price_str = fmt_money(price)
     mcap_str = f"${market_cap/1e12:.2f}T" if isinstance(market_cap, (int, float)) and market_cap >= 1e12 else (f"${market_cap/1e9:.1f}B" if isinstance(market_cap, (int, float)) else "—")
     pe_str = fmt_num(pe, 1)
-    fpe_str = fmt_num(forward_pe, 1)
+    # Day-one IPOs / distressed names produce absurd forwardPE values
+    # (SPCX listed at -1918.8); a dash beats nonsense.
+    fpe_str = (fmt_num(forward_pe, 1)
+               if isinstance(forward_pe, (int, float)) and 0 < forward_pe < 1000
+               else "—")
     ig_str = fmt_pct(ig, 1)
     igf_str = fmt_pct(ig_fwd, 1)
     pb_str = fmt_num(pb, 1)
@@ -940,9 +947,11 @@ def main() -> int:
     # Forecast YoY (vs preceding period)
     if fwd_rev:
         fc_yrs = [r[0] for r in fwd_rev]
-        prev_rev = list(rev_a.tail(1).values)[0]
-        prev_ni  = list(ni_a.tail(1).values)[0]
-        prev_eps = list(eps_a.tail(1).values)[0]
+        # Fresh IPO: no reported base year — first forecast YoY shows as "—",
+        # the second computes vs the first.
+        prev_rev = (list(rev_a.tail(1).values) or [None])[0]
+        prev_ni  = (list(ni_a.tail(1).values) or [None])[0]
+        prev_eps = (list(eps_a.tail(1).values) or [None])[0]
         for i, (lbl, avg, lo, hi, n) in enumerate(fwd_rev):
             yoy_rev_x.append(lbl)
             yoy_rev.append((avg/prev_rev - 1.0)*100 if prev_rev else None)
@@ -2037,7 +2046,7 @@ def main() -> int:
       <div class="m"><div class="m-lbl">Dividend</div><div class="m-val">{div_str}<span class="m-sub">{div_yield_str}</span></div></div>
       <div class="m"><div class="m-lbl">P/B Ratio</div><div class="m-val">{pb_str}</div></div>
     </div>
-    <p class="m-footnote">* Implied growth = (P/E ÷ 10)<sup>0.1</sup> + 10Y yield − 1, using 10Y = {fmt_pct(ten_yr, 2)}.</p>
+    <p class="m-footnote">* Implied growth = (P/E ÷ 10)<sup>0.1</sup> + 10Y yield − 1, using 10Y = {fmt_pct(ten_yr, 2)}.{" No reported financials yet — this company has not filed its first quarterly report. History sections populate automatically once it does." if NO_FUNDAMENTALS else ""}</p>
   </div>
 
   {headlines_html}
