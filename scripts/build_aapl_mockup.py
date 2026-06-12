@@ -352,8 +352,35 @@ def main() -> int:
     # the page from what exists (price, metrics, forward estimates, news) and
     # the history sections fill in automatically once filings land.
     NO_FUNDAMENTALS = bool(rev_a.empty and eps_a.empty)
+    FUNDAMENTALS_SOURCE = "edgar"
     if NO_FUNDAMENTALS:
-        print(f"  {TICKER}: no EDGAR fundamentals yet — building reduced page "
+        # EDGAR's structured API lags filings: a fresh IPO's S-1/424B4 iXBRL
+        # (SPCX, 2026-06-12) takes days-weeks to appear in companyfacts, and
+        # foreign filers never do. Yahoo carries the prospectus/annual-report
+        # financials — use them so the page shows real audited history. Once
+        # companyfacts populates, the EDGAR path wins again automatically.
+        try:
+            _inc = tk.income_stmt
+        except Exception:
+            _inc = None
+        if _inc is not None and not _inc.empty:
+            def _yrow(name, div=1.0):
+                if name not in _inc.index:
+                    return pd.Series(dtype=float)
+                s = _inc.loc[name].dropna()
+                s.index = pd.to_datetime(s.index)
+                return (s.astype(float) / div).sort_index()
+            _rev = _yrow("Total Revenue", 1e9)
+            _ni  = _yrow("Net Income", 1e9)
+            _eps = _yrow("Diluted EPS")
+            if not _rev.empty:
+                rev_a, ni_a, eps_a = _rev, _ni, _eps
+                NO_FUNDAMENTALS = False
+                FUNDAMENTALS_SOURCE = "yahoo"
+                print(f"  {TICKER}: EDGAR empty — using Yahoo income statement "
+                      f"({len(_rev)} FYs, prospectus/annual-report data)")
+    if NO_FUNDAMENTALS:
+        print(f"  {TICKER}: no fundamentals anywhere yet — building reduced page "
               f"(fresh IPO or non-US filer)")
 
     # ---------- forward estimates (yfinance) -----------------------------
@@ -2046,7 +2073,7 @@ def main() -> int:
       <div class="m"><div class="m-lbl">Dividend</div><div class="m-val">{div_str}<span class="m-sub">{div_yield_str}</span></div></div>
       <div class="m"><div class="m-lbl">P/B Ratio</div><div class="m-val">{pb_str}</div></div>
     </div>
-    <p class="m-footnote">* Implied growth = (P/E ÷ 10)<sup>0.1</sup> + 10Y yield − 1, using 10Y = {fmt_pct(ten_yr, 2)}.{" No reported financials yet — this company has not filed its first quarterly report. History sections populate automatically once it does." if NO_FUNDAMENTALS else ""}</p>
+    <p class="m-footnote">* Implied growth = (P/E ÷ 10)<sup>0.1</sup> + 10Y yield − 1, using 10Y = {fmt_pct(ten_yr, 2)}.{" No reported financials yet — this company has not filed its first quarterly report. History sections populate automatically once it does." if NO_FUNDAMENTALS else ""}{" Financial history from the company's IPO prospectus / annual report (via Yahoo Finance) — SEC structured data pending." if FUNDAMENTALS_SOURCE == "yahoo" else ""}</p>
   </div>
 
   {headlines_html}
