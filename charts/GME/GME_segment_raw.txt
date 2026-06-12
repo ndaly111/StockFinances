@@ -47,65 +47,32 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-02-03          
                                 us-gaap:OperatingIncomeLoss 2024-02-03    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   -3500000.0
                                 us-gaap:OperatingIncomeLoss 2024-02-03       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  -20300000.0
                                 us-gaap:OperatingIncomeLoss 2024-02-03                                                                      -34500000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01           srt:ProductOrServiceAxis:gme:HardwareAndAccessoriesMember  367400000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02           srt:ProductOrServiceAxis:gme:HardwareAndAccessoriesMember  417400000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01           srt:ProductOrServiceAxis:gme:HardwareAndAccessoriesMember 1304800000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02           srt:ProductOrServiceAxis:gme:HardwareAndAccessoriesMember 1373900000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01                         srt:ProductOrServiceAxis:gme:SoftwareMember  197500000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02                         srt:ProductOrServiceAxis:gme:SoftwareMember  271800000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01                         srt:ProductOrServiceAxis:gme:SoftwareMember  525600000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02                         srt:ProductOrServiceAxis:gme:SoftwareMember  719200000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01                     srt:ProductOrServiceAxis:gme:CollectiblesMember  256100000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02                     srt:ProductOrServiceAxis:gme:CollectiblesMember  171100000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01                     srt:ProductOrServiceAxis:gme:CollectiblesMember  695200000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02                     srt:ProductOrServiceAxis:gme:CollectiblesMember  447300000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01                                                                      821000000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02                                                                      860300000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-11-01                                                                     2525600000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2024-11-02                                                                     2540400000.0
-                                           us-gaap:Revenues 2025-11-01                                                                      821000000.0
-                                           us-gaap:Revenues 2024-11-02                                                                      860300000.0
-                                           us-gaap:Revenues 2025-11-01                                                                     2525600000.0
-                                           us-gaap:Revenues 2024-11-02                                                                     2540400000.0
-                                           us-gaap:Revenues 2025-11-01 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  617000000.0
-                                           us-gaap:Revenues 2025-11-01    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember  110200000.0
-                                           us-gaap:Revenues 2025-11-01       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember   93800000.0
-                                           us-gaap:Revenues 2025-11-01                                                                      821000000.0
-                                           us-gaap:Revenues 2024-11-02 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  551700000.0
-                                           us-gaap:Revenues 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember   46300000.0
-                                           us-gaap:Revenues 2024-11-02    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   89400000.0
-                                           us-gaap:Revenues 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  172900000.0
-                                           us-gaap:Revenues 2024-11-02                                                                      860300000.0
-                                           us-gaap:Revenues 2025-11-01 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember 1879100000.0
-                                           us-gaap:Revenues 2025-11-01       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember   38200000.0
-                                           us-gaap:Revenues 2025-11-01    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember  333000000.0
-                                           us-gaap:Revenues 2025-11-01       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  275300000.0
-                                           us-gaap:Revenues 2025-11-01                                                                     2525600000.0
-                                           us-gaap:Revenues 2024-11-02 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember 1714600000.0
-                                           us-gaap:Revenues 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember  126600000.0
-                                           us-gaap:Revenues 2024-11-02    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember  256700000.0
-                                           us-gaap:Revenues 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  442500000.0
-                                           us-gaap:Revenues 2024-11-02                                                                     2540400000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01                                                                       41300000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02                                                                      -33400000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01                                                                       96900000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02                                                                     -106000000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember   56000000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   -3500000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  -11200000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01                                                                       41300000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  -15400000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember   -3100000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   -5500000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember   -9400000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02                                                                      -33400000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  153300000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember  -22200000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   -2900000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  -31300000.0
-                                us-gaap:OperatingIncomeLoss 2025-11-01                                                                       96900000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  -42200000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember  -11700000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember  -19500000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  -32600000.0
-                                us-gaap:OperatingIncomeLoss 2024-11-02                                                                     -106000000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-05-02           srt:ProductOrServiceAxis:gme:HardwareAndAccessoriesMember  333700000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-05-03           srt:ProductOrServiceAxis:gme:HardwareAndAccessoriesMember  345300000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-05-02                         srt:ProductOrServiceAxis:gme:SoftwareMember  152700000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-05-03                         srt:ProductOrServiceAxis:gme:SoftwareMember  175600000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-05-02                     srt:ProductOrServiceAxis:gme:CollectiblesMember  348900000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-05-03                     srt:ProductOrServiceAxis:gme:CollectiblesMember  211500000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-05-02                                                                      835300000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-05-03                                                                      732400000.0
+                                           us-gaap:Revenues 2026-05-02                                                                      835300000.0
+                                           us-gaap:Revenues 2025-05-03                                                                      732400000.0
+                                           us-gaap:Revenues 2026-05-02 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  651100000.0
+                                           us-gaap:Revenues 2026-05-02    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   99600000.0
+                                           us-gaap:Revenues 2026-05-02       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember   84600000.0
+                                           us-gaap:Revenues 2026-05-02                                                                      835300000.0
+                                           us-gaap:Revenues 2025-05-03 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  537500000.0
+                                           us-gaap:Revenues 2025-05-03       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember   38200000.0
+                                           us-gaap:Revenues 2025-05-03    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   81900000.0
+                                           us-gaap:Revenues 2025-05-03       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember   74800000.0
+                                           us-gaap:Revenues 2025-05-03                                                                      732400000.0
+                                us-gaap:OperatingIncomeLoss 2026-05-02                                                                      143300000.0
+                                us-gaap:OperatingIncomeLoss 2025-05-03                                                                      -10800000.0
+                                us-gaap:OperatingIncomeLoss 2026-05-02 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember  144600000.0
+                                us-gaap:OperatingIncomeLoss 2026-05-02       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember   -1300000.0
+                                us-gaap:OperatingIncomeLoss 2026-05-02                                                                      143300000.0
+                                us-gaap:OperatingIncomeLoss 2025-05-03 us-gaap:StatementBusinessSegmentsAxis:gme:UnitedStatesSegmentMember   33600000.0
+                                us-gaap:OperatingIncomeLoss 2025-05-03       us-gaap:StatementBusinessSegmentsAxis:gme:CanadaSegmentMember  -22200000.0
+                                us-gaap:OperatingIncomeLoss 2025-05-03    us-gaap:StatementBusinessSegmentsAxis:gme:AustraliaSegmentMember   -5400000.0
+                                us-gaap:OperatingIncomeLoss 2025-05-03       us-gaap:StatementBusinessSegmentsAxis:gme:EuropeSegmentMember  -16800000.0
+                                us-gaap:OperatingIncomeLoss 2025-05-03                                                                      -10800000.0
