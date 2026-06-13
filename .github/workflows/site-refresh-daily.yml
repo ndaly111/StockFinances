@@ -158,6 +158,14 @@ jobs:
         run: |
           git clone --depth 1 -b data \
             "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
+          # Refuse to persist a truncated/empty DB (sqlite3.connect silently
+          # creates an empty file; a healthy DB is ~22MB). Guards the data
+          # branch against a history wipe.
+          SZ=$(stat -c%s "Stock Data.db" 2>/dev/null || echo 0)
+          if [ "$SZ" -lt 10000000 ]; then
+            echo "Stock Data.db is only $SZ bytes (<10MB) — refusing to persist."
+            exit 0
+          fi
           cp "Stock Data.db" dbpush/
           cd dbpush
           git config user.name "github-actions[bot]"
