@@ -67,7 +67,7 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: "1"
-          GEN_WORKERS: "1"   # sequential: parallel build rate-limits yfinance/scrape at 102-ticker scale (4/102 built). Revisit with backoff before re-enabling.
+          GEN_WORKERS: "4"   # re-enabled: companyfacts swap cut requests ~9x (62->~7/ticker), so 4 workers no longer rate-limit yahoo. <90-guard makes a regression loud.
         run: |
           TICKERS=$(tail -n +2 tickers.csv | tr -d '\r' | tr '\n' ' ')
           # No "|| true": gen_ticker_json exits nonzero if too many tickers fail

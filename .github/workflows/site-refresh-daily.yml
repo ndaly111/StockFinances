@@ -92,7 +92,11 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
           PYTHONUTF8: "1"
-          GEN_WORKERS: "1"
+          # Re-enabled parallel after the companyfacts swap cut per-ticker
+          # requests ~9x (62 -> ~7), so 4 workers no longer rate-limit yahoo
+          # (the old 4/102 failure was at 62 req/ticker). The <90-build guard +
+          # nonzero-exit make a rate-limit failure loud & non-deploying.
+          GEN_WORKERS: "4"
         run: |
           TICKERS=$(tail -n +2 tickers.csv | tr -d '\r' | tr '\n' ' ')
           # No "|| true": gen_ticker_json now exits nonzero if too many tickers
