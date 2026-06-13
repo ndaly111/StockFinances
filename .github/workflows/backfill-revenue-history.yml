@@ -25,6 +25,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
+      # Phase 1 Stage C: DB lives on the `data` branch. NOTE: this is a completed
+      # one-shot that also mined the DB's *main git history* (now gone) — it is
+      # effectively dead post-flip and slated for deletion; hydrate + the guarded
+      # add below just keep a stray dispatch from going RED.
+      - name: Hydrate DB from data branch
+        run: |
+          git fetch --depth 1 origin data
+          git restore --source=origin/data --worktree -- "Stock Data.db"
+          test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -38,7 +48,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "Stock Data.db"
+          # DB is gitignored on main now → this add is a no-op (|| true keeps the
+          # step from dying under bash -eo pipefail). The DB is not persisted from
+          # this dead one-shot.
+          git add "Stock Data.db" 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No DB changes from backfill (nothing to push)."
           else

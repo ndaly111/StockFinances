@@ -70,6 +70,17 @@ jobs:
           python generate_market_summary.py
           python scripts/dump_assumptions.py
 
+      # Collect the post-close SPY/QQQ index snapshot in the EVENING run, folded
+      # in from daily_index_data.yml (whose schedule is retired) so there is a
+      # SINGLE writer to the data branch at 21:30 — no cross-workflow push race.
+      # main_remote already ran backfill_index_growth(); this adds the snapshot
+      # tables (Daily_Index_Snapshots, Index_PE/EPS/Price history).
+      - name: Collect daily index snapshot (evening)
+        if: github.event.schedule == '30 21 * * 1-5' || github.event_name == 'workflow_dispatch'
+        run: |
+          python scripts/collect_daily_index_data.py --tickers SPY QQQ || echo "index collect failed, continuing"
+          python backfill_index_growth.py || echo "backfill growth failed, continuing"
+
       # Rebuild the per-ticker JSON the site shell (ticker.html) reads — once a
       # day on the morning run (the 0 11 UTC cron, ~6-7 AM ET) or on manual
       # dispatch. By morning the prior day's close is fully settled and any

@@ -1,9 +1,10 @@
 name: Daily Index Data Collection
 
+# Phase 1 Stage C: schedule RETIRED. The post-close index snapshot is now
+# collected inside site-refresh-daily.yml's evening run (single data-branch
+# writer at 21:30 → no push race). Kept dispatch-only as a manual backstop;
+# it hydrates from + persists to the data branch like the refresh workflows.
 on:
-  schedule:
-    # Run at 9:30 PM UTC (4:30 PM EST) after market close
-    - cron: "30 21 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -21,6 +22,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # Phase 1 Stage C: the DB lives on the `data` branch, not main.
+      - name: Hydrate DB from data branch
+        run: |
+          git fetch --depth 1 origin data
+          git restore --source=origin/data --worktree -- "Stock Data.db"
+          test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -41,18 +49,34 @@ jobs:
         run: |
           python backfill_index_growth.py || echo "Backfill growth failed, continuing..."
 
-      - name: Commit changes
+      # Persist the index-table writes to the data branch (not main). On a push
+      # race (this shares the 21:30 cron with the evening site-refresh, which
+      # writes DISJOINT tables), re-hydrate the winner's tip and re-run our
+      # idempotent index writers on top, then retry — never clobber.
+      - name: Persist DB to data branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "Stock Data.db" || true
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "data: daily index data update $(date -u +%Y-%m-%d)"
-            for i in 1 2 3; do
-              git pull --rebase && git push && break
-              echo "Push attempt $i failed, retrying..."
-              sleep 2
-            done
-          fi
+          SZ=$(stat -c%s "Stock Data.db" 2>/dev/null || echo 0)
+          if [ "$SZ" -lt 10000000 ]; then echo "::error::DB only $SZ bytes — refusing to persist"; exit 1; fi
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            rm -rf dbpush
+            git clone --depth 1 -b data \
+              "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
+            cp "Stock Data.db" dbpush/
+            cd dbpush
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "Stock Data.db"
+            if git diff --cached --quiet; then echo "DB unchanged."; cd ..; ok=1; break; fi
+            git commit -m "data: daily index update"
+            if git push origin HEAD:data; then cd ..; ok=1; break; fi
+            echo "push raced (attempt $attempt) — re-hydrate winner + re-run index writers"
+            cd ..
+            git fetch --depth 1 origin data
+            git restore --source=origin/data --worktree -- "Stock Data.db"
+            python scripts/collect_daily_index_data.py --tickers SPY QQQ || true
+            python backfill_index_growth.py || true
+          done
+          [ "$ok" = "1" ] || { echo "::error::could not persist index DB after 5 attempts"; exit 1; }

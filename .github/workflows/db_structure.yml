@@ -11,6 +11,13 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v3
 
+    # Phase 1 Stage C: DB lives on the `data` branch (this job dumps its schema).
+    - name: Hydrate DB from data branch
+      run: |
+        git fetch --depth 1 origin data
+        git restore --source=origin/data --worktree -- "Stock Data.db"
+        test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:

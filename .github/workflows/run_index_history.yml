@@ -70,7 +70,10 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add "Stock Data.db"
+          # NOTE: this workflow is DISABLED. The DB lives on the `data` branch
+          # now (gitignored on main), so this add is a no-op. Before re-enabling,
+          # convert it like Spyhistorical.yml (hydrate + persist-to-data).
+          git add "Stock Data.db" 2>/dev/null || true
           git add charts/*_chart.js charts/*_chart_div.html || true
           git add charts/spy_growth_chart.png charts/spy_pe_chart.png || true
           git add charts/spy_growth_summary.html charts/spy_pe_summary.html || true

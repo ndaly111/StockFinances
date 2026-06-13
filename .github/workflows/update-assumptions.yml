@@ -40,6 +40,16 @@ jobs:
         with:
           persist-credentials: true
 
+      # Phase 1 Stage C: DB lives on the `data` branch. The main commit below
+      # still pushes tickers.csv / assumptions.json / charts / pages to main
+      # (the DB part of its `git add` is now a gitignore no-op); the DB itself
+      # is persisted to `data` in a dedicated step.
+      - name: Hydrate DB from data branch
+        run: |
+          git fetch --depth 1 origin data
+          git restore --source=origin/data --worktree -- "Stock Data.db"
+          test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -138,6 +148,32 @@ jobs:
           git push
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "no_change=false" >> "$GITHUB_OUTPUT"
+
+      # Persist the Tickers_Info change to the data branch (rare manual dispatch
+      # → ~0 collision; simple retry, fails loud rather than clobber).
+      - name: Persist DB to data branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TICKER: ${{ steps.prev.outputs.ticker }}
+        run: |
+          SZ=$(stat -c%s "Stock Data.db" 2>/dev/null || echo 0)
+          if [ "$SZ" -lt 10000000 ]; then echo "::error::DB only $SZ bytes — refusing to persist"; exit 1; fi
+          ok=0
+          for attempt in 1 2 3; do
+            rm -rf dbpush
+            git clone --depth 1 -b data \
+              "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
+            cp "Stock Data.db" dbpush/
+            cd dbpush
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "Stock Data.db"
+            if git diff --cached --quiet; then echo "DB unchanged."; cd ..; ok=1; break; fi
+            git commit -m "data: assumptions update ($TICKER)"
+            if git push origin HEAD:data; then cd ..; ok=1; break; fi
+            echo "push raced (attempt $attempt) — retry"; cd ..; sleep 3
+          done
+          [ "$ok" = "1" ] || { echo "::error::could not persist assumptions DB"; exit 1; }
 
       # Don't use the existing repo's git for gh-pages — fetching that whole
       # branch's history is what blew the run out to ~7 minutes. Instead, a

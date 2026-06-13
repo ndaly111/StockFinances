@@ -18,6 +18,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Phase 1 Stage C: the DB lives on the `data` branch, not main.
+      - name: Hydrate DB from data branch
+        run: |
+          git fetch --depth 1 origin data
+          git restore --source=origin/data --worktree -- "Stock Data.db"
+          test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -64,16 +71,39 @@ jobs:
           python index_growth_charts.py SPY
           python index_growth_charts.py QQQ
 
-      - name: Commit updated database and charts
+      - name: Commit charts to main + persist DB to data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add "Stock Data.db"
+          # Charts still go to main; the DB now goes to the data branch (below).
           git add charts/*_chart.js charts/*_chart_div.html || true
           git add charts/spy_growth_chart.png charts/spy_pe_chart.png || true
           git add charts/spy_growth_summary.html charts/spy_pe_summary.html || true
           git add charts/qqq_growth_chart.png charts/qqq_pe_chart.png || true
           git add charts/qqq_growth_summary.html charts/qqq_pe_summary.html || true
           git add charts/*_eps_summary.html || true
-          git commit -m "Auto-update: index PE & implied growth history and charts" || echo "No changes to commit"
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto-update: index PE & implied growth charts"
+            git push
+          fi
+          # Persist the index-history DB writes to the data branch.
+          SZ=$(stat -c%s "Stock Data.db" 2>/dev/null || echo 0)
+          if [ "$SZ" -lt 10000000 ]; then echo "::error::DB only $SZ bytes — refusing to persist"; exit 1; fi
+          ok=0
+          for attempt in 1 2 3; do
+            rm -rf dbpush
+            git clone --depth 1 -b data \
+              "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
+            cp "Stock Data.db" dbpush/
+            cd dbpush
+            git config user.name "github-actions"
+            git config user.email "actions@github.com"
+            git add "Stock Data.db"
+            if git diff --cached --quiet; then echo "DB unchanged."; cd ..; ok=1; break; fi
+            git commit -m "data: index history backfill"
+            if git push origin HEAD:data; then cd ..; ok=1; break; fi
+            echo "push raced (attempt $attempt) — retry"; cd ..; sleep 3
+          done
+          [ "$ok" = "1" ] || { echo "::error::could not persist index DB"; exit 1; }

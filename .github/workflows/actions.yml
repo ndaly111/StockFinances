@@ -1,8 +1,12 @@
 name: Run Python Script and Deploy to GitHub Pages
 
+# Phase 1 Stage C: schedule RETIRED. This legacy job ran main_remote daily and
+# committed the DB to main — it was the only thing persisting the DB to main,
+# which is exactly why it couldn't be killed before. Now the site-refresh
+# workflows hydrate from + persist to the `data` branch (proven over Stages
+# A/B), so this is fully redundant. Kept as a dispatch-only parachute; it
+# hydrates the DB from `data` so a manual run still works.
 on:
-  schedule:
-    - cron: '0 8 * * 1-5'        # 08:00 UTC weekdays
   workflow_dispatch:
 
 permissions:
@@ -23,6 +27,13 @@ jobs:
     # ---------------------------------------------------------------- checkout main
     - name: Check out repository
       uses: actions/checkout@v2
+
+    # ---------------------------------------------------------------- hydrate DB
+    - name: Hydrate DB from data branch
+      run: |
+        git fetch --depth 1 origin data
+        git restore --source=origin/data --worktree -- "Stock Data.db"
+        test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
 
     # ---------------------------------------------------------------- Python setup
     - name: Set up Python

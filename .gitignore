@@ -45,3 +45,12 @@ ticker_data/
 
 # Local-only artifact written by gen_ticker_json.py during the build
 _*_temp.html
+
+# Phase 1 Stage C: the DB lives on the orphan `data` branch, not main.
+# Workflows hydrate it via `git restore --source=origin/data`. Ignoring it
+# here neutralizes any `git add .` / explicit `git add "Stock Data.db"` so it
+# can never be re-committed to main. Local dev keeps its working copy.
+Stock Data.db
+Stock Data.db-wal
+Stock Data.db-shm
+Stock Data.db-journal
