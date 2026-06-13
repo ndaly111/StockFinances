@@ -48,14 +48,20 @@ def synthetic_pe_from_ps(ticker, raw_info, marketcap):
         return None
     return ps / margin
 
-def fetch_stock_data(ticker, treasury_yield):
-    try:
-        stock = yf.Ticker(ticker)
-        # Ensure raw_info is always a dict (stock.info can be None or non-dict)
-        raw_info = stock.info if isinstance(stock.info, dict) else {}
-    except Exception as e:
-        print(f"Error retrieving market data for {ticker}: {e}")
-        raw_info = {}
+def fetch_stock_data(ticker, treasury_yield, info=None):
+    # Reuse the per-run prefetched yfinance .info (forecasted_earnings_chart's
+    # _yf_cache, filled in main_remote before the per-ticker loop) instead of a
+    # fresh yf.Ticker().info — saves one HTTP request per ticker per daily run.
+    # get_cached_yf_info has its own single-fetch fallback for cache misses
+    # (e.g. a newly added ticker), so behavior is unchanged on a miss.
+    if info is None:
+        try:
+            from forecasted_earnings_chart import get_cached_yf_info
+            info = get_cached_yf_info(ticker)
+        except Exception as e:
+            print(f"Error retrieving market data for {ticker}: {e}")
+            info = {}
+    raw_info = info if isinstance(info, dict) else {}
 
     current_price = raw_info.get('currentPrice') or raw_info.get('regularMarketPrice') \
         or raw_info.get('previousClose') or average_bid_ask(raw_info)
@@ -180,8 +186,8 @@ def ensure_history_schema(cursor):
     )
 
 
-def prepare_data_for_display(ticker, treasury_yield, conn=None, cursor=None, commit=None):
-    fetched_data, marketcap, ttm_growth, forward_growth, forward_eps = fetch_stock_data(ticker, treasury_yield)
+def prepare_data_for_display(ticker, treasury_yield, conn=None, cursor=None, commit=None, info=None):
+    fetched_data, marketcap, ttm_growth, forward_growth, forward_eps = fetch_stock_data(ticker, treasury_yield, info=info)
 
     # Record implied growths
     today_str = datetime.today().strftime("%Y-%m-%d")
