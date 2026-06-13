@@ -514,9 +514,17 @@ def scrape_forward_data_batch(tickers: List[str], max_workers: int = 10,
     def _worker(tkr: str):
         sess: Optional[requests.Session] = None
         try:
+            # Reuse the per-run prefetched .info (filled in main_remote before
+            # this batch) so yahoo_annual_estimates doesn't re-fetch .info per
+            # ticker just for nextFiscalYearEnd. Cache miss -> single live fetch.
+            try:
+                from forecasted_earnings_chart import get_cached_yf_info
+                _info = get_cached_yf_info(tkr)
+            except Exception:
+                _info = None
             if prefer == "zacks":
                 sess = requests.Session()
-            d, src = fetch_annual_estimates(tkr, prefer=prefer, session=sess)
+            d, src = fetch_annual_estimates(tkr, prefer=prefer, session=sess, info=_info)
             if not d.empty:
                 _store(d, tkr, source=src)
                 return src

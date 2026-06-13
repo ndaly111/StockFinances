@@ -21,15 +21,17 @@ from split_utils import apply_split_adjustments, ensure_splits_table
 # ---------------------------------------------------------------------------
 #  Safe price helper
 # ---------------------------------------------------------------------------
-def get_current_price(ticker_obj: yf.Ticker):
+def get_current_price(ticker_obj: yf.Ticker, info=None):
     """
     Robust share-price lookup.
-    1) ticker.info['currentPrice']
+    1) ticker.info['currentPrice'] (uses a pre-fetched info dict if supplied,
+       avoiding a redundant .info HTTP call; same resolution priority)
     2) ticker.fast_info['lastPrice']
     3) last daily close
     Returns float or None.
     """
-    price = ticker_obj.info.get("currentPrice")
+    info = info if info is not None else ticker_obj.info
+    price = info.get("currentPrice")
     if price is None:
         try:
             price = ticker_obj.fast_info.get("lastPrice")
@@ -121,9 +123,19 @@ def finviz_five_yr(ticker, cursor):
 # ---------------------------------------------------------------------------
 #  Financial data fetcher
 # ---------------------------------------------------------------------------
-def fetch_financial_valuation_data(ticker, db_path):
+def fetch_financial_valuation_data(ticker, db_path, info=None):
+    # Reuse the per-run prefetched .info (set in main_remote before the loop)
+    # so get_current_price doesn't trigger a second .info HTTP call. Falls back
+    # to a single live fetch on a cache miss (get_cached_yf_info) and, beyond
+    # that, to stock.fast_info/history inside get_current_price.
+    if info is None:
+        try:
+            from forecasted_earnings_chart import get_cached_yf_info
+            info = get_cached_yf_info(ticker)
+        except Exception:
+            info = {}
     stock = yf.Ticker(ticker)
-    current_price = get_current_price(stock)
+    current_price = get_current_price(stock, info=info)
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
