@@ -119,33 +119,36 @@ jobs:
             git push origin gh-pages
           fi
 
-      # DB persistence trial (Phase 1, ADDITIVE — see site-refresh-daily). The
-      # Sunday run persists the full weekly-rebuilt DB (TTM/Annual/balance sheet)
-      # to the `data` branch. Additive + continue-on-error; consumers still read
-      # main until the proven flip.
-      - name: Persist DB to data branch (trial)
-        continue-on-error: true
+      # Persist the full weekly-rebuilt DB (TTM/Annual/balance sheet) to the
+      # data branch. Stage B: mandatory (no continue-on-error) + retry loop.
+      # See site-refresh-daily for the concurrency note.
+      - name: Persist DB to data branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git clone --depth 1 -b data \
-            "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
           SZ=$(stat -c%s "Stock Data.db" 2>/dev/null || echo 0)
           if [ "$SZ" -lt 10000000 ]; then
-            echo "Stock Data.db is only $SZ bytes (<10MB) — refusing to persist."
-            exit 0
+            echo "::error::Stock Data.db is only $SZ bytes (<10MB) — refusing to persist."
+            exit 1
           fi
-          cp "Stock Data.db" dbpush/
-          cd dbpush
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "Stock Data.db"
-          if git diff --cached --quiet; then
-            echo "DB unchanged — nothing to persist."
-          else
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            rm -rf dbpush
+            git clone --depth 1 -b data \
+              "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
+            cp "Stock Data.db" dbpush/
+            cd dbpush
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "Stock Data.db"
+            if git diff --cached --quiet; then
+              echo "DB unchanged — nothing to persist."; cd ..; ok=1; break
+            fi
             git commit -m "db: weekly refresh"
-            git push origin HEAD:data
-          fi
+            if git push origin HEAD:data; then cd ..; ok=1; break; fi
+            echo "push raced (attempt $attempt) — re-clone & retry"; cd ..
+          done
+          [ "$ok" = "1" ] || { echo "::error::could not persist DB after 5 attempts"; exit 1; }
 
       - name: File failure issue
         if: failure()

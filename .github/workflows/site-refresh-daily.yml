@@ -162,40 +162,42 @@ jobs:
             git push origin gh-pages
           fi
 
-      # --- DB persistence trial (Phase 1, ADDITIVE — safe) ---
-      # Push the freshly-refreshed DB to the orphan `data` branch so it starts
-      # accumulating real daily snapshots. This is purely additive: actions.yml
-      # still commits the DB to main and every consumer still reads main's DB,
-      # so it cannot affect the live site. continue-on-error means a data-branch
-      # hiccup never fails the run. Once proven over several runs, consumers flip
-      # to read from `data` and the DB leaves main (separate, deliberate change).
-      - name: Persist DB to data branch (trial)
-        if: github.event.schedule == '30 21 * * 1-5' || github.event_name == 'workflow_dispatch'
-        continue-on-error: true
+      # --- Persist DB to the data branch (Phase 1 Stage B) ---
+      # Now MANDATORY (no continue-on-error) and runs on EVERY daily refresh.
+      # The <10MB guard fails loudly (a tiny DB means main_remote produced a
+      # broken DB). Retry loop covers a transient/raced push. NOTE: in Stage B
+      # the only data-branch writers are the daily+weekly refresh runs, which
+      # never run concurrently, so re-cloning and re-pushing OUR DB is safe.
+      # When Stage C adds the index/assumptions writers (DISJOINT tables), the
+      # losing side must RE-RUN its writer on the new tip rather than clobber —
+      # that handling lands in Stage C.
+      - name: Persist DB to data branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git clone --depth 1 -b data \
-            "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
-          # Refuse to persist a truncated/empty DB (sqlite3.connect silently
-          # creates an empty file; a healthy DB is ~22MB). Guards the data
-          # branch against a history wipe.
           SZ=$(stat -c%s "Stock Data.db" 2>/dev/null || echo 0)
           if [ "$SZ" -lt 10000000 ]; then
-            echo "Stock Data.db is only $SZ bytes (<10MB) — refusing to persist."
-            exit 0
+            echo "::error::Stock Data.db is only $SZ bytes (<10MB) — refusing to persist."
+            exit 1
           fi
-          cp "Stock Data.db" dbpush/
-          cd dbpush
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "Stock Data.db"
-          if git diff --cached --quiet; then
-            echo "DB unchanged — nothing to persist."
-          else
+          ok=0
+          for attempt in 1 2 3 4 5; do
+            rm -rf dbpush
+            git clone --depth 1 -b data \
+              "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
+            cp "Stock Data.db" dbpush/
+            cd dbpush
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "Stock Data.db"
+            if git diff --cached --quiet; then
+              echo "DB unchanged — nothing to persist."; cd ..; ok=1; break
+            fi
             git commit -m "db: daily refresh"
-            git push origin HEAD:data
-          fi
+            if git push origin HEAD:data; then cd ..; ok=1; break; fi
+            echo "push raced (attempt $attempt) — re-clone & retry"; cd ..
+          done
+          [ "$ok" = "1" ] || { echo "::error::could not persist DB after 5 attempts"; exit 1; }
 
       # Surface failures: previously a broken run could go green (|| true +
       # the JSON generator never exited nonzero), which is how ME.json vanished
