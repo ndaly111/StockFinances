@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: write
+  issues: write   # file/append a CI-failure issue (see last step)
 
 concurrency:
   # Share the concurrency group with the weekly job so a Sunday weekly run
@@ -70,7 +71,10 @@ jobs:
           GEN_WORKERS: "1"
         run: |
           TICKERS=$(tail -n +2 tickers.csv | tr -d '\r' | tr '\n' ' ')
-          python scripts/gen_ticker_json.py $TICKERS || true
+          # No "|| true": gen_ticker_json now exits nonzero if too many tickers
+          # fail (GEN_FAIL_TOLERANCE), so a catastrophic build fails the step
+          # instead of silently leaving ticker_data stale.
+          python scripts/gen_ticker_json.py $TICKERS
           echo "built $(ls ticker_data/*.json 2>/dev/null | wc -l) ticker JSONs"
 
       - name: Check out gh-pages branch
@@ -137,4 +141,22 @@ jobs:
           else
             git commit -m "Deploy ticker_data (daily market close)"
             git push origin gh-pages
+          fi
+
+      # Surface failures: previously a broken run could go green (|| true +
+      # the JSON generator never exited nonzero), which is how ME.json vanished
+      # unnoticed. File one deduped issue per workflow; comment on re-failures.
+      - name: File failure issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="CI failure: ${{ github.workflow }}"
+          URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          N=$(gh issue list --state open --limit 100 --json number,title \
+                --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          if [ -n "$N" ]; then
+            gh issue comment "$N" --body "Failed again: $URL"
+          else
+            gh issue create --title "$TITLE" --body "Workflow failed: $URL"
           fi

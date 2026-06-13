@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  issues: write   # file/append a CI-failure issue (see last step)
 
 concurrency:
   group: site-refresh
@@ -59,7 +60,11 @@ jobs:
           GEN_WORKERS: "1"   # sequential: parallel build rate-limits yfinance/scrape at 102-ticker scale (4/102 built). Revisit with backoff before re-enabling.
         run: |
           TICKERS=$(tail -n +2 tickers.csv | tr -d '\r' | tr '\n' ' ')
-          python scripts/gen_ticker_json.py $TICKERS || true
+          # No "|| true": gen_ticker_json exits nonzero if too many tickers fail
+          # (GEN_FAIL_TOLERANCE). This also guards the weekly rsync below, which
+          # --deletes without a ticker_data count check — a catastrophic build
+          # now fails here instead of wiping live JSONs.
+          python scripts/gen_ticker_json.py $TICKERS
 
       - name: Check out gh-pages branch
         uses: actions/checkout@v4
@@ -98,4 +103,19 @@ jobs:
           else
             git commit -m "Deploy to GitHub Pages"
             git push origin gh-pages
+          fi
+
+      - name: File failure issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="CI failure: ${{ github.workflow }}"
+          URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          N=$(gh issue list --state open --limit 100 --json number,title \
+                --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          if [ -n "$N" ]; then
+            gh issue comment "$N" --body "Failed again: $URL"
+          else
+            gh issue create --title "$TITLE" --body "Workflow failed: $URL"
           fi

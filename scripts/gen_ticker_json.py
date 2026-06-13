@@ -391,12 +391,15 @@ def main():
     work = [(tk, (cik_map.get(tk.upper()) if cik_map is not None else cik_for(tk)))
             for tk in tickers]
 
+    failed = []
+
     def run_sequential():
         n = 0
         for w in work:
             tk, size, err = _build_one(w)
             if err:
                 print(f"[{tk}] FAILED: {err}")
+                failed.append((tk, err))
             else:
                 n += 1
                 print(f"[{tk}] wrote {size:,} bytes")
@@ -416,17 +419,32 @@ def main():
                     tk, size, err = fut.result()
                     if err:
                         print(f"[{tk}] FAILED: {err}")
+                        failed.append((tk, err))
                     else:
                         ok += 1
                         print(f"[{tk}] wrote {size:,} bytes")
         except Exception as e:  # noqa: BLE001 - never leave pages unbuilt
             print(f"[gen_ticker_json] parallel run failed ({e}); retrying sequentially")
+            failed.clear()
             ok = run_sequential()
     else:
         ok = run_sequential()
 
     print(f"[gen_ticker_json] {ok}/{len(work)} tickers built "
           f"({workers} workers)")
+
+    # Fail loudly when too many tickers didn't build, so a catastrophic run
+    # (e.g. the documented 4/102 rate-limit failure) can't pass silently and
+    # leave ticker_data stale. A small tolerance covers known-dead tickers
+    # (delisted / no CIK). The workflow's >=90 deploy guard is a second backstop.
+    if failed:
+        print("[gen_ticker_json] failures: "
+              + ", ".join(f"{t} ({e})" for t, e in failed))
+    tolerance = int(os.environ.get("GEN_FAIL_TOLERANCE", "3"))
+    if ok < len(work) - tolerance:
+        print(f"::error::gen_ticker_json built only {ok}/{len(work)} ticker "
+              f"JSONs (tolerance {tolerance}) — failing the step")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
