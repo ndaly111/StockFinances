@@ -40,6 +40,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Phase 1 Stage A: read the DB from the orphan `data` branch (the proven
+      # source of truth) rather than from main's tracked copy. git restore
+      # --source writes the worktree without staging it, so it works even once
+      # the DB is gitignored on main and can never be re-committed to main by a
+      # `git add .`. The DB is still tracked on main today, so this is a safe,
+      # reversible overwrite-with-equivalent-bytes. test -s guards an empty DB.
+      - name: Hydrate DB from data branch
+        run: |
+          git fetch --depth 1 origin data
+          git restore --source=origin/data --worktree -- "Stock Data.db"
+          test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
+          echo "Hydrated Stock Data.db from data branch ($(stat -c%s 'Stock Data.db') bytes)"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -95,6 +108,8 @@ jobs:
             --exclude ".git" \
             --exclude ".github" \
             --exclude "gh-pages" \
+            --exclude "Stock Data.db" \
+            --exclude "*.db-wal" --exclude "*.db-shm" --exclude "*.db-journal" \
             --exclude "microcaps.html" \
             --exclude "data/microcap_candidates*.csv" \
             --exclude "data/microcap_appearances.json" \
@@ -108,6 +123,10 @@ jobs:
           cd gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # One-time: drop the stale 22MB DB from gh-pages (the site never serves
+          # it). rsync now excludes it, so this deletion isn't re-added. rm -f +
+          # git add -A stages the removal; idempotent on later runs.
+          rm -f "Stock Data.db"
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit."

@@ -36,6 +36,16 @@ jobs:
           # binary DB committed thousands of times was ~3.5 min to fetch.
           fetch-depth: 1
 
+      # Phase 1 Stage A: read the DB from the orphan `data` branch (see
+      # site-refresh-daily for rationale). git restore --source writes the
+      # worktree without staging; works on this shallow clone.
+      - name: Hydrate DB from data branch
+        run: |
+          git fetch --depth 1 origin data
+          git restore --source=origin/data --worktree -- "Stock Data.db"
+          test -s "Stock Data.db" || { echo "::error::DB hydrate failed/empty"; exit 1; }
+          echo "Hydrated Stock Data.db from data branch ($(stat -c%s 'Stock Data.db') bytes)"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -85,6 +95,8 @@ jobs:
             --exclude ".git" \
             --exclude ".github" \
             --exclude "gh-pages" \
+            --exclude "Stock Data.db" \
+            --exclude "*.db-wal" --exclude "*.db-shm" --exclude "*.db-journal" \
             --exclude "microcaps.html" \
             --exclude "data/microcap_candidates*.csv" \
             --exclude "data/microcap_appearances.json" \
@@ -97,6 +109,8 @@ jobs:
           cd gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # One-time: drop the stale 22MB DB from gh-pages (never served).
+          rm -f "Stock Data.db"
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit."
