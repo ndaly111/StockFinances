@@ -54,21 +54,44 @@ _MONETARY_UNITS = ("USD", "EUR", "GBP", "CAD", "CHF", "JPY", "CNY")
 _PER_SHARE_UNITS = ("USD/shares", "EUR/shares", "GBP/shares", "CAD/shares")
 
 
+# Single bulk EDGAR fetch per ticker: companyfacts returns ALL concepts in one
+# JSON, replacing ~56 per-concept companyconcept HTTP calls. Identical underlying
+# XBRL facts, so extraction below is byte-for-byte the same — just sourced once.
+EDGAR_FACTS = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+_COMPANY_FACTS: dict | None = None
+
+
+def _load_company_facts() -> dict:
+    """Fetch + cache this ticker's companyfacts `facts` dict (one HTTP call).
+    Shape: facts[taxonomy][concept]['units'][unit] -> list of entries — the same
+    entries the per-concept endpoint returned under its own 'units'."""
+    global _COMPANY_FACTS
+    if _COMPANY_FACTS is not None:
+        return _COMPANY_FACTS
+    try:
+        r = requests.get(EDGAR_FACTS.format(cik=CIK), headers=HEADERS, timeout=30)
+        _COMPANY_FACTS = r.json().get("facts", {}) if r.status_code == 200 else {}
+    except Exception:
+        _COMPANY_FACTS = {}
+    return _COMPANY_FACTS
+
+
 def fetch_concept(concept: str, fallbacks: tuple[str, ...] = ()) -> list[dict]:
     """Merge results from concept + fallbacks across us-gaap and ifrs-full
     taxonomies. Companies switch tag names over time (e.g. AAPL
     Revenues → RevenueFromContractWithCustomer at ASC 606 adoption in 2018);
     foreign filers (20-F) report under ifrs-full rather than us-gaap.
-    Each entry is tagged with the source unit so a caller can FX-convert."""
+    Each entry is tagged with the source unit so a caller can FX-convert.
+    Reads from the one-shot companyfacts cache (no per-concept HTTP)."""
+    facts = _load_company_facts()
     combined: list[dict] = []
     seen_keys: set = set()
     for c in (concept, *fallbacks):
         for tax in EDGAR_CONCEPT_TAXONOMIES:
-            url = EDGAR_CONCEPT.format(cik=CIK, taxonomy=tax, concept=c)
-            r = requests.get(url, headers=HEADERS, timeout=30)
-            if r.status_code != 200:
+            concept_data = facts.get(tax, {}).get(c)
+            if not concept_data:
                 continue
-            units = r.json().get("units", {})
+            units = concept_data.get("units", {})
             for key in _MONETARY_UNITS + _PER_SHARE_UNITS:
                 if key in units and units[key]:
                     for v in units[key]:
