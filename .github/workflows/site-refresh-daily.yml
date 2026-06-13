@@ -143,6 +143,33 @@ jobs:
             git push origin gh-pages
           fi
 
+      # --- DB persistence trial (Phase 1, ADDITIVE — safe) ---
+      # Push the freshly-refreshed DB to the orphan `data` branch so it starts
+      # accumulating real daily snapshots. This is purely additive: actions.yml
+      # still commits the DB to main and every consumer still reads main's DB,
+      # so it cannot affect the live site. continue-on-error means a data-branch
+      # hiccup never fails the run. Once proven over several runs, consumers flip
+      # to read from `data` and the DB leaves main (separate, deliberate change).
+      - name: Persist DB to data branch (trial)
+        if: github.event.schedule == '30 21 * * 1-5' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone --depth 1 -b data \
+            "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dbpush
+          cp "Stock Data.db" dbpush/
+          cd dbpush
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Stock Data.db"
+          if git diff --cached --quiet; then
+            echo "DB unchanged — nothing to persist."
+          else
+            git commit -m "db: daily refresh"
+            git push origin HEAD:data
+          fi
+
       # Surface failures: previously a broken run could go green (|| true +
       # the JSON generator never exited nonzero), which is how ME.json vanished
       # unnoticed. File one deduped issue per workflow; comment on re-failures.
