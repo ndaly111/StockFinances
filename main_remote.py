@@ -435,8 +435,6 @@ def mini_main():
         scrape_forward_data_batch(tickers, max_workers=6)
         print("[main] Forward data batch scrape complete")
 
-        missing_segments = []
-
         for ticker in tickers:
             print(f"[main] Processing {ticker} ({'weekly' if is_weekly else 'daily'})")
             try:
@@ -450,15 +448,17 @@ def mini_main():
                 # Forecast charts use forward data which IS refreshed daily.
                 generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
 
-                if is_weekly:
-                    # Balance sheet + segments + expense reports change with
-                    # 10-K/10-Q filings, not day-to-day.
-                    fetch_and_update_balance_sheet_data(ticker, cursor)
-                    balancesheet_chart(ticker)
-
-                    ok = build_segments_for_ticker(ticker)
-                    if not ok:
-                        missing_segments.append(ticker)
+                # Phase 3: three weekly fetchers REMOVED — the Phase 2 companyfacts
+                # swap made the ticker JSON pull these sections straight from EDGAR,
+                # so the DB tables/charts these wrote are dead output:
+                #  - segments (build_segments_for_ticker): ~400 SEC iXBRL req/run,
+                #    wrote charts/<T>/ that no JSON references.
+                #  - balance sheet (fetch_and_update_balance_sheet_data + chart):
+                #    BalanceSheetData is read only by the dead balancesheet_chart
+                #    PNG; the JSON balance section comes from fetch_concept(Assets..).
+                #  - expense_reports: IncomeStatement/QuarterlyIncomeStatement read
+                #    by nothing; the JSON expenses come from fetch_concept(COGS..).
+                # TTM_Data (→ live valuation) is kept via annual_and_ttm_update above.
 
                 # Valuation + reporting — price-driven, must run daily.
                 prepared, mktcap = prepare_data_for_display(
@@ -468,8 +468,7 @@ def mini_main():
                 conn.commit()
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
 
-                if is_weekly:
-                    generate_expense_reports(ticker, rebuild_schema=False, conn=conn)
+                # (expense_reports removed — see Phase 3 note above)
                 conn.commit()
 
             except Exception as e:
@@ -482,10 +481,6 @@ def mini_main():
                 continue
             finally:
                 plt.close("all")
-
-        if missing_segments:
-            msg = "Missing segment tables for: " + ", ".join(missing_segments)
-            print(f"[WARN] {msg}")
 
         if is_weekly:
             # EPS-dividend chart, full implied-growth summaries that depend
