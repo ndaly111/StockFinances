@@ -238,13 +238,15 @@ def main() -> int:
     # The approximation uses CURRENT shares outstanding from yfinance — it
     # ignores year-over-year buybacks, so historical EPS may drift ~5% from
     # the company's reported figure. Better than no EPS at all.
-    _tk_for_shares = yf.Ticker(TICKER)
-    _shares_now = None
+    # One yf.Ticker + one .info fetch for the whole build — shares, splits,
+    # price/PE/dividend, estimates and news all reuse this same object/dict
+    # instead of opening a second Ticker and re-fetching .info.
+    tk = yf.Ticker(TICKER)
     try:
-        _info_for_shares = _tk_for_shares.info if isinstance(_tk_for_shares.info, dict) else {}
-        _shares_now = _info_for_shares.get("sharesOutstanding") or _info_for_shares.get("impliedSharesOutstanding")
+        info = tk.info if isinstance(tk.info, dict) else {}
     except Exception:
-        pass
+        info = {}
+    _shares_now = info.get("sharesOutstanding") or info.get("impliedSharesOutstanding")
     if eps_a.empty and _shares_now and _shares_now > 0:
         eps_a = ni_a * 1e9 / _shares_now   # ni_a is in $B, shares is raw count
         print(f"  EPS derived from NI/shares (no EDGAR EPS concept available, "
@@ -254,8 +256,7 @@ def main() -> int:
     if eps_ttm.empty and _shares_now and _shares_now > 0:
         eps_ttm = ni_ttm * 1e9 / _shares_now
 
-    # Split-adjust EPS using yfinance splits
-    tk = yf.Ticker(TICKER)
+    # Split-adjust EPS using yfinance splits (same tk as above)
     splits = tk.splits
     if splits is not None and not splits.empty:
         if getattr(splits.index, "tz", None) is not None:
@@ -275,8 +276,7 @@ def main() -> int:
         eps_q = adjust(eps_q)
         eps_ttm = adjust(eps_ttm)
 
-    # Current price + recent
-    info = tk.info if isinstance(tk.info, dict) else {}
+    # Current price + recent (info already fetched once above)
     price = info.get("regularMarketPrice") or info.get("previousClose")
     market_cap = info.get("marketCap")
     pe = info.get("trailingPE")
@@ -1518,7 +1518,24 @@ def main() -> int:
         last_eps_ttm = float(eps_a.iloc[-1]) if not eps_a.empty else 0.0
     edpe_x.append("TTM")
     edpe_eps.append(float(last_eps_ttm))
-    edpe_div.append(float(div_a.tail(4).sum()) if not div_a.empty else 0.0)
+    # TTM dividend: prefer the properly-computed trailing-12-month value from
+    # Dividends_Data. div_a is summed BY YEAR, so the old div_a.tail(4).sum()
+    # added ~4 years of dividends and overstated this "TTM" bar ~4x.
+    _ttm_div = None
+    try:
+        import sqlite3 as _div_sqlite3
+        with _div_sqlite3.connect(str(Path.cwd() / "Stock Data.db")) as _dv:
+            _dr = _dv.execute(
+                "SELECT TTM_Dividend FROM Dividends_Data WHERE Symbol = ?",
+                (TICKER,),
+            ).fetchone()
+        if _dr and _dr[0] is not None:
+            _ttm_div = float(_dr[0])
+    except Exception:
+        _ttm_div = None
+    if _ttm_div is None:  # fallback: last full calendar year (still ~1yr, not 4)
+        _ttm_div = float(div_a.iloc[-1]) if not div_a.empty else 0.0
+    edpe_div.append(_ttm_div)
     edpe_fc.append(0)
     # Forecasts
     if fwd_eps:
