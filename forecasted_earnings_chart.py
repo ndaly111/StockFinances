@@ -32,7 +32,9 @@ def _fetch_ticker_bulk(tkr: str) -> tuple[str, dict]:
     """
     data: dict = {}
     tk = yf.Ticker(tkr)
-    for attr in ("financials", "quarterly_financials", "quarterly_balance_sheet", "splits"):
+    # quarterly_balance_sheet dropped (Phase 3): its only consumer, the weekly
+    # balance-sheet fetcher, was removed as dead output. ~103 fewer yahoo/wk.
+    for attr in ("financials", "quarterly_financials", "splits"):
         try:
             data[attr] = getattr(tk, attr)
         except Exception:
