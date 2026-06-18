@@ -84,9 +84,10 @@ jobs:
           )
           row = cur.fetchone()
           con.close()
-          if row is None:
-              sys.exit(f"ticker {ticker!r} not found in Tickers_Info")
-          growth_old, margin_old = row
+          # A brand-new ticker (e.g. a fresh IPO not yet in Tickers_Info) has no
+          # prior values — treat them as empty and let update_tickers.py upsert
+          # the row, rather than failing the whole run.
+          growth_old, margin_old = row if row is not None else (None, None)
 
           def f(v):
               return "" if v is None else str(v)

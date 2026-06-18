@@ -94,6 +94,10 @@ def update_database(
     elif action == "remove":
         cur.execute("DELETE FROM Tickers_Info WHERE ticker = ?", (ticker,))
     elif action == "update":
+        # Create the row if this ticker is new (e.g. a fresh IPO like SPCX that
+        # has no Tickers_Info row yet — that row is otherwise only created as a
+        # side effect of a successful Finviz scrape), then set the assumption(s).
+        cur.execute("INSERT OR IGNORE INTO Tickers_Info (ticker) VALUES (?)", (ticker,))
         # Margin is optional — only overwrite when supplied.
         if profit_margin is not None and profit_margin != "":
             cur.execute(
@@ -106,11 +110,6 @@ def update_database(
             cur.execute(
                 "UPDATE Tickers_Info SET nicks_growth_rate = ? WHERE ticker = ?",
                 (growth_rate, ticker),
-            )
-        if cur.rowcount == 0:
-            raise SystemExit(
-                f"ticker {ticker!r} not found in Tickers_Info — "
-                "use 'add' to create it first"
             )
     else:
         raise SystemExit(f"unknown action: {action!r}")
