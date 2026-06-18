@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-18T22:23:37+00:00",
+  "updated_at": "2026-06-18T22:53:18+00:00",
   "tickers": {
     "AAL": {
       "growth_rate": 2.0,
@@ -359,6 +359,10 @@
     },
     "SNAP": {
       "growth_rate": 5.0,
+      "profit_margin": 10.0
+    },
+    "SPCX": {
+      "growth_rate": 20.0,
       "profit_margin": 10.0
     },
     "SPOT": {
