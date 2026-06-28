@@ -169,7 +169,9 @@ def test_render_applies_forward_overlay_when_data_present():
 
         def capture(series, title, ylabel, percent_axis, x_range,
                     callout_text=None, **kwargs):
-            if "EPS" in title:
+            captured.setdefault("titles", []).append(title)
+            # Only capture the callout for the TTM EPS block (not the indexed panel)
+            if "EPS" in title and "indexed" not in title.lower():
                 captured["eps_callout"] = callout_text
             return igc.ChartBlock(layout=igc.Div(text="x"),
                                    fig=object(), source=None, log_axis=False,
@@ -180,6 +182,8 @@ def test_render_applies_forward_overlay_when_data_present():
 
     assert mock_overlay.called
     assert "+19.0%" in captured["eps_callout"]   # growth_this_fy
+    assert any("indexed" in t.lower() for t in captured.get("titles", [])), \
+        f"Expected an 'indexed' titled block, got: {captured.get('titles', [])}"
 
 
 def test_latest_forward_eps_respects_displayable(tmp_path):

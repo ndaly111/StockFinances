@@ -1164,6 +1164,8 @@ def render_index_growth_charts(tk="SPY"):
             controls=_make_controls_row(),
             marker_alpha=0.6,
             marker_size=6,
+            measure=True,
+            money=True,
         )
     )
     eps_block = blocks[-1]
@@ -1179,6 +1181,25 @@ def render_index_growth_charts(tk="SPY"):
             )
         except Exception as exc:
             print(f"[WARN] forward EPS overlay failed for {tk}: {exc}")
+
+    eps_idx = _indexed_series(eps_s)
+    if not eps_idx.empty:
+        idx_block = _build_chart_block(
+            eps_idx, f"{tk} EPS Growth (indexed = 100)", "EPS (start=100)",
+            False, common_range, log_axis=True, measure=True, money=False,
+            controls=_make_controls_row())
+        blocks.append(idx_block)
+        if fwd_row and idx_block.fig is not None and fwd_row.get("forward_eps_index") is not None:
+            base = float(eps_s.iloc[0])
+            if base > 0:
+                try:
+                    _add_forward_eps_overlay(
+                        idx_block.fig, last_date=eps_idx.index[-1],
+                        last_eps=float(eps_idx.iloc[-1]),
+                        forward_date=pd.Timestamp(fwd_row["horizon_date"]),
+                        forward_eps_index=fwd_row["forward_eps_index"]/base*100.0)
+                except Exception as exc:
+                    print(f"[WARN] indexed forward overlay failed for {tk}: {exc}")
 
     chart_refs = [b for b in blocks if b.fig is not None and b.source is not None]
     if common_range and chart_refs:
