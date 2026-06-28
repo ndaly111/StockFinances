@@ -14,7 +14,7 @@ import index_growth_charts as igc
 
 
 def test_render_index_growth_charts_scales_decimal_series():
-    dates = pd.date_range("2024-03-31", periods=3, freq="Q-DEC")
+    dates = pd.date_range("2024-03-31", periods=3, freq="QE-DEC")
     decimal_growth = pd.Series([0.10, 0.25, 0.40], index=dates)
     pe_series = pd.Series([15.0, 16.5, 14.2], index=dates)
 
@@ -67,13 +67,14 @@ def test_render_index_growth_charts_scales_decimal_series():
 
 def test_render_index_growth_charts_keeps_daily_pe_series():
     daily_dates = pd.date_range("2024-01-01", periods=10, freq="D")
-    monthly_dates = pd.date_range("2010-01-31", periods=3, freq="M")
+    monthly_dates = pd.date_range("2010-01-31", periods=3, freq="ME")
     daily_pe = pd.Series(range(10), index=daily_dates, dtype=float)
     monthly_eps = pd.Series([100.0, 105.0, 110.0], index=monthly_dates)
     monthly_pe = pd.Series([12.0, 13.0, 14.0], index=monthly_dates)
 
     with (
         patch.object(igc, "sqlite3") as mock_sqlite,
+        patch.object(igc, "_extend_eps_csv"),
         patch.object(igc, "_series_growth", return_value=daily_pe) as mock_growth,
         patch.object(igc, "_series_pe", return_value=daily_pe) as mock_pe,
         patch.object(igc, "_series_pe_monthly_derived", return_value=monthly_pe) as mock_pe_monthly,
