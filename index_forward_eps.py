@@ -169,3 +169,46 @@ def _fetch_stockanalysis_pe(tk: str, session: requests.Session) -> Optional[floa
     if pe is None:
         logger.warning("[%s] stockanalysis: forward P/E not found (layout drift?)", tk)
     return pe
+
+
+# ---------------------------------------------------------------------------
+# yfinance wrapper + orchestration
+# ---------------------------------------------------------------------------
+
+import yfinance as yf
+
+
+def _yf_info(tk: str) -> dict:
+    try:
+        info = yf.Ticker(tk).info
+        return info if isinstance(info, dict) else {}
+    except Exception as e:        # noqa: BLE001 - yfinance raises many types
+        logger.warning("[%s] yfinance info failed: %s", tk, e)
+        return {}
+
+
+def fetch_forward_eps(tk, session, latest_hist_eps) -> Optional[ForwardEPS]:
+    """Primary stockanalysis.com -> yfinance fallback -> sanity guard."""
+    tk = tk.upper()
+    info = _yf_info(tk)
+    price = info.get("regularMarketPrice")
+
+    # Primary: stockanalysis forward P/E + price for the EPS dollar value.
+    pe = _fetch_stockanalysis_pe(tk, session)
+    if pe is not None and pe > 0 and price:
+        eps_etf = float(price) / pe
+        cand = ForwardEPS(
+            ticker=tk, forward_pe=pe, forward_eps_etf=eps_etf,
+            forward_eps_index=_scale_index(tk, eps_etf),
+            horizon_date=_default_horizon(), source="stockanalysis",
+        )
+        if _passes_sanity(cand.forward_pe, cand.forward_eps_index, latest_hist_eps):
+            return cand
+        logger.warning("[%s] stockanalysis value failed sanity; trying yfinance", tk)
+
+    # Fallback: yfinance.
+    cand = _forward_from_yf(tk, info)
+    if cand and _passes_sanity(cand.forward_pe, cand.forward_eps_index, latest_hist_eps):
+        return cand
+    logger.warning("[%s] no usable forward EPS (primary+fallback failed/rejected)", tk)
+    return None

@@ -3,6 +3,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from unittest.mock import patch
+
 import index_forward_eps as ife
 
 
@@ -81,3 +83,40 @@ def test_parse_stockanalysis_extracts_forward_pe():
     pe = ife._parse_forward_pe(html)
     assert pe is not None
     assert 5.0 < pe < 60.0     # sane forward P/E for SPY
+
+
+def test_fetch_prefers_stockanalysis_with_price():
+    # stockanalysis gives forward PE; price comes from yfinance info.
+    with (
+        patch.object(ife, "_fetch_stockanalysis_pe", return_value=20.0),
+        patch.object(ife, "_yf_info", return_value={"regularMarketPrice": 460.0}),
+    ):
+        fe = ife.fetch_forward_eps("SPY", session=object(), latest_hist_eps=230.0)
+    assert fe is not None
+    assert fe.source == "stockanalysis"
+    assert fe.forward_pe == 20.0
+    assert round(fe.forward_eps_etf, 4) == 23.0       # 460/20
+    assert round(fe.forward_eps_index, 4) == 230.0    # *10
+
+
+def test_fetch_falls_back_to_yfinance():
+    with (
+        patch.object(ife, "_fetch_stockanalysis_pe", return_value=None),
+        patch.object(ife, "_yf_info",
+                     return_value={"forwardPE": 22.0, "forwardEps": 24.0,
+                                   "regularMarketPrice": 528.0}),
+    ):
+        fe = ife.fetch_forward_eps("SPY", session=object(), latest_hist_eps=230.0)
+    assert fe is not None
+    assert fe.source == "yfinance"
+    assert fe.forward_eps_index == 240.0              # 24 * 10
+
+
+def test_fetch_returns_none_when_sanity_fails():
+    # forward PE 2.0 -> EPS 230 etf -> 2300 index -> absurd scale, rejected
+    with (
+        patch.object(ife, "_fetch_stockanalysis_pe", return_value=2.0),
+        patch.object(ife, "_yf_info", return_value={"regularMarketPrice": 460.0}),
+    ):
+        fe = ife.fetch_forward_eps("SPY", session=object(), latest_hist_eps=230.0)
+    assert fe is None
