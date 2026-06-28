@@ -112,31 +112,22 @@ def test_render_index_growth_charts_keeps_daily_pe_series():
 
 
 def test_latest_forward_eps_reads_newest_row(tmp_path):
+    import index_forward_eps as ife
     db = tmp_path / "t.db"
     with sqlite3.connect(db) as conn:
-        conn.execute(
-            """CREATE TABLE Index_Forward_EPS_History (
-                 date_recorded TEXT, ticker TEXT, forward_eps_etf REAL,
-                 forward_eps_index REAL, forward_pe REAL, horizon_date TEXT,
-                 source TEXT, PRIMARY KEY (date_recorded, ticker))""")
+        ife.ensure_forward_eps_table(conn)
         conn.executemany(
-            "INSERT INTO Index_Forward_EPS_History VALUES (?,?,?,?,?,?,?)",
+            """INSERT INTO Index_Forward_EPS_History
+               (date_recorded, ticker, forward_eps_etf, forward_eps_index,
+                forward_pe, horizon_date, source, displayable)
+               VALUES (?,?,?,?,?,?,?,1)""",
             [("2026-06-01", "SPY", 23.0, 230.0, 20.0, "2027-06-01", "yfinance"),
              ("2026-06-28", "SPY", 25.0, 250.0, 22.0, "2027-06-28", "stockanalysis")])
+        conn.commit()
         row = igc._latest_forward_eps(conn, "SPY")
     assert row["forward_eps_index"] == 250.0
     assert row["horizon_date"] == "2027-06-28"
 
-
-def test_forward_eps_callout_text():
-    txt = igc._forward_eps_callout(
-        forward_eps_index=250.0, latest_hist_eps=230.0,
-        horizon_date="2027-06-28", source="stockanalysis",
-        forward_implied_growth=0.124)
-    assert "8.7%" in txt           # 250/230 - 1 (expected EPS growth)
-    assert "stockanalysis" in txt
-    assert "$250" in txt
-    assert "12.4%" in txt          # forward implied growth (valuation model)
 
 
 def test_add_forward_eps_overlay_adds_renderers(tmp_path):
@@ -157,9 +148,9 @@ def test_add_forward_eps_overlay_adds_renderers(tmp_path):
 def test_render_applies_forward_overlay_when_data_present():
     dates = pd.to_datetime(["2024-03-31", "2024-06-30", "2024-09-30"])
     eps = pd.Series([220.0, 225.0, 230.0], index=dates)
-    fwd = {"forward_eps_index": 250.0, "forward_pe": 22.0,
-           "horizon_date": "2027-06-28", "source": "stockanalysis",
-           "date_recorded": "2026-06-28"}
+    fwd = {"forward_eps_index": 250.0, "horizon_date": "2027-06-28", "source": "bottom_up",
+           "date_recorded": "2026-06-28", "growth_this_fy": 0.19, "growth_next_fy": 0.14,
+           "coverage_weight": 0.93, "displayable": 1}
 
     captured = {}
     with (
@@ -188,4 +179,26 @@ def test_render_applies_forward_overlay_when_data_present():
         igc.render_index_growth_charts("QQQ")
 
     assert mock_overlay.called
-    assert "8.7%" in captured["eps_callout"]   # 250/230 - 1
+    assert "+19.0%" in captured["eps_callout"]   # growth_this_fy
+
+
+def test_latest_forward_eps_respects_displayable(tmp_path):
+    db = tmp_path/"t.db"
+    with sqlite3.connect(db) as conn:
+        import index_forward_eps as ife; ife.ensure_forward_eps_table(conn)
+        conn.execute("""INSERT INTO Index_Forward_EPS_History
+          (date_recorded,ticker,forward_eps_index,horizon_date,source,coverage_weight,
+           growth_this_fy,growth_next_fy,method,displayable)
+          VALUES ('2026-06-28','QQQ',250.0,'2027-06-28','bottom_up',0.93,0.19,0.14,'bottom_up',0)""")
+        conn.commit()
+        assert igc._latest_forward_eps(conn,"QQQ") is None
+        conn.execute("UPDATE Index_Forward_EPS_History SET displayable=1")
+        conn.commit()
+        row = igc._latest_forward_eps(conn,"QQQ")
+    assert row["growth_this_fy"]==0.19 and row["coverage_weight"]==0.93
+
+
+def test_forward_eps_callout_bottomup():
+    txt = igc._forward_eps_callout_bottomup(growth_this_fy=0.19, growth_next_fy=0.14,
+            coverage_weight=0.93, horizon_date="2027-06-28")
+    assert "+19.0%" in txt and "+14.0%" in txt and "93%" in txt

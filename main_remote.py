@@ -506,8 +506,8 @@ def mini_main():
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
-        # Consensus forward EPS for SPY/QQQ (stockanalysis.com -> yfinance),
-        # snapshotted daily so the growth-page EPS chart gets a forward point.
+        # Bottom-up forward EPS for SPY/QQQ from constituent estimates (see index_forward_eps).
+        # Snapshotted daily so the growth-page EPS chart gets a forward point.
         try:
             snapshot_forward_eps(conn)
         except Exception as exc:  # never let this break the daily build

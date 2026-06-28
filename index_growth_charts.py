@@ -49,11 +49,16 @@ _INDEX_EPS_DIVISOR: dict[str, float] = {"SPY": 10.0, "QQQ": 4.0}
 
 
 def _latest_forward_eps(conn, tk):
-    """Return the newest Index_Forward_EPS_History row for *tk* as a dict, or None."""
+    """Return the newest Index_Forward_EPS_History row for *tk* as a dict, or None.
+
+    Returns None when the row is missing, when ``forward_eps_index`` is NULL,
+    or when ``displayable`` is 0 or NULL (non-displayable bottom-up rows).
+    """
     try:
         cur = conn.execute(
             """SELECT date_recorded, forward_eps_index, forward_pe,
-                      horizon_date, source
+                      horizon_date, source,
+                      growth_this_fy, growth_next_fy, coverage_weight, displayable
                  FROM Index_Forward_EPS_History
                 WHERE ticker=? ORDER BY date_recorded DESC LIMIT 1""",
             (tk.upper(),),
@@ -61,11 +66,23 @@ def _latest_forward_eps(conn, tk):
         row = cur.fetchone()
     except Exception:
         return None
-    if not row or row[1] is None:
+    if not row:
+        return None
+    # displayable is column index 8; treat 0 or NULL as hidden
+    if not row[8]:
+        return None
+    if row[1] is None:
         return None
     return {
-        "date_recorded": row[0], "forward_eps_index": float(row[1]),
-        "forward_pe": row[2], "horizon_date": row[3], "source": row[4],
+        "date_recorded": row[0],
+        "forward_eps_index": float(row[1]),
+        "forward_pe": row[2],
+        "horizon_date": row[3],
+        "source": row[4],
+        "growth_this_fy": row[5],
+        "growth_next_fy": row[6],
+        "coverage_weight": row[7],
+        "displayable": row[8],
     }
 
 
@@ -87,22 +104,15 @@ def _latest_forward_implied_growth(conn, tk):
         return None
 
 
-def _forward_eps_callout(forward_eps_index, latest_hist_eps, horizon_date, source,
-                         forward_implied_growth=None):
-    """One-line consensus sentence for the EPS block."""
-    parts = [f"Consensus forward EPS ≈ ${forward_eps_index:,.0f} (index level)"]
-    if latest_hist_eps and latest_hist_eps > 0:
-        growth = forward_eps_index / latest_hist_eps - 1.0
-        parts.append(f"→ <b>{growth:+.1%}</b> expected earnings growth")
-    tail = f" (source: {source}"
-    if horizon_date:
-        tail += f", target {horizon_date}"
-    tail += ")."
-    sentence = " ".join(parts) + tail
-    if forward_implied_growth is not None:
-        sentence += (f" Forward implied growth (valuation model): "
-                     f"{forward_implied_growth:.1%}.")
-    return sentence
+
+def _forward_eps_callout_bottomup(growth_this_fy, growth_next_fy, coverage_weight,
+                                   horizon_date=None):
+    """One-line bottom-up sentence: this-FY + next-FY growth + coverage weight."""
+    parts = [f"Forward earnings growth (bottom-up): <b>{growth_this_fy:+.1%}</b> this fiscal year"]
+    if growth_next_fy is not None:
+        parts.append(f", <b>{growth_next_fy:+.1%}</b> next")
+    parts.append(f". Based on {coverage_weight:.0%} of index weight.")
+    return "".join(parts)
 
 
 def _add_forward_eps_overlay(fig, last_date, last_eps, forward_date,
@@ -847,7 +857,6 @@ def render_index_growth_charts(tk="SPY"):
         pe_monthly = _series_pe_monthly_derived(conn, tk)
         eps_s = _series_eps(conn, tk)
         fwd_row = _latest_forward_eps(conn, tk)
-        fwd_impl_g = _latest_forward_implied_growth(conn, tk)
 
     pe_combined = pe_s.combine_first(pe_monthly)
 
@@ -1050,12 +1059,10 @@ def render_index_growth_charts(tk="SPY"):
     eps_callout = None
     if eps_has_nonpositive:
         eps_callout = "EPS includes non-positive values, so the chart uses a linear scale."
-    latest_hist_eps = float(eps_s.iloc[-1]) if not eps_s.empty else None
     if fwd_row:
-        fwd_sentence = _forward_eps_callout(
-            fwd_row["forward_eps_index"], latest_hist_eps,
-            fwd_row.get("horizon_date"), fwd_row.get("source"),
-            forward_implied_growth=fwd_impl_g)
+        fwd_sentence = _forward_eps_callout_bottomup(
+            fwd_row["growth_this_fy"], fwd_row.get("growth_next_fy"),
+            fwd_row["coverage_weight"], fwd_row.get("horizon_date"))
         eps_callout = f"{eps_callout} {fwd_sentence}" if eps_callout else fwd_sentence
     blocks.append(
         _build_chart_block(
@@ -1074,7 +1081,8 @@ def render_index_growth_charts(tk="SPY"):
         )
     )
     eps_block = blocks[-1]
-    if fwd_row and eps_block.fig is not None and not eps_s.empty:
+    if (fwd_row and eps_block.fig is not None and not eps_s.empty
+            and fwd_row.get("forward_eps_index") is not None):
         try:
             _add_forward_eps_overlay(
                 eps_block.fig,
