@@ -49,3 +49,18 @@ def persist_holdings(conn: sqlite3.Connection, index_name: str, rows: List[Tuple
         "INSERT OR REPLACE INTO index_constituents (date_recorded, index_name, ticker, weight) VALUES (?,?,?,?)",
         [(today, index_name.upper(), tk, w) for tk, w in rows])
     conn.commit()
+
+
+def uncovered_for_target(holdings: List[Tuple[str, float]], covered, target_pct: float = 90.0) -> List[str]:
+    """Highest-weight uncovered tickers to add until cumulative covered weight >= target."""
+    covered = {c.upper() for c in covered}
+    have = sum(w for tk, w in holdings if tk.upper() in covered)
+    total = sum(w for _, w in holdings) or 1.0
+    add = []
+    for tk, w in sorted(holdings, key=lambda x: x[1], reverse=True):
+        if have / total * 100.0 >= target_pct:
+            break
+        if tk.upper() in covered:
+            continue
+        add.append(tk); have += w
+    return add
