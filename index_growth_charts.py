@@ -535,6 +535,8 @@ def _build_chart_block(
     controls: object | None = None,
     marker_alpha: float = 0.0,
     marker_size: int = 7,
+    measure: bool = False,
+    money: bool = False,
 ):
     """Return a Bokeh layout block (figure + optional callout/table)."""
 
@@ -640,8 +642,9 @@ def _build_chart_block(
         sizing_mode="stretch_width",
         toolbar_location="above",
         tools="",
-        x_range=x_range,
     )
+    if x_range is not None:
+        fig_kwargs["x_range"] = x_range
     if y_range is not None:
         fig_kwargs["y_range"] = y_range
     fig = figure(**fig_kwargs)
@@ -718,11 +721,23 @@ def _build_chart_block(
     if percent_axis:
         fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
 
+    # ── measure-tool (optional) ────────────────────────────────
+    _measure_widgets = None
+    if measure:
+        if log_axis:
+            fig.yaxis.formatter = _clean_log_formatter(money=money)
+        readout_div, clear_button = _attach_measure_tool(fig, source, dots, money=money)
+        _measure_widgets = (clear_button, readout_div)
+
     if window_div is None:
         window_div = Div(text="", sizing_mode="stretch_width")
     window_div.styles = META_STYLE
 
     block_children = [Div(text=title, styles=TITLE_STYLE, sizing_mode="stretch_width")]
+    if _measure_widgets:
+        _cb, _rd = _measure_widgets
+        block_children.append(row(_cb, sizing_mode="stretch_width"))
+        block_children.append(_rd)
     if controls:
         block_children.append(controls)
     block_children.append(fig)

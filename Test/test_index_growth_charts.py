@@ -236,3 +236,17 @@ def test_attach_measure_tool_adds_widgets():
     assert isinstance(div, Div) and isinstance(btn, Button)
     assert any(isinstance(t, TapTool) for t in fig.tools)
     assert len(fig.renderers) > before
+
+
+def test_build_chart_block_measure_includes_widgets():
+    s = pd.Series([10.0,12.0,15.0], index=pd.to_datetime(["2024-01-01","2024-06-01","2024-12-01"]))
+    blk = igc._build_chart_block(s, "EPS", "EPS ($)", False, None,
+                                 log_axis=True, measure=True, money=True)
+    from bokeh.models import Button, Div
+    found = {"button": False, "div_readout": False}
+    def walk(m):
+        if isinstance(m, Button): found["button"]=True
+        if isinstance(m, Div) and "measure" in (m.text or "").lower(): found["div_readout"]=True
+        for ch in getattr(m, "children", []): walk(ch)
+    walk(blk.layout)
+    assert found["button"] and found["div_readout"]
