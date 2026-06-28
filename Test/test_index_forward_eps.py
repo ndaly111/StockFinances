@@ -16,3 +16,8 @@ def test_ensure_table_creates_schema(tmp_path):
         "date_recorded", "ticker", "forward_eps_etf",
         "forward_eps_index", "forward_pe", "horizon_date", "source",
     }
+
+
+def test_divisor_matches_chart_module():
+    import index_growth_charts as igc
+    assert ife.INDEX_EPS_DIVISOR == igc._INDEX_EPS_DIVISOR
