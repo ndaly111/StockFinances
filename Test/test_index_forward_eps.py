@@ -64,8 +64,9 @@ def test_sanity_rejects_out_of_band_growth():
     assert ife._passes_sanity(22.0, 90.0, 230.0) is False
 
 
-def test_sanity_rejects_bad_scale():
-    # forward index EPS 3x the latest -> scaling/source error
+def test_sanity_rejects_gross_scaling_error():
+    # A 3.5x ETF/index scaling error manifests as absurd implied growth (+248%),
+    # so the growth band rejects it.
     assert ife._passes_sanity(22.0, 800.0, 230.0) is False
 
 
