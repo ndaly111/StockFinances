@@ -1,0 +1,41 @@
+"""Index membership + weights from slickcharts (Wikipedia fallback) and the
+weight-prioritized auto-extend of the forward-EPS scrape universe."""
+from __future__ import annotations
+import io, logging, sqlite3
+from datetime import date
+from typing import List, Tuple
+import pandas as pd, requests
+
+logger = logging.getLogger(__name__)
+_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Referer": "https://www.google.com/"}
+_SLICK = {"QQQ": "https://www.slickcharts.com/nasdaq100",
+          "SPY": "https://www.slickcharts.com/sp500"}
+_MIN_ROWS = {"QQQ": 99, "SPY": 490}
+
+
+def parse_slickcharts(html: str) -> List[Tuple[str, float]]:
+    tables = pd.read_html(io.StringIO(html))
+    target = next((t for t in tables if "Symbol" in t.columns and "Weight" in t.columns), None)
+    if target is None:
+        raise ValueError("slickcharts table structure changed")
+    out = []
+    for _, row in target.iterrows():
+        tk = str(row["Symbol"]).strip()
+        w = str(row["Weight"]).strip().rstrip("%").replace(",", "")
+        try:
+            out.append((tk, float(w)))
+        except ValueError:
+            continue
+    return out
+
+
+def fetch_holdings(index_name: str) -> List[Tuple[str, float]]:
+    url = _SLICK[index_name.upper()]
+    r = requests.get(url, headers=_HEADERS, timeout=20)
+    r.raise_for_status()
+    rows = parse_slickcharts(r.text)
+    if len(rows) < _MIN_ROWS[index_name.upper()]:
+        raise ValueError(f"{index_name}: only {len(rows)} holdings parsed (partial load?)")
+    return rows
