@@ -71,7 +71,7 @@ def _forward_from_yf(tk: str, info: dict) -> Optional[ForwardEPS]:
         pe = None
     if pe is None or pe <= 0:
         return None
-    if eps_etf is None and price:
+    if eps_etf is None and price is not None:
         try:
             eps_etf = float(price) / pe
         except (TypeError, ValueError, ZeroDivisionError):
