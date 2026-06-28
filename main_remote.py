@@ -432,17 +432,17 @@ def mini_main():
             # largest single time saver (~5-6 min).
             prefetch_yfinance_bulk(tickers)
 
-        # Auto-extend: union index constituents (auto-managed) so new index
-        # members get forward EPS scraped. Does NOT modify tickers.csv.
+        # Auto-extend: scrape forward EPS for index constituents too (NOT added to
+        # the site/dashboard ticker set). Does NOT modify tickers.csv.
+        scrape_tickers = list(tickers)
         try:
             from index_holdings import managed_scrape_tickers
-            _extra = managed_scrape_tickers(conn)
-            tickers = sorted(set(tickers) | _extra)
+            scrape_tickers = sorted(set(tickers) | managed_scrape_tickers(conn))
         except Exception as exc:
             print(f"[WARN] constituent scrape-union failed: {exc}")
 
-        print(f"[main] Batch scraping forward data for {len(tickers)} tickers...")
-        scrape_forward_data_batch(tickers, max_workers=6)
+        print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers...")
+        scrape_forward_data_batch(scrape_tickers, max_workers=6)
         print("[main] Forward data batch scrape complete")
 
         for ticker in tickers:
