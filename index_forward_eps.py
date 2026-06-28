@@ -16,6 +16,7 @@ from typing import Optional
 
 import pandas as pd
 import requests
+import yfinance as yf
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -175,8 +176,6 @@ def _fetch_stockanalysis_pe(tk: str, session: requests.Session) -> Optional[floa
 # yfinance wrapper + orchestration
 # ---------------------------------------------------------------------------
 
-import yfinance as yf
-
 
 def _yf_info(tk: str) -> dict:
     try:
@@ -187,7 +186,7 @@ def _yf_info(tk: str) -> dict:
         return {}
 
 
-def fetch_forward_eps(tk, session, latest_hist_eps) -> Optional[ForwardEPS]:
+def fetch_forward_eps(tk: str, session: requests.Session, latest_hist_eps: Optional[float]) -> Optional[ForwardEPS]:
     """Primary stockanalysis.com -> yfinance fallback -> sanity guard."""
     tk = tk.upper()
     info = _yf_info(tk)
