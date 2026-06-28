@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 import sqlite3
-from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Optional
 
@@ -61,23 +60,9 @@ def ensure_constituents_table(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-@dataclass
-class ForwardEPS:
-    ticker: str
-    forward_pe: float
-    forward_eps_etf: float
-    forward_eps_index: float
-    horizon_date: str
-    source: str
-
-
 def _default_horizon() -> str:
     """NTM estimates ~ 12 months out; used when the source gives no date."""
     return (date.today() + timedelta(days=365)).isoformat()
-
-
-def _scale_index(tk: str, eps_etf: float) -> float:
-    return eps_etf * INDEX_EPS_DIVISOR.get(tk.upper(), 1.0)
 
 
 # Sane growth band -50%..+80%. (A gross ETF/index scaling error shows up as
@@ -165,7 +150,7 @@ def snapshot_forward_eps(conn: sqlite3.Connection, today=None) -> int:
         # by the computed this-FY growth so it sits on the same level as _series_eps.
         fwd_eps_index = (latest_hist * (1 + res["growth_this_fy"])) if latest_hist else None
         displayable = bool(v.is_displayable(idx, res["growth_this_fy"], res["coverage_weight"]))
-        if fwd_eps_index is not None and not _passes_sanity(20.0, fwd_eps_index, latest_hist):
+        if fwd_eps_index is not None and not _passes_sanity(20.0, fwd_eps_index, latest_hist):  # PE unused in bottom-up path; only the growth-band check applies
             displayable = False
         conn.execute(
             f"""INSERT OR REPLACE INTO {TABLE}

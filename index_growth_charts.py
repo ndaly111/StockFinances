@@ -86,25 +86,6 @@ def _latest_forward_eps(conn, tk):
     }
 
 
-def _latest_forward_implied_growth(conn, tk):
-    """Latest forward implied growth (valuation model) from Index_Growth_History.
-
-    This value is already logged daily by index_growth_table._log_today
-    (Growth_Type='Forward') but is not otherwise shown on the page.
-    """
-    try:
-        row = conn.execute(
-            """SELECT Implied_Growth FROM Index_Growth_History
-                WHERE Ticker=? AND Growth_Type='Forward'
-             ORDER BY Date DESC LIMIT 1""",
-            (tk.upper(),),
-        ).fetchone()
-        return float(row[0]) if row and row[0] is not None else None
-    except Exception:
-        return None
-
-
-
 def _forward_eps_callout_bottomup(growth_this_fy, growth_next_fy, coverage_weight,
                                    horizon_date=None):
     """One-line bottom-up sentence: this-FY + next-FY growth + coverage weight."""
