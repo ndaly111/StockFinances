@@ -223,3 +223,16 @@ def test_indexed_series_guards_bad_base():
     assert igc._indexed_series(pd.Series(dtype=float)).empty
     s = pd.Series([0.0, 5.0], index=pd.to_datetime(["2024-01-01","2024-02-01"]))
     assert igc._indexed_series(s).empty
+
+
+def test_attach_measure_tool_adds_widgets():
+    from bokeh.plotting import figure as _fig
+    from bokeh.models import ColumnDataSource, Button, Div, TapTool
+    fig = _fig(x_axis_type="datetime")
+    src = ColumnDataSource(data={"date":[1,2,3],"value":[10.0,12.0,15.0]})
+    dots = fig.scatter("date","value", source=src)
+    before = len(fig.renderers)
+    div, btn = igc._attach_measure_tool(fig, src, dots, money=True)
+    assert isinstance(div, Div) and isinstance(btn, Button)
+    assert any(isinstance(t, TapTool) for t in fig.tools)
+    assert len(fig.renderers) > before

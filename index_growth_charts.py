@@ -34,6 +34,7 @@ from bokeh.models import (
     Range1d,
     RangeTool,
     Span,
+    TapTool,
     Toggle,
     WheelZoomTool,
 )
@@ -449,6 +450,75 @@ def _summary_sentence(label: str, summary_df: pd.DataFrame) -> str:
         f"Current {label} is {current}, placing it in {pct_text} {years_text} "
         f"(avg {avg}, min {min_v}, max {max_v})."
     )
+
+
+def _attach_measure_tool(fig, source, dot_renderer, money=False):
+    """Click-to-measure %-change tool: tap two points to read B/A-1; hover shows
+    % from first point; Clear button resets. All client-side CustomJS.
+    Returns (readout_div, clear_button) for the caller to place in the card."""
+    unit = "$" if money else ""
+    marker = ColumnDataSource(data={"date": [], "value": [], "kind": []})
+    fig.scatter("date", "value", source=marker, size=14, line_width=3,
+                fill_alpha=0.0, line_color="#d62728")
+    seg = ColumnDataSource(data={"x0": [], "y0": [], "x1": [], "y1": []})
+    fig.segment("x0", "y0", "x1", "y1", source=seg, line_color="#555",
+                line_dash="dotted")
+    anchor = ColumnDataSource(data={"date": [0], "value": [0], "set": [0]})
+    readout = Div(text="<i>Click a point, then another, to measure % change.</i>",
+                  sizing_mode="stretch_width", styles=META_STYLE)
+
+    tap_cb = CustomJS(args=dict(source=source, marker=marker, seg=seg, anchor=anchor,
+                                readout=readout, unit=unit), code="""
+        const inds = source.selected.indices;
+        if (!inds.length) return;
+        const i = inds[0];
+        const d = source.data.date[i], v = source.data.value[i];
+        if (anchor.data.set[0] === 0) {
+            anchor.data.date=[d]; anchor.data.value=[v]; anchor.data.set=[1];
+            marker.data = {date:[d], value:[v], kind:['A']};
+            seg.data = {x0:[],y0:[],x1:[],y1:[]};
+            readout.text = "Anchor set — click another point.";
+        } else {
+            const ad = anchor.data.date[0], av = anchor.data.value[0];
+            const pct = (v/av - 1)*100;
+            const yrs = Math.abs(d-ad)/(365.25*86400000);
+            const span = yrs >= 1 ? yrs.toFixed(1)+" yrs" : Math.round(yrs*12)+" mo";
+            marker.data = {date:[ad,d], value:[av,v], kind:['A','B']};
+            seg.data = {x0:[ad],y0:[av],x1:[d],y1:[v]};
+            readout.text = "<b>A &rarr; B: "+(pct>=0?"+":"")+pct.toFixed(1)+
+                           "%</b> &nbsp;&middot;&nbsp; over "+span;
+            anchor.data.set=[0];
+        }
+        marker.change.emit(); seg.change.emit(); anchor.change.emit();
+        source.selected.indices = [];
+    """)
+    source.selected.js_on_change("indices", tap_cb)
+    fig.add_tools(TapTool(renderers=[dot_renderer]))
+
+    hover_cb = CustomJS(args=dict(source=source, anchor=anchor, readout=readout,
+                                  unit=unit), code="""
+        if (anchor.data.set[0] === 1) return;
+        const idx = cb_data.index.indices;
+        if (!idx.length) return;
+        const i = idx[0];
+        const first = source.data.value[0];
+        const v = source.data.value[i];
+        if (!first) return;
+        const pct = (v/first - 1)*100;
+        readout.text = "% from first point: <b>"+(pct>=0?"+":"")+pct.toFixed(1)+"%</b>";
+    """)
+    fig.add_tools(HoverTool(renderers=[dot_renderer], tooltips=None, callback=hover_cb))
+
+    clear = Button(label="✕ Clear", button_type="default", width=90)
+    clear.js_on_click(CustomJS(args=dict(marker=marker, seg=seg, anchor=anchor,
+                                         readout=readout), code="""
+        marker.data={date:[],value:[],kind:[]};
+        seg.data={x0:[],y0:[],x1:[],y1:[]};
+        anchor.data={date:[0],value:[0],set:[0]};
+        marker.change.emit(); seg.change.emit(); anchor.change.emit();
+        readout.text="<i>Click a point, then another, to measure % change.</i>";
+    """))
+    return readout, clear
 
 
 def _build_chart_block(
