@@ -202,3 +202,12 @@ def test_forward_eps_callout_bottomup():
     txt = igc._forward_eps_callout_bottomup(growth_this_fy=0.19, growth_next_fy=0.14,
             coverage_weight=0.93, horizon_date="2027-06-28")
     assert "+19.0%" in txt and "+14.0%" in txt and "93%" in txt
+
+
+def test_clean_log_formatter_returns_formatter():
+    from bokeh.models import CustomJSTickFormatter
+    f_money = igc._clean_log_formatter(money=True)
+    f_plain = igc._clean_log_formatter(money=False)
+    assert isinstance(f_money, CustomJSTickFormatter)
+    assert "$" in f_money.code
+    assert isinstance(f_plain, CustomJSTickFormatter)

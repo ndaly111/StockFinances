@@ -25,6 +25,7 @@ from bokeh.models import (
     ColumnDataSource,
     CrosshairTool,
     CustomJS,
+    CustomJSTickFormatter,
     DateRangeSlider,
     Div,
     HoverTool,
@@ -270,6 +271,17 @@ def _series_eps(conn, tk):
 
     combined.index = pd.DatetimeIndex(combined.index)
     return combined.sort_index()
+
+def _clean_log_formatter(money: bool = False):
+    """Tick formatter for a log axis that prints plain numbers ($30, $60, 100, 150)
+    instead of scientific notation (6x10^1)."""
+    pre = "'$'" if money else "''"
+    return CustomJSTickFormatter(code=f"""
+        const v = tick;
+        if (v <= 0) return '';
+        return {pre} + Number(v.toFixed(0)).toLocaleString();
+    """)
+
 
 def _pctile(s) -> str:                      # whole-number percentile
     """Return percentile rank of the latest value in *s* (1-99)."""
