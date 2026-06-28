@@ -51,6 +51,22 @@ def persist_holdings(conn: sqlite3.Connection, index_name: str, rows: List[Tuple
     conn.commit()
 
 
+def managed_scrape_tickers(conn: sqlite3.Connection) -> set:
+    """Return the set of constituent tickers from the latest index_constituents snapshot.
+
+    Used to auto-extend the forward-EPS scrape universe without modifying tickers.csv.
+    Returns an empty set if the table is missing or empty.
+    """
+    try:
+        rows = conn.execute(
+            """SELECT DISTINCT ticker FROM index_constituents
+               WHERE date_recorded = (SELECT MAX(date_recorded) FROM index_constituents)"""
+        ).fetchall()
+    except sqlite3.Error:
+        return set()
+    return {r[0].upper() for r in rows}
+
+
 def uncovered_for_target(holdings: List[Tuple[str, float]], covered, target_pct: float = 90.0) -> List[str]:
     """Highest-weight uncovered tickers to add until cumulative covered weight >= target."""
     covered = {c.upper() for c in covered}

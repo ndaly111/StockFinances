@@ -33,3 +33,14 @@ def test_uncovered_to_reach_target():
 def test_uncovered_none_when_already_covered():
     holdings = [("A",95.0),("B",5.0)]
     assert ih.uncovered_for_target(holdings, {"A","B"}, 90.0) == []
+
+
+def test_scrape_universe_unions_constituents(tmp_path):
+    db = tmp_path/"t.db"
+    with sqlite3.connect(db) as conn:
+        import index_forward_eps as ife; ife.ensure_constituents_table(conn)
+        conn.executemany("INSERT INTO index_constituents VALUES (?,?,?,?)",
+            [("2026-06-28","QQQ","NEWCO",1.0),("2026-06-28","SPY","AAPL",6.0)])
+        conn.commit()
+        extra = ih.managed_scrape_tickers(conn)
+    assert "NEWCO" in extra and "AAPL" in extra
