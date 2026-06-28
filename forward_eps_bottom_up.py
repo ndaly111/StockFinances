@@ -24,3 +24,27 @@ def load_constituent_financials(conn, tickers) -> Dict[str, dict]:
                            "this_fy": float(fy["This FY"]),
                            "next_fy": float(fy["Next FY"]) if fy["Next FY"] is not None else None}
     return out
+
+
+def aggregate(holdings, fin) -> dict:
+    covered = {tk.upper() for tk, _ in holdings if tk.upper() in fin}
+    total_w = sum(w for _, w in holdings) or 1.0
+    cov_w = sum(w for tk, w in holdings if tk.upper() in covered) / total_w
+    ttm = thisfy = nextfy = 0.0
+    nextfy_ok = True
+    for tk in covered:
+        f = fin[tk]
+        ttm += f["ttm_eps"] * f["shares"]
+        thisfy += f["this_fy"] * f["shares"]
+        if f["next_fy"] is None:
+            nextfy_ok = False
+        else:
+            nextfy += f["next_fy"] * f["shares"]
+    if ttm <= 0 or not covered:
+        return {"growth_this_fy": None, "growth_next_fy": None,
+                "coverage_weight": cov_w, "fwd_earnings_this_fy": thisfy,
+                "trailing_earnings": ttm}
+    return {"growth_this_fy": thisfy / ttm - 1.0,
+            "growth_next_fy": (nextfy / thisfy - 1.0) if (nextfy_ok and thisfy > 0) else None,
+            "coverage_weight": cov_w, "fwd_earnings_this_fy": thisfy,
+            "trailing_earnings": ttm}

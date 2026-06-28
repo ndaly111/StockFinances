@@ -19,3 +19,13 @@ def test_load_constituent_financials():
     fin = bu.load_constituent_financials(conn, ["AAA","BBB","CCC"])
     assert fin["AAA"] == {"ttm_eps":10.0,"shares":100.0,"this_fy":12.0,"next_fy":14.0}
     assert "CCC" not in fin
+
+def test_aggregate_growth_and_coverage():
+    holdings = [("AAA",60.0),("BBB",30.0),("CCC",10.0)]
+    fin = {"AAA":{"ttm_eps":10.0,"shares":100.0,"this_fy":12.0,"next_fy":14.0},
+           "BBB":{"ttm_eps":5.0,"shares":200.0,"this_fy":5.5,"next_fy":6.0}}
+    res = bu.aggregate(holdings, fin)
+    assert round(res["growth_this_fy"], 4) == round(2300/2000 - 1, 4)
+    assert round(res["growth_next_fy"], 4) == round(2600/2300 - 1, 4)
+    assert round(res["coverage_weight"], 4) == 0.90
+    assert res["fwd_earnings_this_fy"] == 2300.0
