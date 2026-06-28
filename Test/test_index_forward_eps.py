@@ -3,8 +3,6 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from unittest.mock import patch
-
 import index_forward_eps as ife
 
 
@@ -23,29 +21,6 @@ def test_ensure_table_creates_schema(tmp_path):
 def test_divisor_matches_chart_module():
     import index_growth_charts as igc
     assert ife.INDEX_EPS_DIVISOR == igc._INDEX_EPS_DIVISOR
-
-
-def test_forward_from_yf_info_scales_to_index():
-    info = {"forwardPE": 22.0, "forwardEps": 25.0, "regularMarketPrice": 550.0}
-    fe = ife._forward_from_yf("SPY", info)
-    assert fe is not None
-    assert fe.forward_pe == 22.0
-    assert fe.forward_eps_etf == 25.0
-    assert fe.forward_eps_index == 250.0   # 25.0 * divisor(10)
-    assert fe.source == "yfinance"
-
-
-def test_forward_from_yf_derives_eps_when_missing():
-    # No forwardEps -> derive from price / forwardPE
-    info = {"forwardPE": 20.0, "regularMarketPrice": 500.0}
-    fe = ife._forward_from_yf("QQQ", info)
-    assert fe is not None
-    assert round(fe.forward_eps_etf, 4) == 25.0      # 500/20
-    assert round(fe.forward_eps_index, 4) == 100.0   # 25 * divisor(4)
-
-
-def test_forward_from_yf_returns_none_without_pe():
-    assert ife._forward_from_yf("SPY", {"regularMarketPrice": 500.0}) is None
 
 
 def test_sanity_accepts_reasonable():
@@ -77,69 +52,6 @@ def test_sanity_allows_missing_history():
     assert ife._passes_sanity(22.0, 250.0, None) is True
 
 
-def test_parse_stockanalysis_extracts_forward_pe():
-    html = (ROOT / "Test" / "fixtures" / "stockanalysis_spy.html").read_text(
-        encoding="utf-8")
-    pe = ife._parse_forward_pe(html)
-    assert pe is not None
-    assert 5.0 < pe < 60.0     # sane forward P/E for SPY
-
-
-def test_fetch_prefers_stockanalysis_with_price():
-    # stockanalysis gives forward PE; price comes from yfinance info.
-    with (
-        patch.object(ife, "_fetch_stockanalysis_pe", return_value=20.0),
-        patch.object(ife, "_yf_info", return_value={"regularMarketPrice": 460.0}),
-    ):
-        fe = ife.fetch_forward_eps("SPY", session=object(), latest_hist_eps=230.0)
-    assert fe is not None
-    assert fe.source == "stockanalysis"
-    assert fe.forward_pe == 20.0
-    assert round(fe.forward_eps_etf, 4) == 23.0       # 460/20
-    assert round(fe.forward_eps_index, 4) == 230.0    # *10
-
-
-def test_fetch_falls_back_to_yfinance():
-    with (
-        patch.object(ife, "_fetch_stockanalysis_pe", return_value=None),
-        patch.object(ife, "_yf_info",
-                     return_value={"forwardPE": 22.0, "forwardEps": 24.0,
-                                   "regularMarketPrice": 528.0}),
-    ):
-        fe = ife.fetch_forward_eps("SPY", session=object(), latest_hist_eps=230.0)
-    assert fe is not None
-    assert fe.source == "yfinance"
-    assert fe.forward_eps_index == 240.0              # 24 * 10
-
-
-def test_fetch_returns_none_when_sanity_fails():
-    # forward PE 2.0 -> EPS 230 etf -> 2300 index -> absurd scale, rejected
-    with (
-        patch.object(ife, "_fetch_stockanalysis_pe", return_value=2.0),
-        patch.object(ife, "_yf_info", return_value={"regularMarketPrice": 460.0}),
-    ):
-        fe = ife.fetch_forward_eps("SPY", session=object(), latest_hist_eps=230.0)
-    assert fe is None
-
-
-def test_snapshot_upserts_and_is_idempotent(tmp_path):
-    db = tmp_path / "t.db"
-    fe = ife.ForwardEPS("SPY", 20.0, 23.0, 230.0, "2027-06-28", "yfinance")
-
-    def fake_fetch(tk, session, latest_hist_eps):
-        return fe if tk == "SPY" else None
-
-    with sqlite3.connect(db) as conn:
-        ife.ensure_forward_eps_table(conn)
-        with patch.object(ife, "fetch_forward_eps", side_effect=fake_fetch), \
-             patch.object(ife, "_latest_hist_eps", return_value=225.0):
-            ife.snapshot_forward_eps(conn)
-            ife.snapshot_forward_eps(conn)   # same day -> overwrite, not dup
-        rows = list(conn.execute(
-            f"SELECT ticker, forward_eps_index, source FROM {ife.TABLE}"))
-    assert rows == [("SPY", 230.0, "yfinance")]   # QQQ skipped (None), no dup
-
-
 def test_ensure_table_has_bottomup_columns(tmp_path):
     db = tmp_path / "t.db"
     with sqlite3.connect(db) as conn:
@@ -155,3 +67,22 @@ def test_ensure_constituents_table(tmp_path):
         ife.ensure_constituents_table(conn)
         cols = {r[1] for r in conn.execute("PRAGMA table_info(index_constituents)")}
     assert {"date_recorded", "index_name", "ticker", "weight"} <= cols
+
+
+def test_snapshot_bottom_up(tmp_path, monkeypatch):
+    db = tmp_path / "t.db"
+    import index_forward_eps as ife, index_holdings as ih, forward_eps_bottom_up as bu, forward_eps_validate as v
+    holdings = [("AAA", 60.0), ("BBB", 30.0), ("CCC", 10.0)]
+    fin = {"AAA": {"ttm_eps": 10.0, "shares": 100.0, "this_fy": 12.0, "next_fy": 14.0},
+           "BBB": {"ttm_eps": 5.0, "shares": 200.0, "this_fy": 5.5, "next_fy": 6.0}}
+    monkeypatch.setattr(ih, "fetch_holdings", lambda idx: holdings)
+    monkeypatch.setattr(ih, "uncovered_for_target", lambda h, c, target_pct=90.0: [])
+    monkeypatch.setattr(bu, "load_constituent_financials", lambda conn, tks: fin)
+    monkeypatch.setattr(v, "is_displayable", lambda idx, growth_this_fy, coverage_weight: True)
+    with sqlite3.connect(db) as conn:
+        n = ife.snapshot_forward_eps(conn)
+        rows = list(conn.execute("SELECT ticker, growth_this_fy, coverage_weight, displayable, method FROM Index_Forward_EPS_History"))
+    assert n == 2
+    g = {r[0]: r for r in rows}
+    assert round(g["QQQ"][1], 4) == round(2300 / 2000 - 1, 4)
+    assert g["QQQ"][3] == 1 and g["QQQ"][4] == "bottom_up"
