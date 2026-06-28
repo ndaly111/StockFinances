@@ -87,3 +87,33 @@ def _forward_from_yf(tk: str, info: dict) -> Optional[ForwardEPS]:
         horizon_date=_default_horizon(),
         source="yfinance",
     )
+
+
+# Sane bounds (per spec). Growth band -50%..+80%; scale band 0.5x..2.0x.
+_GROWTH_MIN, _GROWTH_MAX = -0.50, 0.80
+_SCALE_MIN, _SCALE_MAX = 0.5, 2.0
+
+
+def _passes_sanity(forward_pe, forward_eps_index, latest_hist_eps) -> bool:
+    try:
+        forward_pe = float(forward_pe)
+        forward_eps_index = float(forward_eps_index)
+    except (TypeError, ValueError):
+        return False
+    if forward_pe <= 0 or forward_eps_index <= 0:
+        return False
+    if latest_hist_eps is None:
+        return True
+    try:
+        latest = float(latest_hist_eps)
+    except (TypeError, ValueError):
+        return True
+    if latest <= 0:
+        return True
+    growth = forward_eps_index / latest - 1.0
+    if not (_GROWTH_MIN <= growth <= _GROWTH_MAX):
+        return False
+    scale = forward_eps_index / latest
+    if not (_SCALE_MIN <= scale <= _SCALE_MAX):
+        return False
+    return True
