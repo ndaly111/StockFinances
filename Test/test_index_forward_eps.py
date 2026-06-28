@@ -120,3 +120,21 @@ def test_fetch_returns_none_when_sanity_fails():
     ):
         fe = ife.fetch_forward_eps("SPY", session=object(), latest_hist_eps=230.0)
     assert fe is None
+
+
+def test_snapshot_upserts_and_is_idempotent(tmp_path):
+    db = tmp_path / "t.db"
+    fe = ife.ForwardEPS("SPY", 20.0, 23.0, 230.0, "2027-06-28", "yfinance")
+
+    def fake_fetch(tk, session, latest_hist_eps):
+        return fe if tk == "SPY" else None
+
+    with sqlite3.connect(db) as conn:
+        ife.ensure_forward_eps_table(conn)
+        with patch.object(ife, "fetch_forward_eps", side_effect=fake_fetch), \
+             patch.object(ife, "_latest_hist_eps", return_value=225.0):
+            ife.snapshot_forward_eps(conn)
+            ife.snapshot_forward_eps(conn)   # same day -> overwrite, not dup
+        rows = list(conn.execute(
+            f"SELECT ticker, forward_eps_index, source FROM {ife.TABLE}"))
+    assert rows == [("SPY", 230.0, "yfinance")]   # QQQ skipped (None), no dup

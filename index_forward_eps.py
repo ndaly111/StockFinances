@@ -211,3 +211,56 @@ def fetch_forward_eps(tk: str, session: requests.Session, latest_hist_eps: Optio
         return cand
     logger.warning("[%s] no usable forward EPS (primary+fallback failed/rejected)", tk)
     return None
+
+
+def _latest_hist_eps(conn: sqlite3.Connection, tk: str) -> Optional[float]:
+    """Latest index-level historical EPS for scale/growth sanity checks.
+
+    Mirrors index_growth_charts._series_eps source priority loosely: prefer
+    TTM_REPORTED, else TTM_DAILY, else IMPLIED_FROM_PE*divisor.
+    """
+    try:
+        row = conn.execute(
+            """SELECT EPS, EPS_Type FROM Index_EPS_History
+                WHERE Ticker=? AND EPS_Type IN
+                      ('TTM_REPORTED','TTM_DAILY','IMPLIED_FROM_PE')
+             ORDER BY CASE EPS_Type
+                        WHEN 'TTM_REPORTED' THEN 0
+                        WHEN 'TTM_DAILY'    THEN 1
+                        ELSE 2 END, Date DESC
+                LIMIT 1""",
+            (tk,),
+        ).fetchone()
+    except sqlite3.Error:
+        return None
+    if not row or row[0] is None:
+        return None
+    eps, eps_type = float(row[0]), row[1]
+    if eps_type == "IMPLIED_FROM_PE":
+        eps *= INDEX_EPS_DIVISOR.get(tk.upper(), 1.0)
+    return eps
+
+
+def snapshot_forward_eps(conn: sqlite3.Connection) -> int:
+    """Fetch + upsert today's forward EPS for each index. Returns rows written."""
+    ensure_forward_eps_table(conn)
+    today = date.today().isoformat()
+    session = requests.Session()
+    written = 0
+    for tk in IDXES:
+        latest = _latest_hist_eps(conn, tk)
+        fe = fetch_forward_eps(tk, session, latest)
+        if fe is None:
+            continue
+        conn.execute(
+            f"""INSERT OR REPLACE INTO {TABLE}
+                (date_recorded, ticker, forward_eps_etf, forward_eps_index,
+                 forward_pe, horizon_date, source)
+                VALUES (?,?,?,?,?,?,?)""",
+            (today, fe.ticker, fe.forward_eps_etf, fe.forward_eps_index,
+             fe.forward_pe, fe.horizon_date, fe.source),
+        )
+        written += 1
+    conn.commit()
+    logger.info("[forward-eps] snapshot wrote %d row(s) for %s", written, today)
+    return written
