@@ -1,166 +1,158 @@
-# SPY / QQQ Forward EPS — Consensus Forward Earnings on the Index Growth Pages
+# SPY / QQQ Forward EPS — Bottom-Up Forward Earnings on the Index Growth Pages
 
-**Date:** 2026-06-28 (rev. 2 — data-source pivot after research)
-**Status:** Design — awaiting review
+**Date:** 2026-06-28 (rev. 3 — uniform bottom-up after S&P file discontinued)
+**Status:** Design — approved, ready to plan
 **Repo:** StockFinances (`C:\Users\ndaly\projects\sf-fix`, branch `forward-index-eps`)
 
-> **Revision note.** Rev. 1 of this spec sourced forward P/E from stockanalysis.com
-> (primary) + yfinance (fallback). End-to-end testing proved BOTH dead for ETFs:
-> yfinance returns `forwardPE/forwardEps = None` for SPY/QQQ, and stockanalysis is a
-> JS SPA with no forward P/E in static HTML. Research (2026-06-28) found there is **no
-> free turnkey forward-EPS source for the QQQ/Nasdaq-100 index** (Barchart, Invesco,
-> Nasdaq all publish only *trailing* P/E at the ETF level; Barchart's forward data is
-> per-*stock* only). Rev. 2 pivots to: **S&P official xlsx for SPY** + **bottom-up
-> calculation from our own constituent data for QQQ**, with index membership driven by
-> the fund's published holdings so it stays correct as companies enter/leave the index.
-> See [[reference_index_forward_eps_sources]] for the full source landscape.
+> **Revision history.**
+> - **Rev 1:** stockanalysis.com + yfinance. DEAD — yfinance returns `None` for ETF
+>   forwardPE/forwardEps; stockanalysis is a JS SPA.
+> - **Rev 2:** S&P official xlsx (SPY) + bottom-up (QQQ). DEAD for SPY — the S&P EPS
+>   file was **discontinued** when Howard Silverblatt retired 2026-01-31; the live URL
+>   now hard-403s (Akamai), no mirror, only a frozen Jan-2026 Wayback snapshot loads.
+> - **Rev 3 (this):** **uniform bottom-up for BOTH indices** from our own constituent
+>   forward EPS, with membership + weights from **slickcharts** (Invesco is WAF-blocked).
+> See [[reference_index_forward_eps_sources]] for the full landscape.
 
 ---
 
 ## 1. Goal
 
-Show the **future estimated EPS growth of SPY and QQQ** on the index growth pages
-(`spy_growth.html` / `qqq_growth.html`): a current-FY and next-FY forward EPS growth
-figure plus a forward point on the EPS trajectory chart, snapshotted daily, sourced
-accurately and kept correct as index membership changes over time.
+Show the **future estimated EPS growth of SPY and QQQ** on `spy_growth.html` /
+`qqq_growth.html`: current-FY and next-FY forward EPS growth (Barchart-style) plus a
+forward point on the EPS trajectory chart, snapshotted daily, computed bottom-up and
+kept correct as index membership changes.
 
 ## 2. Non-goals (YAGNI)
 
-- No homepage overview-table changes (decided: chart-first).
-- No new pages.
-- No live intraday updates (rebuilds on the weekly `site-refresh.yml` / dispatch).
-- No per-side / overfit logic — this is a display metric.
+- No homepage overview-table changes (chart-first).
+- No new pages; no intraday updates (rebuilds on weekly `site-refresh.yml`/dispatch).
+- No per-side/overfit logic — a display metric.
 
-## 3. What already exists (built + unit-tested on branch `forward-index-eps`)
+## 3. Already built + unit-tested on branch `forward-index-eps` (reused as-is)
 
-These are DONE and source-agnostic — they stay:
-- **`Index_Forward_EPS_History`** table (`ensure_forward_eps_table`).
-- **Daily snapshot** `snapshot_forward_eps(conn)` wired into `main_remote.py` after
-  `index_growth(treasury)`.
-- **Sanity guard** `_passes_sanity` (PE>0, growth band −50%..+80%).
-- **Chart overlay** `_add_forward_eps_overlay` + **callout** `_forward_eps_callout`
-  (incl. expected-growth % and forward implied growth) wired into
-  `render_index_growth_charts` (`index_growth_charts.py`).
-- 21 passing tests.
+- `Index_Forward_EPS_History` table + `ensure_forward_eps_table`.
+- `snapshot_forward_eps(conn)` daily, wired into `main_remote.py`.
+- `_passes_sanity` (PE>0, growth band −50%..+80%).
+- Chart `_add_forward_eps_overlay` + `_forward_eps_callout`, wired into
+  `render_index_growth_charts`. 21 passing tests.
 
-What must be **replaced/added**: the two dead fetch functions
-(`_fetch_stockanalysis_pe`, `_forward_from_yf`) → an S&P-xlsx parser (SPY) and a
-holdings-driven bottom-up aggregator (QQQ); plus a holdings fetcher, scrape-universe
-auto-extend, and a validation step.
+**To replace/add:** the two dead fetch functions → a bottom-up aggregator; plus a
+holdings fetcher, weight-prioritized scrape auto-extend, and a validation gate.
 
-## 4. Data sources (rev. 2)
+## 4. Data sources (rev. 3)
 
-### 4.1 SPY → S&P Dow Jones Indices official xlsx
-`https://www.spglobal.com/spdji/en/documents/additional-material/sp-500-eps-est.xlsx`
-- Needs a browser `User-Agent` header (bare requests → HTTP 403). Free, no login,
-  overwritten weekly in place.
-- Parse with `pandas.read_excel(io.BytesIO(r.content), sheet_name=...)`. Sheets of
-  interest: `ESTIMATES&PEs` / `FORWARD SCHEDULE` (bottom-up forward operating EPS by
-  quarter + annual FY current / FY next).
-- **Future-proof by construction:** S&P maintains the 500-name membership; the file
-  always reflects current index composition. No constituent management needed for SPY.
-- Build step 0: verify current sheet/column layout (download once, inspect) before
-  writing the parser; parse defensively (locate rows/columns by label, not fixed cell).
-
-### 4.2 QQQ → bottom-up from our own constituent data, membership from holdings
-No free turnkey source exists. Compute it:
-
-**Inputs already in `Stock Data.db` (fresh daily — verified 2026-06-28):**
-- `Forward_EPS_FY_History` — Zacks forward EPS, "This FY" + "Next FY", ~98 tickers.
-- `TTM_Data` — `TTM_EPS` and `Shares_Outstanding`, ~102 tickers.
-
-**Membership + weights — from the fund's published holdings (NOT a hardcoded list):**
-- Fetch **Invesco QQQ holdings** (constituents + weights), weekly cadence.
-  Primary: Invesco holdings download; fallback: slickcharts.com/nasdaq100 (constituents
-  + weights). Build step: verify the exact endpoint + parse format, with the fallback.
-- This is the future-proofing: the aggregate runs over *today's* holdings, so index
+### 4.1 Index membership + weights → slickcharts (verified working 2026-06-28)
+- **QQQ:** `https://www.slickcharts.com/nasdaq100` — 101 rows, ticker + weight, parses
+  with `pandas.read_html` (browser UA + Referer). Note GOOG **and** GOOGL both present.
+- **SPY:** `https://www.slickcharts.com/sp500` — same structure (~503 rows).
+- Select the table by **column labels** (`Symbol`, `Weight`), not position. `.str.strip()`
+  tickers; parse `Weight` as float (strip `%`). Sanity check `len(df) >= 99` (QQQ) /
+  `>= 490` (SPY) to catch partial loads.
+- **Fallback:** Wikipedia (`/wiki/Nasdaq-100`, `/wiki/List_of_S%26P_500_companies`) for
+  membership cross-check (tickers only, no weights) — alert if the ticker sets diverge
+  (signals slickcharts stale after a reconstitution). Invesco/Nasdaq OMX are blocked/JS.
+- **Future-proof by construction:** the aggregate runs over *today's* holdings, so index
   adds/drops/renames flow through automatically.
 
-**Aggregation (over covered constituents):**
+### 4.2 Constituent forward EPS + shares → our own `Stock Data.db` (fresh daily)
+- `Forward_EPS_FY_History` — Zacks forward EPS, "This FY" + "Next FY" (~98 tickers today).
+- `TTM_Data` — `TTM_EPS` and `Shares_Outstanding` (~102 tickers).
+
+### 4.3 Aggregation (uniform, both indices)
+Over the covered constituents (those in today's holdings that have forward EPS):
 ```
 trailing_$_i = TTM_EPS_i      × Shares_Outstanding_i
-forward_$_i  = Forward_EPS_i  × Shares_Outstanding_i      # This-FY and Next-FY
-index_forward_growth_thisFY = Σ forward_$_thisFY / Σ trailing_$ − 1
-index_forward_growth_nextFY = Σ forward_$_nextFY / Σ forward_$_thisFY − 1
+fwd_$_thisFY_i = ForwardEPS_thisFY_i × Shares_Outstanding_i
+fwd_$_nextFY_i = ForwardEPS_nextFY_i × Shares_Outstanding_i
+growth_this_fy = Σ fwd_$_thisFY / Σ trailing_$  − 1
+growth_next_fy = Σ fwd_$_nextFY / Σ fwd_$_thisFY − 1
+forward_eps_index = (Σ fwd_$_thisFY) / index_share_base   # for the chart point; scale
+                                                          # to match _series_eps level
 ```
-- Summed **dollar earnings** (not averaged per-share growth) — the correct way to
-  aggregate index earnings; naturally handles negative earners.
-- Report **current-FY and next-FY** growth (mirrors Barchart's per-stock "Growth Rate
-  Est. (YoY)", which Nick uses), plus a forward-EPS dollar value for the chart point.
-- Coverage measured by **holdings weight**, not name count.
+- Summed **dollar earnings** (not averaged growth) — correct index aggregation; handles
+  negative earners. Report **current-FY and next-FY** growth (mirrors Barchart).
+- Coverage measured by **holdings weight** of the covered set.
+- GOOG+GOOGL: keep both (they have separate financials); don't double-count by company.
 
-### 4.3 Auto-extend the scrape universe (the key future-proofing — decided)
-Every QQQ run: diff today's holdings against the tickers we have forward EPS for.
-Any constituent **missing** forward EPS is **auto-added to the forward-EPS scrape
-universe** so the next `Forward_data` run collects it, and it joins the aggregate
-automatically. Implementation: maintain an `index_constituents` set (e.g. a DB table
-or a managed supplementary list) that is **unioned** into the scrape universe — do NOT
-mutate Nick's curated `tickers.csv` (keep his list intact; add a separate
-auto-managed source). New names self-heal within a day or two.
+### 4.4 Weight-prioritized scrape auto-extend (decided: target ~90% coverage)
+Each run, per index: diff today's holdings (with weights) against the tickers we have
+forward EPS for. Walking constituents **highest-weight first**, add any uncovered name
+to an auto-managed scrape set until cumulative covered weight ≥ **90%** (cap the additions
+so we don't chase the long tail). Those names get forward EPS collected on the next
+`Forward_data` run and join the aggregate automatically.
+- QQQ: ~all 101 names (cheap). SPY: ~top 100–150 names (S&P 500 is top-heavy; ~90% of
+  weight sits in the largest ~150). We do NOT scrape all 500.
+- Storage: a new DB table `index_constituents` (ticker, index, weight, date_recorded)
+  drives the aggregate; the auto-managed scrape set is **unioned** into the
+  `Forward_data` universe — **do NOT mutate Nick's curated `tickers.csv`.**
 
 ## 5. Self-monitoring & validation gate
 
-- **Coverage %:** each run computes the fraction of index weight covered by names with
-  available forward EPS. Stored alongside the snapshot.
-- **Validation gate:** a snapshot is marked displayable only if (a) coverage ≥ threshold
-  (e.g. 85% of index weight) AND (b) the computed growth/forward-P/E lands within a
-  tolerance of published consensus benchmarks (QQQ ≈ +19% growth / ~23.5× fwd P/E;
-  S&P CY2026 ≈ +21%). Otherwise the number is withheld (chart/callout omit it) and the
-  reason logged. The existing `_passes_sanity` remains the first-line filter.
-- Coverage % and source/as-of are surfaced in the callout (e.g. "based on 94% of QQQ
-  weight"), so the number is self-labeling about its completeness.
+- **Coverage %** (of index weight) computed each run, stored with the snapshot.
+- **Validation gate** — display only if (a) coverage ≥ **85%** AND (b) computed growth /
+  forward P/E within tolerance (**±~5 pts**) of published consensus benchmarks
+  (S&P CY2026 ≈ +21% / ~20.9× fwd P/E; QQQ ≈ +19% / ~23.5×). Else withhold + log the
+  reason and the missing high-weight names. `_passes_sanity` stays the first-line filter.
+- Coverage % + as-of surfaced in the callout ("based on 94% of QQQ weight").
 
-## 6. Table / schema changes
+## 6. Schema changes
 
-Extend `Index_Forward_EPS_History` (or add columns) to record what's needed for
-auditing the bottom-up number: `coverage_weight` REAL (fraction of index weight
-covered), `growth_this_fy` REAL, `growth_next_fy` REAL, `method` TEXT
-('sp_xlsx' | 'bottom_up'), in addition to the existing forward_eps_index / forward_pe /
-horizon_date / source. New `index_constituents` table (ticker, index, weight,
-date_recorded) to drive the QQQ aggregate + auto-extend.
+Add columns to `Index_Forward_EPS_History`: `coverage_weight` REAL, `growth_this_fy`
+REAL, `growth_next_fy` REAL, `method` TEXT (='bottom_up'), `displayable` INTEGER
+(validation-gate result). New table `index_constituents` (ticker, index, weight,
+date_recorded, PRIMARY KEY (date_recorded, index, ticker)).
 
 ## 7. Module layout
 
-- `index_forward_eps.py` (exists) — keep table/snapshot/sanity/orchestration; replace
-  the fetch internals.
-- `forward_eps_sp_xlsx.py` (new) — download + parse the S&P xlsx → SPY forward EPS/growth.
-- `forward_eps_bottom_up.py` (new) — holdings fetch + scrape-universe auto-extend +
-  constituent aggregation → QQQ forward EPS/growth + coverage.
-- `forward_eps_validate.py` (new) — benchmark comparison / validation gate.
-- Chart layer (`index_growth_charts.py`) — unchanged (already reads the snapshot row).
+- `index_forward_eps.py` (exists) — keep table/snapshot/sanity/orchestration; the
+  snapshot now calls the bottom-up aggregator for both indices (remove the
+  stockanalysis/yfinance fetch internals).
+- `index_holdings.py` (new) — slickcharts fetch (+ Wikipedia fallback) → {ticker, weight}
+  per index; persist to `index_constituents`; weight-prioritized auto-extend of the
+  scrape set.
+- `forward_eps_bottom_up.py` (new) — join holdings × `Forward_EPS_FY_History` ×
+  `TTM_Data` → index forward EPS, growth_this_fy, growth_next_fy, coverage.
+- `forward_eps_validate.py` (new) — benchmark comparison → displayable flag.
+- `index_growth_charts.py` (exists) — unchanged (reads the snapshot row).
+- `Forward_data.py` (exists) — scrape universe = `tickers.csv` ∪ auto-managed
+  `index_constituents` set (small, additive change).
 
 ## 8. Edge cases & data-quality guards
 
-(Per project rules: never write 0/placeholder; never let a silent error look like data.)
-- Source/holdings fetch fails → skip that index's snapshot, log, write no row.
-- Coverage below threshold → withhold display, log the gap + the missing high-weight names.
-- Negative-earner sign flips, fiscal-year smear (AAPL/MSFT/NVDA non-Dec FY) → documented
-  approximation; the validation gate is the backstop.
-- S&P xlsx layout drift → defensive label-based parsing; on parse miss, skip + log.
-- Holdings endpoint change → fallback source; on total failure, reuse the last good
-  holdings snapshot (with an age warning) rather than silently emptying the universe.
+(Never write 0/placeholder; never let a silent error look like data.)
+- Holdings fetch fails → Wikipedia membership fallback; if both fail, reuse last good
+  `index_constituents` snapshot with an age warning; never empty the universe silently.
+- Coverage < 85% → withhold display, log gap + missing high-weight names.
+- Constituent missing forward EPS or shares → excluded from the sums, counted against
+  coverage (not silently treated as zero).
+- Negative-earner sign flips / fiscal-year smear (AAPL/MSFT/NVDA non-Dec FY) → documented
+  approximation; validation gate is the backstop.
+- slickcharts layout drift → label-based table selection; on miss, fallback + log.
 
 ## 9. Testing
 
-- xlsx parser against a saved fixture of the real sheet.
-- bottom-up aggregator against a synthetic constituents+EPS set with a known answer
-  (incl. a negative-earner and a missing-forward-EPS name → coverage math).
-- auto-extend: a holdings set with a new ticker → the ticker is added to the managed
-  scrape set (and `tickers.csv` is untouched).
-- validation gate: in-tolerance → displayable; out-of-tolerance / low-coverage → withheld.
-- idempotent daily upsert; chart overlay present only when a displayable row exists.
+- Holdings parser against a saved slickcharts fixture (QQQ + SPY) → {ticker, weight}.
+- Auto-extend: holdings with weights + a covered/uncovered split → adds exactly the
+  top-weighted uncovered names to reach ≥90%, stops, and never writes to `tickers.csv`.
+- Aggregator against a synthetic constituents+EPS+shares set with a hand-computed answer,
+  including a negative-earner and a missing-forward-EPS name (coverage math).
+- Validation gate: in-tolerance+high-coverage → displayable; out-of-tolerance or
+  low-coverage → withheld.
+- Idempotent daily upsert; chart overlay present only when a displayable row exists.
 
-## 10. Runtime / deploy notes
+## 10. Runtime / deploy
 
-- Index growth pages rebuild on the **weekly** `site-refresh.yml` (or dispatch); daily
-  snapshots accrue but show after a weekly/dispatch render.
-- Holdings refresh weekly; S&P xlsx weekly; both cheap (one HTTP GET each).
-- DB lives on the `data` branch — new tables self-create via `CREATE TABLE IF NOT EXISTS`.
+- Index growth pages rebuild on the **weekly** `site-refresh.yml` / dispatch; daily
+  snapshots accrue, show after a weekly/dispatch render.
+- Holdings refresh weekly (NDX/SPX reconstitute infrequently); cheap (one GET each).
+- DB on the `data` branch — new tables self-create via `CREATE TABLE IF NOT EXISTS`.
 - Deploy/push stays with Nick (Windows git has the only push auth).
+- Scrape-universe growth is bounded by the 90% weight target (QQQ ~101, SPY ~top 150).
 
-## 11. Open questions for review
+## 11. Decisions locked
 
-- Coverage threshold for display (proposed 85% of index weight) — OK?
-- Validation tolerance band vs published consensus (proposed ±a few pts) — OK?
-- Where to store the auto-managed constituent/scrape set (new DB table vs supplementary
-  CSV) — recommend a DB table `index_constituents`.
+- Both indices bottom-up; slickcharts holdings (Wikipedia fallback).
+- Auto-extend scrape set, weight-prioritized to ~90% coverage; `tickers.csv` untouched.
+- Coverage display threshold 85%; validation tolerance ~±5 pts vs published consensus.
+- Constituent/scrape set in DB table `index_constituents`.
