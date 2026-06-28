@@ -105,6 +105,18 @@ def _forward_eps_callout(forward_eps_index, latest_hist_eps, horizon_date, sourc
     return sentence
 
 
+def _add_forward_eps_overlay(fig, last_date, last_eps, forward_date,
+                             forward_eps_index, color="#ff8800"):
+    """Dashed connector + diamond marker from last historical EPS to forward."""
+    xs = [pd.Timestamp(last_date).to_pydatetime(),
+          pd.Timestamp(forward_date).to_pydatetime()]
+    ys = [float(last_eps), float(forward_eps_index)]
+    fig.line(xs, ys, line_width=2, line_dash="dashed", color=color)
+    # Bokeh 3.x: use scatter(marker=...) rather than the removed .diamond().
+    fig.scatter([xs[1]], [ys[1]], marker="diamond", size=12, color=color,
+                line_color=color, fill_alpha=0.85)
+
+
 # Default CSV path for SPY monthly reported EPS.
 _SPY_EPS_CSV = Path(__file__).resolve().parent / "data" / "spy_monthly_eps_1970_present.csv"
 

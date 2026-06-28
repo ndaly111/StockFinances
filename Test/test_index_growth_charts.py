@@ -137,3 +137,18 @@ def test_forward_eps_callout_text():
     assert "stockanalysis" in txt
     assert "$250" in txt
     assert "12.4%" in txt          # forward implied growth (valuation model)
+
+
+def test_add_forward_eps_overlay_adds_renderers(tmp_path):
+    from bokeh.plotting import figure as _figure
+    fig = _figure(x_axis_type="datetime")
+    before = len(fig.renderers)
+    igc._add_forward_eps_overlay(
+        fig,
+        last_date=pd.Timestamp("2026-06-01"),
+        last_eps=230.0,
+        forward_date=pd.Timestamp("2027-06-01"),
+        forward_eps_index=250.0,
+    )
+    # dashed connector line + a marker = 2 new renderers
+    assert len(fig.renderers) == before + 2
