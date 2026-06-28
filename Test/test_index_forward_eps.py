@@ -73,3 +73,11 @@ def test_sanity_rejects_gross_scaling_error():
 def test_sanity_allows_missing_history():
     # No history to compare against -> only the P/E and absolute checks apply
     assert ife._passes_sanity(22.0, 250.0, None) is True
+
+
+def test_parse_stockanalysis_extracts_forward_pe():
+    html = (ROOT / "Test" / "fixtures" / "stockanalysis_spy.html").read_text(
+        encoding="utf-8")
+    pe = ife._parse_forward_pe(html)
+    assert pe is not None
+    assert 5.0 < pe < 60.0     # sane forward P/E for SPY

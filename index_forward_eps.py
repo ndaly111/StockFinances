@@ -6,11 +6,16 @@ from ETF level to index level so they line up with index_growth_charts EPS.
 """
 from __future__ import annotations
 
+import io
 import logging
+import re
 import sqlite3
 from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Optional
+
+import pandas as pd
+import requests
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -114,3 +119,53 @@ def _passes_sanity(forward_pe, forward_eps_index, latest_hist_eps) -> bool:
     if not (_GROWTH_MIN <= growth <= _GROWTH_MAX):
         return False
     return True
+
+
+# ---------------------------------------------------------------------------
+# stockanalysis.com scraper
+# ---------------------------------------------------------------------------
+
+_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    )
+}
+_FWD_PE_RE = re.compile(r"forward.*p/?e|p/?e.*forward", re.IGNORECASE)
+
+
+def _parse_forward_pe(html: str) -> Optional[float]:
+    """Find a 'Forward PE' label/value in any table on the page."""
+    try:
+        tables = pd.read_html(io.StringIO(html))
+    except (ValueError, Exception):
+        return None
+    for tbl in tables:
+        if tbl.shape[1] < 2:
+            continue
+        labels = tbl.iloc[:, 0].astype(str)
+        mask = labels.str.contains(_FWD_PE_RE, na=False)
+        if not mask.any():
+            continue
+        raw = str(tbl.loc[mask].iloc[0, 1])
+        m = re.search(r"-?\d+(?:\.\d+)?", raw.replace(",", ""))
+        if m:
+            try:
+                return float(m.group())
+            except ValueError:
+                return None
+    return None
+
+
+def _fetch_stockanalysis_pe(tk: str, session: requests.Session) -> Optional[float]:
+    url = f"https://stockanalysis.com/etf/{tk.lower()}/"
+    try:
+        r = session.get(url, headers=_HEADERS, timeout=20)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        logger.warning("[%s] stockanalysis fetch failed: %s", tk, e)
+        return None
+    pe = _parse_forward_pe(r.text)
+    if pe is None:
+        logger.warning("[%s] stockanalysis: forward P/E not found (layout drift?)", tk)
+    return pe
