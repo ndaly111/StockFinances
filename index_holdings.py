@@ -39,3 +39,13 @@ def fetch_holdings(index_name: str) -> List[Tuple[str, float]]:
     if len(rows) < _MIN_ROWS[index_name.upper()]:
         raise ValueError(f"{index_name}: only {len(rows)} holdings parsed (partial load?)")
     return rows
+
+
+def persist_holdings(conn: sqlite3.Connection, index_name: str, rows: List[Tuple[str, float]], today=None) -> None:
+    import index_forward_eps as ife
+    ife.ensure_constituents_table(conn)
+    today = today or date.today().isoformat()
+    conn.executemany(
+        "INSERT OR REPLACE INTO index_constituents (date_recorded, index_name, ticker, weight) VALUES (?,?,?,?)",
+        [(today, index_name.upper(), tk, w) for tk, w in rows])
+    conn.commit()
