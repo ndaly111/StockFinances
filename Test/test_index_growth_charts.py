@@ -152,3 +152,40 @@ def test_add_forward_eps_overlay_adds_renderers(tmp_path):
     )
     # dashed connector line + a marker = 2 new renderers
     assert len(fig.renderers) == before + 2
+
+
+def test_render_applies_forward_overlay_when_data_present():
+    dates = pd.to_datetime(["2024-03-31", "2024-06-30", "2024-09-30"])
+    eps = pd.Series([220.0, 225.0, 230.0], index=dates)
+    fwd = {"forward_eps_index": 250.0, "forward_pe": 22.0,
+           "horizon_date": "2027-06-28", "source": "stockanalysis",
+           "date_recorded": "2026-06-28"}
+
+    captured = {}
+    with (
+        patch.object(igc, "sqlite3") as mock_sqlite,
+        patch.object(igc, "_series_growth", return_value=pd.Series(dtype=float)),
+        patch.object(igc, "_series_pe", return_value=pd.Series(dtype=float)),
+        patch.object(igc, "_series_pe_monthly_derived", return_value=pd.Series(dtype=float)),
+        patch.object(igc, "_series_eps", return_value=eps),
+        patch.object(igc, "_latest_forward_eps", return_value=fwd),
+        patch.object(igc, "_add_forward_eps_overlay") as mock_overlay,
+        patch.object(igc, "_build_chart_block") as mock_block,
+        patch.object(igc, "_write_chart_assets"),
+        patch.object(igc, "_extend_eps_csv"),
+    ):
+        mock_sqlite.connect.return_value.__enter__.return_value = object()
+
+        def capture(series, title, ylabel, percent_axis, x_range,
+                    callout_text=None, **kwargs):
+            if "EPS" in title:
+                captured["eps_callout"] = callout_text
+            return igc.ChartBlock(layout=igc.Div(text="x"),
+                                   fig=object(), source=None, log_axis=False,
+                                   window_div=None, percent_axis=False,
+                                   window_mode="ratio")
+        mock_block.side_effect = capture
+        igc.render_index_growth_charts("QQQ")
+
+    assert mock_overlay.called
+    assert "8.7%" in captured["eps_callout"]   # 250/230 - 1

@@ -846,6 +846,8 @@ def render_index_growth_charts(tk="SPY"):
         pe_s = _series_pe(conn, tk)
         pe_monthly = _series_pe_monthly_derived(conn, tk)
         eps_s = _series_eps(conn, tk)
+        fwd_row = _latest_forward_eps(conn, tk)
+        fwd_impl_g = _latest_forward_implied_growth(conn, tk)
 
     pe_combined = pe_s.combine_first(pe_monthly)
 
@@ -903,6 +905,13 @@ def render_index_growth_charts(tk="SPY"):
     if non_empty_series:
         min_date = min(s.index.min() for s in non_empty_series)
         max_date = max(s.index.max() for s in non_empty_series)
+        if fwd_row and fwd_row.get("horizon_date"):
+            try:
+                fwd_dt = pd.Timestamp(fwd_row["horizon_date"])
+                if fwd_dt > max_date:
+                    max_date = fwd_dt
+            except Exception:
+                pass
         start_dt = min_date.to_pydatetime()
         end_dt = max_date.to_pydatetime()
         common_range = Range1d(start=start_dt, end=end_dt)
@@ -1041,6 +1050,13 @@ def render_index_growth_charts(tk="SPY"):
     eps_callout = None
     if eps_has_nonpositive:
         eps_callout = "EPS includes non-positive values, so the chart uses a linear scale."
+    latest_hist_eps = float(eps_s.iloc[-1]) if not eps_s.empty else None
+    if fwd_row:
+        fwd_sentence = _forward_eps_callout(
+            fwd_row["forward_eps_index"], latest_hist_eps,
+            fwd_row.get("horizon_date"), fwd_row.get("source"),
+            forward_implied_growth=fwd_impl_g)
+        eps_callout = f"{eps_callout} {fwd_sentence}" if eps_callout else fwd_sentence
     blocks.append(
         _build_chart_block(
             eps_s,
@@ -1057,6 +1073,18 @@ def render_index_growth_charts(tk="SPY"):
             marker_size=6,
         )
     )
+    eps_block = blocks[-1]
+    if fwd_row and eps_block.fig is not None and not eps_s.empty:
+        try:
+            _add_forward_eps_overlay(
+                eps_block.fig,
+                last_date=eps_s.index[-1],
+                last_eps=float(eps_s.iloc[-1]),
+                forward_date=pd.Timestamp(fwd_row["horizon_date"]),
+                forward_eps_index=fwd_row["forward_eps_index"],
+            )
+        except Exception as exc:
+            print(f"[WARN] forward EPS overlay failed for {tk}: {exc}")
 
     chart_refs = [b for b in blocks if b.fig is not None and b.source is not None]
     if common_range and chart_refs:
