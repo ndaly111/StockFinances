@@ -283,6 +283,14 @@ def _clean_log_formatter(money: bool = False):
     """)
 
 
+def _indexed_series(series):
+    """Rebase a positive series so its first value = 100 (cumulative-growth view)."""
+    s = pd.to_numeric(series, errors="coerce").dropna()
+    if s.empty or s.iloc[0] <= 0:
+        return pd.Series(dtype=float)
+    return s / s.iloc[0] * 100.0
+
+
 def _pctile(s) -> str:                      # whole-number percentile
     """Return percentile rank of the latest value in *s* (1-99)."""
     s = pd.to_numeric(s, errors="coerce").dropna()

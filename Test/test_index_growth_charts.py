@@ -211,3 +211,15 @@ def test_clean_log_formatter_returns_formatter():
     assert isinstance(f_money, CustomJSTickFormatter)
     assert "$" in f_money.code
     assert isinstance(f_plain, CustomJSTickFormatter)
+
+
+def test_indexed_series_rebases_to_100():
+    s = pd.Series([50.0, 75.0, 100.0],
+                  index=pd.to_datetime(["2024-01-01","2024-06-01","2024-12-01"]))
+    out = igc._indexed_series(s)
+    assert list(out.round(2)) == [100.0, 150.0, 200.0]
+
+def test_indexed_series_guards_bad_base():
+    assert igc._indexed_series(pd.Series(dtype=float)).empty
+    s = pd.Series([0.0, 5.0], index=pd.to_datetime(["2024-01-01","2024-02-01"]))
+    assert igc._indexed_series(s).empty
