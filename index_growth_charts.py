@@ -47,6 +47,64 @@ EPS_TYPE_TTM_REPORTED = "TTM_REPORTED"
 # Divisor to convert ETF-level EPS (IMPLIED_FROM_PE) to index-level EPS.
 _INDEX_EPS_DIVISOR: dict[str, float] = {"SPY": 10.0, "QQQ": 4.0}
 
+
+def _latest_forward_eps(conn, tk):
+    """Return the newest Index_Forward_EPS_History row for *tk* as a dict, or None."""
+    try:
+        cur = conn.execute(
+            """SELECT date_recorded, forward_eps_index, forward_pe,
+                      horizon_date, source
+                 FROM Index_Forward_EPS_History
+                WHERE ticker=? ORDER BY date_recorded DESC LIMIT 1""",
+            (tk.upper(),),
+        )
+        row = cur.fetchone()
+    except Exception:
+        return None
+    if not row or row[1] is None:
+        return None
+    return {
+        "date_recorded": row[0], "forward_eps_index": float(row[1]),
+        "forward_pe": row[2], "horizon_date": row[3], "source": row[4],
+    }
+
+
+def _latest_forward_implied_growth(conn, tk):
+    """Latest forward implied growth (valuation model) from Index_Growth_History.
+
+    This value is already logged daily by index_growth_table._log_today
+    (Growth_Type='Forward') but is not otherwise shown on the page.
+    """
+    try:
+        row = conn.execute(
+            """SELECT Implied_Growth FROM Index_Growth_History
+                WHERE Ticker=? AND Growth_Type='Forward'
+             ORDER BY Date DESC LIMIT 1""",
+            (tk.upper(),),
+        ).fetchone()
+        return float(row[0]) if row and row[0] is not None else None
+    except Exception:
+        return None
+
+
+def _forward_eps_callout(forward_eps_index, latest_hist_eps, horizon_date, source,
+                         forward_implied_growth=None):
+    """One-line consensus sentence for the EPS block."""
+    parts = [f"Consensus forward EPS ≈ ${forward_eps_index:,.0f} (index level)"]
+    if latest_hist_eps and latest_hist_eps > 0:
+        growth = forward_eps_index / latest_hist_eps - 1.0
+        parts.append(f"→ <b>{growth:+.1%}</b> expected earnings growth")
+    tail = f" (source: {source}"
+    if horizon_date:
+        tail += f", target {horizon_date}"
+    tail += ")."
+    sentence = " ".join(parts) + tail
+    if forward_implied_growth is not None:
+        sentence += (f" Forward implied growth (valuation model): "
+                     f"{forward_implied_growth:.1%}.")
+    return sentence
+
+
 # Default CSV path for SPY monthly reported EPS.
 _SPY_EPS_CSV = Path(__file__).resolve().parent / "data" / "spy_monthly_eps_1970_present.csv"
 

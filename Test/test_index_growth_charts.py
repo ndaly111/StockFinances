@@ -1,4 +1,5 @@
 import pathlib
+import sqlite3
 import sys
 from unittest.mock import patch
 
@@ -107,3 +108,31 @@ def test_render_index_growth_charts_keeps_daily_pe_series():
     mock_pe_monthly.assert_called_once()
     mock_eps.assert_called_once()
     assert mock_write.call_count == 4
+
+
+def test_latest_forward_eps_reads_newest_row(tmp_path):
+    db = tmp_path / "t.db"
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            """CREATE TABLE Index_Forward_EPS_History (
+                 date_recorded TEXT, ticker TEXT, forward_eps_etf REAL,
+                 forward_eps_index REAL, forward_pe REAL, horizon_date TEXT,
+                 source TEXT, PRIMARY KEY (date_recorded, ticker))""")
+        conn.executemany(
+            "INSERT INTO Index_Forward_EPS_History VALUES (?,?,?,?,?,?,?)",
+            [("2026-06-01", "SPY", 23.0, 230.0, 20.0, "2027-06-01", "yfinance"),
+             ("2026-06-28", "SPY", 25.0, 250.0, 22.0, "2027-06-28", "stockanalysis")])
+        row = igc._latest_forward_eps(conn, "SPY")
+    assert row["forward_eps_index"] == 250.0
+    assert row["horizon_date"] == "2027-06-28"
+
+
+def test_forward_eps_callout_text():
+    txt = igc._forward_eps_callout(
+        forward_eps_index=250.0, latest_hist_eps=230.0,
+        horizon_date="2027-06-28", source="stockanalysis",
+        forward_implied_growth=0.124)
+    assert "8.7%" in txt           # 250/230 - 1 (expected EPS growth)
+    assert "stockanalysis" in txt
+    assert "$250" in txt
+    assert "12.4%" in txt          # forward implied growth (valuation model)
