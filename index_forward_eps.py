@@ -30,6 +30,13 @@ IDXES = ["SPY", "QQQ"]
 INDEX_EPS_DIVISOR = {"SPY": 10.0, "QQQ": 4.0}
 
 
+def _add_columns(conn: sqlite3.Connection, table: str, cols: list) -> None:
+    existing = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+    for name, decl in cols:
+        if name not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+
+
 def ensure_forward_eps_table(conn: sqlite3.Connection) -> None:
     conn.execute(
         f"""
@@ -45,6 +52,18 @@ def ensure_forward_eps_table(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    _add_columns(conn, TABLE, [
+        ("coverage_weight", "REAL"), ("growth_this_fy", "REAL"),
+        ("growth_next_fy", "REAL"), ("method", "TEXT"), ("displayable", "INTEGER")])
+    conn.commit()
+
+
+def ensure_constituents_table(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS index_constituents (
+             date_recorded TEXT NOT NULL, index_name TEXT NOT NULL,
+             ticker TEXT NOT NULL, weight REAL,
+             PRIMARY KEY (date_recorded, index_name, ticker))""")
     conn.commit()
 
 

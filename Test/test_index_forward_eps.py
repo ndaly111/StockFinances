@@ -14,10 +14,10 @@ def test_ensure_table_creates_schema(tmp_path):
         ife.ensure_forward_eps_table(conn)
         cols = {r[1] for r in conn.execute(
             "PRAGMA table_info(Index_Forward_EPS_History)")}
-    assert cols == {
+    assert {
         "date_recorded", "ticker", "forward_eps_etf",
         "forward_eps_index", "forward_pe", "horizon_date", "source",
-    }
+    } <= cols
 
 
 def test_divisor_matches_chart_module():
@@ -138,3 +138,20 @@ def test_snapshot_upserts_and_is_idempotent(tmp_path):
         rows = list(conn.execute(
             f"SELECT ticker, forward_eps_index, source FROM {ife.TABLE}"))
     assert rows == [("SPY", 230.0, "yfinance")]   # QQQ skipped (None), no dup
+
+
+def test_ensure_table_has_bottomup_columns(tmp_path):
+    db = tmp_path / "t.db"
+    with sqlite3.connect(db) as conn:
+        ife.ensure_forward_eps_table(conn)
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(Index_Forward_EPS_History)")}
+    for c in ("coverage_weight", "growth_this_fy", "growth_next_fy", "method", "displayable"):
+        assert c in cols
+
+
+def test_ensure_constituents_table(tmp_path):
+    db = tmp_path / "t.db"
+    with sqlite3.connect(db) as conn:
+        ife.ensure_constituents_table(conn)
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(index_constituents)")}
+    assert {"date_recorded", "index_name", "ticker", "weight"} <= cols
