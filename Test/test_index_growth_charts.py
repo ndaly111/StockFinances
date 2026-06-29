@@ -169,7 +169,9 @@ def test_render_applies_forward_overlay_when_data_present():
 
         def capture(series, title, ylabel, percent_axis, x_range,
                     callout_text=None, **kwargs):
-            if "EPS" in title:
+            captured.setdefault("titles", []).append(title)
+            # Only capture the callout for the TTM EPS block (not the indexed panel)
+            if "EPS" in title and "indexed" not in title.lower():
                 captured["eps_callout"] = callout_text
             return igc.ChartBlock(layout=igc.Div(text="x"),
                                    fig=object(), source=None, log_axis=False,
@@ -180,6 +182,8 @@ def test_render_applies_forward_overlay_when_data_present():
 
     assert mock_overlay.called
     assert "+19.0%" in captured["eps_callout"]   # growth_this_fy
+    assert any("indexed" in t.lower() for t in captured.get("titles", [])), \
+        f"Expected an 'indexed' titled block, got: {captured.get('titles', [])}"
 
 
 def test_latest_forward_eps_respects_displayable(tmp_path):
@@ -202,3 +206,51 @@ def test_forward_eps_callout_bottomup():
     txt = igc._forward_eps_callout_bottomup(growth_this_fy=0.19, growth_next_fy=0.14,
             coverage_weight=0.93, horizon_date="2027-06-28")
     assert "+19.0%" in txt and "+14.0%" in txt and "93%" in txt
+
+
+def test_clean_log_formatter_returns_formatter():
+    from bokeh.models import CustomJSTickFormatter
+    f_money = igc._clean_log_formatter(money=True)
+    f_plain = igc._clean_log_formatter(money=False)
+    assert isinstance(f_money, CustomJSTickFormatter)
+    assert "$" in f_money.code
+    assert isinstance(f_plain, CustomJSTickFormatter)
+
+
+def test_indexed_series_rebases_to_100():
+    s = pd.Series([50.0, 75.0, 100.0],
+                  index=pd.to_datetime(["2024-01-01","2024-06-01","2024-12-01"]))
+    out = igc._indexed_series(s)
+    assert list(out.round(2)) == [100.0, 150.0, 200.0]
+
+def test_indexed_series_guards_bad_base():
+    assert igc._indexed_series(pd.Series(dtype=float)).empty
+    s = pd.Series([0.0, 5.0], index=pd.to_datetime(["2024-01-01","2024-02-01"]))
+    assert igc._indexed_series(s).empty
+
+
+def test_attach_measure_tool_adds_widgets():
+    from bokeh.plotting import figure as _fig
+    from bokeh.models import ColumnDataSource, Button, Div, TapTool
+    fig = _fig(x_axis_type="datetime")
+    src = ColumnDataSource(data={"date":[1,2,3],"value":[10.0,12.0,15.0]})
+    dots = fig.scatter("date","value", source=src)
+    before = len(fig.renderers)
+    div, btn = igc._attach_measure_tool(fig, src, dots, money=True)
+    assert isinstance(div, Div) and isinstance(btn, Button)
+    assert any(isinstance(t, TapTool) for t in fig.tools)
+    assert len(fig.renderers) > before
+
+
+def test_build_chart_block_measure_includes_widgets():
+    s = pd.Series([10.0,12.0,15.0], index=pd.to_datetime(["2024-01-01","2024-06-01","2024-12-01"]))
+    blk = igc._build_chart_block(s, "EPS", "EPS ($)", False, None,
+                                 log_axis=True, measure=True, money=True)
+    from bokeh.models import Button, Div
+    found = {"button": False, "div_readout": False}
+    def walk(m):
+        if isinstance(m, Button): found["button"]=True
+        if isinstance(m, Div) and "measure" in (m.text or "").lower(): found["div_readout"]=True
+        for ch in getattr(m, "children", []): walk(ch)
+    walk(blk.layout)
+    assert found["button"] and found["div_readout"]

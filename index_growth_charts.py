@@ -25,6 +25,7 @@ from bokeh.models import (
     ColumnDataSource,
     CrosshairTool,
     CustomJS,
+    CustomJSTickFormatter,
     DateRangeSlider,
     Div,
     HoverTool,
@@ -33,6 +34,7 @@ from bokeh.models import (
     Range1d,
     RangeTool,
     Span,
+    TapTool,
     Toggle,
     WheelZoomTool,
 )
@@ -271,6 +273,25 @@ def _series_eps(conn, tk):
     combined.index = pd.DatetimeIndex(combined.index)
     return combined.sort_index()
 
+def _clean_log_formatter(money: bool = False):
+    """Tick formatter for a log axis that prints plain numbers ($30, $60, 100, 150)
+    instead of scientific notation (6x10^1)."""
+    pre = "'$'" if money else "''"
+    return CustomJSTickFormatter(code=f"""
+        const v = tick;
+        if (v <= 0) return '';
+        return {pre} + Number(v.toFixed(0)).toLocaleString();
+    """)
+
+
+def _indexed_series(series):
+    """Rebase a positive series so its first value = 100 (cumulative-growth view)."""
+    s = pd.to_numeric(series, errors="coerce").dropna()
+    if s.empty or s.iloc[0] <= 0:
+        return pd.Series(dtype=float)
+    return s / s.iloc[0] * 100.0
+
+
 def _pctile(s) -> str:                      # whole-number percentile
     """Return percentile rank of the latest value in *s* (1-99)."""
     s = pd.to_numeric(s, errors="coerce").dropna()
@@ -431,6 +452,75 @@ def _summary_sentence(label: str, summary_df: pd.DataFrame) -> str:
     )
 
 
+def _attach_measure_tool(fig, source, dot_renderer, money=False):
+    """Click-to-measure %-change tool: tap two points to read B/A-1; hover shows
+    % from first point; Clear button resets. All client-side CustomJS.
+    Returns (readout_div, clear_button) for the caller to place in the card."""
+    unit = "$" if money else ""
+    marker = ColumnDataSource(data={"date": [], "value": [], "kind": []})
+    fig.scatter("date", "value", source=marker, size=14, line_width=3,
+                fill_alpha=0.0, line_color="#d62728")
+    seg = ColumnDataSource(data={"x0": [], "y0": [], "x1": [], "y1": []})
+    fig.segment("x0", "y0", "x1", "y1", source=seg, line_color="#555",
+                line_dash="dotted")
+    anchor = ColumnDataSource(data={"date": [0], "value": [0], "set": [0]})
+    readout = Div(text="<i>Click a point, then another, to measure % change.</i>",
+                  sizing_mode="stretch_width", styles=META_STYLE)
+
+    tap_cb = CustomJS(args=dict(source=source, marker=marker, seg=seg, anchor=anchor,
+                                readout=readout, unit=unit), code="""
+        const inds = source.selected.indices;
+        if (!inds.length) return;
+        const i = inds[0];
+        const d = source.data.date[i], v = source.data.value[i];
+        if (anchor.data.set[0] === 0) {
+            anchor.data.date=[d]; anchor.data.value=[v]; anchor.data.set=[1];
+            marker.data = {date:[d], value:[v], kind:['A']};
+            seg.data = {x0:[],y0:[],x1:[],y1:[]};
+            readout.text = "Anchor set — click another point.";
+        } else {
+            const ad = anchor.data.date[0], av = anchor.data.value[0];
+            const pct = (v/av - 1)*100;
+            const yrs = Math.abs(d-ad)/(365.25*86400000);
+            const span = yrs >= 1 ? yrs.toFixed(1)+" yrs" : Math.round(yrs*12)+" mo";
+            marker.data = {date:[ad,d], value:[av,v], kind:['A','B']};
+            seg.data = {x0:[ad],y0:[av],x1:[d],y1:[v]};
+            readout.text = "<b>A &rarr; B: "+(pct>=0?"+":"")+pct.toFixed(1)+
+                           "%</b> &nbsp;&middot;&nbsp; over "+span;
+            anchor.data.set=[0];
+        }
+        marker.change.emit(); seg.change.emit(); anchor.change.emit();
+        source.selected.indices = [];
+    """)
+    source.selected.js_on_change("indices", tap_cb)
+    fig.add_tools(TapTool(renderers=[dot_renderer]))
+
+    hover_cb = CustomJS(args=dict(source=source, anchor=anchor, readout=readout,
+                                  unit=unit), code="""
+        if (anchor.data.set[0] === 1) return;
+        const idx = cb_data.index.indices;
+        if (!idx.length) return;
+        const i = idx[0];
+        const first = source.data.value[0];
+        const v = source.data.value[i];
+        if (!first) return;
+        const pct = (v/first - 1)*100;
+        readout.text = "% from first point: <b>"+(pct>=0?"+":"")+pct.toFixed(1)+"%</b>";
+    """)
+    fig.add_tools(HoverTool(renderers=[dot_renderer], tooltips=None, callback=hover_cb))
+
+    clear = Button(label="✕ Clear", button_type="default", width=90)
+    clear.js_on_click(CustomJS(args=dict(marker=marker, seg=seg, anchor=anchor,
+                                         readout=readout), code="""
+        marker.data={date:[],value:[],kind:[]};
+        seg.data={x0:[],y0:[],x1:[],y1:[]};
+        anchor.data={date:[0],value:[0],set:[0]};
+        marker.change.emit(); seg.change.emit(); anchor.change.emit();
+        readout.text="<i>Click a point, then another, to measure % change.</i>";
+    """))
+    return readout, clear
+
+
 def _build_chart_block(
     series: pd.Series,
     title: str,
@@ -445,6 +535,8 @@ def _build_chart_block(
     controls: object | None = None,
     marker_alpha: float = 0.0,
     marker_size: int = 7,
+    measure: bool = False,
+    money: bool = False,
 ):
     """Return a Bokeh layout block (figure + optional callout/table)."""
 
@@ -550,8 +642,9 @@ def _build_chart_block(
         sizing_mode="stretch_width",
         toolbar_location="above",
         tools="",
-        x_range=x_range,
     )
+    if x_range is not None:
+        fig_kwargs["x_range"] = x_range
     if y_range is not None:
         fig_kwargs["y_range"] = y_range
     fig = figure(**fig_kwargs)
@@ -628,11 +721,23 @@ def _build_chart_block(
     if percent_axis:
         fig.yaxis.formatter = NumeralTickFormatter(format="0.0")
 
+    # ── measure-tool (optional) ────────────────────────────────
+    _measure_widgets = None
+    if measure:
+        if log_axis:
+            fig.yaxis.formatter = _clean_log_formatter(money=money)
+        readout_div, clear_button = _attach_measure_tool(fig, source, dots, money=money)
+        _measure_widgets = (clear_button, readout_div)
+
     if window_div is None:
         window_div = Div(text="", sizing_mode="stretch_width")
     window_div.styles = META_STYLE
 
     block_children = [Div(text=title, styles=TITLE_STYLE, sizing_mode="stretch_width")]
+    if _measure_widgets:
+        _cb, _rd = _measure_widgets
+        block_children.append(row(_cb, sizing_mode="stretch_width"))
+        block_children.append(_rd)
     if controls:
         block_children.append(controls)
     block_children.append(fig)
@@ -1059,6 +1164,8 @@ def render_index_growth_charts(tk="SPY"):
             controls=_make_controls_row(),
             marker_alpha=0.6,
             marker_size=6,
+            measure=True,
+            money=True,
         )
     )
     eps_block = blocks[-1]
@@ -1074,6 +1181,25 @@ def render_index_growth_charts(tk="SPY"):
             )
         except Exception as exc:
             print(f"[WARN] forward EPS overlay failed for {tk}: {exc}")
+
+    eps_idx = _indexed_series(eps_s)
+    if not eps_idx.empty:
+        idx_block = _build_chart_block(
+            eps_idx, f"{tk} EPS Growth (indexed = 100)", "EPS (start=100)",
+            False, common_range, log_axis=True, measure=True, money=False,
+            controls=_make_controls_row())
+        blocks.append(idx_block)
+        if fwd_row and idx_block.fig is not None and fwd_row.get("forward_eps_index") is not None:
+            base = float(eps_s.iloc[0])
+            if base > 0:
+                try:
+                    _add_forward_eps_overlay(
+                        idx_block.fig, last_date=eps_idx.index[-1],
+                        last_eps=float(eps_idx.iloc[-1]),
+                        forward_date=pd.Timestamp(fwd_row["horizon_date"]),
+                        forward_eps_index=fwd_row["forward_eps_index"]/base*100.0)
+                except Exception as exc:
+                    print(f"[WARN] indexed forward overlay failed for {tk}: {exc}")
 
     chart_refs = [b for b in blocks if b.fig is not None and b.source is not None]
     if common_range and chart_refs:
