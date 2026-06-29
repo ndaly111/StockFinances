@@ -480,13 +480,24 @@ def _attach_measure_tool(fig, source, dot_renderer, money=False):
             readout.text = "Anchor set — click another point.";
         } else {
             const ad = anchor.data.date[0], av = anchor.data.value[0];
-            const pct = (v/av - 1)*100;
-            const yrs = Math.abs(d-ad)/(365.25*86400000);
-            const span = yrs >= 1 ? yrs.toFixed(1)+" yrs" : Math.round(yrs*12)+" mo";
-            marker.data = {date:[ad,d], value:[av,v], kind:['A','B']};
-            seg.data = {x0:[ad],y0:[av],x1:[d],y1:[v]};
-            readout.text = "<b>A &rarr; B: "+(pct>=0?"+":"")+pct.toFixed(1)+
-                           "%</b> &nbsp;&middot;&nbsp; over "+span;
+            // Always measure forward in time: earlier point = start, later = end,
+            // so click order never produces a negative just from picking end first.
+            let sd, sv, ed, ev;
+            if (ad <= d) { sd=ad; sv=av; ed=d; ev=v; }
+            else         { sd=d;  sv=v;  ed=ad; ev=av; }
+            const pct = (ev/sv - 1)*100;
+            const yrs = (ed - sd)/(365.25*86400000);
+            const span = yrs >= 1 ? yrs.toFixed(1)+" years" : Math.round(yrs*12)+" months";
+            let txt = "<b>"+(pct>=0?"+":"")+pct.toFixed(1)+"%</b> &nbsp;&middot;&nbsp; "+span;
+            if (yrs >= 0.02) {   // skip annualizing absurdly short spans (overflow guard)
+                const ann = (Math.pow(ev/sv, 1/yrs) - 1)*100;
+                if (isFinite(ann)) {
+                    txt += " ("+(ann>=0?"+":"")+ann.toFixed(1)+"% annualized)";
+                }
+            }
+            marker.data = {date:[sd,ed], value:[sv,ev], kind:['start','end']};
+            seg.data = {x0:[sd],y0:[sv],x1:[ed],y1:[ev]};
+            readout.text = txt;
             anchor.data.set=[0];
         }
         marker.change.emit(); seg.change.emit(); anchor.change.emit();
