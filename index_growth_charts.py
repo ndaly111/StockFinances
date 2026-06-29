@@ -47,6 +47,67 @@ EPS_TYPE_TTM_REPORTED = "TTM_REPORTED"
 # Divisor to convert ETF-level EPS (IMPLIED_FROM_PE) to index-level EPS.
 _INDEX_EPS_DIVISOR: dict[str, float] = {"SPY": 10.0, "QQQ": 4.0}
 
+
+def _latest_forward_eps(conn, tk):
+    """Return the newest Index_Forward_EPS_History row for *tk* as a dict, or None.
+
+    Returns None when the row is missing, when ``forward_eps_index`` is NULL,
+    or when ``displayable`` is 0 or NULL (non-displayable bottom-up rows).
+    """
+    try:
+        cur = conn.execute(
+            """SELECT date_recorded, forward_eps_index, forward_pe,
+                      horizon_date, source,
+                      growth_this_fy, growth_next_fy, coverage_weight, displayable
+                 FROM Index_Forward_EPS_History
+                WHERE ticker=? ORDER BY date_recorded DESC LIMIT 1""",
+            (tk.upper(),),
+        )
+        row = cur.fetchone()
+    except Exception:
+        return None
+    if not row:
+        return None
+    # displayable is column index 8; treat 0 or NULL as hidden
+    if not row[8]:
+        return None
+    if row[1] is None:
+        return None
+    return {
+        "date_recorded": row[0],
+        "forward_eps_index": float(row[1]),
+        "forward_pe": row[2],
+        "horizon_date": row[3],
+        "source": row[4],
+        "growth_this_fy": row[5],
+        "growth_next_fy": row[6],
+        "coverage_weight": row[7],
+        "displayable": row[8],
+    }
+
+
+def _forward_eps_callout_bottomup(growth_this_fy, growth_next_fy, coverage_weight,
+                                   horizon_date=None):
+    """One-line bottom-up sentence: this-FY + next-FY growth + coverage weight."""
+    parts = [f"Forward earnings growth (bottom-up): <b>{growth_this_fy:+.1%}</b> this fiscal year"]
+    if growth_next_fy is not None:
+        parts.append(f", <b>{growth_next_fy:+.1%}</b> next")
+    parts.append(f". Based on {coverage_weight:.0%} of index weight.")
+    return "".join(parts)
+
+
+def _add_forward_eps_overlay(fig, last_date, last_eps, forward_date,
+                             forward_eps_index, color="#ff8800"):
+    """Dashed connector + diamond marker from last historical EPS to forward."""
+    xs = [pd.Timestamp(last_date).to_pydatetime(),
+          pd.Timestamp(forward_date).to_pydatetime()]
+    ys = [float(last_eps), float(forward_eps_index)]
+    fig.line(xs, ys, line_width=2, line_dash="dashed", color=color)
+    # Bokeh 3.x: use scatter(marker=...) rather than the removed .diamond().
+    fig.scatter([xs[1]], [ys[1]], marker="diamond", size=12, color=color,
+                line_color=color, fill_alpha=0.85)
+
+
 # Default CSV path for SPY monthly reported EPS.
 _SPY_EPS_CSV = Path(__file__).resolve().parent / "data" / "spy_monthly_eps_1970_present.csv"
 
@@ -776,6 +837,7 @@ def render_index_growth_charts(tk="SPY"):
         pe_s = _series_pe(conn, tk)
         pe_monthly = _series_pe_monthly_derived(conn, tk)
         eps_s = _series_eps(conn, tk)
+        fwd_row = _latest_forward_eps(conn, tk)
 
     pe_combined = pe_s.combine_first(pe_monthly)
 
@@ -833,6 +895,13 @@ def render_index_growth_charts(tk="SPY"):
     if non_empty_series:
         min_date = min(s.index.min() for s in non_empty_series)
         max_date = max(s.index.max() for s in non_empty_series)
+        if fwd_row and fwd_row.get("horizon_date"):
+            try:
+                fwd_dt = pd.Timestamp(fwd_row["horizon_date"])
+                if fwd_dt > max_date:
+                    max_date = fwd_dt
+            except Exception:
+                pass
         start_dt = min_date.to_pydatetime()
         end_dt = max_date.to_pydatetime()
         common_range = Range1d(start=start_dt, end=end_dt)
@@ -971,6 +1040,11 @@ def render_index_growth_charts(tk="SPY"):
     eps_callout = None
     if eps_has_nonpositive:
         eps_callout = "EPS includes non-positive values, so the chart uses a linear scale."
+    if fwd_row:
+        fwd_sentence = _forward_eps_callout_bottomup(
+            fwd_row["growth_this_fy"], fwd_row.get("growth_next_fy"),
+            fwd_row["coverage_weight"], fwd_row.get("horizon_date"))
+        eps_callout = f"{eps_callout} {fwd_sentence}" if eps_callout else fwd_sentence
     blocks.append(
         _build_chart_block(
             eps_s,
@@ -987,6 +1061,19 @@ def render_index_growth_charts(tk="SPY"):
             marker_size=6,
         )
     )
+    eps_block = blocks[-1]
+    if (fwd_row and eps_block.fig is not None and not eps_s.empty
+            and fwd_row.get("forward_eps_index") is not None):
+        try:
+            _add_forward_eps_overlay(
+                eps_block.fig,
+                last_date=eps_s.index[-1],
+                last_eps=float(eps_s.iloc[-1]),
+                forward_date=pd.Timestamp(fwd_row["horizon_date"]),
+                forward_eps_index=fwd_row["forward_eps_index"],
+            )
+        except Exception as exc:
+            print(f"[WARN] forward EPS overlay failed for {tk}: {exc}")
 
     chart_refs = [b for b in blocks if b.fig is not None and b.source is not None]
     if common_range and chart_refs:

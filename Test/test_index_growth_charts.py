@@ -1,4 +1,5 @@
 import pathlib
+import sqlite3
 import sys
 from unittest.mock import patch
 
@@ -13,7 +14,7 @@ import index_growth_charts as igc
 
 
 def test_render_index_growth_charts_scales_decimal_series():
-    dates = pd.date_range("2024-03-31", periods=3, freq="Q-DEC")
+    dates = pd.date_range("2024-03-31", periods=3, freq="QE-DEC")
     decimal_growth = pd.Series([0.10, 0.25, 0.40], index=dates)
     pe_series = pd.Series([15.0, 16.5, 14.2], index=dates)
 
@@ -66,13 +67,14 @@ def test_render_index_growth_charts_scales_decimal_series():
 
 def test_render_index_growth_charts_keeps_daily_pe_series():
     daily_dates = pd.date_range("2024-01-01", periods=10, freq="D")
-    monthly_dates = pd.date_range("2010-01-31", periods=3, freq="M")
+    monthly_dates = pd.date_range("2010-01-31", periods=3, freq="ME")
     daily_pe = pd.Series(range(10), index=daily_dates, dtype=float)
     monthly_eps = pd.Series([100.0, 105.0, 110.0], index=monthly_dates)
     monthly_pe = pd.Series([12.0, 13.0, 14.0], index=monthly_dates)
 
     with (
         patch.object(igc, "sqlite3") as mock_sqlite,
+        patch.object(igc, "_extend_eps_csv"),
         patch.object(igc, "_series_growth", return_value=daily_pe) as mock_growth,
         patch.object(igc, "_series_pe", return_value=daily_pe) as mock_pe,
         patch.object(igc, "_series_pe_monthly_derived", return_value=monthly_pe) as mock_pe_monthly,
@@ -107,3 +109,96 @@ def test_render_index_growth_charts_keeps_daily_pe_series():
     mock_pe_monthly.assert_called_once()
     mock_eps.assert_called_once()
     assert mock_write.call_count == 4
+
+
+def test_latest_forward_eps_reads_newest_row(tmp_path):
+    import index_forward_eps as ife
+    db = tmp_path / "t.db"
+    with sqlite3.connect(db) as conn:
+        ife.ensure_forward_eps_table(conn)
+        conn.executemany(
+            """INSERT INTO Index_Forward_EPS_History
+               (date_recorded, ticker, forward_eps_etf, forward_eps_index,
+                forward_pe, horizon_date, source, displayable)
+               VALUES (?,?,?,?,?,?,?,1)""",
+            [("2026-06-01", "SPY", 23.0, 230.0, 20.0, "2027-06-01", "yfinance"),
+             ("2026-06-28", "SPY", 25.0, 250.0, 22.0, "2027-06-28", "stockanalysis")])
+        conn.commit()
+        row = igc._latest_forward_eps(conn, "SPY")
+    assert row["forward_eps_index"] == 250.0
+    assert row["horizon_date"] == "2027-06-28"
+
+
+
+def test_add_forward_eps_overlay_adds_renderers(tmp_path):
+    from bokeh.plotting import figure as _figure
+    fig = _figure(x_axis_type="datetime")
+    before = len(fig.renderers)
+    igc._add_forward_eps_overlay(
+        fig,
+        last_date=pd.Timestamp("2026-06-01"),
+        last_eps=230.0,
+        forward_date=pd.Timestamp("2027-06-01"),
+        forward_eps_index=250.0,
+    )
+    # dashed connector line + a marker = 2 new renderers
+    assert len(fig.renderers) == before + 2
+
+
+def test_render_applies_forward_overlay_when_data_present():
+    dates = pd.to_datetime(["2024-03-31", "2024-06-30", "2024-09-30"])
+    eps = pd.Series([220.0, 225.0, 230.0], index=dates)
+    fwd = {"forward_eps_index": 250.0, "horizon_date": "2027-06-28", "source": "bottom_up",
+           "date_recorded": "2026-06-28", "growth_this_fy": 0.19, "growth_next_fy": 0.14,
+           "coverage_weight": 0.93, "displayable": 1}
+
+    captured = {}
+    with (
+        patch.object(igc, "sqlite3") as mock_sqlite,
+        patch.object(igc, "_series_growth", return_value=pd.Series(dtype=float)),
+        patch.object(igc, "_series_pe", return_value=pd.Series(dtype=float)),
+        patch.object(igc, "_series_pe_monthly_derived", return_value=pd.Series(dtype=float)),
+        patch.object(igc, "_series_eps", return_value=eps),
+        patch.object(igc, "_latest_forward_eps", return_value=fwd),
+        patch.object(igc, "_add_forward_eps_overlay") as mock_overlay,
+        patch.object(igc, "_build_chart_block") as mock_block,
+        patch.object(igc, "_write_chart_assets"),
+        patch.object(igc, "_extend_eps_csv"),
+    ):
+        mock_sqlite.connect.return_value.__enter__.return_value = object()
+
+        def capture(series, title, ylabel, percent_axis, x_range,
+                    callout_text=None, **kwargs):
+            if "EPS" in title:
+                captured["eps_callout"] = callout_text
+            return igc.ChartBlock(layout=igc.Div(text="x"),
+                                   fig=object(), source=None, log_axis=False,
+                                   window_div=None, percent_axis=False,
+                                   window_mode="ratio")
+        mock_block.side_effect = capture
+        igc.render_index_growth_charts("QQQ")
+
+    assert mock_overlay.called
+    assert "+19.0%" in captured["eps_callout"]   # growth_this_fy
+
+
+def test_latest_forward_eps_respects_displayable(tmp_path):
+    db = tmp_path/"t.db"
+    with sqlite3.connect(db) as conn:
+        import index_forward_eps as ife; ife.ensure_forward_eps_table(conn)
+        conn.execute("""INSERT INTO Index_Forward_EPS_History
+          (date_recorded,ticker,forward_eps_index,horizon_date,source,coverage_weight,
+           growth_this_fy,growth_next_fy,method,displayable)
+          VALUES ('2026-06-28','QQQ',250.0,'2027-06-28','bottom_up',0.93,0.19,0.14,'bottom_up',0)""")
+        conn.commit()
+        assert igc._latest_forward_eps(conn,"QQQ") is None
+        conn.execute("UPDATE Index_Forward_EPS_History SET displayable=1")
+        conn.commit()
+        row = igc._latest_forward_eps(conn,"QQQ")
+    assert row["growth_this_fy"]==0.19 and row["coverage_weight"]==0.93
+
+
+def test_forward_eps_callout_bottomup():
+    txt = igc._forward_eps_callout_bottomup(growth_this_fy=0.19, growth_next_fy=0.14,
+            coverage_weight=0.93, horizon_date="2027-06-28")
+    assert "+19.0%" in txt and "+14.0%" in txt and "93%" in txt

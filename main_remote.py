@@ -34,6 +34,7 @@ from expense_reports           import generate_expense_reports
 from html_generator2           import html_generator2, generate_dashboard_table
 from valuation_update          import valuation_update, process_update_growth_csv
 from index_growth_table        import index_growth
+from index_forward_eps         import snapshot_forward_eps
 from eps_dividend_generator    import eps_dividend_generator
 from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
@@ -431,8 +432,17 @@ def mini_main():
             # largest single time saver (~5-6 min).
             prefetch_yfinance_bulk(tickers)
 
-        print(f"[main] Batch scraping forward data for {len(tickers)} tickers...")
-        scrape_forward_data_batch(tickers, max_workers=6)
+        # Auto-extend: scrape forward EPS for index constituents too (NOT added to
+        # the site/dashboard ticker set). Does NOT modify tickers.csv.
+        scrape_tickers = list(tickers)
+        try:
+            from index_holdings import managed_scrape_tickers
+            scrape_tickers = sorted(set(tickers) | managed_scrape_tickers(conn))
+        except Exception as exc:
+            print(f"[WARN] constituent scrape-union failed: {exc}")
+
+        print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers...")
+        scrape_forward_data_batch(scrape_tickers, max_workers=6)
         print("[main] Forward data batch scrape complete")
 
         for ticker in tickers:
@@ -496,6 +506,12 @@ def mini_main():
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
+        # Bottom-up forward EPS for SPY/QQQ from constituent estimates (see index_forward_eps).
+        # Snapshotted daily so the growth-page EPS chart gets a forward point.
+        try:
+            snapshot_forward_eps(conn)
+        except Exception as exc:  # never let this break the daily build
+            print(f"[WARN] forward EPS snapshot failed: {exc}")
         if is_weekly:
             maybe_backfill_index_eps(DB_PATH)
             generate_earnings_tables()
