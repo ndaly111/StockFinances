@@ -183,7 +183,7 @@ def _resample_frames(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.D
     """Return (daily, weekly, monthly) frames using last observation for each period."""
     d = df.copy()
     w = df.resample("W-FRI").last()
-    m = df.resample("M").last()
+    m = df.resample("ME").last()
     return (d, w, m)
 
 def _percentile(series: pd.Series, value: float) -> float:
