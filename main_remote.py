@@ -36,7 +36,6 @@ from valuation_update          import valuation_update, process_update_growth_cs
 from index_growth_table        import index_growth
 from index_forward_eps         import snapshot_forward_eps
 from eps_dividend_generator    import eps_dividend_generator
-from index_growth_charts       import render_index_growth_charts
 from generate_earnings_tables  import generate_earnings_tables
 from backfill_index_growth     import backfill_index_growth
 from edgar_backfill            import maybe_backfill_edgar_financials
@@ -521,8 +520,11 @@ def mini_main():
         # are tracked in main, and the daily rsync would otherwise re-deploy
         # the stale committed versions and overwrite the weekly's output.
         backfill_index_growth()
-        for idx in ("SPY", "QQQ"):
-            render_index_growth_charts(idx)
+        try:
+            from generate_index_growth_pages import generate_index_growth_pages
+            generate_index_growth_pages(DB_PATH)
+        except Exception as exc:
+            print(f"[WARN] Plotly index growth pages failed: {exc}")
 
         try:
             generate_market_summary()
