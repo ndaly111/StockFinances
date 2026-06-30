@@ -35,3 +35,8 @@ def test_latest_forward_eps_reads_displayable():
     assert r["forward_eps_index"] == 112.0 and r["growth_next_fy"] == 0.29
     conn.execute("UPDATE Index_Forward_EPS_History SET displayable=0"); conn.commit()
     assert g._latest_forward_eps(conn, "QQQ") is None
+
+def test_index_eps_series_index_is_utc_aware():
+    conn = sqlite3.connect(":memory:"); _seed_eps(conn)
+    s = g._index_eps_series(conn, "SPY")
+    assert s.index.tz is not None   # must be tz-aware to join with _load_series

@@ -170,10 +170,10 @@ def _index_eps_series(conn: sqlite3.Connection, ticker: str) -> pd.Series:
     def _read(eps_type):
         df = pd.read_sql_query(
             "SELECT Date, EPS FROM Index_EPS_History WHERE Ticker=? AND EPS_Type=? ORDER BY Date",
-            conn, params=(ticker, eps_type), parse_dates=["Date"])
+            conn, params=(ticker.upper(), eps_type), parse_dates=["Date"])
         if df.empty:
             return pd.Series(dtype=float)
-        s = pd.to_numeric(df.set_index(pd.to_datetime(df["Date"]).dt.normalize())["EPS"],
+        s = pd.to_numeric(df.set_index(pd.to_datetime(df["Date"], utc=True).dt.normalize())["EPS"],
                           errors="coerce").dropna()
         return s[~s.index.duplicated(keep="last")]
     reported = _read("TTM_REPORTED")
