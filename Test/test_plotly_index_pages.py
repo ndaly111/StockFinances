@@ -54,3 +54,18 @@ def test_eps_figure_log_and_forecast():
     fc = [t for t in fig.data if (t.name or "").lower().find("forecast") >= 0]
     assert fc, "expected a forecast trace"
     assert any(len(getattr(t,"x",[]) or []) >= 2 for t in fc)
+
+def test_eps_indexed_figure_rebases_to_100():
+    idx = pd.to_datetime(["2025-01-31","2025-06-30","2025-12-31"], utc=True)
+    df = pd.DataFrame({"eps":[80.0,100.0,120.0]}, index=idx)
+    d,w,m = g._resample_frames(df)
+    fig = g._eps_indexed_figure(d,w,m,"QQQ", fwd=None)
+    assert fig is not None and fig.layout.yaxis.type == "log"
+    base = [t for t in fig.data if t.mode and "lines" in t.mode][0]
+    assert round(float(base.y[0]),1) == 100.0 and round(float(base.y[-1]),1) == 150.0
+
+def test_eps_indexed_figure_guards_bad_base():
+    idx = pd.to_datetime(["2025-01-31","2025-06-30"], utc=True)
+    df = pd.DataFrame({"eps":[0.0,5.0]}, index=idx)
+    d,w,m = g._resample_frames(df)
+    assert g._eps_indexed_figure(d,w,m,"QQQ", fwd=None) is None

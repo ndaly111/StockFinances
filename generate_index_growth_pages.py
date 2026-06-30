@@ -532,6 +532,103 @@ def _eps_figure(
     )
     return fig
 
+def _eps_indexed_figure(
+    df_d: pd.DataFrame,
+    df_w: pd.DataFrame,
+    df_m: pd.DataFrame,
+    ticker: str,
+    fwd=None,
+) -> Optional[go.Figure]:
+    """Build an EPS chart normalised to 100 at the first observation.
+
+    Returns None when the first EPS value is zero or negative (log axis
+    would be undefined).  The y-axis is always log because the series is
+    strictly positive by construction once the base guard passes.
+    """
+    b = df_d["eps"].dropna() if "eps" in df_d.columns else pd.Series(dtype=float)
+    if b.empty or b.iloc[0] <= 0:
+        return None
+    base = float(b.iloc[0])
+
+    def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
+        if "eps" not in df.columns:
+            return []
+        s = df["eps"].dropna()
+        if s.empty:
+            return []
+        return [
+            go.Scatter(
+                x=s.index,
+                y=s / base * 100,
+                name=f"EPS Indexed ({tag})",
+                mode="lines",
+                hovertemplate="%{y:.1f}<extra></extra>",
+            )
+        ]
+
+    traces_d = mk_traces(df_d, "Daily")
+    traces_w = mk_traces(df_w, "Weekly")
+    traces_m = mk_traces(df_m, "Monthly")
+
+    # Forecast trace (always visible).
+    forecast_traces: List[go.Scatter] = []
+    if fwd is not None and not b.empty:
+        last_eps_indexed = float(b.iloc[-1]) / base * 100
+        forecast_traces = [
+            _eps_forecast_trace(b.index[-1], last_eps_indexed, fwd, scale=100.0 / base)
+        ]
+
+    fig = go.Figure(data=traces_d + traces_w + traces_m + forecast_traces)
+    n_d, n_w, n_m, n_f = (
+        len(traces_d), len(traces_w), len(traces_m), len(forecast_traces)
+    )
+
+    vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_f
+    vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_f
+    vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_f
+    for i, v in enumerate(vis_weekly):
+        fig.data[i].visible = v
+
+    fig.update_layout(
+        title=f"{ticker} — EPS (Indexed to 100)",
+        margin=dict(l=50, r=50, t=60, b=40),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.0),
+        xaxis=dict(
+            title="Date",
+            rangeselector=dict(
+                buttons=list(
+                    [
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(step="all", label="All"),
+                    ]
+                )
+            ),
+            rangeslider=dict(visible=True),
+            type="date",
+        ),
+        yaxis=dict(title="EPS (start=100)", type="log"),
+        template=None,
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="right",
+                x=0.0,
+                xanchor="left",
+                y=1.16,
+                yanchor="top",
+                buttons=[
+                    dict(label="Daily",   method="update", args=[{"visible": vis_daily},   {}]),
+                    dict(label="Weekly",  method="update", args=[{"visible": vis_weekly},  {}]),
+                    dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
+                ],
+            )
+        ],
+    )
+    return fig
+
+
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str], timeframe_table_html: str) -> str:
     """Assemble the full HTML page with charts and stats table."""
     eps_section = ""
