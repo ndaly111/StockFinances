@@ -723,6 +723,19 @@ function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear
 </body>
 </html>"""
 
+def _forward_callout(fwd) -> str:
+    """Return an HTML callout string summarising forward EPS growth, or '' if unavailable."""
+    if not fwd or fwd.get("growth_this_fy") is None:
+        return ""
+    g1 = fwd["growth_this_fy"]
+    g2 = fwd.get("growth_next_fy")
+    cov = fwd.get("coverage_weight") or 0
+    parts = [f"Forward earnings growth (bottom-up): <b>{g1:+.1%}</b> this fiscal year"]
+    if g2 is not None:
+        parts.append(f", <b>{g2:+.1%}</b> next")
+    parts.append(f". Based on {cov:.0%} of index weight.")
+    return "".join(parts)
+
 def _write_page(out_path: str, html: str) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
@@ -744,7 +757,7 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
         chart_eps_idx_html = to_html(fig_eps_idx, include_plotlyjs=False, full_html=False,
                                      default_height="450px", div_id="eps-indexed-chart")
     tf_table = _timeframe_table_html(df_d)
-    callout = ""  # populated by _forward_callout in Task 7
+    callout = _forward_callout(fwd)
     page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
                       chart_eps_idx_html, tf_table, callout)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])

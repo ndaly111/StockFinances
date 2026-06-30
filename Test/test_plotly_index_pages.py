@@ -78,3 +78,8 @@ def test_page_html_has_measure_tool():
     for needle in ['eps-chart','eps-indexed-chart','measure-readout','Clear',
                    'plotly_click','annualized','callout x']:
         assert needle in html, needle
+
+def test_forward_callout_text():
+    t = g._forward_callout({"growth_this_fy":0.25,"growth_next_fy":0.29,"coverage_weight":0.93})
+    assert "+25.0%" in t and "+29.0%" in t and "93%" in t
+    assert g._forward_callout(None) == ""
