@@ -22,3 +22,16 @@ def test_index_eps_series_spy_reported():
     conn = sqlite3.connect(":memory:"); _seed_eps(conn)
     s = g._index_eps_series(conn, "SPY")
     assert round(float(s.iloc[-1]), 2) == 230.0
+
+def test_latest_forward_eps_reads_displayable():
+    conn = sqlite3.connect(":memory:")
+    conn.execute("""CREATE TABLE Index_Forward_EPS_History (
+        date_recorded TEXT, ticker TEXT, forward_eps_index REAL, horizon_date TEXT,
+        growth_this_fy REAL, growth_next_fy REAL, coverage_weight REAL, displayable INTEGER)""")
+    conn.execute("INSERT INTO Index_Forward_EPS_History VALUES "
+                 "('2026-06-28','QQQ',112.0,'2027-06-28',0.25,0.29,0.93,1)")
+    conn.commit()
+    r = g._latest_forward_eps(conn, "QQQ")
+    assert r["forward_eps_index"] == 112.0 and r["growth_next_fy"] == 0.29
+    conn.execute("UPDATE Index_Forward_EPS_History SET displayable=0"); conn.commit()
+    assert g._latest_forward_eps(conn, "QQQ") is None

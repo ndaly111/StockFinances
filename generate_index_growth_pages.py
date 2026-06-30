@@ -207,6 +207,24 @@ def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Serie
     series.name = "eps"
     return series
 
+def _latest_forward_eps(conn: sqlite3.Connection, ticker: str):
+    """Return the most-recent displayable forward-EPS row for ticker, or None."""
+    try:
+        row = conn.execute(
+            """SELECT forward_eps_index, horizon_date, growth_this_fy, growth_next_fy,
+                      coverage_weight, displayable
+                 FROM Index_Forward_EPS_History
+                WHERE ticker=? ORDER BY date_recorded DESC LIMIT 1""",
+            (ticker.upper(),)).fetchone()
+    except Exception:
+        return None
+    if not row or row[0] is None or not row[5]:
+        return None
+    return {"forward_eps_index": float(row[0]), "horizon_date": row[1],
+            "growth_this_fy": row[2], "growth_next_fy": row[3],
+            "coverage_weight": row[4]}
+
+
 def _resample_frames(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Return (daily, weekly, monthly) frames using last observation for each period."""
     d = df.copy()
