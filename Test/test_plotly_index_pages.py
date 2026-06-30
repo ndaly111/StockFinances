@@ -69,3 +69,12 @@ def test_eps_indexed_figure_guards_bad_base():
     df = pd.DataFrame({"eps":[0.0,5.0]}, index=idx)
     d,w,m = g._resample_frames(df)
     assert g._eps_indexed_figure(d,w,m,"QQQ", fwd=None) is None
+
+def test_page_html_has_measure_tool():
+    html = g._page_html("QQQ test", "<div>growth</div>",
+                        eps_chart_html='<div id="eps-chart"></div>',
+                        eps_indexed_html='<div id="eps-indexed-chart"></div>',
+                        timeframe_table_html="<table></table>", callout="callout x")
+    for needle in ['eps-chart','eps-indexed-chart','measure-readout','Clear',
+                   'plotly_click','annualized','callout x']:
+        assert needle in html, needle

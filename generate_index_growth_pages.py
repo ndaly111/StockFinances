@@ -629,15 +629,66 @@ def _eps_indexed_figure(
     return fig
 
 
-def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str], timeframe_table_html: str) -> str:
+def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
+               eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str) -> str:
     """Assemble the full HTML page with charts and stats table."""
+    callout_section = ""
+    if callout:
+        callout_section = f'    <p class="callout">{callout}</p>\n'
+
     eps_section = ""
     if eps_chart_html:
         eps_section = f"""
-    <div class=\"chart\">
+    <div class="chart">
       {eps_chart_html}
+      <div class="measure-readout" id="ro-eps">Click a point, then another, to measure % change.</div>
+      <button onclick="clearMeasure('eps-chart')">Clear</button>
     </div>
-    """
+"""
+
+    eps_indexed_section = ""
+    if eps_indexed_html:
+        eps_indexed_section = f"""
+    <div class="chart">
+      {eps_indexed_html}
+      <div class="measure-readout" id="ro-eps-indexed">Click a point, then another, to measure % change.</div>
+      <button onclick="clearMeasure('eps-indexed-chart')">Clear</button>
+    </div>
+"""
+
+    measure_script = """<script>
+(function(){
+  function attach(divId, roId){
+    var gd=document.getElementById(divId), ro=document.getElementById(roId);
+    if(!gd||!ro||!gd.on) return;
+    var anchor=null, first=null;
+    function ms(x){ return (typeof x==='number')?x:new Date(x).getTime(); }
+    gd.on('plotly_click', function(d){
+      var p=d.points[0], x=ms(p.x), y=p.y;
+      if(first===null) first=y;
+      if(anchor===null){ anchor={x:x,y:y}; ro.innerHTML='Anchor set. Click another point.'; return; }
+      var s=anchor, e={x:x,y:y};
+      if(e.x < s.x){ var t=s; s=e; e=t; }
+      var pct=(e.y/s.y-1)*100, yrs=(e.x-s.x)/(365.25*86400000);
+      var span = yrs>=1 ? yrs.toFixed(1)+' years' : Math.round(yrs*12)+' months';
+      var txt='<b>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</b> over '+span;
+      if(yrs>=0.02){ var ann=(Math.pow(e.y/s.y,1/yrs)-1)*100;
+        if(isFinite(ann)) txt+=' ('+(ann>=0?'+':'')+ann.toFixed(1)+'% annualized)'; }
+      ro.innerHTML=txt; anchor=null;
+    });
+    gd.on('plotly_hover', function(d){
+      if(anchor!==null||first===null) return;
+      var y=d.points[0].y, pct=(y/first-1)*100;
+      ro.innerHTML='% from first point: <b>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</b>';
+    });
+    gd.__clear=function(){ anchor=null; ro.innerHTML='Click a point, then another, to measure % change.'; };
+  }
+  function init(){ attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed'); }
+  if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
+})();
+function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear) gd.__clear(); }
+</script>"""
+
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -655,6 +706,8 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     table.stats thead th {{ background: #eef1ff; font-weight: 600; }}
     td.tf, th.tf {{ text-align: left; white-space: nowrap; }}
     .back {{ margin-top: 12px; }}
+    .measure-readout {{ margin: 6px 0 4px; font-size: 0.9rem; color: #333; min-height: 1.4em; }}
+    .callout {{ margin: 8px 0; padding: 8px 12px; background: #fffbe6; border-left: 4px solid #f5a623; border-radius: 4px; font-size: 0.95rem; }}
   </style>
 </head>
 <body>
@@ -663,10 +716,10 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     <div class="chart">
       {growth_chart_html}
     </div>
-    {eps_section}
-    {timeframe_table_html}
-    <p class="back"><a href="index.html">← Back to Dashboard</a></p>
+{callout_section}{eps_section}{eps_indexed_section}    {timeframe_table_html}
+    <p class="back"><a href="index.html">Back to Dashboard</a></p>
   </div>
+{measure_script}
 </body>
 </html>"""
 
@@ -683,9 +736,17 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
-        chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False, default_height="450px")
+        chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False,
+                                 default_height="450px", div_id="eps-chart")
+    fig_eps_idx = _eps_indexed_figure(df_d, df_w, df_m, ticker, fwd=fwd)
+    chart_eps_idx_html = None
+    if fig_eps_idx is not None:
+        chart_eps_idx_html = to_html(fig_eps_idx, include_plotlyjs=False, full_html=False,
+                                     default_height="450px", div_id="eps-indexed-chart")
     tf_table = _timeframe_table_html(df_d)
-    page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html, tf_table)
+    callout = ""  # populated by _forward_callout in Task 7
+    page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
+                      chart_eps_idx_html, tf_table, callout)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
 
