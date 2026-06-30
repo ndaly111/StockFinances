@@ -287,7 +287,7 @@ def _clean_log_formatter(money: bool = False):
     return CustomJSTickFormatter(code=f"""
         const v = tick;
         if (v <= 0) return '';
-        return {pre} + Number(v.toFixed(0)).toLocaleString();
+        return {pre} + v.toFixed(0);
     """)
 
 
@@ -484,7 +484,7 @@ def _attach_measure_tool(fig, source, dot_renderer, money=False):
             anchor.data.date=[d]; anchor.data.value=[v]; anchor.data.set=[1];
             marker.data = {date:[d], value:[v], kind:['A']};
             seg.data = {x0:[],y0:[],x1:[],y1:[]};
-            readout.text = "Anchor set — click another point.";
+            readout.text = "Anchor set. Click another point.";
         } else {
             const ad = anchor.data.date[0], av = anchor.data.value[0];
             // Always measure forward in time: earlier point = start, later = end,
@@ -495,7 +495,7 @@ def _attach_measure_tool(fig, source, dot_renderer, money=False):
             const pct = (ev/sv - 1)*100;
             const yrs = (ed - sd)/(365.25*86400000);
             const span = yrs >= 1 ? yrs.toFixed(1)+" years" : Math.round(yrs*12)+" months";
-            let txt = "<b>"+(pct>=0?"+":"")+pct.toFixed(1)+"%</b> &nbsp;&middot;&nbsp; "+span;
+            let txt = "<b>"+(pct>=0?"+":"")+pct.toFixed(1)+"%</b> over "+span;
             if (yrs >= 0.02) {   // skip annualizing absurdly short spans (overflow guard)
                 const ann = (Math.pow(ev/sv, 1/yrs) - 1)*100;
                 if (isFinite(ann)) {
@@ -527,7 +527,7 @@ def _attach_measure_tool(fig, source, dot_renderer, money=False):
     """)
     fig.add_tools(HoverTool(renderers=[dot_renderer], tooltips=None, callback=hover_cb))
 
-    clear = Button(label="✕ Clear", button_type="default", width=90)
+    clear = Button(label="Clear", button_type="default", width=90)
     clear.js_on_click(CustomJS(args=dict(marker=marker, seg=seg, anchor=anchor,
                                          readout=readout), code="""
         marker.data={date:[],value:[],kind:[]};
