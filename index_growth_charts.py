@@ -99,14 +99,21 @@ def _forward_eps_callout_bottomup(growth_this_fy, growth_next_fy, coverage_weigh
 
 
 def _add_forward_eps_overlay(fig, last_date, last_eps, forward_date,
-                             forward_eps_index, color="#ff8800"):
-    """Dashed connector + diamond marker from last historical EPS to forward."""
+                             forward_eps_index, forward_date2=None,
+                             forward_eps2=None, color="#ff8800"):
+    """Dashed connector from the last historical EPS through the forward forecast
+    point(s): this-FY, and optionally a second next-FY point further out. A diamond
+    marks each forecast point."""
     xs = [pd.Timestamp(last_date).to_pydatetime(),
           pd.Timestamp(forward_date).to_pydatetime()]
     ys = [float(last_eps), float(forward_eps_index)]
+    if forward_date2 is not None and forward_eps2 is not None:
+        xs.append(pd.Timestamp(forward_date2).to_pydatetime())
+        ys.append(float(forward_eps2))
     fig.line(xs, ys, line_width=2, line_dash="dashed", color=color)
+    # Diamonds at each forecast point (xs[1:]), not the historical anchor (xs[0]).
     # Bokeh 3.x: use scatter(marker=...) rather than the removed .diamond().
-    fig.scatter([xs[1]], [ys[1]], marker="diamond", size=12, color=color,
+    fig.scatter(xs[1:], ys[1:], marker="diamond", size=12, color=color,
                 line_color=color, fill_alpha=0.85)
 
 
@@ -1014,6 +1021,9 @@ def render_index_growth_charts(tk="SPY"):
         if fwd_row and fwd_row.get("horizon_date"):
             try:
                 fwd_dt = pd.Timestamp(fwd_row["horizon_date"])
+                # extend a further year when a next-FY forecast point will be drawn
+                if fwd_row.get("growth_next_fy") is not None:
+                    fwd_dt = fwd_dt + pd.DateOffset(years=1)
                 if fwd_dt > max_date:
                     max_date = fwd_dt
             except Exception:
@@ -1183,12 +1193,18 @@ def render_index_growth_charts(tk="SPY"):
     if (fwd_row and eps_block.fig is not None and not eps_s.empty
             and fwd_row.get("forward_eps_index") is not None):
         try:
+            nf_g = fwd_row.get("growth_next_fy")
+            fwd1_date = pd.Timestamp(fwd_row["horizon_date"])
+            fwd2_date = (fwd1_date + pd.DateOffset(years=1)) if nf_g is not None else None
+            fwd2_eps = (fwd_row["forward_eps_index"] * (1 + nf_g)) if nf_g is not None else None
             _add_forward_eps_overlay(
                 eps_block.fig,
                 last_date=eps_s.index[-1],
                 last_eps=float(eps_s.iloc[-1]),
-                forward_date=pd.Timestamp(fwd_row["horizon_date"]),
+                forward_date=fwd1_date,
                 forward_eps_index=fwd_row["forward_eps_index"],
+                forward_date2=fwd2_date,
+                forward_eps2=fwd2_eps,
             )
         except Exception as exc:
             print(f"[WARN] forward EPS overlay failed for {tk}: {exc}")
@@ -1204,11 +1220,16 @@ def render_index_growth_charts(tk="SPY"):
             base = float(eps_s.iloc[0])
             if base > 0:
                 try:
+                    nf_g = fwd_row.get("growth_next_fy")
+                    fwd1_date = pd.Timestamp(fwd_row["horizon_date"])
+                    fwd1_idx = fwd_row["forward_eps_index"] / base * 100.0
+                    fwd2_date = (fwd1_date + pd.DateOffset(years=1)) if nf_g is not None else None
+                    fwd2_idx = (fwd1_idx * (1 + nf_g)) if nf_g is not None else None
                     _add_forward_eps_overlay(
                         idx_block.fig, last_date=eps_idx.index[-1],
                         last_eps=float(eps_idx.iloc[-1]),
-                        forward_date=pd.Timestamp(fwd_row["horizon_date"]),
-                        forward_eps_index=fwd_row["forward_eps_index"]/base*100.0)
+                        forward_date=fwd1_date, forward_eps_index=fwd1_idx,
+                        forward_date2=fwd2_date, forward_eps2=fwd2_idx)
                 except Exception as exc:
                     print(f"[WARN] indexed forward overlay failed for {tk}: {exc}")
 

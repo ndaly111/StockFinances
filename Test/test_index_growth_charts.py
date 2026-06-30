@@ -145,6 +145,24 @@ def test_add_forward_eps_overlay_adds_renderers(tmp_path):
     assert len(fig.renderers) == before + 2
 
 
+def test_add_forward_eps_overlay_two_points():
+    from bokeh.plotting import figure as _figure
+    fig = _figure(x_axis_type="datetime")
+    before = len(fig.renderers)
+    igc._add_forward_eps_overlay(
+        fig,
+        last_date=pd.Timestamp("2026-06-01"), last_eps=230.0,
+        forward_date=pd.Timestamp("2027-06-01"), forward_eps_index=250.0,
+        forward_date2=pd.Timestamp("2028-06-01"), forward_eps2=275.0,
+    )
+    # still one line + one scatter glyph, but the scatter now carries BOTH
+    # forecast points (this-FY + next-FY)
+    assert len(fig.renderers) == before + 2
+    scat = [r for r in fig.renderers if r.glyph.__class__.__name__ == "Scatter"][-1]
+    n = len(next(iter(scat.data_source.data.values())))
+    assert n == 2
+
+
 def test_render_applies_forward_overlay_when_data_present():
     dates = pd.to_datetime(["2024-03-31", "2024-06-30", "2024-09-30"])
     eps = pd.Series([220.0, 225.0, 230.0], index=dates)
