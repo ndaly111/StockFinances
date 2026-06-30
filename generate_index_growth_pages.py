@@ -419,7 +419,36 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
     return fig
 
 
-def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> Optional[go.Figure]:
+def _eps_forecast_trace(last_dt, last_eps, fwd, scale=1.0) -> go.Scatter:
+    """Return a dashed forecast scatter for the EPS chart.
+
+    *last_dt* must be tz-aware (it comes from the EPS series index).
+    *scale* lets the indexed chart pass 100/base so the trace lives in the
+    same coordinate space.
+    """
+    h1 = pd.Timestamp(fwd["horizon_date"], tz="UTC")
+    xs = [last_dt, h1]
+    ys = [last_eps, fwd["forward_eps_index"] * scale]
+    g2 = fwd.get("growth_next_fy")
+    if g2 is not None:
+        xs.append(h1 + pd.DateOffset(years=1))
+        ys.append(fwd["forward_eps_index"] * (1 + g2) * scale)
+    return go.Scatter(
+        x=xs, y=ys,
+        name="Forecast (this/next FY)",
+        mode="lines+markers",
+        line=dict(dash="dash", color="#ff8800"),
+        marker=dict(symbol="diamond", size=11, color="#ff8800"),
+    )
+
+
+def _eps_figure(
+    df_d: pd.DataFrame,
+    df_w: pd.DataFrame,
+    df_m: pd.DataFrame,
+    ticker: str,
+    fwd=None,
+) -> Optional[go.Figure]:
     """Build the Plotly figure for EPS if data is available."""
 
     def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
@@ -442,12 +471,25 @@ def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, tick
     if not any((traces_d, traces_w, traces_m)):
         return None
 
-    fig = go.Figure(data=traces_d + traces_w + traces_m)
-    n_d, n_w, n_m = len(traces_d), len(traces_w), len(traces_m)
+    # Decide y-axis type: log only when every daily EPS value is strictly positive.
+    s_daily = df_d["eps"].dropna() if "eps" in df_d.columns else pd.Series(dtype=float)
+    yaxis_type = "log" if (not s_daily.empty and (s_daily > 0).all()) else "linear"
 
-    vis_daily = [True] * n_d + [False] * n_w + [False] * n_m
-    vis_weekly = [False] * n_d + [True] * n_w + [False] * n_m
-    vis_monthly = [False] * n_d + [False] * n_w + [True] * n_m
+    # Forecast trace (always visible — treated like stat lines in _growth_figure).
+    forecast_traces: List[go.Scatter] = []
+    if fwd is not None and not s_daily.empty:
+        forecast_traces = [
+            _eps_forecast_trace(s_daily.index[-1], float(s_daily.iloc[-1]), fwd)
+        ]
+
+    fig = go.Figure(data=traces_d + traces_w + traces_m + forecast_traces)
+    n_d, n_w, n_m, n_f = (
+        len(traces_d), len(traces_w), len(traces_m), len(forecast_traces)
+    )
+
+    vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_f
+    vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_f
+    vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_f
     for i, v in enumerate(vis_weekly):
         fig.data[i].visible = v
 
@@ -470,7 +512,7 @@ def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, tick
             rangeslider=dict(visible=True),
             type="date",
         ),
-        yaxis=dict(title="EPS (USD)", tickprefix="$"),
+        yaxis=dict(title="EPS (USD)", tickprefix="$", type=yaxis_type),
         template=None,
         updatemenus=[
             dict(
@@ -481,8 +523,8 @@ def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, tick
                 y=1.16,
                 yanchor="top",
                 buttons=[
-                    dict(label="Daily", method="update", args=[{"visible": vis_daily}, {}]),
-                    dict(label="Weekly", method="update", args=[{"visible": vis_weekly}, {}]),
+                    dict(label="Daily",   method="update", args=[{"visible": vis_daily},   {}]),
+                    dict(label="Weekly",  method="update", args=[{"visible": vis_weekly},  {}]),
                     dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
                 ],
             )
@@ -535,12 +577,13 @@ def _write_page(out_path: str, html: str) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
 
-def _build_one(ticker: str, df: pd.DataFrame) -> None:
+def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     """Build a single valuation page for a ticker."""
+    fwd = _latest_forward_eps(conn, ticker)
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
     chart_growth_html = to_html(fig_growth, include_plotlyjs="cdn", full_html=False, default_height="600px")
-    fig_eps = _eps_figure(df_d, df_w, df_m, ticker)
+    fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
         chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False, default_height="450px")
@@ -559,7 +602,7 @@ def generate_index_growth_pages(db_path: str = DB_PATH) -> None:
             subset = [c for c in ["ig", "ig_fwd", "eps"] if c in df.columns]
             if subset:
                 df = df.dropna(subset=subset, how="all")
-            _build_one(ticker, df)
+            _build_one(conn, ticker, df)
     finally:
         conn.close()
 

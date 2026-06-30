@@ -40,3 +40,17 @@ def test_index_eps_series_index_is_utc_aware():
     conn = sqlite3.connect(":memory:"); _seed_eps(conn)
     s = g._index_eps_series(conn, "SPY")
     assert s.index.tz is not None   # must be tz-aware to join with _load_series
+
+import plotly.graph_objects as go
+
+def test_eps_figure_log_and_forecast():
+    idx = pd.to_datetime(["2025-01-31","2025-06-30","2025-12-31"], utc=True)
+    df = pd.DataFrame({"eps":[80.0,85.0,90.0]}, index=idx)
+    d,w,m = g._resample_frames(df)
+    fwd = {"forward_eps_index":112.0,"horizon_date":"2027-06-28","growth_this_fy":0.25,
+           "growth_next_fy":0.29,"coverage_weight":0.93}
+    fig = g._eps_figure(d,w,m,"QQQ", fwd=fwd)
+    assert fig.layout.yaxis.type == "log"
+    fc = [t for t in fig.data if (t.name or "").lower().find("forecast") >= 0]
+    assert fc, "expected a forecast trace"
+    assert any(len(getattr(t,"x",[]) or []) >= 2 for t in fc)
