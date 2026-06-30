@@ -154,11 +154,39 @@ def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
     df = df[keep]
 
     # Attach EPS if available.
-    eps = _load_eps_series(conn, ticker)
-    if eps is not None:
+    eps = _index_eps_series(conn, ticker)
+    if not eps.empty:
         df = df.join(eps, how="outer")
 
     return df
+
+
+_INDEX_EPS_DIVISOR = {"SPY": 10.0, "QQQ": 4.0}
+
+def _index_eps_series(conn: sqlite3.Connection, ticker: str) -> pd.Series:
+    """Index-level EPS history: TTM_REPORTED, extended with TTM_DAILY, then
+    IMPLIED_FROM_PE (ETF-level, scaled by the index divisor). Mirrors the prior
+    Bokeh _series_eps so SPY and QQQ both get a full series."""
+    def _read(eps_type):
+        df = pd.read_sql_query(
+            "SELECT Date, EPS FROM Index_EPS_History WHERE Ticker=? AND EPS_Type=? ORDER BY Date",
+            conn, params=(ticker, eps_type), parse_dates=["Date"])
+        if df.empty:
+            return pd.Series(dtype=float)
+        s = pd.to_numeric(df.set_index(pd.to_datetime(df["Date"]).dt.normalize())["EPS"],
+                          errors="coerce").dropna()
+        return s[~s.index.duplicated(keep="last")]
+    reported = _read("TTM_REPORTED")
+    daily = _read("TTM_DAILY")
+    implied = _read("IMPLIED_FROM_PE") * _INDEX_EPS_DIVISOR.get(ticker.upper(), 1.0)
+    parts = [s for s in (reported, daily, implied) if not s.empty]
+    if not parts:
+        return pd.Series(dtype=float, name="eps")
+    combined = parts[0]
+    for p in parts[1:]:
+        combined = combined.combine_first(p)
+    combined = combined.sort_index(); combined.name = "eps"
+    return combined
 
 
 def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Series]:
