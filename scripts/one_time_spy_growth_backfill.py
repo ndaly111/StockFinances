@@ -21,7 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from backfill_index_growth import backfill_index_growth
-from index_growth_charts import render_index_growth_charts
+from generate_index_growth_pages import generate_index_growth_pages
 
 
 def parse_args() -> argparse.Namespace:
@@ -98,10 +98,8 @@ def main() -> None:
     print("[run] backfill_index_growth")
     backfill_index_growth(db_path=str(db_path))
 
-    print("[run] render_index_growth_charts")
-    # regenerate the Bokeh assets that spy_growth.html / qqq_growth.html load
-    for tk in ("SPY", "QQQ"):
-        render_index_growth_charts(tk)
+    print("[run] generate_index_growth_pages")
+    generate_index_growth_pages(str(db_path))
 
 
 if __name__ == "__main__":

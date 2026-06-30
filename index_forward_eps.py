@@ -2,7 +2,7 @@
 
 Primary source: bottom-up constituent forward EPS aggregation.
 Values are scaled from ETF level to index level so they line up with
-index_growth_charts EPS.
+generate_index_growth_pages EPS.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ DB_PATH = "Stock Data.db"
 TABLE = "Index_Forward_EPS_History"
 IDXES = ["SPY", "QQQ"]
 
-# Mirror of index_growth_charts._INDEX_EPS_DIVISOR. A drift-guard test in
+# Mirror of generate_index_growth_pages._INDEX_EPS_DIVISOR. A drift-guard test in
 # Test/test_index_forward_eps.py asserts these stay equal.
 INDEX_EPS_DIVISOR = {"SPY": 10.0, "QQQ": 4.0}
 
@@ -95,7 +95,7 @@ def _passes_sanity(forward_pe, forward_eps_index, latest_hist_eps) -> bool:
 def _latest_hist_eps(conn: sqlite3.Connection, tk: str) -> Optional[float]:
     """Latest index-level historical EPS for scale/growth sanity checks.
 
-    Mirrors index_growth_charts._series_eps source priority loosely: prefer
+    Mirrors generate_index_growth_pages._series_eps source priority loosely: prefer
     TTM_REPORTED, else TTM_DAILY, else IMPLIED_FROM_PE*divisor.
     """
     try:

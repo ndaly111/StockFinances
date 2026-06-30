@@ -19,8 +19,8 @@ def test_ensure_table_creates_schema(tmp_path):
 
 
 def test_divisor_matches_chart_module():
-    import index_growth_charts as igc
-    assert ife.INDEX_EPS_DIVISOR == igc._INDEX_EPS_DIVISOR
+    import generate_index_growth_pages as gigp
+    assert ife.INDEX_EPS_DIVISOR == gigp._INDEX_EPS_DIVISOR
 
 
 def test_sanity_accepts_reasonable():

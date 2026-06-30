@@ -465,17 +465,7 @@ def generate_dashboard_table(raw_rows):
 
 # ───────── ancillary page builders (retro-injected) ───────
 def render_spy_qqq_growth_pages():
-    chart_dir, out_dir = "charts", "."
-    for key in ("spy", "qqq"):
-        tpl = Template(get_file_or_placeholder(f"templates/{key}_growth_template.html"))
-        rendered = tpl.render(
-            **{
-                f"{key}_growth_summary": get_file_or_placeholder(f"{chart_dir}/{key}_growth_summary.html"),
-                f"{key}_pe_summary":     get_file_or_placeholder(f"{chart_dir}/{key}_pe_summary.html"),
-            }
-        )
-        with open(f"{out_dir}/{key}_growth.html", "w", encoding="utf-8") as f:
-            f.write(inject_retro(rendered))
+    return  # retired: Plotly generate_index_growth_pages now owns spy_growth.html/qqq_growth.html
 
 def prepare_and_generate_ticker_pages(tickers, charts_dir_fs="charts"):
     """

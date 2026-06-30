@@ -154,11 +154,39 @@ def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
     df = df[keep]
 
     # Attach EPS if available.
-    eps = _load_eps_series(conn, ticker)
-    if eps is not None:
+    eps = _index_eps_series(conn, ticker)
+    if not eps.empty:
         df = df.join(eps, how="outer")
 
     return df
+
+
+_INDEX_EPS_DIVISOR = {"SPY": 10.0, "QQQ": 4.0}
+
+def _index_eps_series(conn: sqlite3.Connection, ticker: str) -> pd.Series:
+    """Index-level EPS history: TTM_REPORTED, extended with TTM_DAILY, then
+    IMPLIED_FROM_PE (ETF-level, scaled by the index divisor). Mirrors the prior
+    Bokeh _series_eps so SPY and QQQ both get a full series."""
+    def _read(eps_type):
+        df = pd.read_sql_query(
+            "SELECT Date, EPS FROM Index_EPS_History WHERE Ticker=? AND EPS_Type=? ORDER BY Date",
+            conn, params=(ticker.upper(), eps_type), parse_dates=["Date"])
+        if df.empty:
+            return pd.Series(dtype=float)
+        s = pd.to_numeric(df.set_index(pd.to_datetime(df["Date"], utc=True).dt.normalize())["EPS"],
+                          errors="coerce").dropna()
+        return s[~s.index.duplicated(keep="last")]
+    reported = _read("TTM_REPORTED")
+    daily = _read("TTM_DAILY")
+    implied = _read("IMPLIED_FROM_PE") * _INDEX_EPS_DIVISOR.get(ticker.upper(), 1.0)
+    parts = [s for s in (reported, daily, implied) if not s.empty]
+    if not parts:
+        return pd.Series(dtype=float, name="eps")
+    combined = parts[0]
+    for p in parts[1:]:
+        combined = combined.combine_first(p)
+    combined = combined.sort_index(); combined.name = "eps"
+    return combined
 
 
 def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Series]:
@@ -179,11 +207,29 @@ def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Serie
     series.name = "eps"
     return series
 
+def _latest_forward_eps(conn: sqlite3.Connection, ticker: str):
+    """Return the most-recent displayable forward-EPS row for ticker, or None."""
+    try:
+        row = conn.execute(
+            """SELECT forward_eps_index, horizon_date, growth_this_fy, growth_next_fy,
+                      coverage_weight, displayable
+                 FROM Index_Forward_EPS_History
+                WHERE ticker=? ORDER BY date_recorded DESC LIMIT 1""",
+            (ticker.upper(),)).fetchone()
+    except Exception:
+        return None
+    if not row or row[0] is None or not row[5]:
+        return None
+    return {"forward_eps_index": float(row[0]), "horizon_date": row[1],
+            "growth_this_fy": row[2], "growth_next_fy": row[3],
+            "coverage_weight": row[4]}
+
+
 def _resample_frames(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Return (daily, weekly, monthly) frames using last observation for each period."""
     d = df.copy()
     w = df.resample("W-FRI").last()
-    m = df.resample("M").last()
+    m = df.resample("ME").last()
     return (d, w, m)
 
 def _percentile(series: pd.Series, value: float) -> float:
@@ -373,7 +419,36 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
     return fig
 
 
-def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> Optional[go.Figure]:
+def _eps_forecast_trace(last_dt, last_eps, fwd, scale=1.0) -> go.Scatter:
+    """Return a dashed forecast scatter for the EPS chart.
+
+    *last_dt* must be tz-aware (it comes from the EPS series index).
+    *scale* lets the indexed chart pass 100/base so the trace lives in the
+    same coordinate space.
+    """
+    h1 = pd.Timestamp(fwd["horizon_date"], tz="UTC")
+    xs = [last_dt, h1]
+    ys = [last_eps, fwd["forward_eps_index"] * scale]
+    g2 = fwd.get("growth_next_fy")
+    if g2 is not None:
+        xs.append(h1 + pd.DateOffset(years=1))
+        ys.append(fwd["forward_eps_index"] * (1 + g2) * scale)
+    return go.Scatter(
+        x=xs, y=ys,
+        name="Forecast (this/next FY)",
+        mode="lines+markers",
+        line=dict(dash="dash", color="#ff8800"),
+        marker=dict(symbol="diamond", size=11, color="#ff8800"),
+    )
+
+
+def _eps_figure(
+    df_d: pd.DataFrame,
+    df_w: pd.DataFrame,
+    df_m: pd.DataFrame,
+    ticker: str,
+    fwd=None,
+) -> Optional[go.Figure]:
     """Build the Plotly figure for EPS if data is available."""
 
     def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
@@ -396,12 +471,25 @@ def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, tick
     if not any((traces_d, traces_w, traces_m)):
         return None
 
-    fig = go.Figure(data=traces_d + traces_w + traces_m)
-    n_d, n_w, n_m = len(traces_d), len(traces_w), len(traces_m)
+    # Decide y-axis type: log only when every daily EPS value is strictly positive.
+    s_daily = df_d["eps"].dropna() if "eps" in df_d.columns else pd.Series(dtype=float)
+    yaxis_type = "log" if (not s_daily.empty and (s_daily > 0).all()) else "linear"
 
-    vis_daily = [True] * n_d + [False] * n_w + [False] * n_m
-    vis_weekly = [False] * n_d + [True] * n_w + [False] * n_m
-    vis_monthly = [False] * n_d + [False] * n_w + [True] * n_m
+    # Forecast trace (always visible — treated like stat lines in _growth_figure).
+    forecast_traces: List[go.Scatter] = []
+    if fwd is not None and not s_daily.empty:
+        forecast_traces = [
+            _eps_forecast_trace(s_daily.index[-1], float(s_daily.iloc[-1]), fwd)
+        ]
+
+    fig = go.Figure(data=traces_d + traces_w + traces_m + forecast_traces)
+    n_d, n_w, n_m, n_f = (
+        len(traces_d), len(traces_w), len(traces_m), len(forecast_traces)
+    )
+
+    vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_f
+    vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_f
+    vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_f
     for i, v in enumerate(vis_weekly):
         fig.data[i].visible = v
 
@@ -424,7 +512,7 @@ def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, tick
             rangeslider=dict(visible=True),
             type="date",
         ),
-        yaxis=dict(title="EPS (USD)", tickprefix="$"),
+        yaxis=dict(title="EPS (USD)", tickprefix="$", type=yaxis_type),
         template=None,
         updatemenus=[
             dict(
@@ -435,8 +523,8 @@ def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, tick
                 y=1.16,
                 yanchor="top",
                 buttons=[
-                    dict(label="Daily", method="update", args=[{"visible": vis_daily}, {}]),
-                    dict(label="Weekly", method="update", args=[{"visible": vis_weekly}, {}]),
+                    dict(label="Daily",   method="update", args=[{"visible": vis_daily},   {}]),
+                    dict(label="Weekly",  method="update", args=[{"visible": vis_weekly},  {}]),
                     dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
                 ],
             )
@@ -444,15 +532,163 @@ def _eps_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, tick
     )
     return fig
 
-def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str], timeframe_table_html: str) -> str:
+def _eps_indexed_figure(
+    df_d: pd.DataFrame,
+    df_w: pd.DataFrame,
+    df_m: pd.DataFrame,
+    ticker: str,
+    fwd=None,
+) -> Optional[go.Figure]:
+    """Build an EPS chart normalised to 100 at the first observation.
+
+    Returns None when the first EPS value is zero or negative (log axis
+    would be undefined).  The y-axis is always log because the series is
+    strictly positive by construction once the base guard passes.
+    """
+    b = df_d["eps"].dropna() if "eps" in df_d.columns else pd.Series(dtype=float)
+    if b.empty or b.iloc[0] <= 0:
+        return None
+    base = float(b.iloc[0])
+
+    def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
+        if "eps" not in df.columns:
+            return []
+        s = df["eps"].dropna()
+        if s.empty:
+            return []
+        return [
+            go.Scatter(
+                x=s.index,
+                y=s / base * 100,
+                name=f"EPS Indexed ({tag})",
+                mode="lines",
+                hovertemplate="%{y:.1f}<extra></extra>",
+            )
+        ]
+
+    traces_d = mk_traces(df_d, "Daily")
+    traces_w = mk_traces(df_w, "Weekly")
+    traces_m = mk_traces(df_m, "Monthly")
+
+    # Forecast trace (always visible).
+    forecast_traces: List[go.Scatter] = []
+    if fwd is not None and not b.empty:
+        last_eps_indexed = float(b.iloc[-1]) / base * 100
+        forecast_traces = [
+            _eps_forecast_trace(b.index[-1], last_eps_indexed, fwd, scale=100.0 / base)
+        ]
+
+    fig = go.Figure(data=traces_d + traces_w + traces_m + forecast_traces)
+    n_d, n_w, n_m, n_f = (
+        len(traces_d), len(traces_w), len(traces_m), len(forecast_traces)
+    )
+
+    vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_f
+    vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_f
+    vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_f
+    for i, v in enumerate(vis_weekly):
+        fig.data[i].visible = v
+
+    fig.update_layout(
+        title=f"{ticker} — EPS (Indexed to 100)",
+        margin=dict(l=50, r=50, t=60, b=40),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.0),
+        xaxis=dict(
+            title="Date",
+            rangeselector=dict(
+                buttons=list(
+                    [
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(step="all", label="All"),
+                    ]
+                )
+            ),
+            rangeslider=dict(visible=True),
+            type="date",
+        ),
+        yaxis=dict(title="EPS (start=100)", type="log"),
+        template=None,
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="right",
+                x=0.0,
+                xanchor="left",
+                y=1.16,
+                yanchor="top",
+                buttons=[
+                    dict(label="Daily",   method="update", args=[{"visible": vis_daily},   {}]),
+                    dict(label="Weekly",  method="update", args=[{"visible": vis_weekly},  {}]),
+                    dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
+                ],
+            )
+        ],
+    )
+    return fig
+
+
+def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
+               eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str) -> str:
     """Assemble the full HTML page with charts and stats table."""
+    callout_section = ""
+    if callout:
+        callout_section = f'    <p class="callout">{callout}</p>\n'
+
     eps_section = ""
     if eps_chart_html:
         eps_section = f"""
-    <div class=\"chart\">
+    <div class="chart">
       {eps_chart_html}
+      <div class="measure-readout" id="ro-eps">Click a point, then another, to measure % change.</div>
+      <button onclick="clearMeasure('eps-chart')">Clear</button>
     </div>
-    """
+"""
+
+    eps_indexed_section = ""
+    if eps_indexed_html:
+        eps_indexed_section = f"""
+    <div class="chart">
+      {eps_indexed_html}
+      <div class="measure-readout" id="ro-eps-indexed">Click a point, then another, to measure % change.</div>
+      <button onclick="clearMeasure('eps-indexed-chart')">Clear</button>
+    </div>
+"""
+
+    measure_script = """<script>
+(function(){
+  function attach(divId, roId){
+    var gd=document.getElementById(divId), ro=document.getElementById(roId);
+    if(!gd||!ro||!gd.on) return;
+    var anchor=null, first=null;
+    function ms(x){ return (typeof x==='number')?x:new Date(x).getTime(); }
+    gd.on('plotly_click', function(d){
+      var p=d.points[0], x=ms(p.x), y=p.y;
+      if(first===null) first=y;
+      if(anchor===null){ anchor={x:x,y:y}; ro.innerHTML='Anchor set. Click another point.'; return; }
+      var s=anchor, e={x:x,y:y};
+      if(e.x < s.x){ var t=s; s=e; e=t; }
+      var pct=(e.y/s.y-1)*100, yrs=(e.x-s.x)/(365.25*86400000);
+      var span = yrs>=1 ? yrs.toFixed(1)+' years' : Math.round(yrs*12)+' months';
+      var txt='<b>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</b> over '+span;
+      if(yrs>=0.02){ var ann=(Math.pow(e.y/s.y,1/yrs)-1)*100;
+        if(isFinite(ann)) txt+=' ('+(ann>=0?'+':'')+ann.toFixed(1)+'% annualized)'; }
+      ro.innerHTML=txt; anchor=null;
+    });
+    gd.on('plotly_hover', function(d){
+      if(anchor!==null||first===null) return;
+      var y=d.points[0].y, pct=(y/first-1)*100;
+      ro.innerHTML='% from first point: <b>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</b>';
+    });
+    gd.__clear=function(){ anchor=null; ro.innerHTML='Click a point, then another, to measure % change.'; };
+  }
+  function init(){ attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed'); }
+  if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
+})();
+function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear) gd.__clear(); }
+</script>"""
+
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -470,6 +706,8 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     table.stats thead th {{ background: #eef1ff; font-weight: 600; }}
     td.tf, th.tf {{ text-align: left; white-space: nowrap; }}
     .back {{ margin-top: 12px; }}
+    .measure-readout {{ margin: 6px 0 4px; font-size: 0.9rem; color: #333; min-height: 1.4em; }}
+    .callout {{ margin: 8px 0; padding: 8px 12px; background: #fffbe6; border-left: 4px solid #f5a623; border-radius: 4px; font-size: 0.95rem; }}
   </style>
 </head>
 <body>
@@ -478,28 +716,50 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     <div class="chart">
       {growth_chart_html}
     </div>
-    {eps_section}
-    {timeframe_table_html}
-    <p class="back"><a href="index.html">← Back to Dashboard</a></p>
+{callout_section}{eps_section}{eps_indexed_section}    {timeframe_table_html}
+    <p class="back"><a href="index.html">Back to Dashboard</a></p>
   </div>
+{measure_script}
 </body>
 </html>"""
+
+def _forward_callout(fwd) -> str:
+    """Return an HTML callout string summarising forward EPS growth, or '' if unavailable."""
+    if not fwd or fwd.get("growth_this_fy") is None:
+        return ""
+    g1 = fwd["growth_this_fy"]
+    g2 = fwd.get("growth_next_fy")
+    cov = fwd.get("coverage_weight") or 0
+    parts = [f"Forward earnings growth (bottom-up): <b>{g1:+.1%}</b> this fiscal year"]
+    if g2 is not None:
+        parts.append(f", <b>{g2:+.1%}</b> next")
+    parts.append(f". Based on {cov:.0%} of index weight.")
+    return "".join(parts)
 
 def _write_page(out_path: str, html: str) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
 
-def _build_one(ticker: str, df: pd.DataFrame) -> None:
+def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     """Build a single valuation page for a ticker."""
+    fwd = _latest_forward_eps(conn, ticker)
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
     chart_growth_html = to_html(fig_growth, include_plotlyjs="cdn", full_html=False, default_height="600px")
-    fig_eps = _eps_figure(df_d, df_w, df_m, ticker)
+    fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
-        chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False, default_height="450px")
+        chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False,
+                                 default_height="450px", div_id="eps-chart")
+    fig_eps_idx = _eps_indexed_figure(df_d, df_w, df_m, ticker, fwd=fwd)
+    chart_eps_idx_html = None
+    if fig_eps_idx is not None:
+        chart_eps_idx_html = to_html(fig_eps_idx, include_plotlyjs=False, full_html=False,
+                                     default_height="450px", div_id="eps-indexed-chart")
     tf_table = _timeframe_table_html(df_d)
-    page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html, tf_table)
+    callout = _forward_callout(fwd)
+    page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
+                      chart_eps_idx_html, tf_table, callout)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
 
@@ -513,7 +773,7 @@ def generate_index_growth_pages(db_path: str = DB_PATH) -> None:
             subset = [c for c in ["ig", "ig_fwd", "eps"] if c in df.columns]
             if subset:
                 df = df.dropna(subset=subset, how="all")
-            _build_one(ticker, df)
+            _build_one(conn, ticker, df)
     finally:
         conn.close()
 
