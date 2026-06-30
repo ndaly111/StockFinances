@@ -516,9 +516,8 @@ def mini_main():
             generate_earnings_tables()
             ensure_spy_monthly_eps_and_derived_pe(DB_PATH)
         # Index growth charts and implied-growth recompute also run in daily
-        # mode: the chart artifacts (charts/{spy,qqq}_valuation_bundle_chart.*)
-        # are tracked in main, and the daily rsync would otherwise re-deploy
-        # the stale committed versions and overwrite the weekly's output.
+        # mode: Plotly pages (spy_growth.html / qqq_growth.html) are written
+        # on each run so the daily rsync always deploys fresh output.
         backfill_index_growth()
         try:
             from generate_index_growth_pages import generate_index_growth_pages

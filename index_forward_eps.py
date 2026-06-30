@@ -18,7 +18,7 @@ DB_PATH = "Stock Data.db"
 TABLE = "Index_Forward_EPS_History"
 IDXES = ["SPY", "QQQ"]
 
-# Mirror of index_growth_charts._INDEX_EPS_DIVISOR. A drift-guard test in
+# Mirror of generate_index_growth_pages._INDEX_EPS_DIVISOR. A drift-guard test in
 # Test/test_index_forward_eps.py asserts these stay equal.
 INDEX_EPS_DIVISOR = {"SPY": 10.0, "QQQ": 4.0}
 
