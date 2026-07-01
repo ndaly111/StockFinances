@@ -337,6 +337,26 @@ def _stat_lines(df_daily: pd.DataFrame) -> List[go.Scatter]:
         ]
     return traces
 
+_RETRO_COLORWAY = ["#000080", "#CC0000", "#008000", "#B8860B", "#3333AA", "#800080"]
+
+def _apply_retro_layout(fig):
+    """Style a Plotly figure to match the site's 1999 NASDAQ-terminal theme
+    (navy/gray Win95, Times/Arial/Courier fonts)."""
+    fig.update_layout(
+        paper_bgcolor="#FFFFFF", plot_bgcolor="#FBFBF4",
+        font=dict(family='"Times New Roman", Times, serif', size=12, color="#000080"),
+        colorway=_RETRO_COLORWAY,
+        legend=dict(font=dict(family="Arial, Helvetica, sans-serif", size=11, color="#000080"),
+                    bgcolor="rgba(255,255,255,0.65)", bordercolor="#C0C0C0", borderwidth=1),
+        margin=dict(l=52, r=20, t=40, b=32),
+        hoverlabel=dict(font=dict(family='"Courier New", monospace', size=12), bgcolor="#000080"),
+    )
+    fig.update_xaxes(gridcolor="#E4E4EC", linecolor="#000080",
+                     tickfont=dict(family="Arial, sans-serif", size=10, color="#000080"))
+    fig.update_yaxes(gridcolor="#E4E4EC", linecolor="#000080",
+                     tickfont=dict(family="Arial, sans-serif", size=10, color="#000080"))
+    return fig
+
 def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
     """Build the Plotly figure for implied growth."""
 
@@ -631,30 +651,24 @@ def _eps_indexed_figure(
 
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
                eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str) -> str:
-    """Assemble the full HTML page with charts and stats table."""
+    """Assemble the full HTML page in the site's 1999 NASDAQ-terminal theme."""
     callout_section = ""
     if callout:
-        callout_section = f'    <p class="callout">{callout}</p>\n'
+        callout_section = f'      <p class="callout">{callout}</p>\n'
 
-    eps_section = ""
-    if eps_chart_html:
-        eps_section = f"""
-    <div class="chart">
-      {eps_chart_html}
-      <div class="measure-readout" id="ro-eps">Click a point, then another, to measure % change.</div>
-      <button onclick="clearMeasure('eps-chart')">Clear</button>
+    def _measured_card(title_text, chart_html, ro_id, clear_target):
+        return f"""    <div class="chart-card">
+      <h2>{title_text}</h2>
+      <div class="chart-body">
+      {chart_html}
+      <div class="measure-readout" id="{ro_id}">Click a point, then another, to measure % change.</div>
+      <button class="win-btn" onclick="clearMeasure('{clear_target}')">Clear</button>
+      </div>
     </div>
 """
 
-    eps_indexed_section = ""
-    if eps_indexed_html:
-        eps_indexed_section = f"""
-    <div class="chart">
-      {eps_indexed_html}
-      <div class="measure-readout" id="ro-eps-indexed">Click a point, then another, to measure % change.</div>
-      <button onclick="clearMeasure('eps-indexed-chart')">Clear</button>
-    </div>
-"""
+    eps_section = _measured_card("EPS (log scale)", eps_chart_html, "ro-eps", "eps-chart") if eps_chart_html else ""
+    eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart") if eps_indexed_html else ""
 
     measure_script = """<script>
 (function(){
@@ -689,6 +703,8 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
 function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear) gd.__clear(); }
 </script>"""
 
+    marquee = ("SPY / QQQ VALUATION TERMINAL   *   IMPLIED GROWTH   *   FORWARD EPS   *   "
+               "P/E PERCENTILES   *   POWERED BY NICK'S STOCK FINANCIALS   *   FIGURES DELAYED   *   ")
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -696,27 +712,62 @@ function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>{title}</title>
   <style>
-    body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 16px; background: #f7f7fb; }}
-    h1 {{ font-size: 1.6rem; margin: 0 0 10px; }}
-    .wrap {{ max-width: 1100px; margin: 0 auto; }}
-    .chart {{ margin-top: 8px; background: #fff; border: 1px solid #e6e6f0; border-radius: 8px; padding: 8px; }}
-    .table-wrap {{ margin-top: 14px; background: #f4f5ff; border-radius: 8px; padding: 10px; }}
-    table.stats {{ width: 100%; border-collapse: collapse; background: #fff; border: 2px solid #3a4bff20; }}
-    table.stats th, table.stats td {{ border: 1px solid #dfe3ff; padding: 8px 10px; text-align: center; }}
-    table.stats thead th {{ background: #eef1ff; font-weight: 600; }}
-    td.tf, th.tf {{ text-align: left; white-space: nowrap; }}
-    .back {{ margin-top: 12px; }}
-    .measure-readout {{ margin: 6px 0 4px; font-size: 0.9rem; color: #333; min-height: 1.4em; }}
-    .callout {{ margin: 8px 0; padding: 8px 12px; background: #fffbe6; border-left: 4px solid #f5a623; border-radius: 4px; font-size: 0.95rem; }}
+    :root{{ --navy:#000080; --gray:#C0C0C0; --gray-shade:#808080; --hi-yellow:#FFFF00; --text:#000; }}
+    *{{ box-sizing:border-box }} html,body{{ margin:0; padding:0 }}
+    body{{ font-family:"Times New Roman",Times,serif; color:var(--text); font-size:13px; line-height:1.35;
+      background-color:#9999BB;
+      background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.18) 0 2px, transparent 2px 8px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,.10) 0 2px, transparent 2px 8px),
+        linear-gradient(180deg,#9faabe 0%,#7e8aa6 100%);
+      background-attachment:fixed; min-height:100vh; }}
+    .wrap{{ max-width:1000px; margin:0 auto; padding:0 6px 20px }}
+    .marquee{{ overflow:hidden; background:#000; border-top:2px solid var(--navy); border-bottom:2px solid var(--navy);
+      box-shadow:inset 0 -1px 0 #FFF, inset 0 1px 0 #FFF; margin:0 -6px 6px; }}
+    .marquee span{{ display:inline-block; white-space:nowrap; padding:5px 0; color:var(--hi-yellow);
+      font-family:"Courier New",monospace; font-size:12px; font-weight:700; letter-spacing:.5px;
+      text-shadow:0 0 4px rgba(255,255,0,.5); animation:ticker 34s linear infinite; }}
+    @keyframes ticker{{ from{{transform:translateX(100%)}} to{{transform:translateX(-100%)}} }}
+    .hero{{ font-family:"Arial Black",Arial,sans-serif; font-weight:900; font-size:18px; color:#FFF;
+      background:var(--navy); margin:0 0 8px; padding:6px 10px 5px; letter-spacing:.5px; text-transform:uppercase;
+      border:2px outset var(--gray); box-shadow:inset 0 1px 0 #4444CC; }}
+    .chart-card{{ background:#FFF; border:2px outset var(--gray); margin-bottom:8px; }}
+    .chart-card > h2{{ font-family:"Arial Black",Arial,sans-serif; font-weight:900; font-size:13px; color:#FFF;
+      background:var(--navy); margin:0; padding:4px 8px 3px; letter-spacing:.5px; text-transform:uppercase;
+      border-bottom:2px ridge var(--gray); border-top:1px solid #4444CC; box-shadow:inset 0 1px 0 #4444CC; }}
+    .chart-body{{ padding:6px; }}
+    .measure-readout{{ font-family:"Courier New",Courier,monospace; font-size:13px; font-weight:700;
+      color:#33FF33; text-shadow:0 0 5px rgba(51,255,51,.5); background:#000; border:2px inset var(--gray);
+      padding:5px 8px; margin:6px 0 4px; min-height:1.5em; box-shadow:inset 0 0 0 1px #222; }}
+    .measure-readout b{{ color:#FFCC33; }}
+    .win-btn{{ font-family:Arial,sans-serif; font-size:11px; font-weight:700; padding:3px 12px;
+      background:var(--gray); border:2px outset var(--gray); cursor:pointer; }}
+    .win-btn:active{{ border-style:inset; }}
+    .callout{{ font-family:"Times New Roman",serif; font-size:13px; background:#FFFFEE;
+      border:2px inset var(--gray); padding:6px 10px; margin:6px; }}
+    .table-wrap{{ padding:6px; }}
+    table.stats{{ width:100%; border-collapse:collapse; border:2px solid var(--navy); background:#FFF; font-size:12px; }}
+    table.stats th, table.stats td{{ border:1px solid #8080FF; padding:5px 8px; text-align:center; font-family:"Times New Roman",serif; }}
+    table.stats thead th{{ background:var(--navy); color:#FFF; font-family:"Arial Black",Arial,sans-serif;
+      font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:.5px; }}
+    table.stats td.tf, table.stats th.tf{{ text-align:left; white-space:nowrap; background:#C0C0FF; font-weight:700; }}
+    .back{{ margin:10px 6px 0; }}
+    .back a{{ display:inline-block; font-family:Arial,sans-serif; font-weight:700; font-size:12px; color:#000;
+      background:var(--gray); border:2px outset var(--gray); padding:3px 10px; text-decoration:none; }}
+    .back a:active{{ border-style:inset; }}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>{title}</h1>
-    <div class="chart">
-      {growth_chart_html}
+    <div class="marquee"><span>{marquee}{marquee}</span></div>
+    <h1 class="hero">{title}</h1>
+    <div class="chart-card">
+      <h2>Implied Growth and P/E</h2>
+      <div class="chart-body">{growth_chart_html}</div>
     </div>
-{callout_section}{eps_section}{eps_indexed_section}    {timeframe_table_html}
+{callout_section}{eps_section}{eps_indexed_section}    <div class="chart-card">
+      <h2>10-Year Statistics</h2>
+      {timeframe_table_html}
+    </div>
     <p class="back"><a href="index.html">Back to Dashboard</a></p>
   </div>
 {measure_script}
@@ -745,15 +796,18 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     fwd = _latest_forward_eps(conn, ticker)
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
+    _apply_retro_layout(fig_growth)
     chart_growth_html = to_html(fig_growth, include_plotlyjs="cdn", full_html=False, default_height="600px")
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
+        _apply_retro_layout(fig_eps)
         chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False,
                                  default_height="450px", div_id="eps-chart")
     fig_eps_idx = _eps_indexed_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_idx_html = None
     if fig_eps_idx is not None:
+        _apply_retro_layout(fig_eps_idx)
         chart_eps_idx_html = to_html(fig_eps_idx, include_plotlyjs=False, full_html=False,
                                      default_height="450px", div_id="eps-indexed-chart")
     tf_table = _timeframe_table_html(df_d)
