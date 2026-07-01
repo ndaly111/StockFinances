@@ -348,13 +348,17 @@ def _apply_retro_layout(fig):
         colorway=_RETRO_COLORWAY,
         legend=dict(font=dict(family="Arial, Helvetica, sans-serif", size=11, color="#000080"),
                     bgcolor="rgba(255,255,255,0.65)", bordercolor="#C0C0C0", borderwidth=1),
-        margin=dict(l=52, r=20, t=40, b=32),
+        margin=dict(l=52, r=20, t=22, b=30),
         hoverlabel=dict(font=dict(family='"Courier New", monospace', size=12), bgcolor="#000080"),
     )
     fig.update_xaxes(gridcolor="#E4E4EC", linecolor="#000080",
                      tickfont=dict(family="Arial, sans-serif", size=10, color="#000080"))
     fig.update_yaxes(gridcolor="#E4E4EC", linecolor="#000080",
                      tickfont=dict(family="Arial, sans-serif", size=10, color="#000080"))
+    # The card <h2> already titles each chart, and the range-slider mini-chart adds
+    # clutter under a terminal aesthetic — drop both for a cleaner look.
+    fig.update_layout(title=None)
+    fig.update_xaxes(rangeslider_visible=False)
     return fig
 
 def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
