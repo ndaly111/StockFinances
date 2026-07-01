@@ -364,14 +364,14 @@ def _apply_retro_layout(fig):
 def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
     """Build the Plotly figure for implied growth."""
 
-    def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
+    def mk_traces(df: pd.DataFrame) -> List[go.Scatter]:
         traces: List[go.Scatter] = []
         if "ig" in df.columns:
             traces.append(
                 go.Scatter(
                     x=df.index,
                     y=df["ig"],
-                    name=f"TTM ({tag})",
+                    name="TTM",
                     mode="lines",
                     hovertemplate="%{y:.2f}%<extra></extra>",
                 )
@@ -381,27 +381,17 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
                 go.Scatter(
                     x=df.index,
                     y=df["ig_fwd"],
-                    name=f"Forward ({tag})",
+                    name="Forward",
                     mode="lines",
                     hovertemplate="%{y:.2f}%<extra></extra>",
                 )
             )
         return traces
 
-    traces_d = mk_traces(df_d, "Daily")
-    traces_w = mk_traces(df_w, "Weekly")
-    traces_m = mk_traces(df_m, "Monthly")
+    traces_d = mk_traces(df_d)
     stat_lines = _stat_lines(df_d)
 
-    fig = go.Figure(data=traces_d + traces_w + traces_m + stat_lines)
-    n_d, n_w, n_m, n_s = len(traces_d), len(traces_w), len(traces_m), len(stat_lines)
-
-    # default visibility: Weekly + stat lines
-    vis_daily = [True] * n_d + [False] * n_w + [False] * n_m + [True] * n_s
-    vis_weekly = [False] * n_d + [True] * n_w + [False] * n_m + [True] * n_s
-    vis_monthly = [False] * n_d + [False] * n_w + [True] * n_m + [True] * n_s
-    for i, v in enumerate(vis_weekly):
-        fig.data[i].visible = v
+    fig = go.Figure(data=traces_d + stat_lines)
 
     fig.update_layout(
         title=f"{ticker} — Implied Growth (TTM & Forward) — avg and ±1σ shown",
@@ -409,37 +399,24 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.0),
         xaxis=dict(
             title="Date",
-            rangeselector=dict(
-                buttons=list(
-                    [
-                        dict(count=1, label="1M", step="month", stepmode="backward"),
-                        dict(count=3, label="3M", step="month", stepmode="backward"),
-                        dict(count=6, label="6M", step="month", stepmode="backward"),
-                        dict(step="all", label="All"),
-                    ]
-                )
-            ),
+            rangeselector=dict(buttons=[
+                dict(count=1,  label="1Y",  step="year", stepmode="backward"),
+                dict(count=3,  label="3Y",  step="year", stepmode="backward"),
+                dict(count=5,  label="5Y",  step="year", stepmode="backward"),
+                dict(count=10, label="10Y", step="year", stepmode="backward"),
+                dict(step="all", label="All"),
+            ]),
             rangeslider=dict(visible=True),
             type="date",
         ),
         yaxis=dict(title="Implied Growth (%)", side="left"),
         template=None,
-        updatemenus=[
-            dict(
-                type="buttons",
-                direction="right",
-                x=0.0,
-                xanchor="left",
-                y=1.16,
-                yanchor="top",
-                buttons=[
-                    dict(label="Daily", method="update", args=[{"visible": vis_daily}, {}]),
-                    dict(label="Weekly", method="update", args=[{"visible": vis_weekly}, {}]),
-                    dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
-                ],
-            )
-        ],
     )
+    if len(df_d.index):
+        xmax_hist = pd.Timestamp(df_d.index.max())
+        xmin = xmax_hist - pd.DateOffset(years=5)
+        xmax = xmax_hist
+        fig.update_xaxes(range=[xmin, xmax])
     return fig
 
 
@@ -475,24 +452,22 @@ def _eps_figure(
 ) -> Optional[go.Figure]:
     """Build the Plotly figure for EPS if data is available."""
 
-    def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
+    def mk_traces(df: pd.DataFrame) -> List[go.Scatter]:
         if "eps" not in df.columns:
             return []
         return [
             go.Scatter(
                 x=df.index,
                 y=df["eps"],
-                name=f"EPS ({tag})",
+                name="EPS",
                 mode="lines",
                 hovertemplate="$%{y:.2f}<extra></extra>",
             )
         ]
 
-    traces_d = mk_traces(df_d, "Daily")
-    traces_w = mk_traces(df_w, "Weekly")
-    traces_m = mk_traces(df_m, "Monthly")
+    traces_d = mk_traces(df_d)
 
-    if not any((traces_d, traces_w, traces_m)):
+    if not traces_d:
         return None
 
     # Decide y-axis type: log only when every daily EPS value is strictly positive.
@@ -506,16 +481,7 @@ def _eps_figure(
             _eps_forecast_trace(s_daily.index[-1], float(s_daily.iloc[-1]), fwd)
         ]
 
-    fig = go.Figure(data=traces_d + traces_w + traces_m + forecast_traces)
-    n_d, n_w, n_m, n_f = (
-        len(traces_d), len(traces_w), len(traces_m), len(forecast_traces)
-    )
-
-    vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_f
-    vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_f
-    vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_f
-    for i, v in enumerate(vis_weekly):
-        fig.data[i].visible = v
+    fig = go.Figure(data=traces_d + forecast_traces)
 
     fig.update_layout(
         title=f"{ticker} — EPS (TTM)",
@@ -523,37 +489,31 @@ def _eps_figure(
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.0),
         xaxis=dict(
             title="Date",
-            rangeselector=dict(
-                buttons=list(
-                    [
-                        dict(count=1, label="1M", step="month", stepmode="backward"),
-                        dict(count=3, label="3M", step="month", stepmode="backward"),
-                        dict(count=6, label="6M", step="month", stepmode="backward"),
-                        dict(step="all", label="All"),
-                    ]
-                )
-            ),
+            rangeselector=dict(buttons=[
+                dict(count=1,  label="1Y",  step="year", stepmode="backward"),
+                dict(count=3,  label="3Y",  step="year", stepmode="backward"),
+                dict(count=5,  label="5Y",  step="year", stepmode="backward"),
+                dict(count=10, label="10Y", step="year", stepmode="backward"),
+                dict(step="all", label="All"),
+            ]),
             rangeslider=dict(visible=True),
             type="date",
         ),
         yaxis=dict(title="EPS (USD)", tickprefix="$", type=yaxis_type),
         template=None,
-        updatemenus=[
-            dict(
-                type="buttons",
-                direction="right",
-                x=0.0,
-                xanchor="left",
-                y=1.16,
-                yanchor="top",
-                buttons=[
-                    dict(label="Daily",   method="update", args=[{"visible": vis_daily},   {}]),
-                    dict(label="Weekly",  method="update", args=[{"visible": vis_weekly},  {}]),
-                    dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
-                ],
-            )
-        ],
     )
+    if len(df_d.index):
+        xmax_hist = pd.Timestamp(df_d.index.max())
+        xmin = xmax_hist - pd.DateOffset(years=5)
+        xmax = xmax_hist
+        try:
+            if fwd and fwd.get("horizon_date"):
+                fh = pd.Timestamp(fwd["horizon_date"], tz="UTC") + pd.DateOffset(years=1)
+                if fh > xmax:
+                    xmax = fh
+        except Exception:
+            pass
+        fig.update_xaxes(range=[xmin, xmax])
     return fig
 
 def _eps_indexed_figure(
@@ -574,7 +534,7 @@ def _eps_indexed_figure(
         return None
     base = float(b.iloc[0])
 
-    def mk_traces(df: pd.DataFrame, tag: str) -> List[go.Scatter]:
+    def mk_traces(df: pd.DataFrame) -> List[go.Scatter]:
         if "eps" not in df.columns:
             return []
         s = df["eps"].dropna()
@@ -584,15 +544,13 @@ def _eps_indexed_figure(
             go.Scatter(
                 x=s.index,
                 y=s / base * 100,
-                name=f"EPS Indexed ({tag})",
+                name="EPS Indexed",
                 mode="lines",
                 hovertemplate="%{y:.1f}<extra></extra>",
             )
         ]
 
-    traces_d = mk_traces(df_d, "Daily")
-    traces_w = mk_traces(df_w, "Weekly")
-    traces_m = mk_traces(df_m, "Monthly")
+    traces_d = mk_traces(df_d)
 
     # Forecast trace (always visible).
     forecast_traces: List[go.Scatter] = []
@@ -602,16 +560,7 @@ def _eps_indexed_figure(
             _eps_forecast_trace(b.index[-1], last_eps_indexed, fwd, scale=100.0 / base)
         ]
 
-    fig = go.Figure(data=traces_d + traces_w + traces_m + forecast_traces)
-    n_d, n_w, n_m, n_f = (
-        len(traces_d), len(traces_w), len(traces_m), len(forecast_traces)
-    )
-
-    vis_daily   = [True]  * n_d + [False] * n_w + [False] * n_m + [True] * n_f
-    vis_weekly  = [False] * n_d + [True]  * n_w + [False] * n_m + [True] * n_f
-    vis_monthly = [False] * n_d + [False] * n_w + [True]  * n_m + [True] * n_f
-    for i, v in enumerate(vis_weekly):
-        fig.data[i].visible = v
+    fig = go.Figure(data=traces_d + forecast_traces)
 
     fig.update_layout(
         title=f"{ticker} — EPS (Indexed to 100)",
@@ -619,37 +568,31 @@ def _eps_indexed_figure(
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.0),
         xaxis=dict(
             title="Date",
-            rangeselector=dict(
-                buttons=list(
-                    [
-                        dict(count=1, label="1M", step="month", stepmode="backward"),
-                        dict(count=3, label="3M", step="month", stepmode="backward"),
-                        dict(count=6, label="6M", step="month", stepmode="backward"),
-                        dict(step="all", label="All"),
-                    ]
-                )
-            ),
+            rangeselector=dict(buttons=[
+                dict(count=1,  label="1Y",  step="year", stepmode="backward"),
+                dict(count=3,  label="3Y",  step="year", stepmode="backward"),
+                dict(count=5,  label="5Y",  step="year", stepmode="backward"),
+                dict(count=10, label="10Y", step="year", stepmode="backward"),
+                dict(step="all", label="All"),
+            ]),
             rangeslider=dict(visible=True),
             type="date",
         ),
         yaxis=dict(title="EPS (start=100)", type="log"),
         template=None,
-        updatemenus=[
-            dict(
-                type="buttons",
-                direction="right",
-                x=0.0,
-                xanchor="left",
-                y=1.16,
-                yanchor="top",
-                buttons=[
-                    dict(label="Daily",   method="update", args=[{"visible": vis_daily},   {}]),
-                    dict(label="Weekly",  method="update", args=[{"visible": vis_weekly},  {}]),
-                    dict(label="Monthly", method="update", args=[{"visible": vis_monthly}, {}]),
-                ],
-            )
-        ],
     )
+    if len(df_d.index):
+        xmax_hist = pd.Timestamp(df_d.index.max())
+        xmin = xmax_hist - pd.DateOffset(years=5)
+        xmax = xmax_hist
+        try:
+            if fwd and fwd.get("horizon_date"):
+                fh = pd.Timestamp(fwd["horizon_date"], tz="UTC") + pd.DateOffset(years=1)
+                if fh > xmax:
+                    xmax = fh
+        except Exception:
+            pass
+        fig.update_xaxes(range=[xmin, xmax])
     return fig
 
 
