@@ -50,7 +50,7 @@ def test_eps_figure_log_and_forecast():
     fwd = {"forward_eps_index":112.0,"horizon_date":"2027-06-28","growth_this_fy":0.25,
            "growth_next_fy":0.29,"coverage_weight":0.93}
     fig = g._eps_figure(d,w,m,"QQQ", fwd=fwd)
-    assert fig.layout.yaxis.type == "log"
+    assert fig.layout.yaxis.type == "linear"  # EPS dollar chart is now linear (Change B)
     fc = [t for t in fig.data if (t.name or "").lower().find("forecast") >= 0]
     assert fc, "expected a forecast trace"
     assert any(len(getattr(t,"x",[]) or []) >= 2 for t in fc)
