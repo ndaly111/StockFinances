@@ -388,10 +388,10 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
             )
         return traces
 
-    traces_d = mk_traces(df_d)
-    stat_lines = _stat_lines(df_d)
+    traces_m = mk_traces(df_m)
+    stat_lines = _stat_lines(df_d)  # horizontal refs stay on full daily history
 
-    fig = go.Figure(data=traces_d + stat_lines)
+    fig = go.Figure(data=traces_m + stat_lines)
 
     fig.update_layout(
         title=f"{ticker} — Implied Growth (TTM & Forward) — avg and ±1σ shown",
@@ -412,8 +412,8 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
         yaxis=dict(title="Implied Growth (%)", side="left"),
         template=None,
     )
-    if len(df_d.index):
-        xmax_hist = pd.Timestamp(df_d.index.max())
+    if len(df_m.index):
+        xmax_hist = pd.Timestamp(df_m.index.max())
         xmin = xmax_hist - pd.DateOffset(years=5)
         xmax = xmax_hist
         fig.update_xaxes(range=[xmin, xmax])
@@ -465,23 +465,21 @@ def _eps_figure(
             )
         ]
 
-    traces_d = mk_traces(df_d)
+    traces_m = mk_traces(df_m)
 
-    if not traces_d:
+    if not traces_m:
         return None
 
-    # Decide y-axis type: log only when every daily EPS value is strictly positive.
-    s_daily = df_d["eps"].dropna() if "eps" in df_d.columns else pd.Series(dtype=float)
-    yaxis_type = "log" if (not s_daily.empty and (s_daily > 0).all()) else "linear"
+    s_monthly = df_m["eps"].dropna() if "eps" in df_m.columns else pd.Series(dtype=float)
 
     # Forecast trace (always visible — treated like stat lines in _growth_figure).
     forecast_traces: List[go.Scatter] = []
-    if fwd is not None and not s_daily.empty:
+    if fwd is not None and not s_monthly.empty:
         forecast_traces = [
-            _eps_forecast_trace(s_daily.index[-1], float(s_daily.iloc[-1]), fwd)
+            _eps_forecast_trace(s_monthly.index[-1], float(s_monthly.iloc[-1]), fwd)
         ]
 
-    fig = go.Figure(data=traces_d + forecast_traces)
+    fig = go.Figure(data=traces_m + forecast_traces)
 
     fig.update_layout(
         title=f"{ticker} — EPS (TTM)",
@@ -499,11 +497,11 @@ def _eps_figure(
             rangeslider=dict(visible=True),
             type="date",
         ),
-        yaxis=dict(title="EPS (USD)", tickprefix="$", type=yaxis_type),
+        yaxis=dict(title="EPS (USD)", tickprefix="$", type="linear"),
         template=None,
     )
-    if len(df_d.index):
-        xmax_hist = pd.Timestamp(df_d.index.max())
+    if len(df_m.index):
+        xmax_hist = pd.Timestamp(df_m.index.max())
         xmin = xmax_hist - pd.DateOffset(years=5)
         xmax = xmax_hist
         try:
@@ -529,7 +527,7 @@ def _eps_indexed_figure(
     would be undefined).  The y-axis is always log because the series is
     strictly positive by construction once the base guard passes.
     """
-    b = df_d["eps"].dropna() if "eps" in df_d.columns else pd.Series(dtype=float)
+    b = df_m["eps"].dropna() if "eps" in df_m.columns else pd.Series(dtype=float)
     if b.empty or b.iloc[0] <= 0:
         return None
     base = float(b.iloc[0])
@@ -550,7 +548,7 @@ def _eps_indexed_figure(
             )
         ]
 
-    traces_d = mk_traces(df_d)
+    traces_m = mk_traces(df_m)
 
     # Forecast trace (always visible).
     forecast_traces: List[go.Scatter] = []
@@ -560,7 +558,7 @@ def _eps_indexed_figure(
             _eps_forecast_trace(b.index[-1], last_eps_indexed, fwd, scale=100.0 / base)
         ]
 
-    fig = go.Figure(data=traces_d + forecast_traces)
+    fig = go.Figure(data=traces_m + forecast_traces)
 
     fig.update_layout(
         title=f"{ticker} — EPS (Indexed to 100)",
@@ -581,8 +579,8 @@ def _eps_indexed_figure(
         yaxis=dict(title="EPS (start=100)", type="log"),
         template=None,
     )
-    if len(df_d.index):
-        xmax_hist = pd.Timestamp(df_d.index.max())
+    if len(df_m.index):
+        xmax_hist = pd.Timestamp(df_m.index.max())
         xmin = xmax_hist - pd.DateOffset(years=5)
         xmax = xmax_hist
         try:
@@ -614,7 +612,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     </div>
 """
 
-    eps_section = _measured_card("EPS (log scale)", eps_chart_html, "ro-eps", "eps-chart") if eps_chart_html else ""
+    eps_section = _measured_card("EPS ($)", eps_chart_html, "ro-eps", "eps-chart") if eps_chart_html else ""
     eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart") if eps_indexed_html else ""
 
     measure_script = """<script>
@@ -644,10 +642,39 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     });
     gd.__clear=function(){ anchor=null; ro.innerHTML='Click a point, then another, to measure % change.'; };
   }
-  function init(){ attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed'); }
+  function init(){ attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed'); ['growth-chart','eps-chart','eps-indexed-chart'].forEach(autoscaleY); }
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
 })();
 function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear) gd.__clear(); }
+function autoscaleY(divId){
+  var gd=document.getElementById(divId);
+  if(!gd) return;
+  function fit(){
+    var xa=gd.layout&&gd.layout.xaxis, x0=-Infinity, x1=Infinity;
+    if(xa&&xa.range){ x0=new Date(xa.range[0]).getTime(); x1=new Date(xa.range[1]).getTime(); }
+    var ylog=(gd.layout.yaxis&&gd.layout.yaxis.type==='log');
+    var lo=Infinity, hi=-Infinity;
+    (gd.data||[]).forEach(function(tr){
+      var xs=tr.x, ys=tr.y; if(!xs||!ys) return;
+      for(var i=0;i<xs.length;i++){
+        var xv=new Date(xs[i]).getTime(); if(xv<x0||xv>x1) continue;
+        var yv=ys[i]; if(yv==null||!isFinite(yv)||(ylog&&yv<=0)) continue;
+        if(yv<lo)lo=yv; if(yv>hi)hi=yv;
+      }
+    });
+    if(lo===Infinity||!(hi>lo)) return;
+    var r;
+    if(ylog){ var a=Math.log10(lo), b=Math.log10(hi), p=(b-a)*0.08||0.05; r=[a-p,b+p]; }
+    else { var p=(hi-lo)*0.08||Math.abs(hi)*0.02||1; r=[lo-p,hi+p]; }
+    Plotly.relayout(gd, {'yaxis.range': r});
+  }
+  if(gd.on){
+    gd.on('plotly_relayout', function(ev){
+      if(('xaxis.range[0]' in ev) || ('xaxis.autorange' in ev)) fit();
+    });
+    gd.on('plotly_afterplot', function(){ if(!gd.__yfit){ gd.__yfit=true; fit(); } });
+  }
+}
 </script>"""
 
     marquee = ("SPY / QQQ VALUATION TERMINAL   *   IMPLIED GROWTH   *   FORWARD EPS   *   "
@@ -744,7 +771,7 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
     _apply_retro_layout(fig_growth)
-    chart_growth_html = to_html(fig_growth, include_plotlyjs="cdn", full_html=False, default_height="600px")
+    chart_growth_html = to_html(fig_growth, include_plotlyjs="cdn", full_html=False, default_height="600px", div_id="growth-chart")
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
