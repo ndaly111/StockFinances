@@ -612,7 +612,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     </div>
 """
 
-    eps_section = _measured_card("EPS (log scale)", eps_chart_html, "ro-eps", "eps-chart") if eps_chart_html else ""
+    eps_section = _measured_card("EPS ($)", eps_chart_html, "ro-eps", "eps-chart") if eps_chart_html else ""
     eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart") if eps_indexed_html else ""
 
     measure_script = """<script>
