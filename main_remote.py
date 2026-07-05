@@ -431,14 +431,12 @@ def mini_main():
             # largest single time saver (~5-6 min).
             prefetch_yfinance_bulk(tickers)
 
-        # Auto-extend: scrape forward EPS for index constituents too (NOT added to
-        # the site/dashboard ticker set). Does NOT modify tickers.csv.
+        # Site tickers get forward EPS from the Zacks batch below. Index
+        # constituents beyond the site set are enriched separately from FMP just
+        # before the bottom-up snapshot (see the FMP enrichment step lower down) —
+        # the old managed_scrape_tickers() union read a table written later in the
+        # same run and so was always empty (constituent coverage never grew).
         scrape_tickers = list(tickers)
-        try:
-            from index_holdings import managed_scrape_tickers
-            scrape_tickers = sorted(set(tickers) | managed_scrape_tickers(conn))
-        except Exception as exc:
-            print(f"[WARN] constituent scrape-union failed: {exc}")
 
         print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers...")
         scrape_forward_data_batch(scrape_tickers, max_workers=6)
@@ -505,6 +503,31 @@ def mini_main():
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
+        # Enrich the highest-weight uncovered index constituents from FMP so the
+        # bottom-up aggregation can clear the 85% coverage gate. `have` is the set
+        # already carrying usable data (site tickers), so FMP only fills genuine
+        # gaps and never clobbers site-ticker rows. Target 92% to leave headroom
+        # for names FMP can't return. Best-effort: failure just leaves coverage low.
+        try:
+            from index_holdings import fetch_holdings, uncovered_for_target
+            from forward_eps_bottom_up import load_constituent_financials
+            from index_constituent_fmp import enrich_constituents_fmp
+            need = set()
+            for idx in ("SPY", "QQQ"):
+                try:
+                    holdings = fetch_holdings(idx)
+                except Exception as e:
+                    print(f"[WARN] {idx} holdings fetch failed: {e}")
+                    continue
+                have = set(load_constituent_financials(conn, [t for t, _ in holdings]))
+                need |= set(uncovered_for_target(holdings, have, target_pct=92.0))
+            if need:
+                print(f"[main] FMP-enriching {len(need)} index constituents for coverage...")
+                n_ok = enrich_constituents_fmp(conn, sorted(need))
+                print(f"[main] FMP constituent enrichment: {n_ok}/{len(need)} filled")
+        except Exception as exc:
+            print(f"[WARN] FMP constituent enrichment failed: {exc}")
+
         # Bottom-up forward EPS for SPY/QQQ from constituent estimates (see index_forward_eps).
         # Snapshotted daily so the growth-page EPS chart gets a forward point.
         try:
