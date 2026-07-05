@@ -3,26 +3,35 @@
     "ABEO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.44,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.61,
-      "max_price": 5.78,
-      "max_price_date": "2026-05-29",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.4,
+      "max_price": 6.4,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
+    },
+    "ABTC": {
+      "first_seen_date": "2026-07-05",
+      "first_seen_price": 0.5617,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 0.5617,
+      "max_price": 0.5617,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ACIC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.8,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.15,
-      "max_price": 11.15,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 11.54,
+      "max_price": 11.54,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ACIU": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.83,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.56,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.51,
       "max_price": 2.83,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -30,17 +39,17 @@
     "ACNT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 14.45,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 13.9,
-      "max_price": 14.45,
-      "max_price_date": "2026-05-22",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 15.26,
+      "max_price": 15.26,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ACP": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.29,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.19,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.28,
       "max_price": 5.39,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -48,8 +57,8 @@
     "ACU": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 42.16,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 48.94,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 47.61,
       "max_price": 48.94,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -57,11 +66,11 @@
     "AIFU": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.17,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 46.46,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 42.15,
       "max_price": 49.31,
       "max_price_date": "2026-06-21",
-      "on_current_list": false
+      "on_current_list": true
     },
     "AII": {
       "first_seen_date": "2026-05-22",
@@ -75,8 +84,8 @@
     "AIRG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 7.095,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.23,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.19,
       "max_price": 7.25,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -84,17 +93,17 @@
     "ALLT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 7.7,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.81,
-      "max_price": 8.16,
-      "max_price_date": "2026-05-31",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.43,
+      "max_price": 8.43,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ALOT": {
       "first_seen_date": "2026-06-14",
       "first_seen_price": 16.97,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 28.47,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 28.51,
       "max_price": 28.57,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -102,17 +111,17 @@
     "ALTI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.3,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.55,
-      "max_price": 3.55,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.7,
+      "max_price": 3.7,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ALTO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.7,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.19,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.56,
       "max_price": 5.7,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -129,26 +138,26 @@
     "ANIK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 14.88,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 15.1,
-      "max_price": 15.1,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 15.36,
+      "max_price": 15.36,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "AOUT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 9.6,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.6,
-      "max_price": 11.6,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.37,
+      "max_price": 13.37,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "API": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.64,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.06,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.01,
       "max_price": 4.81,
       "max_price_date": "2026-06-07",
       "on_current_list": true
@@ -156,8 +165,8 @@
     "APT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.27,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.25,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.5,
       "max_price": 6.27,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -165,8 +174,8 @@
     "APWC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 1.5,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.65,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.6,
       "max_price": 1.99,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -174,8 +183,8 @@
     "ARL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 14.05,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 21.5,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 21.22,
       "max_price": 21.5,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -183,8 +192,8 @@
     "ARQ": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.46,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.34,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.27,
       "max_price": 2.84,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -192,8 +201,8 @@
     "ASC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 18.83,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 15.12,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 14.86,
       "max_price": 18.83,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -210,8 +219,8 @@
     "ASLE": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.24,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.55,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.57,
       "max_price": 6.62,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -219,8 +228,8 @@
     "ASUR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.68,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.9,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.19,
       "max_price": 9.25,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -228,8 +237,8 @@
     "ASYS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 22.08,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.55,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 18.8,
       "max_price": 23.99,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -237,8 +246,8 @@
     "AUDC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 9.12,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.39,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.72,
       "max_price": 9.84,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -246,10 +255,10 @@
     "AVNW": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 17.59,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 20.47,
-      "max_price": 20.47,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 21.17,
+      "max_price": 21.17,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "AVO": {
@@ -273,8 +282,8 @@
     "AWP": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.66,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.93,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 11.88,
       "max_price": 11.93,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -282,8 +291,8 @@
     "AXR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 26.01,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 24.89,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 25.84,
       "max_price": 27.02,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -291,8 +300,8 @@
     "BANX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 19.69,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.41,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 19.72,
       "max_price": 19.85,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -300,10 +309,10 @@
     "BBSI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 31.52,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 36.06,
-      "max_price": 36.06,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 37.91,
+      "max_price": 37.91,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "BCV": {
@@ -318,8 +327,8 @@
     "BGT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.84,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 10.52,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.64,
       "max_price": 10.84,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -327,8 +336,8 @@
     "BGY": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.71,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.66,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.73,
       "max_price": 5.81,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -336,10 +345,10 @@
     "BHK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.88,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.08,
-      "max_price": 9.08,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.15,
+      "max_price": 9.15,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "BKKT": {
@@ -354,26 +363,26 @@
     "BME": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 39.61,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 42.41,
-      "max_price": 42.41,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 43.65,
+      "max_price": 43.65,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "BOE": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.85,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.83,
-      "max_price": 12.08,
-      "max_price_date": "2026-05-31",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.1,
+      "max_price": 12.1,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "BOOM": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.9,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.05,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.12,
       "max_price": 7.25,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -385,13 +394,13 @@
       "last_seen_price": 29.77,
       "max_price": 29.77,
       "max_price_date": "2026-06-28",
-      "on_current_list": true
+      "on_current_list": false
     },
     "BRW": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.75,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.58,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.65,
       "max_price": 6.84,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -399,17 +408,17 @@
     "BSIN": {
       "first_seen_date": "2026-06-14",
       "first_seen_price": 1.03,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.06,
-      "max_price": 1.06,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.1,
+      "max_price": 1.1,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "BSL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.964,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.92,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.99,
       "max_price": 13.005,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -426,8 +435,8 @@
     "CAAS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.63,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.44,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.47,
       "max_price": 4.66,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -444,8 +453,8 @@
     "CANG": {
       "first_seen_date": "2026-06-14",
       "first_seen_price": 0.284,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 0.2015,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 0.2122,
       "max_price": 0.284,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -453,8 +462,8 @@
     "CCLD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.28,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.15,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.22,
       "max_price": 2.35,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -462,8 +471,8 @@
     "CDRO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 9.325,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.64,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.56,
       "max_price": 10.2,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -475,7 +484,7 @@
       "last_seen_price": 5.84,
       "max_price": 5.84,
       "max_price_date": "2026-06-28",
-      "on_current_list": true
+      "on_current_list": false
     },
     "CEV": {
       "first_seen_date": "2026-05-22",
@@ -489,8 +498,8 @@
     "CGNT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.1,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.33,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.99,
       "max_price": 11.57,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -498,8 +507,8 @@
     "CHCI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 14.86,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 15.45,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 16.09,
       "max_price": 16.54,
       "max_price_date": "2026-06-07",
       "on_current_list": true
@@ -507,8 +516,8 @@
     "CHW": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.65,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.74,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.76,
       "max_price": 9.12,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -525,8 +534,8 @@
     "CIK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.525,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.45,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.47,
       "max_price": 2.55,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -534,8 +543,8 @@
     "CINT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.33,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.35,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.51,
       "max_price": 4.04,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -543,17 +552,17 @@
     "CLAR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.15,
-      "max_price": 3.15,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.16,
+      "max_price": 3.16,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "CMCL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 22.8,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.81,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 20.09,
       "max_price": 23.76,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -561,8 +570,8 @@
     "CMT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 23.53,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 23.67,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 23.45,
       "max_price": 24.64,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -570,8 +579,8 @@
     "CPIX": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 5.87,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.75,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.37,
       "max_price": 6.75,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -588,8 +597,8 @@
     "CRNT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.66,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.36,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.42,
       "max_price": 2.99,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -597,8 +606,8 @@
     "CRSR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 7.7,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.61,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.9,
       "max_price": 12.14,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -606,8 +615,8 @@
     "CSHR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.27,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.77,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.96,
       "max_price": 5.27,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -615,10 +624,10 @@
     "CTKB": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.01,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.48,
-      "max_price": 4.48,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.59,
+      "max_price": 4.59,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "CTW": {
@@ -633,10 +642,10 @@
     "CURI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.55,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.56,
-      "max_price": 2.86,
-      "max_price_date": "2026-05-31",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.91,
+      "max_price": 2.91,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "CVGW": {
@@ -651,26 +660,26 @@
     "DAKT": {
       "first_seen_date": "2026-06-28",
       "first_seen_price": 19.53,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.53,
-      "max_price": 19.53,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 19.91,
+      "max_price": 19.91,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "DGICA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 17.34,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 18.71,
-      "max_price": 18.71,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 19.29,
+      "max_price": 19.29,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "DGICB": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 18.95,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 24.0,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 23.6,
       "max_price": 24.0,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -687,7 +696,7 @@
     "DHX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.72,
-      "last_seen_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
       "last_seen_price": 3.7,
       "max_price": 3.8,
       "max_price_date": "2026-06-21",
@@ -696,11 +705,11 @@
     "DHY": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 1.75,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.75,
-      "max_price": 1.76,
-      "max_price_date": "2026-05-29",
-      "on_current_list": false
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.79,
+      "max_price": 1.79,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
     },
     "DJCO": {
       "first_seen_date": "2026-05-22",
@@ -723,10 +732,10 @@
     "DSP": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.19,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.79,
-      "max_price": 12.72,
-      "max_price_date": "2026-05-31",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.96,
+      "max_price": 12.96,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "DSU": {
@@ -736,7 +745,7 @@
       "last_seen_price": 9.77,
       "max_price": 9.84,
       "max_price_date": "2026-05-29",
-      "on_current_list": true
+      "on_current_list": false
     },
     "EFR": {
       "first_seen_date": "2026-05-22",
@@ -768,26 +777,26 @@
     "EHTH": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 1.58,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.52,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.6,
       "max_price": 1.81,
       "max_price_date": "2026-06-14",
-      "on_current_list": false
+      "on_current_list": true
     },
     "EIG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 43.9,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 50.74,
-      "max_price": 50.74,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 51.93,
+      "max_price": 51.93,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ELA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 23.85,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 27.79,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 25.56,
       "max_price": 27.79,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -795,17 +804,17 @@
     "ELMD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 38.22,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 41.46,
-      "max_price": 41.46,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 45.43,
+      "max_price": 45.43,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ELTK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.375,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.3,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.2999,
       "max_price": 9.415,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -813,17 +822,17 @@
     "EML": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 21.04,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 24.34,
-      "max_price": 24.34,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 29.11,
+      "max_price": 29.11,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "EPSN": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.19,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.42,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.4,
       "max_price": 6.19,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -840,17 +849,17 @@
     "ERH": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.11,
-      "max_price": 12.11,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.14,
+      "max_price": 12.14,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ESCA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 18.7,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.28,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 19.06,
       "max_price": 19.28,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -858,8 +867,8 @@
     "ESEA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 65.21,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 66.35,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 66.38,
       "max_price": 71.52,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -867,8 +876,8 @@
     "ESOA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 17.47,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 18.94,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 17.86,
       "max_price": 18.94,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -876,8 +885,8 @@
     "ETD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 19.74,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 22.53,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 21.69,
       "max_price": 22.53,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -889,7 +898,7 @@
       "last_seen_price": 30.16,
       "max_price": 30.97,
       "max_price_date": "2026-05-31",
-      "on_current_list": true
+      "on_current_list": false
     },
     "EVG": {
       "first_seen_date": "2026-05-22",
@@ -898,15 +907,15 @@
       "last_seen_price": 10.69,
       "max_price": 10.91,
       "max_price_date": "2026-05-31",
-      "on_current_list": true
+      "on_current_list": false
     },
     "EVN": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.57,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.1,
-      "max_price": 11.1,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 11.18,
+      "max_price": 11.18,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "FATN": {
@@ -921,10 +930,10 @@
     "FBIO": {
       "first_seen_date": "2026-06-14",
       "first_seen_price": 2.77,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.76,
-      "max_price": 2.99,
-      "max_price_date": "2026-06-21",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.04,
+      "max_price": 3.04,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "FEIM": {
@@ -957,8 +966,8 @@
     "FLXS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 56.21,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 72.91,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 72.49,
       "max_price": 72.91,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -975,8 +984,8 @@
     "FPH": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.9,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.46,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.22,
       "max_price": 5.46,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -984,8 +993,8 @@
     "FRA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.05,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 10.84,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.92,
       "max_price": 11.19,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -993,8 +1002,8 @@
     "FRPH": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 22.63,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 25.38,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 25.31,
       "max_price": 25.38,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1002,8 +1011,8 @@
     "FSI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.59,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.82,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.25,
       "max_price": 6.82,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1011,8 +1020,8 @@
     "FSTR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 38.11,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 44.77,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 42.76,
       "max_price": 44.77,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1020,17 +1029,17 @@
     "FT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.05,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.05,
-      "max_price": 8.05,
-      "max_price_date": "2026-05-22",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.1,
+      "max_price": 8.1,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "FTF": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.86,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.77,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.81,
       "max_price": 5.88,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1038,8 +1047,8 @@
     "FTK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 19.92,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 22.16,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 22.19,
       "max_price": 24.64,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -1053,11 +1062,20 @@
       "max_price_date": "2026-05-29",
       "on_current_list": false
     },
+    "FWDI": {
+      "first_seen_date": "2026-07-05",
+      "first_seen_price": 4.81,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.81,
+      "max_price": 4.81,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
+    },
     "GASS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 9.92,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.16,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.21,
       "max_price": 9.92,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -1065,8 +1083,8 @@
     "GENC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 14.15,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 15.18,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 15.02,
       "max_price": 15.18,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1083,8 +1101,8 @@
     "GF": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.78,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.5,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 11.57,
       "max_price": 12.21,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1092,10 +1110,10 @@
     "GLO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.87,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.94,
-      "max_price": 6.02,
-      "max_price_date": "2026-05-29",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.14,
+      "max_price": 6.14,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "GLOO": {
@@ -1110,8 +1128,8 @@
     "GLQ": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.47,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.41,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.63,
       "max_price": 8.71,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1119,17 +1137,17 @@
     "GLV": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.22,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.5,
-      "max_price": 6.5,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.56,
+      "max_price": 6.56,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "GROY": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 3.14,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.81,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.86,
       "max_price": 3.25,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1137,8 +1155,8 @@
     "GRRR": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 14.58,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 17.48,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 18.51,
       "max_price": 20.48,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1146,8 +1164,8 @@
     "GSM": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.29,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.33,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.27,
       "max_price": 4.47,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1155,35 +1173,44 @@
     "GUT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.24,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.45,
-      "max_price": 6.45,
-      "max_price_date": "2026-06-28",
-      "on_current_list": false
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.6,
+      "max_price": 6.6,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
     },
     "HBB": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 19.61,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 21.0,
-      "max_price": 21.0,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 22.73,
+      "max_price": 22.73,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "HIPO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 26.2,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 27.46,
-      "max_price": 27.46,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 28.93,
+      "max_price": 28.93,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
+    },
+    "HLP": {
+      "first_seen_date": "2026-07-05",
+      "first_seen_price": 0.752,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 0.752,
+      "max_price": 0.752,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "HNNA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.3,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 10.32,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.99,
       "max_price": 10.32,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1191,10 +1218,10 @@
     "HNST": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.41,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.6,
-      "max_price": 3.77,
-      "max_price_date": "2026-06-21",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.9,
+      "max_price": 3.9,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "HOFT": {
@@ -1209,8 +1236,8 @@
     "HOUR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.02,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.8,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.84,
       "max_price": 2.19,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -1218,17 +1245,17 @@
     "HRTG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 22.88,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 25.86,
-      "max_price": 25.86,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 27.12,
+      "max_price": 27.12,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "HTD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 25.44,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 25.6,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 25.58,
       "max_price": 25.75,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -1236,8 +1263,8 @@
     "HTLM": {
       "first_seen_date": "2026-06-07",
       "first_seen_price": 2.14,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.82,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.93,
       "max_price": 2.14,
       "max_price_date": "2026-06-07",
       "on_current_list": true
@@ -1254,19 +1281,19 @@
     "IBEX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 32.02,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 30.08,
-      "max_price": 32.02,
-      "max_price_date": "2026-05-22",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 32.13,
+      "max_price": 32.13,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "IBTA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 32.22,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 33.96,
-      "max_price": 34.58,
-      "max_price_date": "2026-05-29",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 35.57,
+      "max_price": 35.57,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "IGA": {
@@ -1276,22 +1303,22 @@
       "last_seen_price": 9.72,
       "max_price": 9.89,
       "max_price_date": "2026-05-31",
-      "on_current_list": true
+      "on_current_list": false
     },
     "IIIV": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 20.02,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 21.29,
-      "max_price": 21.29,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 21.69,
+      "max_price": 21.69,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "IMPP": {
       "first_seen_date": "2026-05-31",
       "first_seen_price": 5.11,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.86,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.76,
       "max_price": 5.25,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -1299,10 +1326,10 @@
     "INFU": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 9.66,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 10.05,
-      "max_price": 10.05,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.16,
+      "max_price": 10.16,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "INNV": {
@@ -1335,8 +1362,8 @@
     "JAKK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 22.18,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 23.9,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 23.44,
       "max_price": 23.9,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1353,8 +1380,8 @@
     "JLHL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 19.5,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 14.115,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 7.33,
       "max_price": 44.8,
       "max_price_date": "2026-06-07",
       "on_current_list": true
@@ -1362,8 +1389,8 @@
     "JOUT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 43.56,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 46.77,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 43.48,
       "max_price": 46.8,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -1371,8 +1398,8 @@
     "JRSH": {
       "first_seen_date": "2026-06-21",
       "first_seen_price": 4.47,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.56,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.45,
       "max_price": 4.56,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1380,8 +1407,8 @@
     "JYNT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.95,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.52,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.97,
       "max_price": 9.58,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -1389,8 +1416,8 @@
     "KE": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 24.6,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 24.5,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 25.09,
       "max_price": 26.49,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1398,17 +1425,17 @@
     "KELYA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.66,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.73,
-      "max_price": 12.73,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.08,
+      "max_price": 13.08,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "KGEI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.87,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.58,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.64,
       "max_price": 5.87,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -1416,35 +1443,35 @@
     "KRMD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.1,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.46,
-      "max_price": 4.46,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.49,
+      "max_price": 4.49,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "KRT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 26.55,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 31.72,
-      "max_price": 31.72,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 34.25,
+      "max_price": 34.25,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "LAKE": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.43,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 10.8,
-      "max_price": 10.98,
-      "max_price_date": "2026-06-14",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.36,
+      "max_price": 12.36,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "LE": {
       "first_seen_date": "2026-06-21",
       "first_seen_price": 12.44,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.89,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.88,
       "max_price": 12.44,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -1452,29 +1479,29 @@
     "LEGH": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 22.99,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 26.04,
-      "max_price": 26.04,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 26.38,
+      "max_price": 26.38,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "LFMD": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 4.19,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.13,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.87,
       "max_price": 4.89,
       "max_price_date": "2026-06-07",
-      "on_current_list": false
+      "on_current_list": true
     },
     "LFVN": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 5.61,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.62,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.22,
       "max_price": 9.97,
       "max_price_date": "2026-06-07",
-      "on_current_list": false
+      "on_current_list": true
     },
     "LGCL": {
       "first_seen_date": "2026-05-24",
@@ -1497,10 +1524,10 @@
     "LGI": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 18.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 18.04,
-      "max_price": 18.35,
-      "max_price_date": "2026-05-31",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 18.62,
+      "max_price": 18.62,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "LIEN": {
@@ -1515,8 +1542,8 @@
     "LMB": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 71.36,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 81.26,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 76.0,
       "max_price": 81.26,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1524,17 +1551,17 @@
     "LOAN": {
       "first_seen_date": "2026-06-28",
       "first_seen_price": 4.45,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.45,
-      "max_price": 4.45,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.66,
+      "max_price": 4.66,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "LODE": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.82,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.34,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.19,
       "max_price": 4.77,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -1542,8 +1569,8 @@
     "LPTH": {
       "first_seen_date": "2026-06-07",
       "first_seen_price": 14.93,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 13.13,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 14.56,
       "max_price": 15.15,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -1560,8 +1587,8 @@
     "LTRX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 7.08,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.53,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.49,
       "max_price": 8.45,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1569,17 +1596,17 @@
     "LWAY": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 25.17,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 29.39,
-      "max_price": 29.39,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 30.94,
+      "max_price": 30.94,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "LXFR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 16.23,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 18.57,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 17.14,
       "max_price": 19.08,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -1605,8 +1632,8 @@
     "MAKO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.11,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.47,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 7.65,
       "max_price": 8.7,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1614,8 +1641,8 @@
     "MAMA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 14.81,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.94,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 18.68,
       "max_price": 19.94,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1632,8 +1659,8 @@
     "MBUU": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 27.57,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 28.75,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 25.07,
       "max_price": 28.75,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1641,8 +1668,8 @@
     "MCI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 17.37,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 17.42,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 17.36,
       "max_price": 18.04,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1659,10 +1686,19 @@
     "MDXG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.62,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.93,
-      "max_price": 3.93,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.95,
+      "max_price": 3.95,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
+    },
+    "MFI": {
+      "first_seen_date": "2026-07-05",
+      "first_seen_price": 9.11,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.11,
+      "max_price": 9.11,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "MFM": {
@@ -1672,13 +1708,13 @@
       "last_seen_price": 5.55,
       "max_price": 5.55,
       "max_price_date": "2026-06-28",
-      "on_current_list": true
+      "on_current_list": false
     },
     "MGPI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 18.05,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 17.13,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 16.98,
       "max_price": 18.46,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1686,8 +1722,8 @@
     "MITK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 16.03,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.29,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 19.21,
       "max_price": 19.29,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1695,8 +1731,8 @@
     "MLR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 46.56,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 52.93,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 49.01,
       "max_price": 52.93,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1708,13 +1744,13 @@
       "last_seen_price": 4.43,
       "max_price": 4.54,
       "max_price_date": "2026-05-31",
-      "on_current_list": true
+      "on_current_list": false
     },
     "MOV": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 28.45,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 39.58,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 37.61,
       "max_price": 39.58,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1722,8 +1758,8 @@
     "MPTI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 83.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 93.53,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 91.02,
       "max_price": 98.61,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -1731,8 +1767,8 @@
     "MPV": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 16.94,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 16.71,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 16.33,
       "max_price": 17.48,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1740,8 +1776,8 @@
     "MTA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.79,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.42,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 7.64,
       "max_price": 7.86,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1749,8 +1785,8 @@
     "MTRX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.73,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 13.87,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.53,
       "max_price": 13.98,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -1758,17 +1794,17 @@
     "MYGN": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.82,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.88,
-      "max_price": 5.88,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.99,
+      "max_price": 5.99,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "NATR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 21.85,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 21.02,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 21.47,
       "max_price": 21.85,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -1785,8 +1821,8 @@
     "NC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 48.99,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 51.71,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 48.4,
       "max_price": 53.33,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -1794,10 +1830,10 @@
     "NCMI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.99,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.75,
-      "max_price": 3.75,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.97,
+      "max_price": 3.97,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "NCSM": {
@@ -1812,8 +1848,8 @@
     "NEGG": {
       "first_seen_date": "2026-05-31",
       "first_seen_price": 18.57,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 16.49,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 14.91,
       "max_price": 18.57,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1830,10 +1866,10 @@
     "NEXN": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.28,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.66,
-      "max_price": 8.66,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.55,
+      "max_price": 9.55,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "NHS": {
@@ -1843,13 +1879,13 @@
       "last_seen_price": 6.12,
       "max_price": 6.4,
       "max_price_date": "2026-05-31",
-      "on_current_list": true
+      "on_current_list": false
     },
     "NL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 7.05,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.86,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.28,
       "max_price": 7.36,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -1866,17 +1902,26 @@
     "NRDS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.35,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.08,
-      "max_price": 9.08,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.47,
+      "max_price": 9.47,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
+    },
+    "NSLR": {
+      "first_seen_date": "2026-07-05",
+      "first_seen_price": 11.79,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 11.79,
+      "max_price": 11.79,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "NTGR": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 25.79,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 22.84,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 21.5,
       "max_price": 25.99,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -1884,35 +1929,35 @@
     "NTIC": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 8.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.59,
-      "max_price": 8.59,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.63,
+      "max_price": 8.63,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "NTWK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.23,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.56,
-      "max_price": 4.66,
-      "max_price_date": "2026-05-29",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.71,
+      "max_price": 4.71,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "NUS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.93,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.28,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.01,
       "max_price": 6.0,
       "max_price_date": "2026-05-29",
-      "on_current_list": false
+      "on_current_list": true
     },
     "OBE": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.11,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.13,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.01,
       "max_price": 12.11,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -1920,8 +1965,8 @@
     "OFLX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 29.61,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 31.71,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 31.35,
       "max_price": 31.71,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1929,17 +1974,17 @@
     "OIA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.01,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.18,
-      "max_price": 6.18,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.24,
+      "max_price": 6.24,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "OIS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.85,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.08,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 7.72,
       "max_price": 8.85,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -1956,17 +2001,17 @@
     "OPXS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.855,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.8,
-      "max_price": 13.01,
-      "max_price_date": "2026-06-21",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.41,
+      "max_price": 13.41,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ORMP": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.99,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.67,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.6,
       "max_price": 4.67,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1974,8 +2019,8 @@
     "OSG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.61,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.67,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.34,
       "max_price": 6.67,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -1992,8 +2037,8 @@
     "PAL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.07,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.19,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.38,
       "max_price": 8.35,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -2001,10 +2046,10 @@
     "PAYS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.72,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.17,
-      "max_price": 8.17,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.26,
+      "max_price": 8.26,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "PBYI": {
@@ -2014,22 +2059,22 @@
       "last_seen_price": 8.11,
       "max_price": 8.11,
       "max_price_date": "2026-06-28",
-      "on_current_list": true
+      "on_current_list": false
     },
     "PCN": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.7,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.84,
-      "max_price": 11.84,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 11.87,
+      "max_price": 11.87,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "PCYO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.04,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.23,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.81,
       "max_price": 11.23,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2037,17 +2082,26 @@
     "PDEX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 63.52,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 61.47,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 61.33,
       "max_price": 67.5,
       "max_price_date": "2026-05-29",
+      "on_current_list": true
+    },
+    "PDS": {
+      "first_seen_date": "2026-07-05",
+      "first_seen_price": 75.69,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 75.69,
+      "max_price": 75.69,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "PERF": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 1.72,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.66,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.69,
       "max_price": 1.73,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -2055,34 +2109,34 @@
     "PESI": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 8.95,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.25,
-      "max_price": 12.25,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.51,
+      "max_price": 13.51,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "PFL": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 7.71,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.74,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 7.85,
       "max_price": 7.87,
       "max_price_date": "2026-05-31",
-      "on_current_list": false
+      "on_current_list": true
     },
     "PHAR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.6,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 13.34,
-      "max_price": 13.66,
-      "max_price_date": "2026-05-29",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.77,
+      "max_price": 13.77,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "PHK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.525,
-      "last_seen_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
       "last_seen_price": 4.64,
       "max_price": 4.64,
       "max_price_date": "2026-06-28",
@@ -2109,10 +2163,10 @@
     "PKE": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 34.6,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 33.88,
-      "max_price": 36.41,
-      "max_price_date": "2026-05-29",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 37.83,
+      "max_price": 37.83,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "PLTS": {
@@ -2127,17 +2181,17 @@
     "PLX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.1,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.3,
-      "max_price": 2.3,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.32,
+      "max_price": 2.32,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "PNRG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 259.24,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 174.61,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 173.3,
       "max_price": 259.24,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2163,10 +2217,10 @@
     "PUBM": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.36,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.65,
-      "max_price": 12.65,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.55,
+      "max_price": 13.55,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "QH": {
@@ -2181,17 +2235,17 @@
     "QNST": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.29,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 14.14,
-      "max_price": 14.14,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 15.82,
+      "max_price": 15.82,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "QTTB": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.8,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 13.17,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.09,
       "max_price": 13.17,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2199,8 +2253,8 @@
     "QUIK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 20.11,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 18.53,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 16.02,
       "max_price": 21.9,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -2208,8 +2262,8 @@
     "REFI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.3,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.41,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.68,
       "max_price": 11.48,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2226,26 +2280,26 @@
     "RIGL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 29.01,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 38.69,
-      "max_price": 38.69,
-      "max_price_date": "2026-06-28",
-      "on_current_list": false
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 38.72,
+      "max_price": 38.72,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
     },
     "RLGT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.34,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.32,
-      "max_price": 9.32,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.49,
+      "max_price": 9.49,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "RMR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 20.21,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 20.89,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 20.5,
       "max_price": 21.37,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -2253,8 +2307,8 @@
     "RNGR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 16.21,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 15.76,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 15.42,
       "max_price": 16.21,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2262,26 +2316,26 @@
     "ROOT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 57.38,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 55.69,
-      "max_price": 57.38,
-      "max_price_date": "2026-05-22",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 61.73,
+      "max_price": 61.73,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "RSKD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.76,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.06,
-      "max_price": 5.06,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.13,
+      "max_price": 5.13,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "SAMG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.66,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.61,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.53,
       "max_price": 11.66,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2289,8 +2343,8 @@
     "SANG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 3.6,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.73,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.68,
       "max_price": 3.76,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2307,8 +2361,8 @@
     "SBI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 7.75,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.85,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 7.84,
       "max_price": 7.85,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2316,17 +2370,17 @@
     "SCHL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 40.71,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 46.01,
-      "max_price": 46.01,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 46.41,
+      "max_price": 46.41,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "SCOR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.41,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.73,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 7.05,
       "max_price": 8.02,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -2343,8 +2397,8 @@
     "SCZM": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.03,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.61,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.69,
       "max_price": 8.15,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -2352,8 +2406,8 @@
     "SD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 15.3,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 13.51,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 13.24,
       "max_price": 15.3,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2370,17 +2424,17 @@
     "SEG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 24.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 27.07,
-      "max_price": 27.07,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 27.12,
+      "max_price": 27.12,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "SELF": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.25,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.18,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 5.22,
       "max_price": 5.25,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2406,17 +2460,17 @@
     "SIF": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 19.75,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 21.89,
-      "max_price": 22.65,
-      "max_price_date": "2026-06-21",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 24.65,
+      "max_price": 24.65,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "SIGA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.68,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.92,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 3.86,
       "max_price": 4.76,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2424,17 +2478,17 @@
     "SLP": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 15.37,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 18.2,
-      "max_price": 18.24,
-      "max_price_date": "2026-06-21",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 18.39,
+      "max_price": 18.39,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "SMID": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 29.45,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 29.75,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 29.7,
       "max_price": 32.42,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2442,8 +2496,8 @@
     "SND": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.91,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.02,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.7,
       "max_price": 5.45,
       "max_price_date": "2026-06-07",
       "on_current_list": true
@@ -2451,8 +2505,8 @@
     "SNDL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 1.45,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.37,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.375,
       "max_price": 1.49,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2460,8 +2514,8 @@
     "SNFCA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 9.35,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.93,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.72,
       "max_price": 9.93,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2469,8 +2523,8 @@
     "SPCB": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 11.02,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.36,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 11.34,
       "max_price": 11.81,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -2478,8 +2532,8 @@
     "SPIR": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 21.16,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 16.29,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 18.44,
       "max_price": 24.1,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2487,25 +2541,25 @@
     "SPT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.82,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 7.48,
-      "max_price": 7.48,
-      "max_price_date": "2026-05-31",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.08,
+      "max_price": 8.08,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "SPXX": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 18.04,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 17.87,
-      "max_price": 18.43,
-      "max_price_date": "2026-05-31",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 18.62,
+      "max_price": 18.62,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "SRG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.46,
-      "last_seen_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
       "last_seen_price": 2.66,
       "max_price": 2.72,
       "max_price_date": "2026-05-29",
@@ -2518,22 +2572,22 @@
       "last_seen_price": 11.85,
       "max_price": 13.97,
       "max_price_date": "2026-05-22",
-      "on_current_list": true
+      "on_current_list": false
     },
     "SSTI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.78,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.19,
-      "max_price": 8.19,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.08,
+      "max_price": 9.08,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "STRS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 28.92,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 29.27,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 27.59,
       "max_price": 29.27,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2541,8 +2595,8 @@
     "STRT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 72.44,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 82.64,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 77.84,
       "max_price": 82.64,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2559,8 +2613,8 @@
     "SWBI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 15.47,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 15.23,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 14.95,
       "max_price": 16.08,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -2568,17 +2622,17 @@
     "TATT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 37.07,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 46.76,
-      "max_price": 46.76,
-      "max_price_date": "2026-06-21",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 47.6,
+      "max_price": 47.6,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "TBPH": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 16.37,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 17.63,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 16.93,
       "max_price": 17.63,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2586,8 +2640,8 @@
     "TCI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 36.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 49.85,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 48.47,
       "max_price": 49.85,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2595,10 +2649,10 @@
     "TCMD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 24.9,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 30.28,
-      "max_price": 30.28,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 31.35,
+      "max_price": 31.35,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "TG": {
@@ -2613,8 +2667,8 @@
     "TGEN": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.74,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 5.17,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.52,
       "max_price": 6.37,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2622,16 +2676,16 @@
     "TLS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.64,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.5,
-      "max_price": 4.81,
-      "max_price_date": "2026-05-29",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.9,
+      "max_price": 4.9,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "TRC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 19.25,
-      "last_seen_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
       "last_seen_price": 18.86,
       "max_price": 19.59,
       "max_price_date": "2026-05-29",
@@ -2640,8 +2694,8 @@
     "TRNS": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 73.02,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 92.23,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 89.03,
       "max_price": 92.88,
       "max_price_date": "2026-06-21",
       "on_current_list": true
@@ -2649,11 +2703,11 @@
     "TRT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 13.82,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.77,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.38,
       "max_price": 15.83,
       "max_price_date": "2026-06-21",
-      "on_current_list": false
+      "on_current_list": true
     },
     "TRUP": {
       "first_seen_date": "2026-05-22",
@@ -2667,8 +2721,8 @@
     "TTGT": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.82,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 3.76,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.02,
       "max_price": 4.82,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2685,8 +2739,8 @@
     "TXO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 13.71,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.51,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.37,
       "max_price": 13.71,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2694,8 +2748,8 @@
     "TYGO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.16,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.23,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.07,
       "max_price": 4.16,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2703,26 +2757,26 @@
     "UEIC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.04,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.48,
-      "max_price": 4.48,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.77,
+      "max_price": 4.77,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "UFI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 4.04,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 4.8,
-      "max_price": 4.8,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 4.82,
+      "max_price": 4.82,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "ULBI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 6.44,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.19,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.115,
       "max_price": 7.76,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2739,10 +2793,10 @@
     "USIO": {
       "first_seen_date": "2026-06-21",
       "first_seen_price": 1.82,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 2.21,
-      "max_price": 2.21,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 2.48,
+      "max_price": 2.48,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "USPH": {
@@ -2757,8 +2811,8 @@
     "UTMD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 64.51,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 73.97,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 72.78,
       "max_price": 73.97,
       "max_price_date": "2026-06-28",
       "on_current_list": true
@@ -2775,8 +2829,8 @@
     "VFF": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.6,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 1.89,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 1.95,
       "max_price": 2.6,
       "max_price_date": "2026-05-22",
       "on_current_list": true
@@ -2784,8 +2838,8 @@
     "VHC": {
       "first_seen_date": "2026-05-31",
       "first_seen_price": 17.45,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.99,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.5,
       "max_price": 17.45,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -2793,8 +2847,8 @@
     "VHI": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.47,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 14.75,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 14.4,
       "max_price": 14.8,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -2802,8 +2856,8 @@
     "VINP": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.03,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 9.72,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 9.91,
       "max_price": 10.13,
       "max_price_date": "2026-05-31",
       "on_current_list": true
@@ -2811,8 +2865,8 @@
     "VIRC": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 5.98,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 6.22,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 6.33,
       "max_price": 6.48,
       "max_price_date": "2026-06-14",
       "on_current_list": true
@@ -2820,10 +2874,10 @@
     "VITL": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.13,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.19,
-      "max_price": 11.19,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.76,
+      "max_price": 12.76,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "VLT": {
@@ -2838,10 +2892,10 @@
     "VMD": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 9.65,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 11.63,
-      "max_price": 11.63,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 12.02,
+      "max_price": 12.02,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "VRTS": {
@@ -2851,7 +2905,7 @@
       "last_seen_price": 147.58,
       "max_price": 147.58,
       "max_price_date": "2026-06-28",
-      "on_current_list": true
+      "on_current_list": false
     },
     "VTN": {
       "first_seen_date": "2026-05-24",
@@ -2865,8 +2919,8 @@
     "VTS": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 18.12,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 15.79,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 15.48,
       "max_price": 18.12,
       "max_price_date": "2026-05-24",
       "on_current_list": true
@@ -2874,53 +2928,53 @@
     "WEA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 10.455,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 10.605,
-      "max_price": 10.605,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 10.65,
+      "max_price": 10.65,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "WFCF": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 12.89,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 12.17,
-      "max_price": 12.89,
-      "max_price_date": "2026-05-22",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 15.63,
+      "max_price": 15.63,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "WGO": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 29.78,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 31.35,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 31.16,
       "max_price": 31.35,
       "max_price_date": "2026-06-28",
-      "on_current_list": false
+      "on_current_list": true
     },
     "WHG": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 16.0,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 19.92,
-      "max_price": 19.92,
-      "max_price_date": "2026-06-28",
-      "on_current_list": false
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 19.98,
+      "max_price": 19.98,
+      "max_price_date": "2026-07-05",
+      "on_current_list": true
     },
     "WIA": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.08,
-      "last_seen_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
       "last_seen_price": 8.11,
       "max_price": 8.135,
       "max_price_date": "2026-05-31",
-      "on_current_list": false
+      "on_current_list": true
     },
     "WIW": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 8.43,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.4,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.39,
       "max_price": 8.51,
       "max_price_date": "2026-05-29",
       "on_current_list": true
@@ -2928,17 +2982,17 @@
     "XPER": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 7.75,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 8.07,
-      "max_price": 8.07,
-      "max_price_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 8.2,
+      "max_price": 8.2,
+      "max_price_date": "2026-07-05",
       "on_current_list": true
     },
     "XTNT": {
       "first_seen_date": "2026-05-24",
       "first_seen_price": 0.48,
-      "last_seen_date": "2026-06-28",
-      "last_seen_price": 0.4201,
+      "last_seen_date": "2026-07-05",
+      "last_seen_price": 0.4129,
       "max_price": 0.48,
       "max_price_date": "2026-05-24",
       "on_current_list": true
@@ -2959,17 +3013,17 @@
       "last_seen_price": 0.8958,
       "max_price": 0.95,
       "max_price_date": "2026-05-31",
-      "on_current_list": true
+      "on_current_list": false
     },
     "ZJK": {
       "first_seen_date": "2026-05-22",
       "first_seen_price": 2.7,
-      "last_seen_date": "2026-06-28",
+      "last_seen_date": "2026-07-05",
       "last_seen_price": 1.95,
       "max_price": 2.88,
       "max_price_date": "2026-05-31",
       "on_current_list": true
     }
   },
-  "updated_at": "2026-06-28T18:02:15+00:00"
+  "updated_at": "2026-07-05T18:00:59+00:00"
 }
