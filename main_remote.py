@@ -534,6 +534,17 @@ def mini_main():
             snapshot_forward_eps(conn)
         except Exception as exc:  # never let this break the daily build
             print(f"[WARN] forward EPS snapshot failed: {exc}")
+
+        # SPY: override the bottom-up row with FactSet's whole-index consensus
+        # (authoritative, no coverage bias). Best-effort — a fetch/parse failure
+        # leaves the bottom-up SPY row in place as a silent fallback. QQQ has no
+        # free direct source and stays on the bottom-up path above.
+        try:
+            from factset_sp500_eps import snapshot_factset_spy
+            if snapshot_factset_spy(conn):
+                print("[main] SPY forward EPS set from FactSet consensus")
+        except Exception as exc:
+            print(f"[WARN] FactSet SPY snapshot failed (keeping bottom-up): {exc}")
         if is_weekly:
             maybe_backfill_index_eps(DB_PATH)
             generate_earnings_tables()

@@ -16,4 +16,5 @@ beautifulsoup4
 html5lib
 plotly>=5.19
 arelle
+pdfplumber          # parse FactSet Earnings Insight PDF for S&P 500 forward EPS
 
