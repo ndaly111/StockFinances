@@ -212,7 +212,7 @@ def _latest_forward_eps(conn: sqlite3.Connection, ticker: str):
     try:
         row = conn.execute(
             """SELECT forward_eps_index, horizon_date, growth_this_fy, growth_next_fy,
-                      coverage_weight, displayable
+                      coverage_weight, displayable, source
                  FROM Index_Forward_EPS_History
                 WHERE ticker=? ORDER BY date_recorded DESC LIMIT 1""",
             (ticker.upper(),)).fetchone()
@@ -222,7 +222,7 @@ def _latest_forward_eps(conn: sqlite3.Connection, ticker: str):
         return None
     return {"forward_eps_index": float(row[0]), "horizon_date": row[1],
             "growth_this_fy": row[2], "growth_next_fy": row[3],
-            "coverage_weight": row[4]}
+            "coverage_weight": row[4], "source": row[6]}
 
 
 def _resample_frames(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -754,6 +754,15 @@ def _forward_callout(fwd) -> str:
         return ""
     g1 = fwd["growth_this_fy"]
     g2 = fwd.get("growth_next_fy")
+    src = (fwd.get("source") or "").lower()
+    if src == "factset":
+        # Whole-index professional consensus (no coverage caveat).
+        parts = [f"Forward earnings growth (S&amp;P 500 consensus, FactSet): "
+                 f"<b>{g1:+.1%}</b> this fiscal year"]
+        if g2 is not None:
+            parts.append(f", <b>{g2:+.1%}</b> next")
+        parts.append(".")
+        return "".join(parts)
     cov = fwd.get("coverage_weight") or 0
     parts = [f"Forward earnings growth (bottom-up): <b>{g1:+.1%}</b> this fiscal year"]
     if g2 is not None:
