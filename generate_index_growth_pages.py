@@ -521,16 +521,22 @@ def _eps_indexed_figure(
     ticker: str,
     fwd=None,
 ) -> Optional[go.Figure]:
-    """Build an EPS chart normalised to 100 at the first observation.
+    """Build an EPS chart normalised to 100 at the start of the default view.
 
-    Returns None when the first EPS value is zero or negative (log axis
-    would be undefined).  The y-axis is always log because the series is
-    strictly positive by construction once the base guard passes.
+    The base is the EPS ~5 years ago (the start of the default x-window), NOT the
+    first observation — for indices like SPY the reported series runs back to 1970
+    (~$5), so indexing to that made the default view show values in the thousands
+    on a log axis (unreadable). Anchoring to the window start keeps the default
+    view around 100-180 on a linear axis. Returns None if that base is <= 0.
     """
     b = df_m["eps"].dropna() if "eps" in df_m.columns else pd.Series(dtype=float)
-    if b.empty or b.iloc[0] <= 0:
+    if b.empty:
         return None
-    base = float(b.iloc[0])
+    _win_start = pd.Timestamp(b.index.max()) - pd.DateOffset(years=5)
+    _in_win = b[b.index >= _win_start]
+    base = float(_in_win.iloc[0]) if not _in_win.empty else float(b.iloc[0])
+    if base <= 0:
+        return None
 
     def mk_traces(df: pd.DataFrame) -> List[go.Scatter]:
         if "eps" not in df.columns:
@@ -576,7 +582,7 @@ def _eps_indexed_figure(
             rangeslider=dict(visible=True),
             type="date",
         ),
-        yaxis=dict(title="EPS (start=100)", type="log"),
+        yaxis=dict(title="Indexed EPS (5Y ago = 100)", type="linear"),
         template=None,
     )
     if len(df_m.index):

@@ -61,7 +61,7 @@ def test_eps_indexed_figure_rebases_to_100():
     df = pd.DataFrame({"eps":[80.0,100.0,120.0]}, index=idx)
     d,w,m = g._resample_frames(df)
     fig = g._eps_indexed_figure(d,w,m,"QQQ", fwd=None)
-    assert fig is not None and fig.layout.yaxis.type == "log"
+    assert fig is not None and fig.layout.yaxis.type == "linear"
     base = [t for t in fig.data if t.mode and "lines" in t.mode][0]
     assert round(float(base.y[0]),1) == 100.0 and round(float(base.y[-1]),1) == 150.0
 
