@@ -102,3 +102,16 @@ def test_growth_chart_html_references_pinned_plotly():
     from plotly.io import to_html
     html = to_html(fig, include_plotlyjs=g._PLOTLY_JS_URL, full_html=False)
     assert g._PLOTLY_JS_URL in html
+
+def test_retro_layout_separates_buttons_from_legend():
+    # Range buttons and legend overlapped at top-left on desktop. Retro layout
+    # must give each its own row (legend above buttons) and enlarge the buttons.
+    idx = pd.to_datetime(["2025-01-31","2025-06-30","2025-12-31"], utc=True)
+    df = pd.DataFrame({"eps":[80.0,100.0,120.0]}, index=idx)
+    d,w,m = g._resample_frames(df)
+    fig = g._apply_retro_layout(g._eps_figure(d,w,m,"QQQ", fwd=None))
+    rs = fig.layout.xaxis.rangeselector
+    assert rs.font.size >= 14                       # bigger click targets
+    assert all(b.label.startswith(" ") for b in rs.buttons)   # padded labels
+    assert fig.layout.legend.y > rs.y               # legend row above buttons row
+    assert fig.layout.margin.t >= 70                # room for both rows
