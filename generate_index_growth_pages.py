@@ -359,6 +359,26 @@ def _apply_retro_layout(fig):
     # clutter under a terminal aesthetic — drop both for a cleaner look.
     fig.update_layout(title=None)
     fig.update_xaxes(rangeslider_visible=False)
+    # Range buttons + legend used to share the top-left corner and overlapped on
+    # desktop. Give each its own row above the plot: legend on top, buttons below.
+    # Buttons get a bigger font + padded labels (larger click targets) and a
+    # Win95-style face to match the theme.
+    rs = getattr(fig.layout.xaxis, "rangeselector", None)
+    if rs is not None and rs.buttons:
+        for btn in rs.buttons:
+            if btn.label and not btn.label.startswith(" "):
+                btn.label = f"  {btn.label}  "
+        fig.update_xaxes(rangeselector=dict(
+            x=0.0, xanchor="left", y=1.02, yanchor="bottom",
+            font=dict(family="Arial, Helvetica, sans-serif", size=14, color="#000080"),
+            bgcolor="#E0E0E0", activecolor="#C0C0FF",
+            bordercolor="#808080", borderwidth=1,
+        ))
+        fig.update_layout(
+            legend=dict(orientation="h", yanchor="bottom", y=1.16,
+                        xanchor="left", x=0.0),
+            margin_t=78,
+        )
     return fig
 
 def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
@@ -719,8 +739,9 @@ function autoscaleY(divId){
       color:#33FF33; text-shadow:0 0 5px rgba(51,255,51,.5); background:#000; border:2px inset var(--gray);
       padding:5px 8px; margin:6px 0 4px; min-height:1.5em; box-shadow:inset 0 0 0 1px #222; }}
     .measure-readout b{{ color:#FFCC33; }}
-    .win-btn{{ font-family:Arial,sans-serif; font-size:11px; font-weight:700; padding:3px 12px;
-      background:var(--gray); border:2px outset var(--gray); cursor:pointer; }}
+    .win-btn{{ font-family:Arial,sans-serif; font-size:14px; font-weight:700; padding:7px 22px;
+      background:var(--gray); border:2px outset var(--gray); cursor:pointer;
+      min-height:36px; }}
     .win-btn:active{{ border-style:inset; }}
     .callout{{ font-family:"Times New Roman",serif; font-size:13px; background:#FFFFEE;
       border:2px inset var(--gray); padding:6px 10px; margin:6px; }}
