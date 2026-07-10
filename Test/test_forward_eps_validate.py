@@ -10,12 +10,12 @@ def test_withheld_low_coverage():
     assert v.is_displayable("QQQ", growth_this_fy=0.19, coverage_weight=0.70) is False
 
 def test_withheld_out_of_tolerance():
-    assert v.is_displayable("QQQ", growth_this_fy=0.45, coverage_weight=0.95) is False
+    assert v.is_displayable("QQQ", growth_this_fy=0.60, coverage_weight=0.95) is False
 
 def test_qqq_wide_band_accepts_high_but_plausible_growth():
-    # QQQ real growth can run high (tech tilt); 28% must pass with good coverage
-    # (the old +/-8pt band around 19% would have wrongly rejected it).
-    assert v.is_displayable("QQQ", growth_this_fy=0.28, coverage_weight=0.92) is True
+    # QQQ real growth runs high in the AI cycle (+38% bottom-up, +40% market-
+    # implied, verified 2026-07-10); it must pass with good coverage.
+    assert v.is_displayable("QQQ", growth_this_fy=0.38, coverage_weight=0.92) is True
 
 def test_qqq_band_still_rejects_gross_error():
     # A scaling bug (e.g. +90%) must still be withheld even at full coverage.

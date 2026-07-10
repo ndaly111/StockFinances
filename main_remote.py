@@ -431,27 +431,13 @@ def mini_main():
             # largest single time saver (~5-6 min).
             prefetch_yfinance_bulk(tickers)
 
-        # Site tickers get forward EPS from the Zacks batch below. We ALSO add QQQ's
-        # highest-weight uncovered constituents to the SAME Zacks scrape so the
-        # bottom-up QQQ aggregation can reach the 85% coverage gate (their TTM EPS +
-        # shares are filled from FMP income-statement just before the snapshot). SPY
-        # uses FactSet directly, so we don't scrape the ~190-name S&P tail. FMP's
-        # analyst-estimates endpoint isn't on this key's tier, so forward EPS for
-        # constituents comes from Zacks, not FMP.
+        # Site tickers get forward EPS from the Yahoo/Zacks batch below. Index-level
+        # forecasts no longer piggyback on this scrape: SPY comes from FactSet and
+        # QQQ from its own self-contained yfinance bottom-up snapshot (see the
+        # snapshot_qqq_yf step lower down), so no constituent tail is added here.
         scrape_tickers = list(tickers)
-        qqq_need = []
-        try:
-            from index_holdings import fetch_holdings, uncovered_for_target
-            from forward_eps_bottom_up import load_constituent_financials
-            qh = fetch_holdings("QQQ")
-            have = set(load_constituent_financials(conn, [t for t, _ in qh]))
-            qqq_need = sorted(set(uncovered_for_target(qh, have, target_pct=92.0)))
-            scrape_tickers = sorted(set(scrape_tickers) | set(qqq_need))
-        except Exception as exc:
-            print(f"[WARN] QQQ constituent universe build failed: {exc}")
 
-        print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers "
-              f"({len(qqq_need)} QQQ constituents)...")
+        print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers...")
         scrape_forward_data_batch(scrape_tickers, max_workers=6)
         print("[main] Forward data batch scrape complete")
 
@@ -516,18 +502,6 @@ def mini_main():
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
-        # QQQ constituents added to the Zacks scrape above now have forward EPS; fill
-        # their TTM EPS + shares from FMP income-statement so the bottom-up QQQ
-        # aggregation can count them and clear the 85% coverage gate. Best-effort —
-        # a failure just leaves coverage low (the gate then withholds the forecast).
-        try:
-            from index_constituent_fmp import enrich_ttm_shares_fmp
-            if qqq_need:
-                n_ok = enrich_ttm_shares_fmp(conn, qqq_need)
-                print(f"[main] QQQ constituent TTM enrichment: {n_ok}/{len(qqq_need)} filled")
-        except Exception as exc:
-            print(f"[WARN] QQQ TTM enrichment failed: {exc}")
-
         # Bottom-up forward EPS for SPY/QQQ from constituent estimates (see index_forward_eps).
         # Snapshotted daily so the growth-page EPS chart gets a forward point.
         try:
@@ -537,14 +511,23 @@ def mini_main():
 
         # SPY: override the bottom-up row with FactSet's whole-index consensus
         # (authoritative, no coverage bias). Best-effort — a fetch/parse failure
-        # leaves the bottom-up SPY row in place as a silent fallback. QQQ has no
-        # free direct source and stays on the bottom-up path above.
+        # leaves the bottom-up SPY row in place as a silent fallback.
         try:
             from factset_sp500_eps import snapshot_factset_spy
             if snapshot_factset_spy(conn):
                 print("[main] SPY forward EPS set from FactSet consensus")
         except Exception as exc:
             print(f"[WARN] FactSet SPY snapshot failed (keeping bottom-up): {exc}")
+
+        # QQQ: override with the consistent-basis yfinance bottom-up (no free
+        # authoritative NDX consensus exists; this aggregate was cross-validated
+        # against market-implied growth — see qqq_forward_eps_yf). Best-effort.
+        try:
+            from qqq_forward_eps_yf import snapshot_qqq_yf
+            if snapshot_qqq_yf(conn):
+                print("[main] QQQ forward EPS set from yfinance bottom-up")
+        except Exception as exc:
+            print(f"[WARN] QQQ yfinance snapshot failed (keeping legacy row): {exc}")
         if is_weekly:
             maybe_backfill_index_eps(DB_PATH)
             generate_earnings_tables()

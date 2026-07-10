@@ -231,6 +231,32 @@ def _store_ttm(tkr: str, d: dict, cur: sqlite3.Cursor):
             new_quarter,
         ))
 
+def update_ttm_for_tickers(tickers, cur: sqlite3.Cursor) -> int:
+    """Populate TTM_Data (TTM_EPS + shares) for extra tickers — e.g. index
+    constituents not in the site set — via the SAME yfinance path the site tickers
+    use (_fetch_ttm/_store_ttm). Rows with missing/NaN EPS or shares are skipped.
+    Does not commit (caller owns the transaction). Returns the number written."""
+    import math
+    tickers = list(tickers)
+
+    def _bad(x):
+        return x is None or (isinstance(x, float) and math.isnan(x))
+
+    written = 0
+    for tk in tickers:
+        try:
+            d = _fetch_ttm(tk)
+        except Exception as e:                       # yfinance hiccup on one name
+            logging.warning("[%s] TTM fetch failed: %s", tk, e)
+            continue
+        if not d or _bad(d.get("TTM_EPS")) or _bad(d.get("Shares_Outstanding")):
+            continue
+        _store_ttm(tk, d, cur)
+        written += 1
+    logging.info("[ttm-extra] wrote TTM_Data for %d/%d tickers", written, len(tickers))
+    return written
+
+
 # ───────────────────────── TTM freshness check ─────────────────────
 def _latest_completed_quarter_end(today: datetime | None = None) -> datetime:
     today = today or datetime.now(timezone.utc).replace(tzinfo=None)
