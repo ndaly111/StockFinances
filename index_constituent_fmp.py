@@ -142,6 +142,31 @@ def _upsert_ttm(conn, ticker, fin) -> None:
          fin["quarter"], _now_utc()))
 
 
+def enrich_ttm_shares_fmp(conn: sqlite3.Connection, tickers, session=None,
+                          api_key: str = None) -> int:
+    """Fill ONLY TTM EPS + shares (from FMP income-statement, a proven endpoint) into
+    TTM_Data for the given constituents. Forward EPS for these names is sourced
+    elsewhere — the Zacks scrape (scrape_forward_data_batch) — because FMP's
+    analyst-estimates endpoint is not on this account's tier. Returns count written.
+
+    Used for QQQ's high-weight uncovered constituents so the bottom-up aggregation
+    (which needs TTM_EPS, shares, and This-FY forward EPS per name) can cover them."""
+    tickers = list(tickers)
+    if not tickers:
+        return 0
+    api_key = api_key or get_fmp_api_key()
+    n_ok = 0
+    for tk in tickers:
+        fin = fetch_ttm_eps_shares(tk, api_key, session=session)
+        if not fin:
+            continue
+        _upsert_ttm(conn, tk, fin)
+        n_ok += 1
+    conn.commit()
+    logger.info("[fmp-ttm] wrote TTM_Data for %d/%d constituents", n_ok, len(tickers))
+    return n_ok
+
+
 def enrich_constituents_fmp(conn: sqlite3.Connection, tickers, today: date = None,
                             session=None, api_key: str = None) -> int:
     """Fetch forward EPS + TTM EPS/shares from FMP for each ticker and upsert into

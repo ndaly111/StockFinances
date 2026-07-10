@@ -431,14 +431,27 @@ def mini_main():
             # largest single time saver (~5-6 min).
             prefetch_yfinance_bulk(tickers)
 
-        # Site tickers get forward EPS from the Zacks batch below. Index
-        # constituents beyond the site set are enriched separately from FMP just
-        # before the bottom-up snapshot (see the FMP enrichment step lower down) —
-        # the old managed_scrape_tickers() union read a table written later in the
-        # same run and so was always empty (constituent coverage never grew).
+        # Site tickers get forward EPS from the Zacks batch below. We ALSO add QQQ's
+        # highest-weight uncovered constituents to the SAME Zacks scrape so the
+        # bottom-up QQQ aggregation can reach the 85% coverage gate (their TTM EPS +
+        # shares are filled from FMP income-statement just before the snapshot). SPY
+        # uses FactSet directly, so we don't scrape the ~190-name S&P tail. FMP's
+        # analyst-estimates endpoint isn't on this key's tier, so forward EPS for
+        # constituents comes from Zacks, not FMP.
         scrape_tickers = list(tickers)
+        qqq_need = []
+        try:
+            from index_holdings import fetch_holdings, uncovered_for_target
+            from forward_eps_bottom_up import load_constituent_financials
+            qh = fetch_holdings("QQQ")
+            have = set(load_constituent_financials(conn, [t for t, _ in qh]))
+            qqq_need = sorted(set(uncovered_for_target(qh, have, target_pct=92.0)))
+            scrape_tickers = sorted(set(scrape_tickers) | set(qqq_need))
+        except Exception as exc:
+            print(f"[WARN] QQQ constituent universe build failed: {exc}")
 
-        print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers...")
+        print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers "
+              f"({len(qqq_need)} QQQ constituents)...")
         scrape_forward_data_batch(scrape_tickers, max_workers=6)
         print("[main] Forward data batch scrape complete")
 
@@ -503,30 +516,17 @@ def mini_main():
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
         spy_qqq_html = index_growth(treasury)
-        # Enrich the highest-weight uncovered index constituents from FMP so the
-        # bottom-up aggregation can clear the 85% coverage gate. `have` is the set
-        # already carrying usable data (site tickers), so FMP only fills genuine
-        # gaps and never clobbers site-ticker rows. Target 92% to leave headroom
-        # for names FMP can't return. Best-effort: failure just leaves coverage low.
+        # QQQ constituents added to the Zacks scrape above now have forward EPS; fill
+        # their TTM EPS + shares from FMP income-statement so the bottom-up QQQ
+        # aggregation can count them and clear the 85% coverage gate. Best-effort —
+        # a failure just leaves coverage low (the gate then withholds the forecast).
         try:
-            from index_holdings import fetch_holdings, uncovered_for_target
-            from forward_eps_bottom_up import load_constituent_financials
-            from index_constituent_fmp import enrich_constituents_fmp
-            need = set()
-            for idx in ("SPY", "QQQ"):
-                try:
-                    holdings = fetch_holdings(idx)
-                except Exception as e:
-                    print(f"[WARN] {idx} holdings fetch failed: {e}")
-                    continue
-                have = set(load_constituent_financials(conn, [t for t, _ in holdings]))
-                need |= set(uncovered_for_target(holdings, have, target_pct=92.0))
-            if need:
-                print(f"[main] FMP-enriching {len(need)} index constituents for coverage...")
-                n_ok = enrich_constituents_fmp(conn, sorted(need))
-                print(f"[main] FMP constituent enrichment: {n_ok}/{len(need)} filled")
+            from index_constituent_fmp import enrich_ttm_shares_fmp
+            if qqq_need:
+                n_ok = enrich_ttm_shares_fmp(conn, qqq_need)
+                print(f"[main] QQQ constituent TTM enrichment: {n_ok}/{len(qqq_need)} filled")
         except Exception as exc:
-            print(f"[WARN] FMP constituent enrichment failed: {exc}")
+            print(f"[WARN] QQQ TTM enrichment failed: {exc}")
 
         # Bottom-up forward EPS for SPY/QQQ from constituent estimates (see index_forward_eps).
         # Snapshotted daily so the growth-page EPS chart gets a forward point.

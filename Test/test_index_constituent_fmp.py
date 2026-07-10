@@ -158,3 +158,55 @@ def test_enrich_skips_ticker_missing_estimates_no_partial_rows(tmp_path):
     assert n == 0
     assert conn.execute("SELECT COUNT(*) FROM Forward_EPS_FY_History").fetchone()[0] == 0
     assert conn.execute("SELECT COUNT(*) FROM TTM_Data").fetchone()[0] == 0
+
+
+# ---- enrich_ttm_shares_fmp (forward EPS comes from Zacks, not FMP) ----------
+def _make_tables(conn):
+    ife.ensure_forward_eps_table(conn)
+    conn.execute("""CREATE TABLE TTM_Data (Symbol TEXT PRIMARY KEY, TTM_Revenue REAL,
+        TTM_Net_Income REAL, TTM_EPS REAL, Shares_Outstanding REAL, Quarter TEXT,
+        Last_Updated TEXT)""")
+    conn.execute("""CREATE TABLE Forward_EPS_FY_History (date_recorded TEXT NOT NULL,
+        ticker TEXT NOT NULL, period_end TEXT NOT NULL, period_label TEXT,
+        forward_eps REAL, eps_analysts INTEGER, source TEXT, fiscal_year INTEGER,
+        forward_revenue REAL, revenue_analysts INTEGER,
+        PRIMARY KEY (date_recorded, ticker, period_end))""")
+    conn.commit()
+
+
+def test_enrich_ttm_shares_writes_ttm_only(tmp_path):
+    conn = sqlite3.connect(tmp_path / "t.db")
+    _make_tables(conn)
+    sess = _Session({"income-statement": _income_q([100, 100, 100, 100], 1000.0)})
+    n = icf.enrich_ttm_shares_fmp(conn, ["AVGO"], session=sess, api_key="k")
+    assert n == 1
+    ttm = conn.execute(
+        "SELECT TTM_EPS, Shares_Outstanding FROM TTM_Data WHERE Symbol='AVGO'").fetchone()
+    assert ttm is not None and ttm[1] == 1000.0
+    # It must NOT touch forward EPS (that's Zacks' job).
+    assert conn.execute("SELECT COUNT(*) FROM Forward_EPS_FY_History").fetchone()[0] == 0
+    # No analyst-estimates call was made.
+    assert not any("analyst-estimates" in u for u in sess.calls)
+
+
+def test_enrich_ttm_shares_plus_zacks_forward_becomes_covered(tmp_path):
+    conn = sqlite3.connect(tmp_path / "t.db")
+    _make_tables(conn)
+    # Zacks-style forward row (what scrape_forward_data_batch writes)
+    conn.execute("""INSERT INTO Forward_EPS_FY_History
+        (date_recorded,ticker,period_end,period_label,forward_eps,source)
+        VALUES ('2026-07-10','AVGO','2026-12-31','This FY',7.5,'zacks')""")
+    conn.commit()
+    sess = _Session({"income-statement": _income_q([100, 100, 100, 100], 1000.0)})
+    icf.enrich_ttm_shares_fmp(conn, ["AVGO"], session=sess, api_key="k")
+    fin = bu.load_constituent_financials(conn, ["AVGO"])
+    assert "AVGO" in fin and fin["AVGO"]["this_fy"] == 7.5
+
+
+def test_enrich_ttm_shares_skips_incomplete(tmp_path):
+    conn = sqlite3.connect(tmp_path / "t.db")
+    _make_tables(conn)
+    sess = _Session({"income-statement": _income_q([100, 100], 1000.0)[:2]})
+    n = icf.enrich_ttm_shares_fmp(conn, ["AVGO"], session=sess, api_key="k")
+    assert n == 0
+    assert conn.execute("SELECT COUNT(*) FROM TTM_Data").fetchone()[0] == 0
