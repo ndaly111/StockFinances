@@ -84,3 +84,21 @@ def test_forward_callout_text():
     t = g._forward_callout({"growth_this_fy":0.25,"growth_next_fy":0.29,"coverage_weight":0.93})
     assert "+25.0%" in t and "+29.0%" in t and "93%" in t
     assert g._forward_callout(None) == ""
+
+def test_plotly_js_url_is_pinned_not_floating():
+    # include_plotlyjs="cdn" floats with the installed python package and once
+    # emitted a CDN URL that 403s (plotly-3.7.0) -> blank pages. Must stay pinned.
+    import inspect
+    src = inspect.getsource(g)
+    assert 'include_plotlyjs="cdn"' not in src
+    assert g._PLOTLY_JS_URL.startswith("https://cdn.plot.ly/plotly-")
+    assert g._PLOTLY_JS_URL.endswith(".min.js")
+
+def test_growth_chart_html_references_pinned_plotly():
+    idx = pd.to_datetime(["2025-01-31","2025-06-30","2025-12-31"], utc=True)
+    df = pd.DataFrame({"eps":[80.0,100.0,120.0]}, index=idx)
+    d,w,m = g._resample_frames(df)
+    fig = g._eps_figure(d,w,m,"QQQ", fwd=None)
+    from plotly.io import to_html
+    html = to_html(fig, include_plotlyjs=g._PLOTLY_JS_URL, full_html=False)
+    assert g._PLOTLY_JS_URL in html
