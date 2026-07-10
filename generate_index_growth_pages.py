@@ -780,13 +780,20 @@ def _write_page(out_path: str, html: str) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
 
+# Pinned plotly.js URL — same file ticker.html hardcodes, so the browser reuses
+# one cached copy. NEVER pass the floating 'cdn' keyword here: it tracks the
+# installed plotly python package, and CI once emitted plotly-3.7.0.min.js which
+# the CDN 403s (unpublished) -> every chart on both growth pages silently blank.
+_PLOTLY_JS_URL = "https://cdn.plot.ly/plotly-3.6.0.min.js"
+
+
 def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     """Build a single valuation page for a ticker."""
     fwd = _latest_forward_eps(conn, ticker)
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
     _apply_retro_layout(fig_growth)
-    chart_growth_html = to_html(fig_growth, include_plotlyjs="cdn", full_html=False, default_height="600px", div_id="growth-chart")
+    chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="600px", div_id="growth-chart")
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
