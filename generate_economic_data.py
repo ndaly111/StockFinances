@@ -28,14 +28,72 @@ _FRED_RELEASE_IDS = {"empsit": 50, "cpi": 10, "gdp": 53}
 
 # Only dates verified against official schedules (do NOT guess — BLS revised
 # its 2026 calendar after the appropriations lapse). FOMC decision days
-# (2nd day of each meeting) are published years ahead and are complete for 2026.
+# (2nd day of each meeting) are published years ahead; 2026 + 2027 verified
+# against federalreserve.gov 2026-07-10 (2027 tentative per the Fed).
 _STATIC_RELEASES = {
     "empsit": ["2026-08-07"],
     "cpi":    ["2026-07-14", "2026-08-12"],
     "gdp":    ["2026-07-30", "2026-08-26", "2026-09-30"],
     "fomc":   ["2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17",
-               "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09"],
+               "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09",
+               "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-09",
+               "2027-07-28", "2027-09-15", "2027-10-27", "2027-12-08"],
 }
+
+_MONTHS = {m: i for i, m in enumerate(
+    ["January", "February", "March", "April", "May", "June", "July",
+     "August", "September", "October", "November", "December"], start=1)}
+
+
+def _parse_fomc_calendar(html: str) -> list:
+    """Decision days (last day of each meeting) from the Fed's calendar page.
+
+    The page is organized as '<year> FOMC Meetings' sections with month +
+    day-range entries ('27-28', '17-18*', or cross-month '31-November 1')."""
+    out = []
+    # Split into year sections; chunk i pairs with year i.
+    parts = re.split(r"(20\d\d)\s+FOMC\s+Meetings", html)
+    for j in range(1, len(parts), 2):
+        year, chunk = int(parts[j]), parts[j + 1]
+        # (?!\s*,\s*20\d\d): meeting entries are bare day ranges ('27-28');
+        # narrative dates ('Released January 5, 2021') carry a trailing
+        # ', <year>' — reject those.
+        for month, days in re.findall(
+                r"(January|February|March|April|May|June|July|August|"
+                r"September|October|November|December)(?:\s|<[^>]*>|&nbsp;)*"
+                r"([\d]{1,2}(?:\s*-\s*(?:[A-Z][a-z]+\s+)?[\d]{1,2})?)\*?"
+                r"(?!\s*,\s*20\d\d)(?!\d)", chunk):
+            end = days.split("-")[-1].strip().rstrip("*")
+            m2 = re.match(r"([A-Z][a-z]+)\s+(\d{1,2})", end)
+            if m2:                              # cross-month: 'October 31-November 1'
+                month, day = m2.group(1), int(m2.group(2))
+            else:
+                day = int(end)
+            try:
+                out.append(dt.date(year, _MONTHS[month], day).isoformat())
+            except (KeyError, ValueError):
+                continue
+    # Real meetings are 6+ weeks apart; parsed dates within 3 days of each other
+    # are one meeting plus page noise — keep the latest (the decision day).
+    dedup = []
+    for d in sorted(set(out)):
+        if dedup and (dt.date.fromisoformat(d) - dt.date.fromisoformat(dedup[-1])).days <= 3:
+            dedup[-1] = d
+        else:
+            dedup.append(d)
+    return dedup
+
+
+def _fomc_dates_from_fed() -> list:
+    """FOMC decision days scraped from the Fed's published meeting calendar
+    (federalreserve.gov is not bot-blocked, unlike BLS/BEA)."""
+    r = requests.get("https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+                     timeout=20)
+    r.raise_for_status()
+    dates = _parse_fomc_calendar(r.text)
+    if not dates:
+        raise RuntimeError("no FOMC dates parsed (page layout changed?)")
+    return dates
 
 
 def _fred_release_dates_raw(release_id):
@@ -53,15 +111,23 @@ def _fred_release_dates_raw(release_id):
 
 
 def _next_release(kind, today=None):
-    """Next scheduled release for 'empsit'/'cpi'/'gdp'/'fomc' as ASCII text."""
+    """Next scheduled release for 'empsit'/'cpi'/'gdp'/'fomc' as ASCII text.
+
+    Fully automated: empsit/cpi/gdp from the FRED release-calendar API, fomc
+    scraped from the Fed's published calendar — both refresh every build.
+    Falling back to the static calendar or 'TBD' emits a GitHub Actions
+    ::warning:: annotation so staleness is LOUD, never silent (the old
+    scrapers rotted unnoticed for a year)."""
     today = today or dt.date.today()
     dates = []
-    rid = _FRED_RELEASE_IDS.get(kind)
-    if rid is not None:
-        try:
-            dates = _fred_release_dates_raw(rid)
-        except Exception as e:
-            print(f"[econ] FRED release dates failed for {kind} ({e}); using static calendar")
+    try:
+        if kind == "fomc":
+            dates = _fomc_dates_from_fed()
+        elif kind in _FRED_RELEASE_IDS:
+            dates = _fred_release_dates_raw(_FRED_RELEASE_IDS[kind])
+    except Exception as e:
+        print(f"::warning title=Econ release calendar::{kind}: live source failed "
+              f"({e}); using static fallback (goes stale without maintenance)")
     if not dates:
         dates = _STATIC_RELEASES.get(kind, [])
     for d in dates:
@@ -72,6 +138,8 @@ def _next_release(kind, today=None):
         if d_date >= today:
             label = f"{d_date.strftime('%b')} {d_date.day}, {d_date.year}"
             return f"{label} (FOMC)" if kind == "fomc" else label
+    print(f"::warning title=Econ release calendar::{kind}: no future date available "
+          f"- dashboard shows TBD; refresh _STATIC_RELEASES or fix the live source")
     return "TBD"
 
 # ───────── indicator spec ─────────
