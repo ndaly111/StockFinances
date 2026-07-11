@@ -5,7 +5,6 @@
 import os, re, sqlite3, datetime as dt
 from pathlib import Path
 import requests, pandas as pd, matplotlib.pyplot as plt
-from bs4 import BeautifulSoup
 from fredapi import Fred
 
 # ───────── config ─────────
@@ -18,29 +17,138 @@ fred      = Fred(api_key=FRED_KEY) if FRED_KEY else None
 STAMP     = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M UTC")
 # ──────────────────────────
 
-# ───────── helper to fetch next release dates ─────────
-_BLS_ROOT = "https://www.bls.gov/schedule/news_release"
+# ───────── next release dates ─────────
+# BLS/BEA hard-403 scrapers (bot-blocked), so the old scrape always fell through
+# to an em-dash that rendered as mojibake on the dashboard. Primary source is
+# now the FRED release-calendar API (includes FUTURE scheduled dates and tracks
+# BLS/BEA schedule revisions automatically; FRED_API_KEY already in CI).
+# Fallback: the verified static dates below. Final fallback: "TBD".
+# All output is pure ASCII — no em-dashes, so the mojibake cannot recur.
+_FRED_RELEASE_IDS = {"empsit": 50, "cpi": 10, "gdp": 53}
 
-def _next_bls(slug):    # 'cpi', 'empsit'
-    soup = BeautifulSoup(requests.get(f"{_BLS_ROOT}/{slug}.htm", timeout=20).text, "html.parser")
-    m    = soup.find(string=re.compile(r"Next Release", re.I))
-    if m:
-        return m.find_next("div").get_text(strip=True)
-    m = re.search(r"Next release:? ?(\w+ \d{1,2}, \d{4})", soup.text)
-    return m.group(1) if m else "—"
+# Only dates verified against official schedules (do NOT guess — BLS revised
+# its 2026 calendar after the appropriations lapse). FOMC decision days
+# (2nd day of each meeting) are published years ahead; 2026 + 2027 verified
+# against federalreserve.gov 2026-07-10 (2027 tentative per the Fed).
+_STATIC_RELEASES = {
+    "empsit": ["2026-08-07"],
+    "cpi":    ["2026-07-14", "2026-08-12"],
+    "gdp":    ["2026-07-30", "2026-08-26", "2026-09-30"],
+    "fomc":   ["2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17",
+               "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09",
+               "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-09",
+               "2027-07-28", "2027-09-15", "2027-10-27", "2027-12-08"],
+}
 
-def _next_bea_gdp():
-    soup = BeautifulSoup(requests.get("https://www.bea.gov/data/gdp/gross-domestic-product", timeout=20).text, "html.parser")
-    m = re.search(r"Next release:\s+([A-Z][a-z]+ \d{1,2}, \d{4})", soup.text)
-    return m.group(1) if m else "—"
+_MONTHS = {m: i for i, m in enumerate(
+    ["January", "February", "March", "April", "May", "June", "July",
+     "August", "September", "October", "November", "December"], start=1)}
+
+
+def _parse_fomc_calendar(html: str) -> list:
+    """Decision days (last day of each meeting) from the Fed's calendar page.
+
+    The page is organized as '<year> FOMC Meetings' sections with month +
+    day-range entries ('27-28', '17-18*', or cross-month '31-November 1')."""
+    out = []
+    # Split into year sections; chunk i pairs with year i.
+    parts = re.split(r"(20\d\d)\s+FOMC\s+Meetings", html)
+    for j in range(1, len(parts), 2):
+        year, chunk = int(parts[j]), parts[j + 1]
+        # (?!\s*,\s*20\d\d): meeting entries are bare day ranges ('27-28');
+        # narrative dates ('Released January 5, 2021') carry a trailing
+        # ', <year>' — reject those.
+        for month, days in re.findall(
+                r"(January|February|March|April|May|June|July|August|"
+                r"September|October|November|December)(?:\s|<[^>]*>|&nbsp;)*"
+                r"([\d]{1,2}(?:\s*-\s*(?:[A-Z][a-z]+\s+)?[\d]{1,2})?)\*?"
+                r"(?!\s*,\s*20\d\d)(?!\d)", chunk):
+            end = days.split("-")[-1].strip().rstrip("*")
+            m2 = re.match(r"([A-Z][a-z]+)\s+(\d{1,2})", end)
+            if m2:                              # cross-month: 'October 31-November 1'
+                month, day = m2.group(1), int(m2.group(2))
+            else:
+                day = int(end)
+            try:
+                out.append(dt.date(year, _MONTHS[month], day).isoformat())
+            except (KeyError, ValueError):
+                continue
+    # Real meetings are 6+ weeks apart; parsed dates within 3 days of each other
+    # are one meeting plus page noise — keep the latest (the decision day).
+    dedup = []
+    for d in sorted(set(out)):
+        if dedup and (dt.date.fromisoformat(d) - dt.date.fromisoformat(dedup[-1])).days <= 3:
+            dedup[-1] = d
+        else:
+            dedup.append(d)
+    return dedup
+
+
+def _fomc_dates_from_fed() -> list:
+    """FOMC decision days scraped from the Fed's published meeting calendar
+    (federalreserve.gov is not bot-blocked, unlike BLS/BEA)."""
+    r = requests.get("https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+                     timeout=20)
+    r.raise_for_status()
+    dates = _parse_fomc_calendar(r.text)
+    if not dates:
+        raise RuntimeError("no FOMC dates parsed (page layout changed?)")
+    return dates
+
+
+def _fred_release_dates_raw(release_id):
+    """Scheduled release dates (past + future) from the FRED release-dates API."""
+    if not FRED_KEY:
+        raise RuntimeError("FRED_API_KEY not set")
+    r = requests.get(
+        "https://api.stlouisfed.org/fred/release/dates",
+        params={"release_id": release_id, "api_key": FRED_KEY, "file_type": "json",
+                "include_release_dates_with_no_data": "true",
+                "sort_order": "asc", "limit": 1000},
+        timeout=20)
+    r.raise_for_status()
+    return [d["date"] for d in r.json().get("release_dates", [])]
+
+
+def _next_release(kind, today=None):
+    """Next scheduled release for 'empsit'/'cpi'/'gdp'/'fomc' as ASCII text.
+
+    Fully automated: empsit/cpi/gdp from the FRED release-calendar API, fomc
+    scraped from the Fed's published calendar — both refresh every build.
+    Falling back to the static calendar or 'TBD' emits a GitHub Actions
+    ::warning:: annotation so staleness is LOUD, never silent (the old
+    scrapers rotted unnoticed for a year)."""
+    today = today or dt.date.today()
+    dates = []
+    try:
+        if kind == "fomc":
+            dates = _fomc_dates_from_fed()
+        elif kind in _FRED_RELEASE_IDS:
+            dates = _fred_release_dates_raw(_FRED_RELEASE_IDS[kind])
+    except Exception as e:
+        print(f"::warning title=Econ release calendar::{kind}: live source failed "
+              f"({e}); using static fallback (goes stale without maintenance)")
+    if not dates:
+        dates = _STATIC_RELEASES.get(kind, [])
+    for d in dates:
+        try:
+            d_date = dt.date.fromisoformat(d[:10])
+        except ValueError:
+            continue
+        if d_date >= today:
+            label = f"{d_date.strftime('%b')} {d_date.day}, {d_date.year}"
+            return f"{label} (FOMC)" if kind == "fomc" else label
+    print(f"::warning title=Econ release calendar::{kind}: no future date available "
+          f"- dashboard shows TBD; refresh _STATIC_RELEASES or fix the live source")
+    return "TBD"
 
 # ───────── indicator spec ─────────
 # NOTE: CPIAUCSL is stored as YoY % (not the raw index).
 INDICATORS = {
     "UNRATE":   {"name":"Unemployment Rate","units":"%","group":"labor",
-                 "schedule":lambda:_next_bls("empsit")},
+                 "schedule":lambda:_next_release("empsit")},
     "CPIAUCSL": {"name":"CPI (All-Items YoY)","units":"%","group":"labor",
-                 "schedule":lambda:_next_bls("cpi")},
+                 "schedule":lambda:_next_release("cpi")},
     "PCEPI":    {"name":"PCE Price Index (YoY)","units":"%","group":"labor"},
     "ICSA":     {"name":"Initial Jobless Claims","units":"K","group":"labor"},
     "UMCSENT":  {"name":"Consumer Sentiment","units":"idx","group":"labor"},
@@ -48,7 +156,7 @@ INDICATORS = {
     "DGS2":     {"name":"2-Year Treasury","units":"%","group":"rates"},
     "T10Y2Y":   {"name":"10Y-2Y Yield Spread","units":"%","group":"rates"},
     "GDPC1":    {"name":"Real GDP (2017$ SAAR)","units":"T","group":"rates",
-                 "schedule":_next_bea_gdp},
+                 "schedule":lambda:_next_release("gdp")},
     # pseudo-row for display; data actually from DFEDTARL/U
     "FEDFUNDS": {"name":"Fed Funds Target","units":"%","group":"rates"},
 }
@@ -248,7 +356,7 @@ def generate_economic_data():
             d1 = f"{(last - float(unrate.iloc[-2])):+.2f} pp" if len(unrate) >= 2 else "—"
             d2 = f"{(last - float(unrate.iloc[-13])):+.2f} pp" if len(unrate) >= 13 else "—"
             rows.append(dict(sid="UNRATE", group="labor", name=INDICATORS["UNRATE"]["name"],
-                             latest=last_disp, d1=d1, d2=d2, next=_next_bls("empsit")))
+                             latest=last_disp, d1=d1, d2=d2, next=_next_release("empsit")))
             plt.figure(); unrate.plot(title=INDICATORS["UNRATE"]["name"]); plt.tight_layout()
             plt.savefig(CHART_DIR / "UNRATE_history.png", dpi=110); plt.close()
 
@@ -275,7 +383,7 @@ def generate_economic_data():
             ychg = f"{last_yoy - float(cpi_yoy.iloc[-13]):+.2f} pp" if len(cpi_yoy) >= 13 else "—"
 
             rows.append(dict(sid="CPIAUCSL", group="labor", name=INDICATORS["CPIAUCSL"]["name"],
-                             latest=last_disp, d1=mchg, d2=ychg, next=_next_bls("cpi")))
+                             latest=last_disp, d1=mchg, d2=ychg, next=_next_release("cpi")))
 
             # Chart YoY %
             plt.figure()
@@ -351,7 +459,7 @@ def generate_economic_data():
             yoy = _pct(last, float(gdp.iloc[-5])) if len(gdp) >= 5 else None
             rows.append(dict(sid="GDPC1", group="rates", name=INDICATORS["GDPC1"]["name"],
                              latest=f"{trill:,.1f} T", d1=_fmt(qoq, "%"), d2=_fmt(yoy, "%"),
-                             next=_next_bea_gdp()))
+                             next=_next_release("gdp")))
             plt.figure(); gdp.plot(title=INDICATORS["GDPC1"]["name"]); plt.tight_layout()
             plt.savefig(CHART_DIR / "GDPC1_history.png", dpi=110); plt.close()
 
@@ -359,9 +467,12 @@ def generate_economic_data():
         if not tarL.empty and not tarU.empty:
             comb = pd.concat([tarL.rename("L"), tarU.rename("U")], axis=1).dropna()
             low  = float(comb["L"].iloc[-1]); up = float(comb["U"].iloc[-1])
-            last_disp = f"{low:.2f} – {up:.2f} %"
+            # ASCII hyphen + "n/a": the en-/em-dashes rendered as mojibake ("?")
+            # when this snippet was embedded into the homepage.
+            last_disp = f"{low:.2f} - {up:.2f} %"
             rows.append(dict(sid="FEDFUNDS", group="rates", name=INDICATORS["FEDFUNDS"]["name"],
-                             latest=last_disp, d1="—", d2="—", next="Daily"))
+                             latest=last_disp, d1="n/a", d2="n/a",
+                             next=_next_release("fomc")))
             comb["MID"] = (comb["L"] + comb["U"]) / 2.0
             plt.figure(); comb["MID"].plot(title="Fed Funds Target (Midpoint)"); plt.tight_layout()
             plt.savefig(CHART_DIR / "FEDFUNDS_history.png", dpi=110); plt.close()
