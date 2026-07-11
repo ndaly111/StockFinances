@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-# generate_economic_data.py  – rev 09-Feb-2026
+# generate_economic_data.py  – rev 10-Jul-2026
 # 10 indicators: +PCEPI, DGS2, T10Y2Y, ICSA, UMCSENT
+# Also resolves next-release dates (jobs report / CPI / GDP / FOMC) for the
+# dashboard "Next" column — see the NEXT-RELEASE DATES block below for the
+# architecture, failure history, and maintenance playbook.
 # -------------------------------------------------------------------
 import os, re, sqlite3, datetime as dt
 from pathlib import Path
@@ -17,19 +20,58 @@ fred      = Fred(api_key=FRED_KEY) if FRED_KEY else None
 STAMP     = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M UTC")
 # ──────────────────────────
 
-# ───────── next release dates ─────────
-# BLS/BEA hard-403 scrapers (bot-blocked), so the old scrape always fell through
-# to an em-dash that rendered as mojibake on the dashboard. Primary source is
-# now the FRED release-calendar API (includes FUTURE scheduled dates and tracks
-# BLS/BEA schedule revisions automatically; FRED_API_KEY already in CI).
-# Fallback: the verified static dates below. Final fallback: "TBD".
-# All output is pure ASCII — no em-dashes, so the mojibake cannot recur.
+# ═════════════════════ NEXT-RELEASE DATES — HOW THIS WORKS ═════════════════════
+# These feed the "Next" column on the homepage dashboard (charts/economic_data.html
+# snippet, embedded by html_generator2) and economic_charts.html: when the next
+# jobs report / CPI / GDP print / FOMC rate decision is scheduled.
+#
+# HISTORY — why it's built this way (July 2026):
+#   The original implementation scraped bls.gov and bea.gov pages for "Next
+#   Release". Both agencies now hard-403 non-browser clients, so every scrape
+#   silently fell through to an em-dash placeholder — and because the failure
+#   was SILENT, the dashboard showed no/stale dates for about a year before
+#   anyone noticed. Two lessons are baked in below:
+#     1. Don't scrape bot-hostile pages when an API exists.
+#     2. A data source that can fail must fail LOUDLY.
+#
+# RESOLUTION CHAIN (per indicator, evaluated fresh on every daily build):
+#   1. Live source (self-maintaining, zero upkeep):
+#        - empsit/cpi/gdp -> FRED release-calendar API
+#          (api.stlouisfed.org/fred/release/dates). St. Louis Fed's machine-
+#          readable schedule; include_release_dates_with_no_data=true makes it
+#          return FUTURE scheduled dates, and it absorbs BLS/BEA schedule
+#          revisions automatically (they reshuffled the 2026 calendar after the
+#          appropriations lapse). Uses FRED_API_KEY, already a CI secret.
+#        - fomc -> scraped from federalreserve.gov/monetarypolicy/fomccalendars.htm
+#          (the Fed does NOT bot-block, and publishes meetings ~2 years ahead).
+#          There is no FRED release id for FOMC decisions, hence the scrape.
+#   2. _STATIC_RELEASES fallback: only dates verified by a human against the
+#      official schedules — NEVER guessed/extrapolated (a plausible-but-wrong
+#      date is worse than none; see lesson above re: 2026 revisions).
+#   3. "TBD" — honest, rather than stale or wrong.
+#   Falling to 2 or 3 prints a GitHub Actions ::warning:: annotation, so
+#   breakage is visible in the build UI the same day instead of rotting.
+#
+# MAINTENANCE — the only human tasks that can ever come up:
+#   - If a ::warning:: shows "live source failed" persistently: the FRED API or
+#     the Fed's calendar page layout changed. Fix the fetch/parse; meanwhile the
+#     static list keeps the cells correct.
+#   - If a ::warning:: shows "TBD": extend _STATIC_RELEASES from the official
+#     schedules (bls.gov/schedule, bea.gov/news/schedule, federalreserve.gov —
+#     open them in a BROWSER; they 403 curl/requests).
+#   - Output must stay pure ASCII ("Aug 7, 2026"): non-ASCII (em-dashes etc.)
+#     has rendered as mojibake when this snippet is embedded into the homepage.
+#
+# FRED release ids: 50 = Employment Situation (unemployment/payrolls),
+# 10 = CPI, 53 = GDP (BEA). Look others up at fred.stlouisfed.org/releases.
+# ═══════════════════════════════════════════════════════════════════════════════
 _FRED_RELEASE_IDS = {"empsit": 50, "cpi": 10, "gdp": 53}
 
-# Only dates verified against official schedules (do NOT guess — BLS revised
-# its 2026 calendar after the appropriations lapse). FOMC decision days
-# (2nd day of each meeting) are published years ahead; 2026 + 2027 verified
-# against federalreserve.gov 2026-07-10 (2027 tentative per the Fed).
+# Human-verified dates ONLY (see block comment above — never guess).
+# empsit/cpi/gdp: verified 2026-07-10 against the official 2026 schedules;
+# short lists are fine because the FRED API is the primary source anyway.
+# fomc: DECISION days (2nd day of each meeting), 2026 + 2027 verified against
+# federalreserve.gov 2026-07-10 (2027 marked tentative by the Fed).
 _STATIC_RELEASES = {
     "empsit": ["2026-08-07"],
     "cpi":    ["2026-07-14", "2026-08-12"],
