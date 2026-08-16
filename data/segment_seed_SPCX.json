@@ -1,0 +1,118 @@
+{
+  "ticker": "SPCX",
+  "source": "424B4 prospectus (accession 0001628280-26-042639, filed 2026-06-12)",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/1181412/000162828026042639/spaceexplorationtechnologi.htm",
+  "units": "millions",
+  "axis": "StatementBusinessSegmentsAxis",
+  "mode": "replace",
+  "rows": [
+    {
+      "Segment": "Space",
+      "Year": "2023",
+      "Revenue": 3557.0,
+      "CostOfRevenue": 1669.0,
+      "ResearchAndDevelopment": 1538.0,
+      "SellingGeneralAndAdministrative": 351.0,
+      "RestructuringCharges": 0.0,
+      "Impairment": 0.0,
+      "TotalCostsAndExpenses": 3558.0,
+      "OpIncome": -1.0
+    },
+    {
+      "Segment": "Connectivity",
+      "Year": "2023",
+      "Revenue": 3869.0,
+      "CostOfRevenue": 2786.0,
+      "ResearchAndDevelopment": 381.0,
+      "SellingGeneralAndAdministrative": 233.0,
+      "RestructuringCharges": 0.0,
+      "Impairment": 0.0,
+      "TotalCostsAndExpenses": 3400.0,
+      "OpIncome": 469.0
+    },
+    {
+      "Segment": "AI",
+      "Year": "2023",
+      "Revenue": 2961.0,
+      "CostOfRevenue": 1655.0,
+      "ResearchAndDevelopment": 186.0,
+      "SellingGeneralAndAdministrative": 1081.0,
+      "RestructuringCharges": 237.0,
+      "Impairment": 3775.0,
+      "TotalCostsAndExpenses": 6934.0,
+      "OpIncome": -3973.0
+    },
+    {
+      "Segment": "Space",
+      "Year": "2024",
+      "Revenue": 3796.0,
+      "CostOfRevenue": 1541.0,
+      "ResearchAndDevelopment": 1835.0,
+      "SellingGeneralAndAdministrative": 375.0,
+      "RestructuringCharges": 0.0,
+      "Impairment": 24.0,
+      "TotalCostsAndExpenses": 3775.0,
+      "OpIncome": 21.0
+    },
+    {
+      "Segment": "Connectivity",
+      "Year": "2024",
+      "Revenue": 7599.0,
+      "CostOfRevenue": 4768.0,
+      "ResearchAndDevelopment": 453.0,
+      "SellingGeneralAndAdministrative": 333.0,
+      "RestructuringCharges": 0.0,
+      "Impairment": 39.0,
+      "TotalCostsAndExpenses": 5593.0,
+      "OpIncome": 2006.0
+    },
+    {
+      "Segment": "AI",
+      "Year": "2024",
+      "Revenue": 2620.0,
+      "CostOfRevenue": 1687.0,
+      "ResearchAndDevelopment": 1176.0,
+      "SellingGeneralAndAdministrative": 1105.0,
+      "RestructuringCharges": 213.0,
+      "Impairment": 0.0,
+      "TotalCostsAndExpenses": 4181.0,
+      "OpIncome": -1561.0
+    },
+    {
+      "Segment": "Space",
+      "Year": "2025",
+      "Revenue": 4086.0,
+      "CostOfRevenue": 1352.0,
+      "ResearchAndDevelopment": 3004.0,
+      "SellingGeneralAndAdministrative": 349.0,
+      "RestructuringCharges": 0.0,
+      "Impairment": 38.0,
+      "TotalCostsAndExpenses": 4743.0,
+      "OpIncome": -657.0
+    },
+    {
+      "Segment": "Connectivity",
+      "Year": "2025",
+      "Revenue": 11387.0,
+      "CostOfRevenue": 5921.0,
+      "ResearchAndDevelopment": 575.0,
+      "SellingGeneralAndAdministrative": 468.0,
+      "RestructuringCharges": 0.0,
+      "Impairment": 0.0,
+      "TotalCostsAndExpenses": 6964.0,
+      "OpIncome": 4423.0
+    },
+    {
+      "Segment": "AI",
+      "Year": "2025",
+      "Revenue": 3201.0,
+      "CostOfRevenue": 2178.0,
+      "ResearchAndDevelopment": 5064.0,
+      "SellingGeneralAndAdministrative": 1827.0,
+      "RestructuringCharges": 487.0,
+      "Impairment": 0.0,
+      "TotalCostsAndExpenses": 9556.0,
+      "OpIncome": -6355.0
+    }
+  ]
+}

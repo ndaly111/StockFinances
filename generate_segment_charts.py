@@ -24,6 +24,7 @@ Expected columns: Segment, Year, Revenue, OpIncome
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import re
 from datetime import datetime, timezone
@@ -220,6 +221,97 @@ def _write_axis_placeholders(out_dir: Path, ticker: str, message: str) -> None:
             encoding="utf-8",
         )
 
+# ───────────────────── prospectus seed support ────────────────────
+# Some tickers (e.g. SPCX post-IPO) have no 10-K yet, so the iXBRL path has no
+# clean fiscal years. data/segment_seed_{TICKER}.json (written by
+# prospectus_segments.py from the S-1/424B4) supplies frozen annual segment
+# data. mode="replace" ignores the scraped rows entirely; mode="fill" appends
+# only fiscal years the scrape didn't return.
+
+SEED_DIR = Path("data")
+
+SEED_EXPENSE_METRICS = [
+    ("Revenue", "Revenue"),
+    ("CostOfRevenue", "Cost of revenue"),
+    ("ResearchAndDevelopment", "Research and development"),
+    ("SellingGeneralAndAdministrative", "Selling, general, and administrative"),
+    ("RestructuringCharges", "Restructuring charges"),
+    ("Impairment", "Impairment"),
+    ("TotalCostsAndExpenses", "Total costs and expenses"),
+    ("OpIncome", "Income (loss) from operations"),
+]
+
+
+def _load_segment_seed(ticker: str) -> dict | None:
+    path = SEED_DIR / f"segment_seed_{ticker}.json"
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"[{VERSION}] could not read segment seed for {ticker}: {e}")
+        return None
+
+
+def _seed_to_df(seed: dict) -> pd.DataFrame:
+    mult = 1e6 if seed.get("units") == "millions" else 1.0
+    axis = seed.get("axis", "StatementBusinessSegmentsAxis")
+    rows = []
+    for r in seed.get("rows", []):
+        rows.append({
+            "Axis": axis,
+            "Segment": r["Segment"],
+            "Year": str(r["Year"]),
+            "Revenue": (r["Revenue"] * mult) if r.get("Revenue") is not None else pd.NA,
+            "OpIncome": (r["OpIncome"] * mult) if r.get("OpIncome") is not None else pd.NA,
+            "AxisType": axis,
+        })
+    return pd.DataFrame(rows)
+
+
+def _render_seed_expense_table(ticker: str, seed: dict) -> str | None:
+    """Per-segment expense breakdown table (metrics × segments, grouped by
+    year desc) appended below the axis1 segment table. Reuses .segment-pivot
+    CSS already emitted in that file."""
+    rows = seed.get("rows", [])
+    segments = list(dict.fromkeys(r["Segment"] for r in rows))
+    years = sorted({str(r["Year"]) for r in rows}, reverse=True)
+    by_key = {(r["Segment"], str(r["Year"])): r for r in rows}
+    present = [(k, lbl) for k, lbl in SEED_EXPENSE_METRICS
+               if any(k in r for r in rows)]
+    if len(present) <= 2 or not segments:
+        return None  # seed carries no expense detail beyond Revenue/OpIncome
+
+    mult = 1e6 if seed.get("units") == "millions" else 1.0
+    max_abs = max((abs(r[k] * mult) for r in rows for k, _ in present
+                   if r.get(k) is not None), default=0.0)
+    div, unit = _choose_scale(max_abs)
+
+    out = ['<h4 style="font-family:Arial,sans-serif;margin:18px 0 4px;">'
+           f'{ticker} — Segment Expense Breakdown</h4>']
+    src = seed.get("source", "S-1 prospectus")
+    out.append(f'<div class="table-note">Units: <b>{unit}</b>. Source: {src}.</div>')
+    out.append("<div class='table-wrap'><table class='segment-pivot' border=0>")
+    header = "".join(f"<th>{s}</th>" for s in segments)
+    for year in years:
+        out.append(f"<thead><tr><th>FY{year}</th>{header}<th>Total</th></tr></thead>")
+        out.append("<tbody>")
+        for k, label in present:
+            cells, total, seen = [], 0.0, False
+            for s in segments:
+                v = by_key.get((s, year), {}).get(k)
+                if v is None:
+                    cells.append("<td>–</td>")
+                else:
+                    total += v * mult
+                    seen = True
+                    cells.append(f"<td>{_fmt_scaled(v * mult, div, unit)}</td>")
+            tot = _fmt_scaled(total, div, unit) if seen else "–"
+            out.append(f"<tr><td>{label}</td>{''.join(cells)}<td>{tot}</td></tr>")
+        out.append("</tbody>")
+    out.append("</table></div>")
+    return "\n".join(out)
+
 # ───────────────────── main per-ticker routine ────────────────────
 
 def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
@@ -229,26 +321,34 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
     # Ensure out_dir exists before dump_raw writes into it
     ensure_dir(out_dir)
 
-    try:
-        df = get_segment_data(ticker, dump_raw=True, raw_dir=out_dir)
-    except Exception as fetch_err:
-        print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
-        # If we fail to fetch/parse, do NOT leave the site with no axis tables.
-        # Also clean stale charts so we don't keep serving incorrect images.
-        _cleanup_stale_axis_artifacts(out_dir, ticker)
-        (out_dir / f"{ticker}_segments_table.html").write_text(
-            f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>",
-            encoding="utf-8",
-        )
-        _write_axis_placeholders(out_dir, ticker, f"Error fetching segment data for {ticker}: {fetch_err}")
-        return
+    seed = _load_segment_seed(ticker)
+
+    if seed and seed.get("mode") == "replace":
+        # Frozen prospectus data replaces the scrape entirely (see seed notes).
+        df = None
+    else:
+        try:
+            df = get_segment_data(ticker, dump_raw=True, raw_dir=out_dir)
+        except Exception as fetch_err:
+            print(f"[{VERSION}] Error fetching segment data for {ticker}: {fetch_err}")
+            if seed is None:
+                # If we fail to fetch/parse, do NOT leave the site with no axis tables.
+                # Also clean stale charts so we don't keep serving incorrect images.
+                _cleanup_stale_axis_artifacts(out_dir, ticker)
+                (out_dir / f"{ticker}_segments_table.html").write_text(
+                    f"<p>Error fetching segment data for {ticker}: {fetch_err}</p>",
+                    encoding="utf-8",
+                )
+                _write_axis_placeholders(out_dir, ticker, f"Error fetching segment data for {ticker}: {fetch_err}")
+                return
+            df = None  # fall through to the seed
 
     ensure_dir(out_dir)
 
     # Clean stale axis artifacts before regenerating.
     _cleanup_stale_axis_artifacts(out_dir, ticker)
 
-    if df is None or df.empty:
+    if (df is None or df.empty) and seed is None:
         (out_dir / f"{ticker}_segments_table.html").write_text(
             f"<p>No segment data available for {ticker}.</p>", encoding="utf-8"
         )
@@ -256,11 +356,26 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         _write_axis_placeholders(out_dir, ticker, f"No segment data available for {ticker}")
         return
 
+    if df is None or df.empty:
+        df = pd.DataFrame(columns=["Axis", "Segment", "Year", "Revenue", "OpIncome", "AxisType"])
+
     df = df.copy()
     df["Segment"] = df["Segment"].astype(str).map(_humanize_segment_name)
     df["Year"] = df["Year"].astype(str)
     df["Revenue"] = df["Revenue"].map(_to_float)
     df["OpIncome"] = df["OpIncome"].map(_to_float)
+
+    if seed:
+        seed_df = _seed_to_df(seed)  # names verbatim — no humanize (e.g. "AI")
+        if seed.get("mode") == "replace":
+            df = seed_df
+        else:
+            have = set(zip(df["AxisType"], df["Year"]))
+            fresh = seed_df[[(a, y) not in have
+                             for a, y in zip(seed_df["AxisType"], seed_df["Year"])]]
+            df = pd.concat([df, fresh], ignore_index=True)
+        print(f"[{VERSION}] applied segment seed for {ticker} "
+              f"(mode={seed.get('mode', 'fill')}, rows={len(df)})")
 
     if dump_item2_axis_ranking:
         try:
@@ -490,6 +605,17 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 f"<p>No segment data available for {ticker} (axis {idx}).</p>",
                 encoding="utf-8",
             )
+
+    # Seeded tickers: append the prospectus expense breakdown below the axis1 table.
+    if seed:
+        expense_html = _render_seed_expense_table(ticker, seed)
+        axis1_path = out_dir / f"axis1_{ticker}_segments_table.html"
+        if expense_html and axis1_path.is_file():
+            axis1_path.write_text(
+                axis1_path.read_text(encoding="utf-8") + "\n" + expense_html,
+                encoding="utf-8",
+            )
+            print(f"[{VERSION}] appended seed expense table → {axis1_path}")
 
 # ─────────────────────────── CLI wrapper ───────────────────────────
 
