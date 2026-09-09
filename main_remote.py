@@ -530,8 +530,14 @@ def mini_main():
             print(f"[WARN] QQQ yfinance snapshot failed (keeping legacy row): {exc}")
         if is_weekly:
             maybe_backfill_index_eps(DB_PATH)
-            generate_earnings_tables()
             ensure_spy_monthly_eps_and_derived_pe(DB_PATH)
+        # Earnings tables run in daily mode too: the homepage embeds
+        # charts/earnings_past.html + earnings_upcoming.html, and the daily
+        # rsync deploys main's checked-out copy of those files — if they are
+        # only regenerated weekly, every daily deploy clobbers Sunday's fresh
+        # output with the stale copy committed on main (this is how the
+        # homepage earnings sat frozen at June 12 until September).
+        generate_earnings_tables()
         # Index growth charts and implied-growth recompute also run in daily
         # mode: Plotly pages (spy_growth.html / qqq_growth.html) are written
         # on each run so the daily rsync always deploys fresh output.
