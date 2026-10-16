@@ -657,8 +657,8 @@ def _eps_growth_summary(eps: pd.Series, fwd) -> Optional[dict]:
     for i in range(1, len(ye)):
         if ye.index[i].year == last_dt.year:
             break
-        bars.append((f"'{ye.index[i].year % 100:02d}", ye.iloc[i] / ye.iloc[i - 1] - 1, "hist"))
-    bars = bars[-10:]
+        bars.append((str(ye.index[i].year), ye.iloc[i] / ye.iloc[i - 1] - 1, "hist"))
+    # Full history is kept; the chart's range buttons pick the window.
     one_y = _cagr(1)
     if one_y is not None:
         bars.append(("TTM", one_y, "ttm"))
@@ -684,6 +684,7 @@ def _eps_growth_figure(summary: dict) -> go.Figure:
         x=labels, y=vals,
         marker=dict(color=[_BAR_COLORS[b[2]] for b in summary["bars"]],
                     line=dict(width=0)),
+        customdata=[b[2] for b in summary["bars"]],
         text=[f"{v:+.0f}%" for v in vals], textposition="outside", cliponaxis=False,
         constraintext="none",
         textfont=dict(family="Arial, sans-serif", size=10, color="#2a3f5f"),
@@ -695,7 +696,7 @@ def _eps_growth_figure(summary: dict) -> go.Figure:
     fig.update_yaxes(ticksuffix="%", range=[lo - (pad if lo < 0 else 0), hi + pad],
                      zeroline=True, zerolinecolor="#000080", zerolinewidth=1)
     _apply_retro_layout(fig)
-    fig.update_xaxes(type="category", tickangle=0)
+    fig.update_xaxes(type="category")
     fig.update_yaxes(zeroline=True, zerolinecolor="#888888", zerolinewidth=1)
     fig.update_layout(hovermode="closest")
     return fig
@@ -735,6 +736,17 @@ def _range_bar(div_id: str, default: int = 5) -> str:
         f'<button class="range-btn{" active" if y == default else ""}" data-y="{y}">{lbl}</button>'
         for lbl, y in (("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("MAX", 0)))
     return f'<div class="range-row" data-chart="{div_id}" data-default="{default}">{btns}</div>'
+
+
+def _bars_range_bar(n_hist: int) -> str:
+    """Year-window buttons for the EPS growth bars (wired up by setBars)."""
+    opts = [(f"{y}Y", y) for y in (10, 20, 50) if y < n_hist] + [("MAX", 0)]
+    default = 10 if n_hist > 10 else 0
+    btns = "".join(
+        f'<button class="range-btn{" active" if y == default else ""}" data-y="{y}">{lbl}</button>'
+        for lbl, y in opts)
+    return (f'<div class="range-row" data-chart="eps-growth-chart" data-kind="bars" '
+            f'data-default="{default}">{btns}</div>')
 
 
 def _legend_strip(fig) -> str:
@@ -815,10 +827,11 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
       bar.querySelectorAll('button').forEach(function(b){
         b.addEventListener('click', function(){
           bar.querySelectorAll('button').forEach(function(o){ o.classList.remove('active'); });
-          b.classList.add('active'); setRange(id, +b.getAttribute('data-y'));
+          b.classList.add('active');
+          (bar.getAttribute('data-kind')==='bars' ? setBars : setRange)(id, +b.getAttribute('data-y'));
         });
       });
-      setRange(id, +bar.getAttribute('data-default'));
+      (bar.getAttribute('data-kind')==='bars' ? setBars : setRange)(id, +bar.getAttribute('data-default'));
     });
   }
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
@@ -828,6 +841,31 @@ function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear
 // range change never leaves the line squashed against a stale y-axis.
 // years=0 means All. The window ends at the last point of any trace (so the
 // forecast stays in view) and starts N years before the last HISTORICAL point.
+// EPS growth bars: show the last N calendar years (0 = all) plus the TTM and
+// estimate bars, refit y, and draw a light dashed average of the calendar-year
+// bars in view (TTM/estimates excluded so the average is realized history).
+function setBars(divId, years){
+  var gd=document.getElementById(divId);
+  var tr=gd&&gd._fullData&&gd._fullData[0];
+  if(!tr||!window.Plotly) return;
+  var ys=tr.y, kinds=tr.customdata||[], n=ys.length, nHist=0;
+  for(var i=0;i<n;i++) if(kinds[i]==='hist') nHist++;
+  var start=years ? Math.max(0, nHist-years) : 0, sum=0, cnt=0, lo=0, hi=0;
+  for(var j=start;j<n;j++){ var v=ys[j]; if(v==null||!isFinite(v)) continue;
+    if(v<lo) lo=v; if(v>hi) hi=v; if(kinds[j]==='hist'){ sum+=v; cnt++; } }
+  var shown=n-start, pad=(hi-lo)*0.15||5, avg=cnt ? sum/cnt : null;
+  var lay={'xaxis.range':[start-0.5, n-0.5], 'yaxis.range':[lo-(lo<0?pad:0), hi+pad],
+           shapes:[], annotations:[]};
+  if(avg!==null){
+    lay.shapes=[{type:'line', xref:'paper', x0:0, x1:1, y0:avg, y1:avg,
+                 line:{color:'#888888', width:1, dash:'dash'}}];
+    lay.annotations=[{xref:'paper', x:0.01, xanchor:'left', yref:'paper', y:1, yanchor:'top', showarrow:false,
+                      text:'- - avg '+(avg>=0?'+':'')+avg.toFixed(1)+'%/yr ('+cnt+' yrs)',
+                      font:{size:10, color:'#666666'}, bgcolor:'rgba(255,255,255,0.8)'}];
+  }
+  // Bar value labels only while they fit; hover still shows every value.
+  Plotly.update(gd, {textposition:[shown>16 ? 'none' : 'outside']}, lay);
+}
 function setRange(divId, years){
   var gd=document.getElementById(divId);
   // _fullData holds decoded arrays (gd.data may be plotly's binary {bdata} form).
@@ -1013,7 +1051,8 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
             fig_g = _eps_growth_figure(summary)
             eps_growth_html = _growth_tiles_html(summary) + to_html(
                 fig_g, include_plotlyjs=False, full_html=False, default_height="300px",
-                div_id="eps-growth-chart", config=_PLOT_CONFIG)
+                div_id="eps-growth-chart", config=_PLOT_CONFIG) + _bars_range_bar(
+                sum(1 for b in summary["bars"] if b[2] == "hist"))
     tf_table = _timeframe_table_html(df_d)
     callout = _forward_callout(fwd)
     page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
