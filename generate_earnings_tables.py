@@ -139,11 +139,25 @@ def generate_earnings_tables():
     reporting_today = set()
     any_rows = False
 
+    # Fetch every ticker's earnings dates in parallel up front (the sequential
+    # loop spent ~90s/run waiting on Yahoo); processing below is unchanged.
+    from concurrent.futures import ThreadPoolExecutor
+
+    def _fetch_dates(t):
+        try:
+            return yf.Ticker(t).get_earnings_dates(limit=30), None
+        except Exception as e:
+            return None, e
+
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        fetched = dict(zip(tickers, ex.map(_fetch_dates, tickers)))
+
     for ticker in tickers:
         logging.info(f"Processing {ticker}")
         try:
-            stock = yf.Ticker(ticker)
-            df = stock.get_earnings_dates(limit=30)
+            df, fetch_err = fetched[ticker]
+            if fetch_err is not None:
+                raise fetch_err
             if df is None or df.empty:
                 continue
 

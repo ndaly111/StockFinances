@@ -80,20 +80,46 @@ def log_valuation_data(ticker, nicks_ttm_valuation, nicks_forward_valuation,
 # ---------------------------------------------------------------------------
 #  FINVIZ 5-year EPS growth scraper
 # ---------------------------------------------------------------------------
-def finviz_five_yr(ticker, cursor):
-    url = f"https://finviz.com/quote.ashx?t={ticker}"
-    headers = {
-        "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-    }
+_FINVIZ_HEADERS = {
+    "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+}
+# ticker -> (status_code, html bytes). Filled in parallel by prefetch_finviz()
+# before the per-ticker loop; the sequential fetch cost ~1s/ticker (~105s/run).
+_finviz_pages = {}
 
-    resp = requests.get(url, headers=headers, timeout=15)
-    if resp.status_code != 200:
-        print(f"[{ticker}] Finviz request failed ({resp.status_code}).")
+
+def _fetch_finviz_page(ticker):
+    import time
+    status, content = None, b""
+    for attempt in range(4):
+        try:
+            resp = requests.get(f"https://finviz.com/quote.ashx?t={ticker}",
+                                headers=_FINVIZ_HEADERS, timeout=15)
+            status, content = resp.status_code, resp.content
+        except Exception as e:
+            print(f"[{ticker}] Finviz request error: {e}")
+        if status != 429:
+            break
+        time.sleep(2 * (attempt + 1))  # finviz throttles above ~2 concurrent
+    return status, content
+
+
+def prefetch_finviz(tickers, max_workers=2):
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        for t, page in zip(tickers, ex.map(_fetch_finviz_page, tickers)):
+            _finviz_pages[t] = page
+
+
+def finviz_five_yr(ticker, cursor):
+    status, content = _finviz_pages.pop(ticker, None) or _fetch_finviz_page(ticker)
+    if status != 200:
+        print(f"[{ticker}] Finviz request failed ({status}).")
         return
 
-    soup = BeautifulSoup(resp.content, "html.parser")
+    soup = BeautifulSoup(content, "html.parser")
     cell = soup.find("td", text="EPS next 5Y")
     if not cell:
         print(f"[{ticker}] Finviz 5-yr growth cell not found.")

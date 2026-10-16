@@ -65,6 +65,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Generate pages
+        env:
+          PYTHONUNBUFFERED: "1"   # keep print() in step with logging so log timestamps are true
         run: |
           python main_remote.py
           python generate_market_summary.py
