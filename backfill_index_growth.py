@@ -106,8 +106,14 @@ def backfill_index_growth(
         # Recompute implied growth using nearest yields
         cur.execute(RECOMPUTE_IG_SQL, (float(fallback_yield),))
         conn.commit()
+        latest = cur.execute("SELECT Date, TenYr FROM Treasury_Yield_History ORDER BY Date DESC LIMIT 1").fetchone()
+        n_fb = cur.execute(
+            "SELECT COUNT(*) FROM Index_PE_History p WHERE p.PE_Ratio > 0 AND NOT EXISTS "
+            "(SELECT 1 FROM Treasury_Yield_History t WHERE t.Date <= p.Date)").fetchone()[0]
         print(
-            f"[backfill_index_growth] Completed yield upsert and implied growth recompute using fallback {fallback_yield:.4f}."
+            f"[backfill_index_growth] Implied growth recomputed; latest 10Y = "
+            f"{latest[1]:.4f} ({latest[0]})" if latest else "[backfill_index_growth] Implied growth recomputed; no yield data",
+            f"| {n_fb} pre-history row(s) used fallback {fallback_yield:.4f}."
         )
     finally:
         conn.close()
