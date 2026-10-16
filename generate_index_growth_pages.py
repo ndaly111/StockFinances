@@ -359,26 +359,17 @@ def _apply_retro_layout(fig):
     # clutter under a terminal aesthetic — drop both for a cleaner look.
     fig.update_layout(title=None)
     fig.update_xaxes(rangeslider_visible=False)
-    # Range buttons + legend used to share the top-left corner and overlapped on
-    # desktop. Give each its own row above the plot: legend on top, buttons below.
-    # Buttons get a bigger font + padded labels (larger click targets) and a
-    # Win95-style face to match the theme.
-    rs = getattr(fig.layout.xaxis, "rangeselector", None)
-    if rs is not None and rs.buttons:
-        for btn in rs.buttons:
-            if btn.label and not btn.label.startswith(" "):
-                btn.label = f"  {btn.label}  "
-        fig.update_xaxes(rangeselector=dict(
-            x=0.0, xanchor="left", y=1.02, yanchor="bottom",
-            font=dict(family="Arial, Helvetica, sans-serif", size=14, color="#000080"),
-            bgcolor="#E0E0E0", activecolor="#C0C0FF",
-            bordercolor="#808080", borderwidth=1,
-        ))
-        fig.update_layout(
-            legend=dict(orientation="h", yanchor="bottom", y=1.16,
-                        xanchor="left", x=0.0),
-            margin_t=78,
-        )
+    # Plotly's built-in range selector moved x but left y stale (squashed lines),
+    # and drag/pinch zoom fought page scrolling on phones. Range buttons are now
+    # HTML (see _range_bar / setRange in _page_html) that set x AND y in one
+    # relayout; the plot itself is locked so a swipe just scrolls the page.
+    fig.update_xaxes(rangeselector=dict(visible=False), fixedrange=True, title=None)
+    fig.update_yaxes(fixedrange=True)
+    fig.update_layout(
+        dragmode=False,
+        legend=dict(orientation="h", yanchor="bottom", y=1.0, xanchor="left", x=0.0),
+        margin=dict(l=48, r=12, t=30, b=28),
+    )
     return fig
 
 def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
@@ -620,8 +611,151 @@ def _eps_indexed_figure(
     return fig
 
 
+def _forward_growth_rates(conn: sqlite3.Connection, ticker: str):
+    """Latest forward FY growth rates for the growth scorecard.
+
+    Unlike _latest_forward_eps (which feeds the dollar forecast overlay and is
+    held to the `displayable` band), the scorecard only shows growth RATES, which
+    are scale-free — so a bottom-up row is accepted on coverage alone (>=85% of
+    index weight). The band (bench ±20pts) was hiding QQQ's real +50%-plus year.
+    """
+    try:
+        rows = conn.execute(
+            """SELECT growth_this_fy, growth_next_fy, horizon_date, coverage_weight,
+                      displayable, source, date_recorded
+                 FROM Index_Forward_EPS_History
+                WHERE ticker=? AND growth_this_fy IS NOT NULL
+                ORDER BY date_recorded DESC LIMIT 30""",
+            (ticker.upper(),)).fetchall()
+    except Exception:
+        return None
+    # Newest qualifying row within 14 days — e.g. SPY's FactSet PDF fetch can
+    # miss days, and the low-coverage bottom-up fallback row isn't good enough.
+    row = None
+    for r in rows:
+        if (pd.Timestamp(rows[0][6]) - pd.Timestamp(r[6])).days > 14:
+            break
+        if r[4] or (r[3] or 0) >= 0.85:
+            row = r
+            break
+    if not row:
+        return None
+    g1, g2, horizon, cov, disp, src, asof = row
+    try:
+        fy = pd.Timestamp(horizon).year
+    except Exception:
+        return None
+    return {"g1": float(g1), "g2": None if g2 is None else float(g2), "fy": fy,
+            "coverage": cov, "source": src, "asof": asof}
+
+
+def _eps_growth_summary(eps: pd.Series, fwd) -> Optional[dict]:
+    """Year-over-year TTM EPS growth by calendar year, 5Y/10Y CAGR, and forward
+    FY growth with the implied 2-year CAGR."""
+    s = eps.dropna()
+    s = s[s > 0]
+    if len(s) < 2:
+        return None
+    last_dt, last = s.index[-1], float(s.iloc[-1])
+
+    def _at(years: int) -> Optional[float]:
+        prior = s[s.index <= last_dt - pd.DateOffset(years=years)]
+        # Require the series to actually reach back that far (within ~1 month).
+        if prior.empty or (last_dt - pd.DateOffset(years=years) - prior.index[-1]).days > 31:
+            return None
+        return float(prior.iloc[-1])
+
+    def _cagr(years: int) -> Optional[float]:
+        base = _at(years)
+        return None if not base else (last / base) ** (1.0 / years) - 1
+
+    ye = s.resample("YE").last().dropna()
+    bars = []  # (label, growth, kind)
+    for i in range(1, len(ye)):
+        if ye.index[i].year == last_dt.year:
+            break
+        bars.append((f"'{ye.index[i].year % 100:02d}", ye.iloc[i] / ye.iloc[i - 1] - 1, "hist"))
+    bars = bars[-10:]
+    one_y = _cagr(1)
+    if one_y is not None:
+        bars.append(("TTM", one_y, "ttm"))
+
+    out = {"one_y": one_y, "five_y": _cagr(5), "ten_y": _cagr(10),
+           "bars": bars, "fwd": fwd, "two_y": None}
+    if fwd:
+        bars.append((f"{fwd['fy'] % 100:02d}E", fwd["g1"], "fwd"))
+        if fwd["g2"] is not None:
+            bars.append((f"{(fwd['fy'] + 1) % 100:02d}E", fwd["g2"], "fwd"))
+            out["two_y"] = ((1 + fwd["g1"]) * (1 + fwd["g2"])) ** 0.5 - 1
+    return out
+
+
+_BAR_COLORS = {"hist": "#000080", "ttm": "#3333AA", "fwd": "#ff8800"}
+
+
+def _eps_growth_figure(summary: dict) -> go.Figure:
+    """Static bar chart: calendar-year EPS growth, then TTM-now, then estimates."""
+    labels = [b[0] for b in summary["bars"]]
+    vals = [b[1] * 100 for b in summary["bars"]]
+    fig = go.Figure(go.Bar(
+        x=labels, y=vals,
+        marker=dict(color=[_BAR_COLORS[b[2]] for b in summary["bars"]],
+                    line=dict(width=0)),
+        text=[f"{v:+.0f}%" for v in vals], textposition="outside", cliponaxis=False,
+        constraintext="none",
+        textfont=dict(family="Arial, sans-serif", size=10, color="#000080"),
+        hovertemplate="%{x}: %{y:+.1f}%<extra></extra>",
+    ))
+    lo, hi = min(vals + [0]), max(vals + [0])
+    pad = (hi - lo) * 0.15 or 5
+    fig.update_layout(showlegend=False, bargap=0.25, template=None)
+    fig.update_yaxes(ticksuffix="%", range=[lo - (pad if lo < 0 else 0), hi + pad],
+                     zeroline=True, zerolinecolor="#000080", zerolinewidth=1)
+    _apply_retro_layout(fig)
+    fig.update_xaxes(type="category", tickangle=0)
+    fig.update_layout(margin=dict(l=44, r=8, t=14, b=28))
+    return fig
+
+
+def _growth_tiles_html(summary: dict) -> str:
+    def tile(label, val, fwd=False):
+        txt = "—" if val is None else f"{val * 100:+.1f}%"
+        cls = "tile fwd" if fwd else "tile"
+        return f'<div class="{cls}"><div class="tl">{label}</div><div class="tv">{txt}</div></div>'
+
+    f = summary["fwd"]
+    tiles = [tile("1Y (TTM)", summary["one_y"]),
+             tile("5Y CAGR", summary["five_y"]),
+             tile("10Y CAGR", summary["ten_y"])]
+    if f:
+        fy1, fy2 = f"FY{f['fy'] % 100:02d}", f"FY{(f['fy'] + 1) % 100:02d}"
+        tiles += [tile(f"{fy1} est.", f["g1"], True),
+                  tile(f"{fy2} est.", f["g2"], True),
+                  tile("2Y implied CAGR", summary["two_y"], True)]
+        if (f["source"] or "").lower() == "factset":
+            src = "FactSet S&amp;P 500 consensus"
+        else:
+            src = f"bottom-up analyst estimates, {(f['coverage'] or 0):.0%} of index weight"
+        note = f"Estimates: {src}, as of {f['asof']}. "
+    else:
+        note = "No forward estimate available. "
+    note += ("Bars = calendar-year change in trailing-12-month EPS; "
+             "TTM = latest vs one year ago; E = estimate.")
+    return (f'<div class="tiles">{"".join(tiles)}</div>'
+            f'<p class="src-note">{note}</p>')
+
+
+def _range_bar(div_id: str, default: int = 5) -> str:
+    """HTML range buttons for a time-series chart (wired up by setRange)."""
+    btns = "".join(
+        f'<button class="rng{" on" if y == default else ""}" data-y="{y}">{lbl}</button>'
+        for lbl, y in (("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("All", 0)))
+    return f'<div class="rngbar" data-chart="{div_id}" data-default="{default}">{btns}</div>'
+
+
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
-               eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str) -> str:
+               eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str,
+               eps_growth_html: str = "") -> str:
     """Assemble the full HTML page in the site's 1999 NASDAQ-terminal theme."""
     callout_section = ""
     if callout:
@@ -631,6 +765,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
         return f"""    <div class="chart-card">
       <h2>{title_text}</h2>
       <div class="chart-body">
+      {_range_bar(clear_target)}
       {chart_html}
       <div class="measure-readout" id="{ro_id}">Click a point, then another, to measure % change.</div>
       <button class="win-btn" onclick="clearMeasure('{clear_target}')">Clear</button>
@@ -639,6 +774,13 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
 """
 
     eps_section = _measured_card("EPS ($)", eps_chart_html, "ro-eps", "eps-chart") if eps_chart_html else ""
+    growth_section = ""
+    if eps_growth_html:
+        growth_section = f"""    <div class="chart-card">
+      <h2>EPS Growth: Year over Year, 5Y, 10Y &amp; Estimates</h2>
+      <div class="chart-body">{eps_growth_html}</div>
+    </div>
+"""
     eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart") if eps_indexed_html else ""
 
     measure_script = """<script>
@@ -668,38 +810,50 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     });
     gd.__clear=function(){ anchor=null; ro.innerHTML='Click a point, then another, to measure % change.'; };
   }
-  function init(){ attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed'); ['growth-chart','eps-chart','eps-indexed-chart'].forEach(autoscaleY); }
+  function init(){
+    attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed');
+    document.querySelectorAll('.rngbar').forEach(function(bar){
+      var id=bar.getAttribute('data-chart');
+      bar.querySelectorAll('button').forEach(function(b){
+        b.addEventListener('click', function(){
+          bar.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
+          b.classList.add('on'); setRange(id, +b.getAttribute('data-y'));
+        });
+      });
+      setRange(id, +bar.getAttribute('data-default'));
+    });
+  }
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
 })();
 function clearMeasure(id){ var gd=document.getElementById(id); if(gd&&gd.__clear) gd.__clear(); }
-function autoscaleY(divId){
+// Set the x window AND fit y to the visible data in a single relayout, so a
+// range change never leaves the line squashed against a stale y-axis.
+// years=0 means All. The window ends at the last point of any trace (so the
+// forecast stays in view) and starts N years before the last HISTORICAL point.
+function setRange(divId, years){
   var gd=document.getElementById(divId);
-  if(!gd) return;
-  function fit(){
-    var xa=gd.layout&&gd.layout.xaxis, x0=-Infinity, x1=Infinity;
-    if(xa&&xa.range){ x0=new Date(xa.range[0]).getTime(); x1=new Date(xa.range[1]).getTime(); }
-    var ylog=(gd.layout.yaxis&&gd.layout.yaxis.type==='log');
-    var lo=Infinity, hi=-Infinity;
-    (gd.data||[]).forEach(function(tr){
-      var xs=tr.x, ys=tr.y; if(!xs||!ys) return;
-      for(var i=0;i<xs.length;i++){
-        var xv=new Date(xs[i]).getTime(); if(xv<x0||xv>x1) continue;
-        var yv=ys[i]; if(yv==null||!isFinite(yv)||(ylog&&yv<=0)) continue;
-        if(yv<lo)lo=yv; if(yv>hi)hi=yv;
-      }
-    });
-    if(lo===Infinity||!(hi>lo)) return;
-    var r;
-    if(ylog){ var a=Math.log10(lo), b=Math.log10(hi), p=(b-a)*0.08||0.05; r=[a-p,b+p]; }
-    else { var p=(hi-lo)*0.08||Math.abs(hi)*0.02||1; r=[lo-p,hi+p]; }
-    Plotly.relayout(gd, {'yaxis.range': r});
-  }
-  if(gd.on){
-    gd.on('plotly_relayout', function(ev){
-      if(('xaxis.range[0]' in ev) || ('xaxis.autorange' in ev)) fit();
-    });
-    gd.on('plotly_afterplot', function(){ if(!gd.__yfit){ gd.__yfit=true; fit(); } });
-  }
+  // _fullData holds decoded arrays (gd.data may be plotly's binary {bdata} form).
+  var data=gd._fullData||gd.data;
+  if(!data||!window.Plotly) return;
+  function t(x){ return new Date(x).getTime(); }
+  var lo=Infinity, histMax=-Infinity, allMax=-Infinity;
+  data.forEach(function(tr, k){
+    (tr.x||[]).forEach(function(x){ var v=t(x); if(!isFinite(v)) return;
+      if(v<lo) lo=v; if(v>allMax) allMax=v; if(k===0&&v>histMax) histMax=v; });
+  });
+  if(!isFinite(lo)) return;
+  if(!isFinite(histMax)) histMax=allMax;
+  var x0 = years ? Math.max(lo, histMax - years*365.25*86400000) : lo, x1 = allMax;
+  var ylo=Infinity, yhi=-Infinity;
+  data.forEach(function(tr){
+    var xs=tr.x||[], ys=tr.y||[];
+    for(var i=0;i<xs.length;i++){ var xv=t(xs[i]), yv=ys[i];
+      if(xv<x0||xv>x1||yv==null||!isFinite(yv)) continue;
+      if(yv<ylo) ylo=yv; if(yv>yhi) yhi=yv; }
+  });
+  var upd={'xaxis.range':[new Date(x0).toISOString(), new Date(x1).toISOString()]};
+  if(yhi>ylo){ var p=(yhi-ylo)*0.08; upd['yaxis.range']=[ylo-p, yhi+p]; }
+  Plotly.relayout(gd, upd);
 }
 </script>"""
 
@@ -751,6 +905,17 @@ function autoscaleY(divId){
     table.stats thead th{{ background:var(--navy); color:#FFF; font-family:"Arial Black",Arial,sans-serif;
       font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:.5px; }}
     table.stats td.tf, table.stats th.tf{{ text-align:left; white-space:nowrap; background:#C0C0FF; font-weight:700; }}
+    .rngbar{{ display:flex; gap:4px; margin:0 0 6px; }}
+    .rngbar button{{ flex:1; font-family:Arial,sans-serif; font-size:14px; font-weight:700; color:var(--navy);
+      background:#E0E0E0; border:2px outset var(--gray); padding:6px 0; min-height:36px; cursor:pointer; }}
+    .rngbar button.on{{ background:#C0C0FF; border-style:inset; }}
+    .tiles{{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin:0 0 6px; }}
+    @media (min-width:700px){{ .tiles{{ grid-template-columns:repeat(6,1fr); }} }}
+    .tile{{ background:#000; border:2px inset var(--gray); padding:5px 4px; text-align:center; }}
+    .tile .tl{{ font-family:Arial,sans-serif; font-size:10px; font-weight:700; color:#C0C0C0; text-transform:uppercase; }}
+    .tile .tv{{ font-family:"Courier New",monospace; font-size:17px; font-weight:700; color:#33FF33; }}
+    .tile.fwd .tv{{ color:#FFAA33; }}
+    .src-note{{ font-size:11px; color:#333; margin:6px 2px 0; }}
     .back{{ margin:10px 6px 0; }}
     .back a{{ display:inline-block; font-family:Arial,sans-serif; font-weight:700; font-size:12px; color:#000;
       background:var(--gray); border:2px outset var(--gray); padding:3px 10px; text-decoration:none; }}
@@ -763,9 +928,9 @@ function autoscaleY(divId){
     <h1 class="hero">{title}</h1>
     <div class="chart-card">
       <h2>Implied Growth and P/E</h2>
-      <div class="chart-body">{growth_chart_html}</div>
+      <div class="chart-body">{_range_bar('growth-chart')}{growth_chart_html}</div>
     </div>
-{callout_section}{eps_section}{eps_indexed_section}    <div class="chart-card">
+{callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
       <h2>10-Year Statistics</h2>
       {timeframe_table_html}
     </div>
@@ -806,6 +971,7 @@ def _write_page(out_path: str, html: str) -> None:
 # installed plotly python package, and CI once emitted plotly-3.7.0.min.js which
 # the CDN 403s (unpublished) -> every chart on both growth pages silently blank.
 _PLOTLY_JS_URL = "https://cdn.plot.ly/plotly-3.6.0.min.js"
+_PLOT_CONFIG = {"displayModeBar": False, "scrollZoom": False, "responsive": True}
 
 
 def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
@@ -814,23 +980,31 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
     _apply_retro_layout(fig_growth)
-    chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="600px", div_id="growth-chart")
+    chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="600px", div_id="growth-chart", config=_PLOT_CONFIG)
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
         _apply_retro_layout(fig_eps)
         chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False,
-                                 default_height="450px", div_id="eps-chart")
+                                 default_height="450px", div_id="eps-chart", config=_PLOT_CONFIG)
     fig_eps_idx = _eps_indexed_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_idx_html = None
     if fig_eps_idx is not None:
         _apply_retro_layout(fig_eps_idx)
         chart_eps_idx_html = to_html(fig_eps_idx, include_plotlyjs=False, full_html=False,
-                                     default_height="450px", div_id="eps-indexed-chart")
+                                     default_height="450px", div_id="eps-indexed-chart", config=_PLOT_CONFIG)
+    eps_growth_html = ""
+    if "eps" in df_d.columns:
+        summary = _eps_growth_summary(df_d["eps"], _forward_growth_rates(conn, ticker))
+        if summary:
+            fig_g = _eps_growth_figure(summary)
+            eps_growth_html = _growth_tiles_html(summary) + to_html(
+                fig_g, include_plotlyjs=False, full_html=False, default_height="340px",
+                div_id="eps-growth-chart", config=_PLOT_CONFIG)
     tf_table = _timeframe_table_html(df_d)
     callout = _forward_callout(fwd)
     page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
-                      chart_eps_idx_html, tf_table, callout)
+                      chart_eps_idx_html, tf_table, callout, eps_growth_html)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
 
