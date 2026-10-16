@@ -437,6 +437,16 @@ def mini_main():
         # snapshot_qqq_yf step lower down), so no constituent tail is added here.
         scrape_tickers = list(tickers)
 
+        # Warm the two per-ticker network caches the loop below hits one ticker
+        # at a time (finviz 5Y growth ~105s, split history ~40s sequentially).
+        from concurrent.futures import ThreadPoolExecutor
+        from split_utils import fetch_split_history
+        from valuation_update import prefetch_finviz
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            list(ex.map(fetch_split_history, tickers))
+        prefetch_finviz(tickers)
+        print("[main] finviz + split prefetch complete")
+
         print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers...")
         scrape_forward_data_batch(scrape_tickers, max_workers=6)
         print("[main] Forward data batch scrape complete")

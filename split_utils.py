@@ -157,7 +157,7 @@ def _from_fmp(ticker: str) -> List[Tuple[date, float, str]]:
     return events
 
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=1024)
 def fetch_split_history(ticker: str) -> List[Tuple[date, float, str]]:
     """Fetch split history from available providers and cache per ticker."""
     seen: dict[date, Tuple[float, str]] = {}
