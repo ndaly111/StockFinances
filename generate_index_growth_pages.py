@@ -269,6 +269,9 @@ def _timeframe_table_html(df_daily: pd.DataFrame) -> str:
     timeframes = [1, 3, 5, 10]
     ttm = df_daily["ig"] if "ig" in df_daily.columns else pd.Series(dtype=float)
     fwd = df_daily["ig_fwd"] if "ig_fwd" in df_daily.columns else pd.Series(dtype=float)
+    # Forward columns only when there is forward data — otherwise they're all
+    # dashes and double the table width (pushed the page past a phone screen).
+    has_fwd = not fwd.dropna().empty
     rows_html = []
     for yrs in timeframes:
         ttm_stats = _stats(_timeframe_slice(ttm, yrs)) if not ttm.empty else None
@@ -277,35 +280,26 @@ def _timeframe_table_html(df_daily: pd.DataFrame) -> str:
             if stats is None:
                 return "—"
             return _fmt_pct(stats[key]) if is_pct else _fmt_num(stats[key])
+        cells = "".join(
+            f"<td>{get(ttm_stats, k, pct)}</td>" + (f"<td>{get(fwd_stats, k, pct)}</td>" if has_fwd else "")
+            for k, pct in (("avg", True), ("med", True), ("std", True), ("latest", True), ("pct", False)))
         tr = f"""
         <tr>
-          <td class="tf">{yrs} Year{'s' if yrs != 1 else ''}</td>
-          <td>{get(ttm_stats, 'avg', True)}</td><td>{get(fwd_stats, 'avg', True)}</td>
-          <td>{get(ttm_stats, 'med', True)}</td><td>{get(fwd_stats, 'med', True)}</td>
-          <td>{get(ttm_stats, 'std', True)}</td><td>{get(fwd_stats, 'std', True)}</td>
-          <td>{get(ttm_stats, 'latest', True)}</td><td>{get(fwd_stats, 'latest', True)}</td>
-          <td>{get(ttm_stats, 'pct', False)}</td><td>{get(fwd_stats, 'pct', False)}</td>
+          <td class="tf">{yrs}Y</td>{cells}
         </tr>"""
         rows_html.append(tr)
+    labels = ("Avg", "Median", "Std Dev", "Current", "Pctile")
+    if has_fwd:
+        head = ('<tr><th rowspan="2" class="tf">Period</th>'
+                + "".join(f'<th colspan="2">{l}</th>' for l in labels) + "</tr><tr>"
+                + "<th>TTM</th><th>Fwd</th>" * len(labels) + "</tr>")
+    else:
+        head = '<tr><th class="tf">Period</th>' + "".join(f"<th>{l}</th>" for l in labels) + "</tr>"
     return f"""
     <div class="table-wrap">
       <table class="stats">
         <thead>
-          <tr>
-            <th rowspan="2" class="tf">Timeframe</th>
-            <th colspan="2">Average</th>
-            <th colspan="2">Median</th>
-            <th colspan="2">Std Dev</th>
-            <th colspan="2">Current</th>
-            <th colspan="2">Percentile</th>
-          </tr>
-          <tr>
-            <th>TTM</th><th>Forward</th>
-            <th>TTM</th><th>Forward</th>
-            <th>TTM</th><th>Forward</th>
-            <th>TTM</th><th>Forward</th>
-            <th>TTM</th><th>Forward</th>
-          </tr>
+{head}
         </thead>
         <tbody>
           {''.join(rows_html)}
@@ -899,12 +893,13 @@ function setRange(divId, years){
     .win-btn:active{{ border-style:inset; }}
     .callout{{ font-family:"Times New Roman",serif; font-size:13px; background:#FFFFEE;
       border:2px inset var(--gray); padding:6px 10px; margin:6px; }}
-    .table-wrap{{ padding:6px; }}
+    .table-wrap{{ padding:6px; overflow-x:auto; }}
     table.stats{{ width:100%; border-collapse:collapse; border:2px solid var(--navy); background:#FFF; font-size:12px; }}
-    table.stats th, table.stats td{{ border:1px solid #8080FF; padding:5px 8px; text-align:center; font-family:"Times New Roman",serif; }}
+    table.stats th, table.stats td{{ border:1px solid #8080FF; padding:5px 4px; text-align:center; font-family:"Times New Roman",serif; }}
     table.stats thead th{{ background:var(--navy); color:#FFF; font-family:"Arial Black",Arial,sans-serif;
       font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:.5px; }}
     table.stats td.tf, table.stats th.tf{{ text-align:left; white-space:nowrap; background:#C0C0FF; font-weight:700; }}
+    table.stats thead th.tf{{ background:var(--navy); color:#FFF; }}
     .rngbar{{ display:flex; gap:4px; margin:0 0 6px; }}
     .rngbar button{{ flex:1; font-family:Arial,sans-serif; font-size:14px; font-weight:700; color:var(--navy);
       background:#E0E0E0; border:2px outset var(--gray); padding:6px 0; min-height:36px; cursor:pointer; }}
@@ -980,7 +975,7 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
     _apply_retro_layout(fig_growth)
-    chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="600px", div_id="growth-chart", config=_PLOT_CONFIG)
+    chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="420px", div_id="growth-chart", config=_PLOT_CONFIG)
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
