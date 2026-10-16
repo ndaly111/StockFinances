@@ -31,6 +31,8 @@ ensure idempotence.
 """
 
 import sqlite3
+import csv
+import os
 from typing import Optional
 
 
@@ -38,6 +40,10 @@ from typing import Optional
 DB_PATH = "Stock Data.db"
 # Fallback yield to use when no historical yield is available (decimal)
 FALLBACK_YIELD = 0.045
+
+# Monthly 10Y yield 1871-01 .. 2010-07 (Shiller ie_data "Rate GS10", decimal).
+HIST_YIELD_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "data", "treasury_10y_monthly_shiller.csv")
 
 
 # SQL statement to upsert normalized yields into Treasury_Yield_History
@@ -103,11 +109,26 @@ def backfill_index_growth(
         )
         # Upsert the yield values from economic_data
         cur.execute(UPSERT_YIELDS_SQL)
+        # Pre-2010 history: FRED DGS10 in economic_data starts 2010-08, but SPY's
+        # P/E series runs to 1871, so those rows all used the flat fallback.
+        # Shiller's monthly long rate (GS10 from 1953) fills the gap. OR IGNORE:
+        # daily FRED values always win on any shared date.
+        if os.path.exists(HIST_YIELD_CSV):
+            with open(HIST_YIELD_CSV, newline="") as f:
+                rows = [(r["Date"], float(r["TenYr"])) for r in csv.DictReader(f)]
+            cur.executemany(
+                "INSERT OR IGNORE INTO Treasury_Yield_History(Date, TenYr) VALUES (?, ?)", rows)
         # Recompute implied growth using nearest yields
         cur.execute(RECOMPUTE_IG_SQL, (float(fallback_yield),))
         conn.commit()
+        latest = cur.execute("SELECT Date, TenYr FROM Treasury_Yield_History ORDER BY Date DESC LIMIT 1").fetchone()
+        n_fb = cur.execute(
+            "SELECT COUNT(*) FROM Index_PE_History p WHERE p.PE_Ratio > 0 AND NOT EXISTS "
+            "(SELECT 1 FROM Treasury_Yield_History t WHERE t.Date <= p.Date)").fetchone()[0]
         print(
-            f"[backfill_index_growth] Completed yield upsert and implied growth recompute using fallback {fallback_yield:.4f}."
+            f"[backfill_index_growth] Implied growth recomputed; latest 10Y = "
+            f"{latest[1]:.4f} ({latest[0]})" if latest else "[backfill_index_growth] Implied growth recomputed; no yield data",
+            f"| {n_fb} pre-history row(s) used fallback {fallback_yield:.4f}."
         )
     finally:
         conn.close()
