@@ -316,54 +316,43 @@ def _stat_lines(df_daily: pd.DataFrame) -> List[go.Scatter]:
         std = df_daily["ig"].std()
         x = df_daily.index
         traces += [
-            go.Scatter(x=x, y=[avg] * len(x), name="TTM Avg",  mode="lines", line=dict(dash="dash")),
-            go.Scatter(x=x, y=[avg + std] * len(x), name="TTM +1σ", mode="lines", line=dict(dash="dot")),
-            go.Scatter(x=x, y=[avg - std] * len(x), name="TTM -1σ", mode="lines", line=dict(dash="dot")),
+            go.Scatter(x=x, y=[avg] * len(x), name="TTM Avg", mode="lines", meta="ref", hoverinfo="skip",
+                       line=dict(color=_C_TTM, width=1, dash="dash")),
+            go.Scatter(x=x, y=[avg + std] * len(x), name="±1 Std Dev", mode="lines", meta="ref", hoverinfo="skip",
+                       line=dict(color="#999999", width=1, dash="dot")),
+            go.Scatter(x=x, y=[avg - std] * len(x), name="TTM -1σ", mode="lines", meta="ref", hoverinfo="skip",
+                       showlegend=False, line=dict(color="#999999", width=1, dash="dot")),
         ]
     if "ig_fwd" in df_daily.columns and not df_daily["ig_fwd"].dropna().empty:
         avg = df_daily["ig_fwd"].mean()
         std = df_daily["ig_fwd"].std()
         x = df_daily.index
         traces += [
-            go.Scatter(x=x, y=[avg] * len(x), name="Forward Avg",  mode="lines", line=dict(dash="dash")),
-            go.Scatter(x=x, y=[avg + std] * len(x), name="Forward +1σ", mode="lines", line=dict(dash="dot")),
-            go.Scatter(x=x, y=[avg - std] * len(x), name="Forward -1σ", mode="lines", line=dict(dash="dot")),
+            go.Scatter(x=x, y=[avg] * len(x), name="Fwd Avg", mode="lines", meta="ref", hoverinfo="skip",
+                       line=dict(color=_C_FWD, width=1, dash="dash")),
         ]
     return traces
 
-_RETRO_COLORWAY = ["#000080", "#CC0000", "#008000", "#B8860B", "#3333AA", "#800080"]
+_C_TTM, _C_FWD, _C_EST = "#1f77b4", "#2ca02c", "#ff8800"
+_RETRO_COLORWAY = [_C_TTM, _C_FWD, "#d62728", "#9467bd"]
 
 def _apply_retro_layout(fig):
-    """Style a Plotly figure to match the site's 1999 NASDAQ-terminal theme
-    (navy/gray Win95, Times/Arial/Courier fonts)."""
+    """Match the ticker pages' charts (ticker.html / build_aapl_mockup): white
+    plot, light grid, no axis titles or in-plot legend (an HTML key sits under
+    the chart), tight margins, and a locked plot so swipes scroll the page.
+    Range buttons are HTML under the chart (see _range_bar / setRange)."""
     fig.update_layout(
-        paper_bgcolor="#FFFFFF", plot_bgcolor="#FBFBF4",
-        font=dict(family='"Times New Roman", Times, serif', size=12, color="#000080"),
-        colorway=_RETRO_COLORWAY,
-        legend=dict(font=dict(family="Arial, Helvetica, sans-serif", size=11, color="#000080"),
-                    bgcolor="rgba(255,255,255,0.65)", bordercolor="#C0C0C0", borderwidth=1),
-        margin=dict(l=52, r=20, t=22, b=30),
-        hoverlabel=dict(font=dict(family='"Courier New", monospace', size=12), bgcolor="#000080"),
+        title=None, template=None, showlegend=False, dragmode=False, hovermode="x",
+        paper_bgcolor="white", plot_bgcolor="white", colorway=_RETRO_COLORWAY,
+        font=dict(family="Arial, Helvetica, sans-serif", size=11, color="#2a3f5f"),
+        margin=dict(l=10, r=10, t=8, b=10),
+        hoverlabel=dict(font=dict(family="Arial, sans-serif", size=12)),
     )
-    fig.update_xaxes(gridcolor="#E4E4EC", linecolor="#000080",
-                     tickfont=dict(family="Arial, sans-serif", size=10, color="#000080"))
-    fig.update_yaxes(gridcolor="#E4E4EC", linecolor="#000080",
-                     tickfont=dict(family="Arial, sans-serif", size=10, color="#000080"))
-    # The card <h2> already titles each chart, and the range-slider mini-chart adds
-    # clutter under a terminal aesthetic — drop both for a cleaner look.
-    fig.update_layout(title=None)
-    fig.update_xaxes(rangeslider_visible=False)
-    # Plotly's built-in range selector moved x but left y stale (squashed lines),
-    # and drag/pinch zoom fought page scrolling on phones. Range buttons are now
-    # HTML (see _range_bar / setRange in _page_html) that set x AND y in one
-    # relayout; the plot itself is locked so a swipe just scrolls the page.
-    fig.update_xaxes(rangeselector=dict(visible=False), fixedrange=True, title=None)
-    fig.update_yaxes(fixedrange=True)
-    fig.update_layout(
-        dragmode=False,
-        legend=dict(orientation="h", yanchor="bottom", y=1.0, xanchor="left", x=0.0),
-        margin=dict(l=48, r=12, t=30, b=28),
-    )
+    fig.update_xaxes(title=None, fixedrange=True, showgrid=False, automargin=True,
+                     rangeselector=dict(visible=False), rangeslider_visible=False,
+                     linecolor="#cccccc", tickfont=dict(size=10))
+    fig.update_yaxes(title=None, fixedrange=True, showgrid=True, gridcolor="#eeeeee",
+                     automargin=True, zeroline=False, tickfont=dict(size=11))
     return fig
 
 def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
@@ -377,7 +366,7 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
                     x=df.index,
                     y=df["ig"],
                     name="TTM",
-                    mode="lines",
+                    mode="lines", line=dict(color=_C_TTM, width=2),
                     hovertemplate="%{y:.2f}%<extra></extra>",
                 )
             )
@@ -387,7 +376,7 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
                     x=df.index,
                     y=df["ig_fwd"],
                     name="Forward",
-                    mode="lines",
+                    mode="lines", line=dict(color=_C_FWD, width=2),
                     hovertemplate="%{y:.2f}%<extra></extra>",
                 )
             )
@@ -414,7 +403,7 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
             rangeslider=dict(visible=True),
             type="date",
         ),
-        yaxis=dict(title="Implied Growth (%)", side="left"),
+        yaxis=dict(title="Implied Growth (%)", side="left", ticksuffix="%"),
         template=None,
     )
     if len(df_m.index):
@@ -441,10 +430,10 @@ def _eps_forecast_trace(last_dt, last_eps, fwd, scale=1.0) -> go.Scatter:
         ys.append(fwd["forward_eps_index"] * (1 + g2) * scale)
     return go.Scatter(
         x=xs, y=ys,
-        name="Forecast (this/next FY)",
+        name="Estimate (this/next FY)",
         mode="lines+markers",
-        line=dict(dash="dash", color="#ff8800"),
-        marker=dict(symbol="diamond", size=11, color="#ff8800"),
+        line=dict(dash="dash", color=_C_EST, width=2),
+        marker=dict(symbol="diamond", size=8, color=_C_EST),
     )
 
 
@@ -464,8 +453,8 @@ def _eps_figure(
             go.Scatter(
                 x=df.index,
                 y=df["eps"],
-                name="EPS",
-                mode="lines",
+                name="TTM EPS",
+                mode="lines", line=dict(color=_C_TTM, width=2),
                 hovertemplate="$%{y:.2f}<extra></extra>",
             )
         ]
@@ -553,8 +542,8 @@ def _eps_indexed_figure(
             go.Scatter(
                 x=s.index,
                 y=s / base * 100,
-                name="EPS Indexed",
-                mode="lines",
+                name="EPS (5Y ago = 100)",
+                mode="lines", line=dict(color=_C_TTM, width=2),
                 hovertemplate="%{y:.1f}<extra></extra>",
             )
         ]
@@ -684,7 +673,7 @@ def _eps_growth_summary(eps: pd.Series, fwd) -> Optional[dict]:
     return out
 
 
-_BAR_COLORS = {"hist": "#000080", "ttm": "#3333AA", "fwd": "#ff8800"}
+_BAR_COLORS = {"hist": "#1f4e79", "ttm": _C_TTM, "fwd": _C_EST}
 
 
 def _eps_growth_figure(summary: dict) -> go.Figure:
@@ -697,7 +686,7 @@ def _eps_growth_figure(summary: dict) -> go.Figure:
                     line=dict(width=0)),
         text=[f"{v:+.0f}%" for v in vals], textposition="outside", cliponaxis=False,
         constraintext="none",
-        textfont=dict(family="Arial, sans-serif", size=10, color="#000080"),
+        textfont=dict(family="Arial, sans-serif", size=10, color="#2a3f5f"),
         hovertemplate="%{x}: %{y:+.1f}%<extra></extra>",
     ))
     lo, hi = min(vals + [0]), max(vals + [0])
@@ -707,7 +696,8 @@ def _eps_growth_figure(summary: dict) -> go.Figure:
                      zeroline=True, zerolinecolor="#000080", zerolinewidth=1)
     _apply_retro_layout(fig)
     fig.update_xaxes(type="category", tickangle=0)
-    fig.update_layout(margin=dict(l=44, r=8, t=14, b=28))
+    fig.update_yaxes(zeroline=True, zerolinecolor="#888888", zerolinewidth=1)
+    fig.update_layout(hovermode="closest")
     return fig
 
 
@@ -742,9 +732,23 @@ def _growth_tiles_html(summary: dict) -> str:
 def _range_bar(div_id: str, default: int = 5) -> str:
     """HTML range buttons for a time-series chart (wired up by setRange)."""
     btns = "".join(
-        f'<button class="rng{" on" if y == default else ""}" data-y="{y}">{lbl}</button>'
-        for lbl, y in (("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("All", 0)))
-    return f'<div class="rngbar" data-chart="{div_id}" data-default="{default}">{btns}</div>'
+        f'<button class="range-btn{" active" if y == default else ""}" data-y="{y}">{lbl}</button>'
+        for lbl, y in (("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("MAX", 0)))
+    return f'<div class="range-row" data-chart="{div_id}" data-default="{default}">{btns}</div>'
+
+
+def _legend_strip(fig) -> str:
+    """HTML key under a chart (ticker-page style) built from the figure's traces."""
+    keys = []
+    for tr in fig.data:
+        if tr.showlegend is False or not tr.name:
+            continue
+        line = getattr(tr, "line", None)
+        color = (line.color if line is not None and line.color else None) or "#1f77b4"
+        dash = line.dash if line is not None and line.dash else "solid"
+        style = (f"border-top:2px {'dashed' if dash == 'dash' else 'dotted' if dash == 'dot' else 'solid'} {color}")
+        keys.append(f'<span class="key"><span class="key-line" style="{style}"></span>{tr.name}</span>')
+    return f'<div class="key-strip">{"".join(keys)}</div>' if len(keys) > 1 else ""
 
 
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
@@ -759,8 +763,8 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
         return f"""    <div class="chart-card">
       <h2>{title_text}</h2>
       <div class="chart-body">
-      {_range_bar(clear_target)}
       {chart_html}
+      {_range_bar(clear_target)}
       <div class="measure-readout" id="{ro_id}">Click a point, then another, to measure % change.</div>
       <button class="win-btn" onclick="clearMeasure('{clear_target}')">Clear</button>
       </div>
@@ -806,12 +810,12 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
   }
   function init(){
     attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed');
-    document.querySelectorAll('.rngbar').forEach(function(bar){
+    document.querySelectorAll('.range-row').forEach(function(bar){
       var id=bar.getAttribute('data-chart');
       bar.querySelectorAll('button').forEach(function(b){
         b.addEventListener('click', function(){
-          bar.querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
-          b.classList.add('on'); setRange(id, +b.getAttribute('data-y'));
+          bar.querySelectorAll('button').forEach(function(o){ o.classList.remove('active'); });
+          b.classList.add('active'); setRange(id, +b.getAttribute('data-y'));
         });
       });
       setRange(id, +bar.getAttribute('data-default'));
@@ -839,7 +843,10 @@ function setRange(divId, years){
   if(!isFinite(histMax)) histMax=allMax;
   var x0 = years ? Math.max(lo, histMax - years*365.25*86400000) : lo, x1 = allMax;
   var ylo=Infinity, yhi=-Infinity;
+  // Fit y to the data lines only — avg/±1σ reference lines (meta 'ref') are
+  // context and used to squash the series into a sliver.
   data.forEach(function(tr){
+    if(tr.meta==='ref') return;
     var xs=tr.x||[], ys=tr.y||[];
     for(var i=0;i<xs.length;i++){ var xv=t(xs[i]), yv=ys[i];
       if(xv<x0||xv>x1||yv==null||!isFinite(yv)) continue;
@@ -900,10 +907,20 @@ function setRange(divId, years){
       font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:.5px; }}
     table.stats td.tf, table.stats th.tf{{ text-align:left; white-space:nowrap; background:#C0C0FF; font-weight:700; }}
     table.stats thead th.tf{{ background:var(--navy); color:#FFF; }}
-    .rngbar{{ display:flex; gap:4px; margin:0 0 6px; }}
-    .rngbar button{{ flex:1; font-family:Arial,sans-serif; font-size:14px; font-weight:700; color:var(--navy);
-      background:#E0E0E0; border:2px outset var(--gray); padding:6px 0; min-height:36px; cursor:pointer; }}
-    .rngbar button.on{{ background:#C0C0FF; border-style:inset; }}
+    .range-row{{ display:flex; gap:6px; justify-content:center; padding:8px 6px; flex-wrap:wrap;
+      background:#DCDCDC; border-top:1px solid var(--gray-shade); margin-top:4px; }}
+    .range-btn{{ appearance:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
+      font-family:Arial,sans-serif; font-weight:700; font-size:12px; color:#000; background:var(--gray);
+      border:2px outset var(--gray); padding:5px 14px 6px; min-width:54px; border-radius:0;
+      text-shadow:1px 1px 0 #FFF; }}
+    .range-btn:active{{ border:2px inset var(--gray); background:#B8B8B8; }}
+    .range-btn.active{{ border:2px inset var(--gray); background:var(--hi-yellow); box-shadow:inset 0 0 0 1px #998800; }}
+    .key-strip{{ display:flex; flex-wrap:wrap; gap:4px 12px; justify-content:center; padding:5px 8px;
+      margin:4px 0 0; background:#DCDCDC; border:2px inset var(--gray);
+      font-family:Arial,sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; }}
+    .key{{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }}
+    .key-line{{ display:inline-block; width:18px; height:0; }}
+    #growth-chart, #eps-chart, #eps-indexed-chart, #eps-growth-chart{{ touch-action:pan-y; }}
     .tiles{{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin:0 0 6px; }}
     @media (min-width:700px){{ .tiles{{ grid-template-columns:repeat(6,1fr); }} }}
     .tile{{ background:#000; border:2px inset var(--gray); padding:5px 4px; text-align:center; }}
@@ -923,7 +940,7 @@ function setRange(divId, years){
     <h1 class="hero">{title}</h1>
     <div class="chart-card">
       <h2>Implied Growth and P/E</h2>
-      <div class="chart-body">{_range_bar('growth-chart')}{growth_chart_html}</div>
+      <div class="chart-body">{growth_chart_html}{_range_bar('growth-chart')}</div>
     </div>
 {callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
       <h2>10-Year Statistics</h2>
@@ -966,7 +983,8 @@ def _write_page(out_path: str, html: str) -> None:
 # installed plotly python package, and CI once emitted plotly-3.7.0.min.js which
 # the CDN 403s (unpublished) -> every chart on both growth pages silently blank.
 _PLOTLY_JS_URL = "https://cdn.plot.ly/plotly-3.6.0.min.js"
-_PLOT_CONFIG = {"displayModeBar": False, "scrollZoom": False, "responsive": True}
+_PLOT_CONFIG = {"displayModeBar": False, "scrollZoom": False, "responsive": True,
+                "doubleClick": False, "showAxisDragHandles": False}
 
 
 def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
@@ -975,26 +993,26 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     df_d, df_w, df_m = _resample_frames(df)
     fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
     _apply_retro_layout(fig_growth)
-    chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="420px", div_id="growth-chart", config=_PLOT_CONFIG)
+    chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="320px", div_id="growth-chart", config=_PLOT_CONFIG) + _legend_strip(fig_growth)
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_html = None
     if fig_eps is not None:
         _apply_retro_layout(fig_eps)
         chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False,
-                                 default_height="450px", div_id="eps-chart", config=_PLOT_CONFIG)
+                                 default_height="320px", div_id="eps-chart", config=_PLOT_CONFIG) + _legend_strip(fig_eps)
     fig_eps_idx = _eps_indexed_figure(df_d, df_w, df_m, ticker, fwd=fwd)
     chart_eps_idx_html = None
     if fig_eps_idx is not None:
         _apply_retro_layout(fig_eps_idx)
         chart_eps_idx_html = to_html(fig_eps_idx, include_plotlyjs=False, full_html=False,
-                                     default_height="450px", div_id="eps-indexed-chart", config=_PLOT_CONFIG)
+                                     default_height="320px", div_id="eps-indexed-chart", config=_PLOT_CONFIG) + _legend_strip(fig_eps_idx)
     eps_growth_html = ""
     if "eps" in df_d.columns:
         summary = _eps_growth_summary(df_d["eps"], _forward_growth_rates(conn, ticker))
         if summary:
             fig_g = _eps_growth_figure(summary)
             eps_growth_html = _growth_tiles_html(summary) + to_html(
-                fig_g, include_plotlyjs=False, full_html=False, default_height="340px",
+                fig_g, include_plotlyjs=False, full_html=False, default_height="300px",
                 div_id="eps-growth-chart", config=_PLOT_CONFIG)
     tf_table = _timeframe_table_html(df_d)
     callout = _forward_callout(fwd)
