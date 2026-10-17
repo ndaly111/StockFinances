@@ -394,12 +394,8 @@ def _stat_lines(df_daily: pd.DataFrame) -> List[go.Scatter]:
         std = df_daily["ig"].std()
         x = df_daily.index
         traces += [
-            go.Scatter(x=x, y=[avg] * len(x), name="TTM Avg", mode="lines", meta="ref", hoverinfo="skip",
-                       line=dict(color=_C_TTM, width=1, dash="dash")),
-            go.Scatter(x=x, y=[avg + std] * len(x), name="±1 Std Dev", mode="lines", meta="ref", hoverinfo="skip",
-                       line=dict(color="#999999", width=1, dash="dot")),
-            go.Scatter(x=x, y=[avg - std] * len(x), name="TTM -1σ", mode="lines", meta="ref", hoverinfo="skip",
-                       showlegend=False, line=dict(color="#999999", width=1, dash="dot")),
+
+
         ]
     if "ig_fwd" in df_daily.columns and not df_daily["ig_fwd"].dropna().empty:
         avg = df_daily["ig_fwd"].mean()
@@ -433,8 +429,10 @@ def _apply_retro_layout(fig):
                      automargin=True, zeroline=False, tickfont=dict(size=11))
     return fig
 
-def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str) -> go.Figure:
-    """Build the Plotly figure for implied growth."""
+def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str,
+                   delivered: Optional[dict] = None) -> go.Figure:
+    """Implied growth (what the price assumes) against delivered EPS growth
+    (rolling 10Y and 5Y CAGR) and the normalized 20Y trend rate."""
 
     def mk_traces(df: pd.DataFrame) -> List[go.Scatter]:
         traces: List[go.Scatter] = []
@@ -443,7 +441,7 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
                 go.Scatter(
                     x=df.index,
                     y=df["ig"],
-                    name="TTM",
+                    name="Implied growth (TTM)",
                     mode="lines", line=dict(color=_C_TTM, width=2),
                     hovertemplate="%{y:.2f}%<extra></extra>",
                 )
@@ -462,8 +460,26 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
 
     traces_m = mk_traces(df_m)
     stat_lines = _stat_lines(df_d)  # horizontal refs stay on full daily history
+    delivered_tr: List[go.Scatter] = []
+    if delivered:
+        r10, r5 = delivered.get("r10"), delivered.get("r5")
+        if r10 is not None and not r10.empty:
+            delivered_tr.append(go.Scatter(x=r10.index, y=r10, name="Delivered 10Y CAGR", mode="lines",
+                                           line=dict(color=_C_FWD, width=2),
+                                           hovertemplate="%{y:.2f}%<extra>10Y CAGR</extra>"))
+        if r5 is not None and not r5.empty:
+            # Reference only (meta ref): 5Y CAGR swings to +-40% and would own the y-scale.
+            delivered_tr.append(go.Scatter(x=r5.index, y=r5, name="Delivered 5Y CAGR", mode="lines", meta="ref",
+                                           line=dict(color=_C_FWD, width=1, dash="dot"),
+                                           hovertemplate="%{y:.2f}%<extra>5Y CAGR</extra>"))
+        tr20 = delivered.get("trend20")
+        if tr20 is not None and len(df_m.index):
+            x = [df_m.index.min(), df_m.index.max()]
+            delivered_tr.append(go.Scatter(x=x, y=[tr20, tr20], name="Normalized (20Y trend)", mode="lines",
+                                           meta="ref", hoverinfo="skip",
+                                           line=dict(color="#444444", width=1, dash="dash")))
 
-    fig = go.Figure(data=traces_m + stat_lines)
+    fig = go.Figure(data=traces_m + delivered_tr + stat_lines)
 
     fig.update_layout(
         title=f"{ticker} — Implied Growth (TTM & Forward) — avg and ±1σ shown",
@@ -672,6 +688,120 @@ def _eps_indexed_figure(
     return fig
 
 
+def _delivered_growth(eps: pd.Series) -> dict:
+    """Realized EPS growth: rolling 5Y/10Y CAGR series (monthly, %) plus the
+    current 5Y/10Y CAGR and a 20Y log-trend rate (the 'normalized' growth —
+    a regression through log EPS, so one freak start or end year can't swing it
+    the way an endpoint CAGR can)."""
+    s = eps.dropna(); s = s[s > 0]
+    m = s.resample("ME").last().dropna()
+    out = {"r5": pd.Series(dtype=float), "r10": pd.Series(dtype=float),
+           "cagr5": None, "cagr10": None, "trend20": None, "trend_years": None}
+    if len(m) < 24:
+        return out
+    for n, key in ((5, "r5"), (10, "r10")):
+        r = ((m / m.shift(12 * n)) ** (1.0 / n) - 1.0).dropna() * 100.0
+        out[key] = r
+        if not r.empty and (m.index[-1] - r.index[-1]).days < 45:
+            out[f"cagr{n}"] = float(r.iloc[-1])
+    w = m.iloc[-12 * 20:]
+    if len(w) >= 12 * 8:
+        x = np.arange(len(w)) / 12.0
+        slope = np.polyfit(x, np.log(w.values), 1)[0]
+        out["trend20"] = float((np.exp(slope) - 1.0) * 100.0)
+        out["trend_years"] = int(round(len(w) / 12.0))
+    return out
+
+
+def _fair_pe(growth_pct: Optional[float], ten_yr: float) -> Optional[float]:
+    """Site fair-P/E formula (valuation_update / ticker pages), growth in %."""
+    if growth_pct is None:
+        return None
+    base = growth_pct / 100.0 - ten_yr + 1.0
+    return None if base <= 0 else (base ** 10) * 10.0
+
+
+def _latest_snapshot(conn: sqlite3.Connection, ticker: str):
+    """(date, close, pe) from Daily_Index_Snapshots, or None."""
+    try:
+        row = conn.execute(
+            "SELECT Date, Close, PE_Ratio FROM Daily_Index_Snapshots WHERE Ticker=? "
+            "AND Close IS NOT NULL AND PE_Ratio IS NOT NULL ORDER BY Date DESC LIMIT 1",
+            (ticker.upper(),)).fetchone()
+        return row if row else None
+    except Exception:
+        return None
+
+
+def _latest_ten_yr(conn: sqlite3.Connection) -> Optional[float]:
+    try:
+        row = conn.execute("SELECT TenYr FROM Treasury_Yield_History ORDER BY Date DESC LIMIT 1").fetchone()
+        return float(row[0]) if row else None
+    except Exception:
+        return None
+
+
+def _verdict_label(gap: float) -> str:
+    if gap >= 2.0:  return "CHEAP"
+    if gap >= 0.5:  return "MODESTLY CHEAP"
+    if gap > -0.5:  return "FAIR"
+    if gap > -2.0:  return "MODESTLY EXPENSIVE"
+    return "EXPENSIVE"
+
+
+def _verdict_html(ticker: str, ig_now: Optional[float], snap, ten_yr: Optional[float],
+                  delivered: dict, fwd) -> str:
+    """Top-of-page card: what the price assumes vs what the index has delivered,
+    a fair-value table from the site's fair-P/E formula, and a one-line verdict
+    against normalized (20Y trend) growth."""
+    if ig_now is None or snap is None or ten_yr is None:
+        return ""
+    _date, price, pe_now = snap
+    eps_etf = price / pe_now
+    trend, c5, c10 = delivered.get("trend20"), delivered.get("cagr5"), delivered.get("cagr10")
+    ty = delivered.get("trend_years") or 20
+    bench = trend if trend is not None else c10
+    if bench is None:
+        return ""
+    gap = bench - ig_now
+    label = _verdict_label(gap)
+
+    def pct(v):
+        return "—" if v is None else f"{v:+.1f}%"
+    tiles = [f'<div class="tile big"><div class="tl">Price assumes</div><div class="tv">{ig_now:.1f}%</div>'
+             f'<div class="ts">implied growth at {pe_now:.1f}x, 10Y {ten_yr*100:.2f}%</div></div>',
+             f'<div class="tile big"><div class="tl">Normalized growth</div><div class="tv">{pct(trend)}</div>'
+             f'<div class="ts">{ty}Y trend of TTM EPS</div></div>',
+             f'<div class="tile big verdict"><div class="tl">Gap</div><div class="tv">{gap:+.1f} pts</div>'
+             f'<div class="ts">{label}</div></div>']
+    rows = [("Normalized (trend)", trend), ("5Y CAGR", c5), ("10Y CAGR", c10), ("Market (today)", ig_now)]
+    analysts = ""
+    if fwd:
+        g2 = fwd["g2"] if fwd["g2"] is not None else fwd["g1"]
+        two = (((1 + fwd["g1"]) * (1 + g2)) ** 0.5 - 1) * 100.0
+        analysts = (f"Analysts expect <b>{two:+.1f}%/yr</b> over the next two fiscal years "
+                    f"({fwd['g1']*100:+.0f}% then {g2*100:+.0f}%), well above the {ty}Y trend; "
+                    f"a two-year burst is not a sustainable rate, so it is not priced as one here. ")
+    trs = []
+    for name, gpct in rows:
+        fpe = _fair_pe(gpct, ten_yr)
+        if gpct is None or fpe is None:
+            trs.append(f'<tr><td class="tf">{name}</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>')
+            continue
+        fair = fpe * eps_etf
+        up = (fair / price - 1.0) * 100.0
+        cls = "pos" if up >= 0 else "neg"
+        trs.append(f'<tr><td class="tf">{name}</td><td>{gpct:.1f}%</td><td>{fpe:.1f}x</td>'
+                   f'<td>${fair:,.0f}</td><td class="{cls}">{up:+.1f}%</td></tr>')
+    table = ('<div class="table-wrap"><table class="stats"><thead><tr><th class="tf">If growth is…</th>'
+             '<th>Growth</th><th>Fair P/E</th><th>Fair price</th><th>vs today</th></tr></thead>'
+             f'<tbody>{"".join(trs)}</tbody></table></div>')
+    note = (f'<p class="src-note">Fair P/E = ((growth − 10Y + 1)<sup>10</sup>) × 10, the same formula as the '
+            f'ticker pages; fair price = fair P/E × trailing EPS (${eps_etf:.2f}/sh). {ticker} ${price:,.2f} '
+            f'on {_date}. The verdict compares the market&#39;s implied growth with the {ty}Y trend. {analysts}</p>')
+    return f'<div class="tiles verdict-tiles">{"".join(tiles)}</div>{table}{note}'
+
+
 def _forward_growth_rates(conn: sqlite3.Connection, ticker: str):
     """Latest forward FY growth rates for the growth scorecard.
 
@@ -843,8 +973,15 @@ def _legend_strip(fig) -> str:
 
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
                eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str,
-               eps_growth_html: str = "") -> str:
+               eps_growth_html: str = "", verdict_html: str = "") -> str:
     """Assemble the full HTML page in the site's 1999 NASDAQ-terminal theme."""
+    verdict_section = ""
+    if verdict_html:
+        verdict_section = f"""    <div class="chart-card">
+      <h2>Is {title.split(' ')[0]} cheap?</h2>
+      <div class="chart-body">{verdict_html}</div>
+    </div>
+"""
     callout_section = ""
     if callout:
         callout_section = f'      <p class="callout">{callout}</p>\n'
@@ -1043,6 +1180,11 @@ function setRange(divId, years){
     .tile .tl{{ font-family:Arial,sans-serif; font-size:10px; font-weight:700; color:#C0C0C0; text-transform:uppercase; }}
     .tile .tv{{ font-family:"Courier New",monospace; font-size:17px; font-weight:700; color:#33FF33; }}
     .tile.fwd .tv{{ color:#FFAA33; }}
+    .tile.big .tv{{ font-size:22px; }}
+    .tile .ts{{ font-family:Arial,sans-serif; font-size:10px; color:#C0C0C0; margin-top:2px; }}
+    .tile.verdict .tv{{ color:#FFFF66; }} .tile.verdict .ts{{ color:#FFFF66; font-weight:700; font-size:11px; }}
+    .verdict-tiles{{ grid-template-columns:repeat(3,1fr); }}
+    table.stats td.pos{{ color:#007700; font-weight:700; }} table.stats td.neg{{ color:#BB0000; font-weight:700; }}
     .src-note{{ font-size:11px; color:#333; margin:6px 2px 0; }}
     .back{{ margin:10px 6px 0; }}
     .back a{{ display:inline-block; font-family:Arial,sans-serif; font-weight:700; font-size:12px; color:#000;
@@ -1054,8 +1196,8 @@ function setRange(divId, years){
   <div class="wrap">
     <div class="marquee"><span>{marquee}{marquee}</span></div>
     <h1 class="hero">{title}</h1>
-    <div class="chart-card">
-      <h2>Implied Growth and P/E</h2>
+{verdict_section}    <div class="chart-card">
+      <h2>Implied vs Delivered Growth</h2>
       <div class="chart-body">{growth_chart_html}{_range_bar('growth-chart')}</div>
     </div>
 {callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
@@ -1107,7 +1249,8 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     """Build a single valuation page for a ticker."""
     fwd = _latest_forward_eps(conn, ticker)
     df_d, df_w, df_m = _resample_frames(df)
-    fig_growth = _growth_figure(df_d, df_w, df_m, ticker)
+    delivered = _delivered_growth(df_d["eps"]) if "eps" in df_d.columns else {}
+    fig_growth = _growth_figure(df_d, df_w, df_m, ticker, delivered)
     _apply_retro_layout(fig_growth)
     chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="320px", div_id="growth-chart", config=_PLOT_CONFIG) + _legend_strip(fig_growth)
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
@@ -1133,8 +1276,11 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
                 sum(1 for b in summary["bars"] if b[2] == "hist"))
     tf_table = _timeframe_table_html(df_d)
     callout = _forward_callout(fwd)
+    ig_now = float(df_d["ig"].dropna().iloc[-1]) if "ig" in df_d.columns and not df_d["ig"].dropna().empty else None
+    verdict_html = _verdict_html(ticker, ig_now, _latest_snapshot(conn, ticker), _latest_ten_yr(conn),
+                                 delivered, _forward_growth_rates(conn, ticker))
     page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
-                      chart_eps_idx_html, tf_table, callout, eps_growth_html)
+                      chart_eps_idx_html, tf_table, callout, eps_growth_html, verdict_html)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
 
