@@ -1062,6 +1062,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     if verdict_html:
         verdict_section = f"""    <div class="chart-card">
       <h2>Is {title.split(' ')[0]} cheap?</h2>
+      <p class="hint">If the price assumes more growth than the index has actually delivered, it&#39;s expensive. Less, and it&#39;s cheap.</p>
       <div class="chart-body">{verdict_html}</div>
     </div>
 """
@@ -1069,6 +1070,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     if gap_html:
         gap_section = f"""    <div class="chart-card">
       <h2>Has the gap predicted returns?</h2>
+      <p class="hint">Find the highlighted row. That&#39;s what happened the last times the gap looked like it does today.</p>
       <div class="chart-body">{gap_html}</div>
     </div>
 """
@@ -1076,9 +1078,10 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     if callout:
         callout_section = f'      <p class="callout">{callout}</p>\n'
 
-    def _measured_card(title_text, chart_html, ro_id, clear_target):
+    def _measured_card(title_text, chart_html, ro_id, clear_target, hint=""):
         return f"""    <div class="chart-card">
       <h2>{title_text}</h2>
+      {hint}
       <div class="chart-body">
       {chart_html}
       {_range_bar(clear_target)}
@@ -1088,15 +1091,20 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     </div>
 """
 
-    eps_section = _measured_card("EPS ($)", eps_chart_html, "ro-eps", "eps-chart") if eps_chart_html else ""
+    def _hint(s):
+        return f'<p class="hint">{s}</p>'
+    eps_section = _measured_card("EPS ($)", eps_chart_html, "ro-eps", "eps-chart",
+                                 _hint("Are earnings still climbing? The orange dashes are what analysts expect next.")) if eps_chart_html else ""
     growth_section = ""
     if eps_growth_html:
         growth_section = f"""    <div class="chart-card">
       <h2>EPS Growth: Year over Year, 5Y, 10Y &amp; Estimates</h2>
+      <p class="hint">How bumpy growth is from year to year. The dashed line is the average for the years shown.</p>
       <div class="chart-body">{eps_growth_html}</div>
     </div>
 """
-    eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart") if eps_indexed_html else ""
+    eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart",
+                                         _hint("Same earnings, starting from 100, so the growth is easier to read.")) if eps_indexed_html else ""
 
     measure_script = """<script>
 (function(){
@@ -1233,6 +1241,8 @@ function setRange(divId, years){
       background:var(--navy); margin:0; padding:4px 8px 3px; letter-spacing:.5px; text-transform:uppercase;
       border-bottom:2px ridge var(--gray); border-top:1px solid #4444CC; box-shadow:inset 0 1px 0 #4444CC; }}
     .chart-body{{ padding:6px; }}
+    .hint{{ font-family:"Times New Roman",serif; font-style:italic; font-size:13px; color:#333; background:#F4F4FF;
+      margin:0; padding:5px 8px; border-bottom:1px solid var(--gray); }}
     .measure-readout{{ font-family:"Courier New",Courier,monospace; font-size:13px; font-weight:700;
       color:#33FF33; text-shadow:0 0 5px rgba(51,255,51,.5); background:#000; border:2px inset var(--gray);
       padding:5px 8px; margin:6px 0 4px; min-height:1.5em; box-shadow:inset 0 0 0 1px #222; }}
@@ -1295,10 +1305,12 @@ function setRange(divId, years){
     <h1 class="hero">{title}</h1>
 {verdict_section}    <div class="chart-card">
       <h2>Implied vs Delivered Growth</h2>
+      <p class="hint">Blue is the growth the price expects. Green is what actually happened. Blue above green means the market is paying up.</p>
       <div class="chart-body">{growth_chart_html}{_range_bar('growth-chart')}</div>
     </div>
 {gap_section}{callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
       <h2>10-Year Statistics</h2>
+      <p class="hint">Where today&#39;s number sits against the last 1 to 10 years.</p>
       {timeframe_table_html}
     </div>
     <p class="back"><a href="index.html">Back to Dashboard</a></p>
