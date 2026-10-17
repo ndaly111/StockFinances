@@ -429,8 +429,21 @@ def _apply_retro_layout(fig):
                      automargin=True, zeroline=False, tickfont=dict(size=11))
     return fig
 
+def _monthly_ten_yr(conn: sqlite3.Connection) -> pd.Series:
+    """Month-end 10Y Treasury yield in %, for the faint context line."""
+    try:
+        y = pd.read_sql_query("SELECT Date, TenYr FROM Treasury_Yield_History ORDER BY Date",
+                              conn, parse_dates=["Date"])
+    except Exception:
+        return pd.Series(dtype=float)
+    s = y.set_index(pd.to_datetime(y["Date"], utc=True))["TenYr"].astype(float) * 100.0
+    s = s.resample("ME").last().dropna()
+    s.index = s.index.normalize()
+    return s
+
+
 def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, ticker: str,
-                   delivered: Optional[dict] = None) -> go.Figure:
+                   delivered: Optional[dict] = None, ten_yr: Optional[pd.Series] = None) -> go.Figure:
     """Implied growth (what the price assumes) against delivered EPS growth
     (rolling 10Y and 5Y CAGR) and the normalized 20Y trend rate."""
 
@@ -478,6 +491,15 @@ def _growth_figure(df_d: pd.DataFrame, df_w: pd.DataFrame, df_m: pd.DataFrame, t
             delivered_tr.append(go.Scatter(x=x, y=[tr20, tr20], name="Normalized (20Y trend)", mode="lines",
                                            meta="ref", hoverinfo="skip",
                                            line=dict(color="#444444", width=1, dash="dash")))
+
+    # Implied growth moves with the 10Y as much as with P/E; a faint yield line
+    # shows when a change is rates rather than valuation. Reference only.
+    if ten_yr is not None and not ten_yr.empty and len(df_m.index):
+        ty = ten_yr[(ten_yr.index >= df_m.index.min()) & (ten_yr.index <= df_m.index.max())]
+        if not ty.empty:
+            delivered_tr.append(go.Scatter(x=ty.index, y=ty, name="10Y Treasury yield", mode="lines", meta="ref",
+                                           line=dict(color="#b0b0b0", width=1),
+                                           hovertemplate="%{y:.2f}%<extra>10Y yield</extra>"))
 
     fig = go.Figure(data=traces_m + delivered_tr + stat_lines)
 
@@ -1325,7 +1347,7 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     fwd = _latest_forward_eps(conn, ticker)
     df_d, df_w, df_m = _resample_frames(df)
     delivered = _delivered_growth(df_d["eps"]) if "eps" in df_d.columns else {}
-    fig_growth = _growth_figure(df_d, df_w, df_m, ticker, delivered)
+    fig_growth = _growth_figure(df_d, df_w, df_m, ticker, delivered, _monthly_ten_yr(conn))
     _apply_retro_layout(fig_growth)
     chart_growth_html = to_html(fig_growth, include_plotlyjs=_PLOTLY_JS_URL, full_html=False, default_height="320px", div_id="growth-chart", config=_PLOT_CONFIG) + _legend_strip(fig_growth)
     fig_eps = _eps_figure(df_d, df_w, df_m, ticker, fwd=fwd)
