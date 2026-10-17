@@ -153,6 +153,9 @@ def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
     keep = [c for c in ["ig", "ig_fwd", "pe", "pe_fwd", "tnx"] if c in df.columns]
     df = df[keep]
 
+    if ticker.upper() == "QQQ" and "ig" in df.columns:
+        df = _qqq_ig_from_ndx(conn, df)
+
     # Attach EPS if available.
     eps = _index_eps_series(conn, ticker)
     if not eps.empty:
@@ -189,6 +192,60 @@ def _index_eps_series(conn: sqlite3.Connection, ticker: str) -> pd.Series:
     if ticker.upper() == "QQQ":
         combined = _qqq_eps_from_ndx(combined)
     return combined
+
+
+def _qqq_ig_from_ndx(conn: sqlite3.Connection, df: pd.DataFrame) -> pd.DataFrame:
+    """Replace QQQ's implied-growth history with one built from the Nasdaq-100
+    trailing P/E (worldperatio, monthly from 1990) and the 10Y yield history:
+        ig = (PE/10)^0.1 + 10Y - 1
+    Our own Index_PE_History for QQQ is a bottom-up of TODAY's constituents
+    (survivorship bias, annual EPS steps, <80%-coverage dates skipped) and
+    only starts 2016, so it is noisy and its 2017-2020 is wrong; worldperatio
+    is smooth and internally consistent but sits ~10% below WSJ/Birinyi in
+    2015-17, so it is scaled to our live level (12-month mean ratio) and our
+    daily points are appended for dates after its last complete month."""
+    try:
+        from ndx_eps_history import load_ndx_monthly
+        ndx = load_ndx_monthly()
+    except Exception as e:
+        print(f"[QQQ ig] NDX history unavailable ({e}); keeping existing series")
+        return df
+    if ndx.empty:
+        return df
+    pe_wp = ndx["pe"].copy()
+    pe_wp.index = pd.DatetimeIndex(pe_wp.index).to_period("M").to_timestamp(how="end").normalize()
+    pe_wp.index = pe_wp.index.tz_localize("UTC")
+    today = pd.Timestamp.today(tz="UTC").normalize()
+    pe_wp = pe_wp[pe_wp.index <= today]                      # drop the partial current month
+    y = pd.read_sql_query("SELECT Date, TenYr FROM Treasury_Yield_History ORDER BY Date",
+                          conn, parse_dates=["Date"])
+    y = y.set_index(pd.to_datetime(y["Date"], utc=True))["TenYr"].astype(float)
+    y = y.resample("ME").last().ffill()
+    y.index = y.index.normalize()
+    # Scale to our live P/E level over the last 12 complete months.
+    scale = 1.0
+    try:
+        ours = pd.read_sql_query(
+            "SELECT Date, PE_Ratio FROM Index_PE_History WHERE Ticker='QQQ' AND PE_Type='TTM' ORDER BY Date",
+            conn, parse_dates=["Date"])
+        ours = ours.set_index(pd.to_datetime(ours["Date"], utc=True))["PE_Ratio"].astype(float)
+        ours_m = ours.resample("ME").last(); ours_m.index = ours_m.index.normalize()
+        both = pd.concat([ours_m, pe_wp], axis=1, keys=["o", "w"]).dropna().iloc[-13:-1]
+        if len(both) >= 6:
+            scale = float(both["o"].mean() / both["w"].mean())
+    except Exception:
+        pass
+    ig_wp = ((pe_wp * scale / 10.0) ** 0.1 + y.reindex(pe_wp.index, method="ffill") - 1.0) * 100.0
+    ig_wp = ig_wp.dropna()
+    last_m = ig_wp.index.max()
+    daily_tail = df["ig"].dropna()
+    daily_tail = daily_tail[daily_tail.index > last_m]
+    ig = pd.concat([ig_wp, daily_tail]).sort_index()
+    ig = ig[~ig.index.duplicated(keep="last")]
+    print(f"[QQQ ig] NDX-based history {ig_wp.index.min().date()}..{last_m.date()} "
+          f"(scale {scale:.3f}) + {len(daily_tail)} daily point(s)")
+    out = df.drop(columns=["ig"]).join(ig.rename("ig"), how="outer")
+    return out.sort_index()
 
 
 def _qqq_eps_from_ndx(current: pd.Series) -> pd.Series:
@@ -755,7 +812,7 @@ def _range_bar(div_id: str, default: int = 5) -> str:
     """HTML range buttons for a time-series chart (wired up by setRange)."""
     btns = "".join(
         f'<button class="range-btn{" active" if y == default else ""}" data-y="{y}">{lbl}</button>'
-        for lbl, y in (("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("MAX", 0)))
+        for lbl, y in (("1Y", 1), ("3Y", 3), ("5Y", 5), ("10Y", 10), ("20Y", 20), ("MAX", 0)))
     return f'<div class="range-row" data-chart="{div_id}" data-default="{default}">{btns}</div>'
 
 
