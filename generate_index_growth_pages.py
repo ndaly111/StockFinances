@@ -750,7 +750,7 @@ def _verdict_label(gap: float) -> str:
 
 
 def _verdict_html(ticker: str, ig_now: Optional[float], snap, ten_yr: Optional[float],
-                  delivered: dict, fwd) -> str:
+                  delivered: dict, fwd, study=None) -> str:
     """Top-of-page card: what the price assumes vs what the index has delivered,
     a fair-value table from the site's fair-P/E formula, and a one-line verdict
     against normalized (20Y trend) growth."""
@@ -765,6 +765,16 @@ def _verdict_html(ticker: str, ig_now: Optional[float], snap, ten_yr: Optional[f
         return ""
     gap = bench - ig_now
     label = _verdict_label(gap)
+    evidence = ""
+    if study:
+        band = next((r for r in study["rows"] if r["today"]), None)
+        base = next((r for r in study["rows"] if r["band"] == "All months"), None)
+        h = study["horizons"][-1]
+        if band and band.get(f"med{h}") is not None and base and base.get(f"med{h}") is not None:
+            evidence = (f'<p class="evidence">Since {study["start"][:4]}, months in the <b>{band["band"].lower()}</b> '
+                        f'band were followed by a median <b>{band[f"med{h}"]:+.1f}%/yr</b> over the next {h} years '
+                        f'(all months: {base[f"med{h}"]:+.1f}%/yr; {band["n"]} months, {band["pos"]:.0f}% of windows up). '
+                        f'See the test below before leaning on this.</p>')
 
     def pct(v):
         return "—" if v is None else f"{v:+.1f}%"
@@ -799,7 +809,58 @@ def _verdict_html(ticker: str, ig_now: Optional[float], snap, ten_yr: Optional[f
     note = (f'<p class="src-note">Fair P/E = ((growth − 10Y + 1)<sup>10</sup>) × 10, the same formula as the '
             f'ticker pages; fair price = fair P/E × trailing EPS (${eps_etf:.2f}/sh). {ticker} ${price:,.2f} '
             f'on {_date}. The verdict compares the market&#39;s implied growth with the {ty}Y trend. {analysts}</p>')
-    return f'<div class="tiles verdict-tiles">{"".join(tiles)}</div>{table}{note}'
+    return f'<div class="tiles verdict-tiles">{"".join(tiles)}</div>{evidence}{table}{note}'
+
+
+def _gap_study_html(ticker: str, study) -> str:
+    """Card: for each gap band, what the index returned over the following
+    1/3/5 years (median annualized price return), % of 5Y windows positive,
+    today's band highlighted, and a gap-vs-5Y-return scatter."""
+    if not study:
+        return ""
+    hs = study["horizons"]
+    head = ('<tr><th class="tf">Gap band</th><th>n</th>'
+            + "".join(f"<th>{h}Y</th>" for h in hs) + f"<th>% up</th></tr>")
+    trs = []
+    for r in study["rows"]:
+        cls = ' class="today"' if r["today"] else (' class="base"' if r["band"] == "All months" else "")
+        cells = "".join("<td>—</td>" if r[f"med{h}"] is None else f"<td>{r[f'med{h}']:+.1f}%</td>" for h in hs)
+        pos = "—" if r["pos"] is None else f"{r['pos']:.0f}%"
+        mark = " ◀" if r["today"] else ""
+        trs.append(f'<tr{cls}><td class="tf">{r["band"]}{mark}</td><td>{r["n"]}</td>{cells}<td>{pos}</td></tr>')
+    table = (f'<div class="table-wrap"><table class="stats gap"><thead>{head}</thead>'
+             f'<tbody>{"".join(trs)}</tbody></table></div>')
+    rho = study["rho"]
+    rho_txt = "n/a" if rho is None else f"{rho:+.2f}"
+    note = (f'<p class="src-note">Point-in-time test, {study["start"]} to {study["end"]}: each month&#39;s gap uses '
+            f'only EPS known at the time (trend fitted on the trailing &le;20Y, min 8Y) and the page&#39;s implied '
+            f'growth; returns are the index&#39;s annualized price change afterwards (dividends excluded). '
+            f'Rank correlation of gap with the next-{hs[-1]}Y return: <b>{rho_txt}</b>. '
+            f'<b>Read the sample size honestly:</b> {study["n_months"]} overlapping months is only about '
+            f'<b>{study["n_indep"]} independent {hs[-1]}-year windows</b>, so a band can be one market regime.</p>')
+    return table + note
+
+
+def _gap_scatter_figure(study) -> Optional[go.Figure]:
+    if not study or study["scatter"].empty:
+        return None
+    sc = study["scatter"]
+    yrs = pd.DatetimeIndex(sc.index).year
+    fig = go.Figure(go.Scatter(
+        x=sc["gap"], y=sc["fwd"], mode="markers", name="Months",
+        marker=dict(size=5, color=yrs, colorscale=[[0, "#9ecae1"], [1, "#08306b"]], showscale=False, line=dict(width=0)),
+        customdata=[d.strftime("%b %Y") for d in sc.index],
+        hovertemplate="%{customdata}<br>gap %{x:+.1f} pts → %{y:+.1f}%/yr<extra></extra>"))
+    g = study["today_gap"]
+    fig.add_vline(x=g, line=dict(color="#ff8800", width=2, dash="dash"))
+    fig.add_annotation(x=g, y=1, yref="paper", yanchor="bottom", showarrow=False, text=f"today {g:+.1f}",
+                       font=dict(size=10, color="#ff8800"))
+    fig.add_hline(y=0, line=dict(color="#888888", width=1))
+    _apply_retro_layout(fig)
+    fig.update_xaxes(title=None, ticksuffix="", showgrid=True, gridcolor="#eeeeee")
+    fig.update_yaxes(ticksuffix="%")
+    fig.update_layout(hovermode="closest", margin=dict(l=10, r=10, t=18, b=10))
+    return fig
 
 
 def _forward_growth_rates(conn: sqlite3.Connection, ticker: str):
@@ -973,13 +1034,20 @@ def _legend_strip(fig) -> str:
 
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
                eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str,
-               eps_growth_html: str = "", verdict_html: str = "") -> str:
+               eps_growth_html: str = "", verdict_html: str = "", gap_html: str = "") -> str:
     """Assemble the full HTML page in the site's 1999 NASDAQ-terminal theme."""
     verdict_section = ""
     if verdict_html:
         verdict_section = f"""    <div class="chart-card">
       <h2>Is {title.split(' ')[0]} cheap?</h2>
       <div class="chart-body">{verdict_html}</div>
+    </div>
+"""
+    gap_section = ""
+    if gap_html:
+        gap_section = f"""    <div class="chart-card">
+      <h2>Has the gap predicted returns?</h2>
+      <div class="chart-body">{gap_html}</div>
     </div>
 """
     callout_section = ""
@@ -1185,6 +1253,13 @@ function setRange(divId, years){
     .tile.verdict .tv{{ color:#FFFF66; }} .tile.verdict .ts{{ color:#FFFF66; font-weight:700; font-size:11px; }}
     .verdict-tiles{{ grid-template-columns:repeat(3,1fr); }}
     table.stats td.pos{{ color:#007700; font-weight:700; }} table.stats td.neg{{ color:#BB0000; font-weight:700; }}
+    table.stats tr.today td{{ background:#FFFF99; font-weight:700; }} table.stats tr.today td.tf{{ background:#FFEE55; }}
+    table.stats tr.base td{{ background:#EEEEEE; font-style:italic; }}
+    table.stats.gap th, table.stats.gap td{{ padding:5px 3px; font-size:11.5px; }}
+    table.stats.gap td.tf, table.stats.gap th.tf{{ white-space:normal; font-size:11px; }}
+    .evidence{{ font-family:"Times New Roman",serif; font-size:13px; background:#FFFFEE; border:2px inset var(--gray);
+      padding:6px 10px; margin:0 0 6px; }}
+    #gap-scatter{{ touch-action:pan-y; }}
     .src-note{{ font-size:11px; color:#333; margin:6px 2px 0; }}
     .back{{ margin:10px 6px 0; }}
     .back a{{ display:inline-block; font-family:Arial,sans-serif; font-weight:700; font-size:12px; color:#000;
@@ -1200,7 +1275,7 @@ function setRange(divId, years){
       <h2>Implied vs Delivered Growth</h2>
       <div class="chart-body">{growth_chart_html}{_range_bar('growth-chart')}</div>
     </div>
-{callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
+{gap_section}{callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
       <h2>10-Year Statistics</h2>
       {timeframe_table_html}
     </div>
@@ -1277,10 +1352,25 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
     tf_table = _timeframe_table_html(df_d)
     callout = _forward_callout(fwd)
     ig_now = float(df_d["ig"].dropna().iloc[-1]) if "ig" in df_d.columns and not df_d["ig"].dropna().empty else None
+    study = None
+    if "ig" in df_d.columns and "eps" in df_d.columns:
+        try:
+            from growth_gap_study import gap_study
+            study = gap_study(ticker, df_d["ig"], df_d["eps"])
+        except Exception as e:
+            print(f"[gap study] {ticker} failed: {e}")
     verdict_html = _verdict_html(ticker, ig_now, _latest_snapshot(conn, ticker), _latest_ten_yr(conn),
-                                 delivered, _forward_growth_rates(conn, ticker))
+                                 delivered, _forward_growth_rates(conn, ticker), study)
+    gap_html = _gap_study_html(ticker, study)
+    if gap_html:
+        fig_sc = _gap_scatter_figure(study)
+        if fig_sc is not None:
+            gap_html += ('<p class="src-note" style="margin-bottom:0">Each dot is one month: gap at the time (x) vs '
+                         'the next 5 years&#39; annualized return (y); darker = more recent.</p>'
+                         + to_html(fig_sc, include_plotlyjs=False, full_html=False, default_height="300px",
+                                   div_id="gap-scatter", config=_PLOT_CONFIG))
     page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
-                      chart_eps_idx_html, tf_table, callout, eps_growth_html, verdict_html)
+                      chart_eps_idx_html, tf_table, callout, eps_growth_html, verdict_html, gap_html)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
 
