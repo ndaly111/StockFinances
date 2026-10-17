@@ -186,7 +186,28 @@ def _index_eps_series(conn: sqlite3.Connection, ticker: str) -> pd.Series:
     for p in parts[1:]:
         combined = combined.combine_first(p)
     combined = combined.sort_index(); combined.name = "eps"
+    if ticker.upper() == "QQQ":
+        combined = _qqq_eps_from_ndx(combined)
     return combined
+
+
+def _qqq_eps_from_ndx(current: pd.Series) -> pd.Series:
+    """QQQ EPS history from Nasdaq-100 close / trailing P/E (1990+, monthly;
+    see ndx_eps_history.py for why the IMPLIED_FROM_PE series isn't used).
+    Rescaled so the latest point equals the existing series' latest value,
+    which keeps the chart's level (and the forecast overlay's scale) the same."""
+    try:
+        from ndx_eps_history import ndx_monthly_eps
+        ndx = ndx_monthly_eps()
+    except Exception as e:
+        print(f"[QQQ eps] NDX history unavailable ({e}); keeping existing series")
+        return current
+    if ndx.empty or current.dropna().empty:
+        return current
+    ndx.index = pd.DatetimeIndex(ndx.index).tz_localize("UTC")
+    out = ndx * (float(current.dropna().iloc[-1]) / float(ndx.iloc[-1]))
+    out.name = "eps"
+    return out
 
 
 def _load_eps_series(conn: sqlite3.Connection, ticker: str) -> Optional[pd.Series]:
