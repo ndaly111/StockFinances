@@ -553,6 +553,12 @@ def mini_main():
         except Exception as exc:
             print(f"[WARN] Plotly index growth pages failed: {exc}")
 
+        try:
+            from generate_news_box import generate_news_box
+            generate_news_box()
+        except Exception as exc:
+            print(f"[WARN] News box failed: {exc}")
+
         html_generator2(
             tickers,
             financial_data,
