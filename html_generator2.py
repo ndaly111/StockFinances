@@ -152,6 +152,7 @@ td{padding:4px;border:1px solid #8080FF}
     .positive{color:#2e7d32;font-weight:600;}
     .negative{color:#c62828;font-weight:600;}
     td.pct::after{content:'%';}
+    .news-box h3{margin:10px 0 4px;font-size:1rem}.news-list{list-style:none;padding-left:0;margin:4px 0}.news-list li{margin:5px 0}.news-stamp,.news-quiet,.news-date{color:#333366;font-size:.85rem}.news-box .up{color:#008000;font-weight:bold}.news-box .down{color:#CC0000;font-weight:bold}
     .center-table{margin:0 auto;width:100%%}
   </style>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
@@ -195,6 +196,11 @@ td{padding:4px;border:1px solid #8080FF}
 
   <header><h1>Financial Overview</h1></header>
 
+
+  <div id="news-box" class="center-table news-box">
+    <h2>What Happened to My Stocks Today</h2>
+    {{ news_box | safe }}
+  </div>
 
   <div id="spy-qqq-growth" class="center-table">
     <h2>SPY vs QQQ Overview</h2>
@@ -547,6 +553,7 @@ def create_home_page(
     earnings_upcoming="",
     economic_html="",
     market_summary_html="",
+    news_box_html="",
 ):
     tpl = env.get_template("home_template.html")
     rendered = tpl.render(
@@ -558,6 +565,7 @@ def create_home_page(
         earnings_upcoming=earnings_upcoming,
         economic_data=economic_html,
         daily_market_summary=market_summary_html,
+        news_box=news_box_html,
     )
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
@@ -580,7 +588,8 @@ def html_generator2(
         get_file_or_placeholder("charts/earnings_past.html"),
         get_file_or_placeholder("charts/earnings_upcoming.html"),
         get_file_or_placeholder("charts/economic_data.html", "No economic data available."),
-        daily_market_summary_html
+        daily_market_summary_html,
+        get_file_or_placeholder("charts/news_box.html", "<p>News unavailable this run.</p>"),
     )
     # Per-ticker pages/*.html are retired: the site now serves a single static
     # shell (ticker.html?t=<TICKER>) that loads ticker_data/<TICKER>.json. Nothing
