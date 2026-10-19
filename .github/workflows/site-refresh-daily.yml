@@ -69,7 +69,6 @@ jobs:
           PYTHONUNBUFFERED: "1"   # keep print() in step with logging so log timestamps are true
         run: |
           python main_remote.py
-          python generate_market_summary.py
           python scripts/dump_assumptions.py
 
       # Collect the post-close SPY/QQQ index snapshot in the EVENING run, folded
