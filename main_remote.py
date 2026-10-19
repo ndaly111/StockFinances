@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import ticker_manager
-from generate_market_summary import generate_market_summary
 from generate_economic_data    import generate_economic_data
 from annual_and_ttm_update     import annual_and_ttm_update, get_db_connection
 from chart_generator           import prepare_data_for_charts, generate_financial_charts
@@ -394,10 +393,6 @@ def mini_main():
 
     financial_data, dashboard_data = {}, []
     treasury = fetch_10_year_treasury_yield()
-    market_summary_embed = (
-        '<p>Daily market summary unavailable. '
-        '<a href="daily-market-summary.html">View latest generated file</a></p>'
-    )
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
     if is_weekly:
@@ -558,27 +553,12 @@ def mini_main():
         except Exception as exc:
             print(f"[WARN] Plotly index growth pages failed: {exc}")
 
-        try:
-            generate_market_summary()
-            market_summary_embed = (
-                '<iframe src="daily-market-summary.html" '
-                'title="Daily Market Summary" '
-                'style="width:100%;height:740px;border:2px inset #C0C0C0;'
-                'background:#FFFFFF" loading="lazy"></iframe>'
-                '<p style="text-align:right;margin-top:6px;">'
-                '<a href="daily-market-summary.html">Open full summary</a>'
-                '</p>'
-            )
-        except Exception as exc:
-            print(f"[WARN] Daily market summary generation failed: {exc}")
-
         html_generator2(
             tickers,
             financial_data,
             full_html,
             avg_vals,
             spy_qqq_html,
-            daily_market_summary_html=market_summary_embed
         )
         verify_dashboard_table()
     finally:
