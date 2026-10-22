@@ -155,6 +155,10 @@ def _load_series(conn: sqlite3.Connection, ticker: str) -> pd.DataFrame:
 
     if ticker.upper() == "QQQ" and "ig" in df.columns:
         df = _qqq_ig_from_ndx(conn, df)
+    if "pe" not in df.columns or df["pe"].dropna().empty:
+        pe = _pe_history(conn, ticker)
+        if not pe.empty:
+            df = df.drop(columns=["pe"], errors="ignore").join(pe, how="outer")
 
     # Attach EPS if available.
     eps = _index_eps_series(conn, ticker)
@@ -224,6 +228,7 @@ def _qqq_ig_from_ndx(conn: sqlite3.Connection, df: pd.DataFrame) -> pd.DataFrame
     y.index = y.index.normalize()
     # Scale to our live P/E level over the last 12 complete months.
     scale = 1.0
+    ours = pd.Series(dtype=float)
     try:
         ours = pd.read_sql_query(
             "SELECT Date, PE_Ratio FROM Index_PE_History WHERE Ticker='QQQ' AND PE_Type='TTM' ORDER BY Date",
@@ -245,7 +250,28 @@ def _qqq_ig_from_ndx(conn: sqlite3.Connection, df: pd.DataFrame) -> pd.DataFrame
     print(f"[QQQ ig] NDX-based history {ig_wp.index.min().date()}..{last_m.date()} "
           f"(scale {scale:.3f}) + {len(daily_tail)} daily point(s)")
     out = df.drop(columns=["ig"]).join(ig.rename("ig"), how="outer")
+    # The P/E behind that implied growth, on the same basis (scaled worldperatio
+    # monthly + our daily points after its last complete month).
+    pe_tail = ours[ours.index > last_m].dropna()
+    pe = pd.concat([pe_wp * scale, pe_tail.groupby(pe_tail.index.normalize()).last()]).sort_index()
+    pe = pe[~pe.index.duplicated(keep="last")]
+    out = out.drop(columns=["pe"], errors="ignore").join(pe.rename("pe"), how="outer")
     return out.sort_index()
+
+
+def _pe_history(conn: sqlite3.Connection, ticker: str) -> pd.Series:
+    """Trailing P/E history from Index_PE_History (SPY runs back to 1871)."""
+    try:
+        h = pd.read_sql_query(
+            "SELECT Date, PE_Ratio FROM Index_PE_History WHERE Ticker=? AND PE_Type='TTM' ORDER BY Date",
+            conn, params=(ticker.upper(),), parse_dates=["Date"])
+    except Exception:
+        return pd.Series(dtype=float, name="pe")
+    s = pd.to_numeric(h.set_index(pd.to_datetime(h["Date"], utc=True).dt.normalize())["PE_Ratio"],
+                      errors="coerce").dropna()
+    s = s[(s > 0) & ~s.index.duplicated(keep="last")]
+    s.name = "pe"
+    return s
 
 
 def _qqq_eps_from_ndx(current: pd.Series) -> pd.Series:
@@ -710,6 +736,29 @@ def _eps_indexed_figure(
     return fig
 
 
+def _pe_figure(df_m: pd.DataFrame, fair_pe_now: Optional[float] = None) -> Optional[go.Figure]:
+    """Trailing P/E over time, with its long-run median and today's fair P/E
+    (normalized growth, today's 10Y) as dashed references."""
+    s = df_m["pe"].dropna() if "pe" in df_m.columns else pd.Series(dtype=float)
+    if s.empty:
+        return None
+    traces = [go.Scatter(x=s.index, y=s, name="Trailing P/E", mode="lines",
+                         line=dict(color=_C_TTM, width=2), hovertemplate="%{y:.1f}x<extra></extra>")]
+    x = [s.index.min(), s.index.max()]
+    med = float(s.median())
+    traces.append(go.Scatter(x=x, y=[med, med], name=f"Median since {s.index.min().year} ({med:.1f}x)",
+                             mode="lines", meta="ref", hoverinfo="skip",
+                             line=dict(color="#444444", width=1, dash="dash")))
+    if fair_pe_now is not None:
+        traces.append(go.Scatter(x=x, y=[fair_pe_now, fair_pe_now], name=f"Fair P/E today ({fair_pe_now:.1f}x)",
+                                 mode="lines", meta="ref", hoverinfo="skip",
+                                 line=dict(color=_C_FWD, width=1, dash="dash")))
+    fig = go.Figure(data=traces)
+    fig.update_yaxes(ticksuffix="x")
+    fig.update_xaxes(range=[s.index.max() - pd.DateOffset(years=5), s.index.max()])
+    return fig
+
+
 def _delivered_growth(eps: pd.Series) -> dict:
     """Realized EPS growth: rolling 5Y/10Y CAGR series (monthly, %) plus the
     current 5Y/10Y CAGR and a 20Y log-trend rate (the 'normalized' growth —
@@ -1056,7 +1105,8 @@ def _legend_strip(fig) -> str:
 
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
                eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str,
-               eps_growth_html: str = "", verdict_html: str = "", gap_html: str = "") -> str:
+               eps_growth_html: str = "", verdict_html: str = "", gap_html: str = "",
+               pe_chart_html: Optional[str] = None) -> str:
     """Assemble the full HTML page in the site's 1999 NASDAQ-terminal theme."""
     verdict_section = ""
     if verdict_html:
@@ -1103,6 +1153,8 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
       <div class="chart-body">{eps_growth_html}</div>
     </div>
 """
+    pe_section = _measured_card("P/E Over Time", pe_chart_html, "ro-pe", "pe-chart",
+                                _hint("What investors pay per $1 of trailing earnings. Above the green dashes is above today&#39;s fair P/E.")) if pe_chart_html else ""
     eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart",
                                          _hint("Same earnings, starting from 100, so the growth is easier to read.")) if eps_indexed_html else ""
 
@@ -1134,7 +1186,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     gd.__clear=function(){ anchor=null; ro.innerHTML='Click a point, then another, to measure % change.'; };
   }
   function init(){
-    attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed');
+    attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed'); attach('pe-chart','ro-pe');
     document.querySelectorAll('.range-row').forEach(function(bar){
       var id=bar.getAttribute('data-chart');
       bar.querySelectorAll('button').forEach(function(b){
@@ -1273,7 +1325,7 @@ function setRange(divId, years){
       font-family:Arial,sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; }}
     .key{{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }}
     .key-line{{ display:inline-block; width:18px; height:0; }}
-    #growth-chart, #eps-chart, #eps-indexed-chart, #eps-growth-chart{{ touch-action:pan-y; }}
+    #growth-chart, #pe-chart, #eps-chart, #eps-indexed-chart, #eps-growth-chart{{ touch-action:pan-y; }}
     .tiles{{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin:0 0 6px; }}
     @media (min-width:700px){{ .tiles{{ grid-template-columns:repeat(6,1fr); }} }}
     .tile{{ background:#000; border:2px inset var(--gray); padding:5px 4px; text-align:center; }}
@@ -1308,7 +1360,7 @@ function setRange(divId, years){
       <p class="hint">Blue is the growth the price expects. Green is what actually happened. Blue above green means the market is paying up.</p>
       <div class="chart-body">{growth_chart_html}{_range_bar('growth-chart')}</div>
     </div>
-{gap_section}{callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
+{pe_section}{gap_section}{callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
       <h2>10-Year Statistics</h2>
       <p class="hint">Where today&#39;s number sits against the last 1 to 10 years.</p>
       {timeframe_table_html}
@@ -1403,8 +1455,17 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
                          'the next 5 years&#39; annualized return (y); darker = more recent.</p>'
                          + to_html(fig_sc, include_plotlyjs=False, full_html=False, default_height="300px",
                                    div_id="gap-scatter", config=_PLOT_CONFIG))
+    ten_now = _latest_ten_yr(conn)
+    bench = delivered.get("trend20") if delivered.get("trend20") is not None else delivered.get("cagr10")
+    fig_pe = _pe_figure(df_m, _fair_pe(bench, ten_now) if ten_now is not None else None)
+    chart_pe_html = None
+    if fig_pe is not None:
+        _apply_retro_layout(fig_pe)
+        chart_pe_html = to_html(fig_pe, include_plotlyjs=False, full_html=False, default_height="320px",
+                                div_id="pe-chart", config=_PLOT_CONFIG) + _legend_strip(fig_pe)
     page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
-                      chart_eps_idx_html, tf_table, callout, eps_growth_html, verdict_html, gap_html)
+                      chart_eps_idx_html, tf_table, callout, eps_growth_html, verdict_html, gap_html,
+                      chart_pe_html)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
 
@@ -1415,7 +1476,7 @@ def generate_index_growth_pages(db_path: str = DB_PATH) -> None:
         for ticker in ("SPY", "QQQ"):
             df = _load_series(conn, ticker)
             # Drop rows where all plotted series are missing
-            subset = [c for c in ["ig", "ig_fwd", "eps"] if c in df.columns]
+            subset = [c for c in ["ig", "ig_fwd", "eps", "pe"] if c in df.columns]
             if subset:
                 df = df.dropna(subset=subset, how="all")
             _build_one(conn, ticker, df)
