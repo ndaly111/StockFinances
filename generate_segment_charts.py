@@ -385,7 +385,10 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 
     axes = []
     used_segments = set()
-    for axis_type, sub in df.groupby("AxisType"):
+    axis_groups = list(df.groupby("AxisType"))
+    if "AxisOrder" in df.columns:  # segment_overrides "prefer_axes"
+        axis_groups.sort(key=lambda g: g[1]["AxisOrder"].min())
+    for axis_type, sub in axis_groups:
         segs = set(sub["Segment"])
         segs = segs - used_segments
         if len(segs) <= 1:
@@ -399,6 +402,12 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         if idx <= len(axes):
             _, df_axis = axes[idx - 1]
             oi_present = axis_has_meaningful_oi(df_axis)
+            # Profit measure the filer reports for this axis (TSLA: gross profit only)
+            profit_concepts = df_axis.get("ProfitConcept", pd.Series(dtype=object)).fillna("")
+            if profit_concepts.str.contains("GrossProfit").any():
+                op_name, op_abbr = "Gross Profit", "GP"
+            else:
+                op_name, op_abbr = "Operating Income", "OI"
 
             vals = [df_axis["Revenue"].dropna()]
             if oi_present:
@@ -436,7 +445,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 bar_width = 0.35
                 ax.bar([x - bar_width / 2 for x in x_indices], revenues_b, width=bar_width, label="Revenue")
                 if oi_present:
-                    ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label="Operating Income")
+                    ax.bar([x + bar_width / 2 for x in x_indices], op_incomes_b, width=bar_width, label=op_name)
                 ax.set_xticks(x_indices)
                 ax.set_xticklabels(years_all)
                 ax.set_ylim(min_y_plot / 1e9, max_y_plot / 1e9)
@@ -510,16 +519,16 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             for seg, label in segment_labels:
                 column_specs.append((label, "Rev", seg))
                 if oi_present:
-                    column_specs.append((label, "OI", seg))
+                    column_specs.append((label, op_abbr, seg))
             column_specs.append(("Total", "Rev", None))
             if oi_present:
-                column_specs.append(("Total", "OI", None))
+                column_specs.append(("Total", op_abbr, None))
 
             year_rows: List[dict] = []
             for year in years_tbl:
                 row: dict[str, object] = {"Year": year}
-                totals = {"Rev": 0.0, "OI": 0.0}
-                totals_present = {"Rev": False, "OI": False}
+                totals = {"Rev": 0.0, op_abbr: 0.0}
+                totals_present = {"Rev": False, op_abbr: False}
                 for label, kind, seg in column_specs:
                     key = f"{label} {kind}"
                     if seg is None:
@@ -535,7 +544,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                         totals_present[kind] = True
                 row["Total Rev"] = totals["Rev"] if totals_present["Rev"] else pd.NA
                 if oi_present:
-                    row["Total OI"] = totals["OI"] if totals_present["OI"] else pd.NA
+                    row[f"Total {op_abbr}"] = totals[op_abbr] if totals_present[op_abbr] else pd.NA
                 year_rows.append(row)
 
             display_rows: List[dict[str, object]] = []
@@ -578,11 +587,11 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
 """.strip()
 
             stamp = datetime.now(timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M UTC")
-            metric_phrase = "revenue" + (" and operating income" if oi_present else "")
+            metric_phrase = "revenue" + (f" and {op_name.lower()}" if oi_present else "")
             caption = (
                 f'<div class="table-note">{VERSION} · {stamp} — Units: <b>{unit}</b>. '
                 f"Rows list fiscal years (last 3 + TTM) with {metric_phrase} for each segment; "
-                'the final row shows the TTM revenue mix (operating income columns display “—” where mix is not applicable).</div>'
+                f'the final row shows the TTM revenue mix ({op_name.lower()} columns display “—” where mix is not applicable).</div>'
             )
             html = out_disp.to_html(index=False, escape=False, classes="segment-pivot", border=0)
             table_content = css + "\n" + caption + f"\n<div class='table-wrap'>{html}</div>"

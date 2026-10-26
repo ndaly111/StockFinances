@@ -199,7 +199,13 @@ def apply_segment_overrides(df: pd.DataFrame, ticker: str, overrides: Dict) -> p
         apply_regex(human_str, rules, humanize=False, mask=axis_series == ax)
 
     df["Segment"] = translated.where(~translated.isna(), human)
-    grp = df.groupby(["Axis", "AxisLabel", "Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]]
+
+    # 5b) Drop members per axis (e.g. rollup members that duplicate their children)
+    for ax, names in rules.get("exclude_members_by_axis", {}).items():
+        drop = {canon(n) for n in names}
+        df = df[~((df["Axis"] == ax) & df["Segment"].map(canon).isin(drop))]
+
+    grp =df.groupby(["Axis", "AxisLabel", "Segment", "Year"], as_index=False)[["Revenue", "OpIncome"]]
     try:
         df = grp.sum(min_count=1)
     except TypeError:
