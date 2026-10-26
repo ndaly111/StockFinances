@@ -145,6 +145,17 @@ OPINC_TAGS = [
     "us-gaap:SegmentOperatingIncomeLoss",
     "us-gaap:OperatingIncomeLoss",
 ]
+# Segment profit measure, chosen per axis: operating income when the filer
+# reports it, else gross profit (e.g. TSLA reports only segment gross profit).
+PROFIT_TAGS = OPINC_TAGS + ["us-gaap:GrossProfit"]
+
+# Dimension whose OperatingSegmentsMember qualifier (added next to the segment
+# axis by some filers) doesn't change what a segment fact measures; its other
+# members (eliminations, corporate) do.
+_NEUTRAL_DIM_RE = re.compile(r"ConsolidationItemsAxis$", re.IGNORECASE)
+
+# Full-year period length in days (end - start + 1)
+_FY_DAYS = (340, 380)
 
 # Regex helpers
 # Previously we only captured dimensions whose qualified name contained
@@ -246,6 +257,15 @@ def _parse_contexts_ixbrl(soup: BeautifulSoup) -> Dict[str, dict]:
             except Exception:
                 period_end = None
 
+        # period start (durations only; instants have none)
+        period_start = None
+        start_tag = ctx.find(lambda t: t.name and t.name.endswith("startDate"))
+        if start_tag and start_tag.text:
+            try:
+                period_start = datetime.strptime(start_tag.text.strip(), "%Y-%m-%d")
+            except Exception:
+                period_start = None
+
         # explicit dims
         dims = {}
         seg = ctx.find(lambda t: t.name and t.name.endswith("segment"))
@@ -256,7 +276,7 @@ def _parse_contexts_ixbrl(soup: BeautifulSoup) -> Dict[str, dict]:
                 if dim and val:
                     dims[dim] = val
 
-        contexts[cid] = {"period_end": period_end, "dims": dims}
+        contexts[cid] = {"period_start": period_start, "period_end": period_end, "dims": dims}
     return contexts
 
 
@@ -289,91 +309,126 @@ def _scale_and_sign(val_text: str, decimals: str | None, scale: str | None, sign
     return v
 
 
+def _collect_segment_facts(soup: BeautifulSoup, contexts: Dict[str, dict],
+                           concepts: List[str]) -> Tuple[pd.DataFrame, Dict[str, str]]:
+    """Segment-dimensioned duration facts for ``concepts``, one value per
+    (Segment, AxisType, PeriodStart, PeriodEnd).
+
+    * Each axis uses the highest-priority concept that has facts on it (TSLA
+      tags product revenue as RevenueFromContract... but segment revenue as
+      Revenues).
+    * Repeated facts (the same number tagged in the statements and again in
+      the notes) are counted once.
+    * When a filer reports both a plain segment total and a cross-tab of it
+      (segment x product, segment x region), the plain total wins; cross-tab
+      parts are only summed when no plain total exists.
+
+    Returns (DataFrame[Segment, AxisType, PeriodStart, PeriodEnd, Value],
+    {AxisType: concept used}).
+    """
+    rows = []
+    seen = set()
+    for prio, cname in enumerate(concepts):
+        for fact in soup.find_all("nonFraction", attrs={"name": cname}):
+            ctx = contexts.get(fact.get("contextRef"))
+            if not ctx or ctx["period_end"] is None or ctx.get("period_start") is None:
+                continue
+            dims = ctx["dims"] or {}
+            seg_dims = [(d, m) for d, m in dims.items() if _SEGMENT_DIM_RE.search(d) and m]
+            if not seg_dims:
+                continue
+            dim_qn, mem_qn = seg_dims[0]
+
+            key = (cname, frozenset(dims.items()), ctx["period_start"], ctx["period_end"])
+            if key in seen:
+                continue
+            seen.add(key)
+
+            val = _scale_and_sign(
+                fact.text,
+                fact.get("decimals"),
+                fact.get("scale"),
+                fact.get("sign"),
+            )
+            if val is None:
+                continue
+
+            pure = all(
+                d == dim_qn or (_NEUTRAL_DIM_RE.search(d) and m.endswith("OperatingSegmentsMember"))
+                for d, m in dims.items()
+            )
+            rows.append({
+                "Prio": prio,
+                "Segment": mem_qn.split(":")[-1],
+                "AxisType": dim_qn.split(":")[-1],
+                "PeriodStart": ctx["period_start"],
+                "PeriodEnd": ctx["period_end"],
+                "Pure": pure,
+                "Value": val,
+            })
+
+    cols = ["Segment", "AxisType", "PeriodStart", "PeriodEnd", "Value"]
+    if not rows:
+        return pd.DataFrame(columns=cols), {}
+
+    df = pd.DataFrame(rows)
+    best = df.groupby("AxisType")["Prio"].min()
+    df = df[df["Prio"] == df["AxisType"].map(best)]
+
+    keys = ["Segment", "AxisType", "PeriodStart", "PeriodEnd"]
+    has_pure = df.groupby(keys)["Pure"].transform("any")
+    df = df[df["Pure"] | ~has_pure]
+    # Plain totals: one value per key (distinct context ids can still repeat it)
+    pure_df = df[df["Pure"]].groupby(keys, as_index=False)["Value"].first()
+    cross_df = df[~df["Pure"]].groupby(keys, as_index=False)["Value"].sum()
+    out = pd.concat([pure_df, cross_df], ignore_index=True)[cols]
+    return out, {ax: concepts[p] for ax, p in best.items()}
+
+
 def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
     """
-    Parse a single iXBRL HTML file and return segmented revenue & op income.
-    Returns (DataFrame, revenue_concept_used, op_income_concept_used).
+    Parse a single iXBRL HTML file and return segmented revenue & profit.
+
+    Returns (DataFrame, revenue_concept_used, profit_concept_used). The
+    DataFrame has Segment, AxisType, PeriodStart, PeriodEnd, Days, Revenue,
+    OpIncome; ``df.attrs['profit_by_axis']`` maps AxisType -> profit concept
+    (operating income, or gross profit where that is all the filer reports).
     """
     html = ix_path.read_text(encoding="utf-8", errors="ignore")
     soup = BeautifulSoup(html, "xml")
 
     contexts = _parse_contexts_ixbrl(soup)
 
-    def collect(concepts: List[str]) -> Tuple[pd.DataFrame, str | None]:
-        rows = []
-        used = None
-        for cname in concepts:
-            facts = soup.find_all("nonFraction", attrs={"name": cname})
-            if not facts:
-                continue
-            used = cname  # first concept that yields facts
-            for fact in facts:
-                ctx_id = fact.get("contextRef")
-                if not ctx_id or ctx_id not in contexts:
-                    continue
-                ctx = contexts[ctx_id]
-                dims = ctx["dims"] or {}
-                if not any(_SEGMENT_DIM_RE.search(d) for d in dims.keys()):
-                    continue
+    rev_df, rev_by_axis = _collect_segment_facts(soup, contexts, REV_TAGS)
+    op_df, op_by_axis = _collect_segment_facts(soup, contexts, PROFIT_TAGS)
 
-                segment_label = None
-                axis_type = None
-                for dim_qn, mem_qn in dims.items():
-                    if _SEGMENT_DIM_RE.search(dim_qn) and mem_qn:
-                        segment_label = mem_qn.split(":")[-1]
-                        axis_type = dim_qn.split(":")[-1]
-                        break
-                if not segment_label:
-                    continue
+    def _first_used(tags: List[str], by_axis: Dict[str, str]) -> str:
+        used = set(by_axis.values())
+        return next((t for t in tags if t in used), "")
 
-                val = _scale_and_sign(
-                    fact.text,
-                    fact.get("decimals"),
-                    fact.get("scale"),
-                    fact.get("sign"),
-                )
-                if val is None:
-                    continue
+    rev_used = _first_used(REV_TAGS, rev_by_axis)
+    op_used = _first_used(PROFIT_TAGS, op_by_axis)
 
-                rows.append({
-                    "Segment": segment_label,
-                    "AxisType": axis_type,
-                    "PeriodEnd": ctx["period_end"],
-                    "Value": val,
-                })
-
-            if rows:
-                break  # stop at first concept that produced usable facts
-
-        df = pd.DataFrame(rows)
-        if not df.empty:
-            df = df[df["PeriodEnd"].notna()]
-        return df, used
-
-    rev_df, rev_used = collect(REV_TAGS)
-    op_df, op_used = collect(OPINC_TAGS)
-
-    if rev_df.empty and op_df.empty:
-        return pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"]), rev_used, op_used
-
-    # sum by segment + axis + period
-    rev_g = (
-        rev_df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)["Value"].sum()
-        if not rev_df.empty
-        else pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Value"])
-    )
-    rev_g.rename(columns={"Value": "Revenue"}, inplace=True)
-
-    op_g = (
-        op_df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)["Value"].sum()
-        if not op_df.empty
-        else pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Value"])
-    )
-    op_g.rename(columns={"Value": "OpIncome"}, inplace=True)
-
-    df = pd.merge(rev_g, op_g, on=["Segment", "AxisType", "PeriodEnd"], how="outer")
-    df = df.sort_values(["PeriodEnd", "AxisType", "Segment"]).reset_index(drop=True)
-    return df, (rev_used or ""), (op_used or "")
+    keys = ["Segment", "AxisType", "PeriodStart", "PeriodEnd"]
+    rev_df = rev_df.rename(columns={"Value": "Revenue"})
+    op_df = op_df.rename(columns={"Value": "OpIncome"})
+    if rev_df.empty or op_df.empty:
+        # merging an empty (object-dtype) frame on datetime keys raises
+        df = pd.concat([rev_df, op_df], ignore_index=True)
+    else:
+        df = pd.merge(rev_df, op_df, on=keys, how="outer")
+    for col in ("Revenue", "OpIncome"):
+        if col not in df.columns:
+            df[col] = float("nan")
+    if df.empty:
+        df = pd.DataFrame(columns=keys + ["Days", "Revenue", "OpIncome"])
+    else:
+        for col in ("PeriodStart", "PeriodEnd"):  # concat with an empty frame leaves object dtype
+            df[col] = pd.to_datetime(df[col])
+        df["Days"] = (df["PeriodEnd"] - df["PeriodStart"]).dt.days + 1
+        df = df.sort_values(["PeriodEnd", "AxisType", "Segment"]).reset_index(drop=True)
+    df.attrs["profit_by_axis"] = op_by_axis
+    return df, rev_used, op_used
 
 
 def collect_all_segment_facts(ix_path: Path) -> pd.DataFrame:
@@ -389,7 +444,7 @@ def collect_all_segment_facts(ix_path: Path) -> pd.DataFrame:
 
     contexts = _parse_contexts_ixbrl(soup)
     rows = []
-    for cname in REV_TAGS + OPINC_TAGS:
+    for cname in REV_TAGS + PROFIT_TAGS:
         facts = soup.find_all("nonFraction", attrs={"name": cname})
         for fact in facts:
             ctx_id = fact.get("contextRef")
@@ -425,48 +480,60 @@ def collect_all_segment_facts(ix_path: Path) -> pd.DataFrame:
 # TTM and public API
 # ──────────────────────────────────────────────────────────────────────────────
 
+def _is_fy(days: pd.Series) -> pd.Series:
+    return days.between(*_FY_DAYS)
+
+
 def compute_segment_ttm(fy_df: pd.DataFrame, q_df: pd.DataFrame) -> pd.DataFrame:
     """
-    TTM ≈ sum of the most recent four quarters per segment.
+    TTM per segment = latest fiscal year + current year-to-date − prior-year
+    year-to-date (the same-length period one year earlier).
 
-    We combine quarterly rows from both the latest 10-Q and the most recent
-    10-K, then pick the trailing four periods per segment/axis. This ensures
-    the latest fiscal Q4 (which comes from the 10-K) is included once a
-    company has filed its annual report.
+    10-Qs report both the quarter and the year-to-date ending on the same
+    date, so periods are matched by start/end rather than summed by end date.
+    If no 10-Q period is newer than the latest fiscal year, TTM = that year.
     """
-    if fy_df.empty and q_df.empty:
-        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
+    cols = ["Segment", "AxisType", "Year", "Revenue", "OpIncome"]
+    facts = pd.concat([d for d in (q_df, fy_df) if not d.empty], ignore_index=True) \
+        if not (fy_df.empty and q_df.empty) else pd.DataFrame()
+    if facts.empty:
+        return pd.DataFrame(columns=cols)
+    facts = facts.drop_duplicates(subset=["Segment", "AxisType", "PeriodStart", "PeriodEnd"])
 
-    quarters = pd.concat([q_df, fy_df], ignore_index=True)
-    if quarters.empty:
-        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
-
-    quarters = quarters.dropna(subset=["PeriodEnd"])
-    if quarters.empty:
-        return pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
-
-    quarters = (
-        quarters.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]]
-        .sum()
-    )
-
+    tol = pd.Timedelta(days=7)
     rows = []
-    for (seg, axis), g in quarters.groupby(["Segment", "AxisType"]):
-        g = g.sort_values("PeriodEnd")
-        if len(g) < 4:
+    for (seg, axis), g in facts.groupby(["Segment", "AxisType"]):
+        fy = g[_is_fy(g["Days"])]
+        if fy.empty:
             continue
-        latest_four = g.tail(4)
-        rows.append(
-            {
-                "Segment": seg,
-                "AxisType": axis,
-                "Year": "TTM",
-                "Revenue": latest_four["Revenue"].sum(),
-                "OpIncome": latest_four["OpIncome"].sum(),
-            }
-        )
+        fy_last = fy.loc[fy["PeriodEnd"].idxmax()]
+        later = g[(g["PeriodEnd"] > fy_last["PeriodEnd"]) & ~_is_fy(g["Days"])]
+        if later.empty:
+            rows.append({"Segment": seg, "AxisType": axis, "Year": "TTM",
+                         "Revenue": fy_last["Revenue"], "OpIncome": fy_last["OpIncome"]})
+            continue
 
-    return pd.DataFrame(rows, columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
+        cur_end = later["PeriodEnd"].max()
+        cur = later[later["PeriodEnd"] == cur_end]
+        cur = cur.loc[cur["Days"].idxmax()]  # year-to-date, not just the quarter
+        if abs(cur["PeriodStart"] - (fy_last["PeriodEnd"] + pd.Timedelta(days=1))) > tol:
+            continue  # YTD doesn't start where the fiscal year ended
+        prior = g[
+            ((g["PeriodEnd"] - (cur_end - pd.DateOffset(years=1))).abs() <= tol)
+            & ((g["Days"] - cur["Days"]).abs() <= 7)
+        ]
+        if prior.empty:
+            continue
+        prior = prior.iloc[0]
+
+        def _ttm(col):
+            vals = (fy_last[col], cur[col], prior[col])
+            return pd.NA if any(pd.isna(v) for v in vals) else vals[0] + vals[1] - vals[2]
+
+        rows.append({"Segment": seg, "AxisType": axis, "Year": "TTM",
+                     "Revenue": _ttm("Revenue"), "OpIncome": _ttm("OpIncome")})
+
+    return pd.DataFrame(rows, columns=cols)
 
 
 def get_segment_data(
@@ -502,11 +569,12 @@ def get_segment_data(
     rev_used = ""
     op_used = ""
     raw_facts: List[pd.DataFrame] = []
+    profit_by_axis: Dict[str, str] = {}
 
     # Download iXBRL HTMLs and parse
     with pd.option_context("display.width", 200):
-        k_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"])
-        q_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodEnd", "Revenue", "OpIncome"])
+        k_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodStart", "PeriodEnd", "Days", "Revenue", "OpIncome"])
+        q_df = pd.DataFrame(columns=["Segment", "AxisType", "PeriodStart", "PeriodEnd", "Days", "Revenue", "OpIncome"])
 
         if ten_k:
             url_k = build_filing_url(cik, ten_k["accession"], ten_k["document"])
@@ -517,6 +585,8 @@ def get_segment_data(
                 rev_used = rev_used or k_rev_used
                 op_used = op_used or k_op_used
                 k_df = k_raw
+                for ax, c in k_raw.attrs.get("profit_by_axis", {}).items():
+                    profit_by_axis.setdefault(ax, c)
             if dump_raw:
                 raw_facts.append(collect_all_segment_facts(k_path))
 
@@ -529,6 +599,8 @@ def get_segment_data(
                 rev_used = rev_used or q_rev_used
                 op_used = op_used or q_op_used
                 q_df = q_raw
+                for ax, c in q_raw.attrs.get("profit_by_axis", {}).items():
+                    profit_by_axis.setdefault(ax, c)
             if dump_raw:
                 raw_facts.append(collect_all_segment_facts(q_path))
 
@@ -560,55 +632,33 @@ def get_segment_data(
 
     # bail out gracefully if nothing
     if k_df.empty and q_df.empty:
-        df = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType"])
+        df = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType", "ProfitConcept"])
         df.attrs["revenue_concept"] = rev_used
         df.attrs["op_income_concept"] = op_used
         return df
 
-    # Add "Year" from PeriodEnd (keep copies with PeriodEnd for TTM calc)
-    def _with_year(df: pd.DataFrame) -> pd.DataFrame:
+    # Fiscal-year rows: full-year periods from the 10-K (else the 10-Q)
+    def _fy_rows(df: pd.DataFrame) -> pd.DataFrame:
         if df.empty:
             return df
-        d = df.copy()
+        d = df[_is_fy(df["Days"])].copy()
         d["Year"] = d["PeriodEnd"].dt.year
         return d
 
-    k_y = _with_year(k_df)
-    q_y = _with_year(q_df)
-
-    # Aggregate by Segment, PeriodEnd into totals (already aggregated, but ensure)
-    def _roll(df: pd.DataFrame) -> pd.DataFrame:
-        if df.empty:
-            return df
-        grp = df.groupby(["Segment", "AxisType", "PeriodEnd"], as_index=False)[["Revenue", "OpIncome"]]
-        try:
-            g = grp.sum(min_count=1)
-        except TypeError:
-            # Older pandas may not support min_count on GroupBy.sum
-            g = grp.sum()
-        g["Year"] = g["PeriodEnd"].dt.year
-        return g
-
-    k_roll = _roll(k_y)
-    q_roll = _roll(q_y)
-
-    # Keep last 3 fiscal-year ends from 10-K side (if present), else from 10-Q
-    source_for_years = k_roll if not k_roll.empty else q_roll
+    source_for_years = _fy_rows(k_df)
+    if source_for_years.empty:
+        source_for_years = _fy_rows(q_df)
     years = sorted(source_for_years["Year"].unique())[-3:] if not source_for_years.empty else []
     fy = source_for_years[source_for_years["Year"].isin(years)][["Segment", "AxisType", "Year", "Revenue", "OpIncome"]].copy()
 
-    # Compute TTM if we have both annual + quarterly dates
-    ttm = (
-        compute_segment_ttm(k_df if not k_df.empty else q_df, q_df)
-        if not q_df.empty
-        else pd.DataFrame(columns=["Segment", "AxisType", "Year", "Revenue", "OpIncome"])
-    )
+    ttm = compute_segment_ttm(k_df, q_df)
 
-    out = pd.concat([fy, ttm], ignore_index=True)
+    out = pd.concat([d for d in (fy, ttm) if not d.empty], ignore_index=True) \
+        if not (fy.empty and ttm.empty) else pd.DataFrame()
     if out.empty:
         out = pd.DataFrame(columns=["Segment", "Year", "Revenue", "OpIncome", "AxisType"])
     else:
-        # Sum duplicates (same Segment-Year-Axis)
+        # One row per Segment-Year-Axis
         grp = out.groupby(["Segment", "AxisType", "Year"], as_index=False)[["Revenue", "OpIncome"]]
         try:
             out = grp.sum(min_count=1)
@@ -636,6 +686,8 @@ def get_segment_data(
         out = apply_segment_overrides(out, ticker, ov)
     except Exception:
         pass  # fail-open: do not break runs due to overrides
+
+    out["ProfitConcept"] = out["AxisType"].map(profit_by_axis).fillna("")
 
     return out
 

@@ -64,5 +64,12 @@
     "member_regex": [],
     "prefer_axes": ["Products / Services", "Business Segments"],
     "fail_open": true
+  },
+
+  "TSLA": {
+    "prefer_axes": ["StatementBusinessSegmentsAxis", "ProductOrServiceAxis"],
+    "exclude_members_by_axis": {
+      "ProductOrServiceAxis": ["Automotive Revenues", "Energy Generation And Storage", "Sales And Services"]
+    }
   }
 }
