@@ -1,13 +1,20 @@
                     Concept  PeriodEnd                                                                                                                                     Dims        Value
+           us-gaap:Revenues 2026-06-30                                                                                                                                          8.703200e+10
            us-gaap:Revenues 2025-06-30                                                                                                                                          8.428400e+10
            us-gaap:Revenues 2024-06-30                                                                                                                                          8.403900e+10
-           us-gaap:Revenues 2023-06-30                                                                                                                                          8.200600e+10
-           us-gaap:Revenues 2025-06-30                                     srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; srt:StatementGeographicalAxis:country:US 4.160000e+10
-           us-gaap:Revenues 2024-06-30                                     srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; srt:StatementGeographicalAxis:country:US 4.050000e+10
-           us-gaap:Revenues 2023-06-30                                     srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; srt:StatementGeographicalAxis:country:US 3.870000e+10
-           us-gaap:Revenues 2025-06-30                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.270000e+10
-           us-gaap:Revenues 2024-06-30                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.350000e+10
-           us-gaap:Revenues 2023-06-30                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.330000e+10
+           us-gaap:Revenues 2026-06-30                                     srt:StatementGeographicalAxis:country:US; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.170000e+10
+           us-gaap:Revenues 2025-06-30                                     srt:StatementGeographicalAxis:country:US; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.160000e+10
+           us-gaap:Revenues 2024-06-30                                     srt:StatementGeographicalAxis:country:US; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.050000e+10
+           us-gaap:Revenues 2026-06-30                            srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.530000e+10
+           us-gaap:Revenues 2025-06-30                            srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.270000e+10
+           us-gaap:Revenues 2024-06-30                            srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.350000e+10
+           us-gaap:Revenues 2026-06-30                 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember 1.602300e+10
+           us-gaap:Revenues 2026-06-30               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember 6.918000e+09
+           us-gaap:Revenues 2026-06-30             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember 1.245600e+10
+           us-gaap:Revenues 2026-06-30         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember 3.031400e+10
+           us-gaap:Revenues 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember 2.040100e+10
+           us-gaap:Revenues 2026-06-30                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 9.190000e+08
+           us-gaap:Revenues 2026-06-30                                                                                                                                          8.703200e+10
            us-gaap:Revenues 2025-06-30                 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember 1.496400e+10
            us-gaap:Revenues 2025-06-30               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember 6.662000e+09
            us-gaap:Revenues 2025-06-30             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember 1.199800e+10
@@ -22,49 +29,24 @@
            us-gaap:Revenues 2024-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember 2.027700e+10
            us-gaap:Revenues 2024-06-30                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 6.010000e+08
            us-gaap:Revenues 2024-06-30                                                                                                                                          8.403900e+10
-           us-gaap:Revenues 2023-06-30                 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember 1.500800e+10
-           us-gaap:Revenues 2023-06-30               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember 6.419000e+09
-           us-gaap:Revenues 2023-06-30             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember 1.122600e+10
-           us-gaap:Revenues 2023-06-30         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember 2.837100e+10
-           us-gaap:Revenues 2023-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember 2.021700e+10
-           us-gaap:Revenues 2023-06-30                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 7.650000e+08
-           us-gaap:Revenues 2023-06-30                                                                                                                                          8.200600e+10
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                                          1.974800e+10
 us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                                          2.045100e+10
 us-gaap:OperatingIncomeLoss 2024-06-30                                                                                                                                          1.854500e+10
-us-gaap:OperatingIncomeLoss 2023-06-30                                                                                                                                          1.813400e+10
-           us-gaap:Revenues 2026-03-31                                                                                                                                          2.123500e+10
-           us-gaap:Revenues 2025-03-31                                                                                                                                          1.977600e+10
-           us-gaap:Revenues 2026-03-31                                                                                                                                          6.582800e+10
-           us-gaap:Revenues 2025-03-31                                                                                                                                          6.339500e+10
-           us-gaap:Revenues 2026-03-31                 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember 3.866000e+09
-           us-gaap:Revenues 2026-03-31               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember 1.608000e+09
-           us-gaap:Revenues 2026-03-31             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember 3.073000e+09
-           us-gaap:Revenues 2026-03-31         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember 7.403000e+09
-           us-gaap:Revenues 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember 5.058000e+09
-           us-gaap:Revenues 2026-03-31                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 2.250000e+08
-           us-gaap:Revenues 2026-03-31                                                                                                                                          2.123500e+10
-           us-gaap:Revenues 2025-03-31                 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember 3.490000e+09
-           us-gaap:Revenues 2025-03-31               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember 1.505000e+09
-           us-gaap:Revenues 2025-03-31             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember 2.880000e+09
-           us-gaap:Revenues 2025-03-31         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember 6.948000e+09
-           us-gaap:Revenues 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember 4.755000e+09
-           us-gaap:Revenues 2025-03-31                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 1.980000e+08
-           us-gaap:Revenues 2025-03-31                                                                                                                                          1.977600e+10
-           us-gaap:Revenues 2026-03-31                 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember 1.204800e+10
-           us-gaap:Revenues 2026-03-31               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember 5.219000e+09
-           us-gaap:Revenues 2026-03-31             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember 9.699000e+09
-           us-gaap:Revenues 2026-03-31         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember 2.288200e+10
-           us-gaap:Revenues 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember 1.535200e+10
-           us-gaap:Revenues 2026-03-31                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 6.270000e+08
-           us-gaap:Revenues 2026-03-31                                                                                                                                          6.582800e+10
-           us-gaap:Revenues 2025-03-31                 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember 1.123100e+10
-           us-gaap:Revenues 2025-03-31               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember 4.980000e+09
-           us-gaap:Revenues 2025-03-31             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember 9.277000e+09
-           us-gaap:Revenues 2025-03-31         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember 2.223300e+10
-           us-gaap:Revenues 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember 1.515500e+10
-           us-gaap:Revenues 2025-03-31                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 5.200000e+08
-           us-gaap:Revenues 2025-03-31                                                                                                                                          6.339500e+10
-us-gaap:OperatingIncomeLoss 2026-03-31                                                                                                                                          4.576000e+09
-us-gaap:OperatingIncomeLoss 2025-03-31                                                                                                                                          4.558000e+09
-us-gaap:OperatingIncomeLoss 2026-03-31                                                                                                                                          1.579800e+10
-us-gaap:OperatingIncomeLoss 2025-03-31                                                                                                                                          1.609600e+10
+           us-gaap:Revenues 2026-09-30                                                                                                                                          2.327600e+10
+           us-gaap:Revenues 2025-09-30                                                                                                                                          2.238600e+10
+           us-gaap:Revenues 2026-09-30                 us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.410000e+09
+           us-gaap:Revenues 2026-09-30               us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.889000e+09
+           us-gaap:Revenues 2026-09-30             us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.318000e+09
+           us-gaap:Revenues 2026-09-30         us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 8.204000e+09
+           us-gaap:Revenues 2026-09-30 us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 5.322000e+09
+           us-gaap:Revenues 2026-09-30                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 1.320000e+08
+           us-gaap:Revenues 2026-09-30                                                                                                                                          2.327600e+10
+           us-gaap:Revenues 2025-09-30                 us-gaap:StatementBusinessSegmentsAxis:pg:BeautySegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.143000e+09
+           us-gaap:Revenues 2025-09-30               us-gaap:StatementBusinessSegmentsAxis:pg:GroomingSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.817000e+09
+           us-gaap:Revenues 2025-09-30             us-gaap:StatementBusinessSegmentsAxis:pg:HealthCareSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.220000e+09
+           us-gaap:Revenues 2025-09-30         us-gaap:StatementBusinessSegmentsAxis:pg:FabricHomeCareSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 7.870000e+09
+           us-gaap:Revenues 2025-09-30 us-gaap:StatementBusinessSegmentsAxis:pg:BabyFeminineFamilyCareSegmentMember; srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 5.171000e+09
+           us-gaap:Revenues 2025-09-30                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 1.650000e+08
+           us-gaap:Revenues 2025-09-30                                                                                                                                          2.238600e+10
+us-gaap:OperatingIncomeLoss 2026-09-30                                                                                                                                          5.937000e+09
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                                          5.856000e+09

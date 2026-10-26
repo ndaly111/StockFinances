@@ -16,6 +16,7 @@ https://nicksstockfinancials.com/aapl_mockup.html within one refresh cycle.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import sys
 from pathlib import Path
 
@@ -73,6 +74,15 @@ def _load_company_facts() -> dict:
         _COMPANY_FACTS = r.json().get("facts", {}) if r.status_code == 200 else {}
     except Exception:
         _COMPANY_FACTS = {}
+    if not _COMPANY_FACTS.get("us-gaap"):
+        # Pre-IPO (data/pre_ipo.json): the S-1 has no XBRL financials, so use the
+        # facts s1_seed.py froze from it until the first 10-Q reaches companyfacts.
+        global _ANNUAL_FORMS
+        seed = OUT_FILE.parent / "data" / f"s1_seed_{TICKER}.json"
+        if seed.is_file():
+            _COMPANY_FACTS = json.loads(seed.read_text(encoding="utf-8")).get("facts", {})
+            _ANNUAL_FORMS = _ANNUAL_FORMS + ("S-1",)
+            print(f"[{TICKER}] using S-1 seed {seed.name}")
     return _COMPANY_FACTS
 
 
@@ -1399,7 +1409,120 @@ def main() -> int:
         )
 
     else:
-        segments_html = ''
+        # ------------- Segment Performance (segment pipeline) ---------------
+        # charts/{TICKER}/segments.json is written by generate_segment_charts.py
+        # from the company's 10-K/10-Q XBRL. Up to two breakdowns (axes) fill
+        # the page's two segment slots; no file -> no section.
+        import json as _json
+        # The weekly refresh regenerates it but deploys only to the live site, so
+        # use whichever of the repo copy and the live copy is newer.
+        seg_docs = []
+        try:
+            seg_docs.append(_json.loads(
+                (OUT_FILE.parent / "charts" / TICKER / "segments.json").read_text(encoding="utf-8")))
+        except Exception:
+            pass
+        try:
+            r = requests.get(f"https://nicksstockfinancials.com/charts/{TICKER}/segments.json", timeout=10)
+            if r.ok:
+                seg_docs.append(r.json())
+        except Exception:
+            pass
+        seg_doc = max(seg_docs, key=lambda d: d.get("generated_at", ""), default={})
+        seg_axes = seg_doc.get("axes", [])[:2]
+
+        axis_titles = {
+            "StatementBusinessSegmentsAxis": "Business Segment",
+            "ProductOrServiceAxis": "Product / Service",
+            "StatementGeographicalAxis": "Geography",
+        }
+        palette = ["#1f77b4", "#2ca02c", "#ff7f0e", "#9467bd", "#17becf",
+                   "#d62728", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
+        div_ids = ["aapl-segments-prod-chart", "aapl-segments-geo-chart"]
+
+        def _axis_title(axis):
+            if axis in axis_titles:
+                return axis_titles[axis]
+            name = axis[:-4] if axis.endswith("Axis") else axis
+            return "".join(" " + c if c.isupper() and i else c for i, c in enumerate(name)).strip()
+
+        def _fmt_b(v):
+            return "–" if v is None else f"${v / 1e9:,.1f}B"
+
+        def _pipeline_axis_html(ax, div_id):
+            segs = [s for s in ax["segments"]
+                    if any(v is not None for v in s["revenue"].values())]
+            fy_years = [y for y in ax["years"] if y != "TTM"]
+            bar_years = fy_years + (["TTM"] if "TTM" in ax["years"] else [])
+            if not segs or not fy_years:
+                return ""
+            title = _axis_title(ax["axis"])
+            colors = [palette[i % len(palette)] for i in range(len(segs))]
+            fig = go.Figure()
+            for s, color in zip(segs, colors):
+                vals = [None if s["revenue"].get(y) is None else s["revenue"][y] / 1e9
+                        for y in bar_years]
+                fig.add_trace(go.Bar(
+                    x=bar_years, y=vals, name=s["name"], marker_color=color,
+                    hovertemplate=f"<b>%{{x}}</b><br>{s['name']}: $%{{y:,.1f}}B<extra></extra>",
+                ))
+            fig.update_layout(
+                title=dict(text=f"Revenue by {title} ($B)", x=0.5, xanchor="center",
+                           y=0.98, yanchor="top", font=dict(size=14)),
+                height=320, margin=dict(l=10, r=10, t=30, b=10),
+                barmode="stack", bargap=0.18,
+                plot_bgcolor="white", paper_bgcolor="white",
+                showlegend=False, dragmode=False, hovermode="closest",
+            )
+            fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=11))
+            fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc")
+            chart = fig.to_html(include_plotlyjs=False, full_html=False, config={
+                "displayModeBar": False, "responsive": True, "scrollZoom": False,
+                "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
+            }, div_id=div_id)
+
+            legend = '<div class="seg-strip">' + "".join(
+                f'<span class="seg-key"><span class="seg-dot" style="background:{c}"></span>{s["name"]}</span>'
+                for s, c in zip(segs, colors)
+            ) + '</div>'
+
+            # Mix table on the latest period (TTM when available)
+            col = "TTM" if "TTM" in ax["years"] else fy_years[-1]
+            col_label = "TTM" if col == "TTM" else f"FY{col}"
+            profit_label = ax.get("profit_label")
+            total = sum(s["revenue"].get(col) or 0.0 for s in segs)
+            profit_abbr = {"Gross Profit": "GP", "Operating Income": "OI"}.get(profit_label, profit_label)
+            head = (f'<th>{title}</th><th>{col_label} Rev</th>'
+                    + (f'<th>{col_label} {profit_abbr}</th>' if profit_label else '')
+                    + '<th>Mix</th>')
+            rows = ""
+            for s in sorted(segs, key=lambda s: -(s["revenue"].get(col) or 0.0)):
+                rev = s["revenue"].get(col)
+                pct = f"{rev / total * 100:.1f}%" if rev is not None and total else "–"
+                rows += (f'<tr><td class="year">{s["name"]}</td><td>{_fmt_b(rev)}</td>'
+                         + (f'<td>{_fmt_b(s["profit"].get(col))}</td>' if profit_label else '')
+                         + f'<td><span class="delta">{pct}</span></td></tr>')
+            table = (f'<table class="ft" style="margin-top:10px;font-size:12px">'
+                     f'<thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>')
+            return legend + chart + '<div style="overflow-x:auto">' + table + '</div>'
+
+        parts = [h for h in (_pipeline_axis_html(ax, div_ids[i]) for i, ax in enumerate(seg_axes)) if h]
+        if parts:
+            profit_labels = {ax.get("profit_label") for ax in seg_axes if ax.get("profit_label")}
+            metric = "revenue" + (" and " + " / ".join(sorted(p.lower() for p in profit_labels))
+                                  if profit_labels else "")
+            segments_html = (
+                '<div class="data-table"><h2>Segment Performance</h2>'
+                + '<div class="seg-divider"></div>'.join(parts)
+                + f'<p class="m-footnote">Segment {metric} from '
+                + ('the S-1 prospectus ' if seg_doc.get("version") == "S-1 seed"
+                   else 'SEC 10-K/10-Q XBRL filings ')
+                +                 '(GP = gross profit, OI = operating income, Mix = share of revenue). '
+                'TTM = latest fiscal year plus the year-to-date change.</p>'
+                + '</div>'
+            )
+        else:
+            segments_html = ''
 
     # =============== Balance Sheet ==========================================
     bs_assets   = fetch_concept("Assets")

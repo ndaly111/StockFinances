@@ -1,0 +1,39 @@
+{
+ "ticker": "LRCX",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:51:35+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2024",
+    "2025",
+    "2026",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "System",
+     "revenue": {
+      "2024": 8921643000.0,
+      "2025": 11491280000.0,
+      "2026": 14885488000.0,
+      "TTM": 17070830000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Customer Supportand Other",
+     "revenue": {
+      "2024": 5983743000.0,
+      "2025": 6944311000.0,
+      "2026": 8347202000.0,
+      "TTM": 9057105000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

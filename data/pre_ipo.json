@@ -1,0 +1,14 @@
+{
+  "_notes": [
+    "Companies with a public S-1 but no listing yet. gen_ticker_json.py builds their page from",
+    "data/s1_seed_{TICKER}.json (written by s1_seed.py) until EDGAR companyfacts has their 10-Q data.",
+    "Once the stock trades: add it to tickers.csv and delete its entry here."
+  ],
+  "ANT": {
+    "name": "Anthropic, PBC",
+    "cik": "0002130357",
+    "filed": "2026-10-26",
+    "accession": "0001628280-26-067168",
+    "s1_url": "https://www.sec.gov/Archives/edgar/data/2130357/000162828026067168/anthropicpbc-sx1.htm"
+  }
+}

@@ -1,0 +1,151 @@
+{
+ "ticker": "SCHW",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:57:18+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Asset Management And Administration Service",
+     "revenue": {
+      "2023": 4756000000.0,
+      "2024": 5716000000.0,
+      "2025": 6506000000.0,
+      "TTM": 6990000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Trading Revenue Service",
+     "revenue": {
+      "2023": 3230000000.0,
+      "2024": 3264000000.0,
+      "2025": 3921000000.0,
+      "TTM": 4365000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Investment Performance",
+     "revenue": {
+      "2023": 2563000000.0,
+      "2024": 3221000000.0,
+      "2025": 3665000000.0,
+      "TTM": 3900000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Investment Advice",
+     "revenue": {
+      "2023": 1868000000.0,
+      "2024": 2129000000.0,
+      "2025": 2440000000.0,
+      "TTM": 2663000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Order Flow Revenue",
+     "revenue": {
+      "2023": 1404000000.0,
+      "2024": 1477000000.0,
+      "2025": 1930000000.0,
+      "TTM": 2205000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Commissions",
+     "revenue": {
+      "2023": 1601000000.0,
+      "2024": 1591000000.0,
+      "2025": 1797000000.0,
+      "TTM": 1952000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Bank Deposit Account Fees",
+     "revenue": {
+      "2023": 705000000.0,
+      "2024": 729000000.0,
+      "2025": 977000000.0,
+      "TTM": 1113000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other",
+     "revenue": {
+      "2023": 719000000.0,
+      "2024": 753000000.0,
+      "2025": 767000000.0,
+      "TTM": 834000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Financial Service Other",
+     "revenue": {
+      "2023": 325000000.0,
+      "2024": 366000000.0,
+      "2025": 401000000.0,
+      "TTM": 427000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Principal Transactions",
+     "revenue": {
+      "2023": 225000000.0,
+      "2024": 196000000.0,
+      "2025": 194000000.0,
+      "TTM": 208000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Investor Services",
+     "revenue": {
+      "2023": 14650000000.0,
+      "2024": 15558000000.0,
+      "2025": 18999000000.0,
+      "TTM": 20524000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Advisor Services",
+     "revenue": {
+      "2023": 4187000000.0,
+      "2024": 4048000000.0,
+      "2025": 4922000000.0,
+      "TTM": 5501000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

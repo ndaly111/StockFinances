@@ -1,0 +1,59 @@
+{
+ "ticker": "AXP",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:35:56+00:00",
+ "axes": [
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "U S Consumer Services",
+     "revenue": {
+      "2023": 13715000000.0,
+      "2024": 14481000000.0,
+      "2025": 15626000000.0,
+      "TTM": 16834000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Commercial Services",
+     "revenue": {
+      "2023": 11379000000.0,
+      "2024": 11559000000.0,
+      "2025": 11856000000.0,
+      "TTM": 12201000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "International Card Services",
+     "revenue": {
+      "2023": 6155000000.0,
+      "2024": 6766000000.0,
+      "2025": 7544000000.0,
+      "TTM": 8151000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Global Merchant And Network Services",
+     "revenue": {
+      "2023": 6006000000.0,
+      "2024": 6051000000.0,
+      "2025": 6306000000.0,
+      "TTM": 6749000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

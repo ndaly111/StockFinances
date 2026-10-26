@@ -1,0 +1,181 @@
+{
+ "ticker": "BRK-B",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:37:23+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Other Retail And Wholesale Distribution",
+     "revenue": {
+      "2023": 70775000000.0,
+      "2024": 64858000000.0,
+      "2025": 60598000000.0,
+      "TTM": 67790000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Service",
+     "revenue": {
+      "2023": 36053000000.0,
+      "2024": 35941000000.0,
+      "2025": 36879000000.0,
+      "TTM": 38756000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Manufactured Industrial And Commercial Products",
+     "revenue": {
+      "2023": 28299000000.0,
+      "2024": 29117000000.0,
+      "2025": 30336000000.0,
+      "TTM": 34206000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Grocery And Convenience Store Distribution",
+     "revenue": {
+      "2023": 31524000000.0,
+      "2024": 31841000000.0,
+      "2025": 30697000000.0,
+      "TTM": 29233000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Electricity And Natural Gas",
+     "revenue": {
+      "2023": 20647000000.0,
+      "2024": 20991000000.0,
+      "2025": 21338000000.0,
+      "TTM": 21937000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Manufactured Building Products",
+     "revenue": {
+      "2023": 20119000000.0,
+      "2024": 19892000000.0,
+      "2025": 19609000000.0,
+      "TTM": 19821000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Food And Beverage",
+     "revenue": {
+      "2023": 19040000000.0,
+      "2024": 18068000000.0,
+      "2025": 18585000000.0,
+      "TTM": 19149000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Consumer Products",
+     "revenue": {
+      "2023": 17702000000.0,
+      "2024": 18204000000.0,
+      "2025": 17919000000.0,
+      "TTM": 17682000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Auto Sales",
+     "revenue": {
+      "2023": 10747000000.0,
+      "2024": 10802000000.0,
+      "2025": 11283000000.0,
+      "TTM": 11159000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Manufacturing Businesses",
+     "revenue": {
+      "2023": 70633000000.0,
+      "2024": 71963000000.0,
+      "2025": 72830000000.0,
+      "TTM": 77149000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Mc Lane Company",
+     "revenue": {
+      "2023": 51643000000.0,
+      "2024": 50908000000.0,
+      "2025": 50179000000.0,
+      "TTM": 49393000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Pilot Travel Centers L L C",
+     "revenue": {
+      "2023": 51461000000.0,
+      "2024": 46707000000.0,
+      "2025": 41877000000.0,
+      "TTM": 47684000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Service And Retailing Businesses",
+     "revenue": {
+      "2023": 32743000000.0,
+      "2024": 31808000000.0,
+      "2025": 33751000000.0,
+      "TTM": 35193000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Berkshire Hathaway Energy Company",
+     "revenue": {
+      "2023": 24702000000.0,
+      "2024": 25050000000.0,
+      "2025": 25351000000.0,
+      "TTM": 25959000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Burlington Northern Santa Fe Corporation",
+     "revenue": {
+      "2023": 23724000000.0,
+      "2024": 23278000000.0,
+      "2025": 23256000000.0,
+      "TTM": 24355000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

@@ -1,70 +1,90 @@
-                                                    Concept  PeriodEnd                                                                                                                        Dims         Value
-                                           us-gaap:Revenues 2025-12-31                                                                                                                              8.522500e+10
-                                           us-gaap:Revenues 2024-12-31                                                                                                                              8.072200e+10
-                                           us-gaap:Revenues 2023-12-31                                                                                                                              7.806600e+10
-                                           us-gaap:Revenues 2025-12-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  2.125600e+10
-                                           us-gaap:Revenues 2024-12-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  1.961800e+10
-                                           us-gaap:Revenues 2023-12-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  1.806200e+10
-                                           us-gaap:Revenues 2025-12-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  2.197000e+10
-                                           us-gaap:Revenues 2024-12-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  1.983600e+10
-                                           us-gaap:Revenues 2023-12-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  1.864900e+10
-                                           us-gaap:Revenues 2025-12-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  8.215000e+09
-                                           us-gaap:Revenues 2024-12-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  6.201000e+09
-                                           us-gaap:Revenues 2023-12-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  4.715000e+09
-                                           us-gaap:Revenues 2025-12-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  8.559000e+09
-                                           us-gaap:Revenues 2024-12-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  7.483000e+09
-                                           us-gaap:Revenues 2023-12-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  6.997000e+09
-                                           us-gaap:Revenues 2025-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  2.097100e+10
-                                           us-gaap:Revenues 2024-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  2.005500e+10
-                                           us-gaap:Revenues 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  1.890000e+10
-                                           us-gaap:Revenues 2025-12-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  4.430000e+09
-                                           us-gaap:Revenues 2024-12-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  7.503000e+09
-                                           us-gaap:Revenues 2023-12-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  9.397000e+09
-                                           us-gaap:Revenues 2025-12-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember -1.760000e+08
-                                           us-gaap:Revenues 2024-12-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  2.600000e+07
-                                           us-gaap:Revenues 2023-12-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.346000e+09
-                                           us-gaap:Revenues 2025-12-31                                                                                                                              8.522500e+10
-                                           us-gaap:Revenues 2024-12-31                                                                                                                              8.072200e+10
-                                           us-gaap:Revenues 2023-12-31                                                                                                                              7.806600e+10
-                                           us-gaap:Revenues 2025-12-31                                                                        srt:StatementGeographicalAxis:srt:NorthAmericaMember  4.401200e+10
-                                           us-gaap:Revenues 2024-12-31                                                                        srt:StatementGeographicalAxis:srt:NorthAmericaMember  3.974800e+10
-                                           us-gaap:Revenues 2023-12-31                                                                        srt:StatementGeographicalAxis:srt:NorthAmericaMember  3.640200e+10
-                                           us-gaap:Revenues 2025-12-31                                                                         srt:StatementGeographicalAxis:c:InternationalMember  4.229500e+10
-                                           us-gaap:Revenues 2024-12-31                                                                         srt:StatementGeographicalAxis:c:InternationalMember  4.030600e+10
-                                           us-gaap:Revenues 2023-12-31                                                                         srt:StatementGeographicalAxis:c:InternationalMember  3.954900e+10
-                                           us-gaap:Revenues 2025-12-31                                                         srt:StatementGeographicalAxis:c:CorporateAndOtherGeographicalMember -1.082000e+09
-                                           us-gaap:Revenues 2024-12-31                                                         srt:StatementGeographicalAxis:c:CorporateAndOtherGeographicalMember  6.680000e+08
-                                           us-gaap:Revenues 2023-12-31                                                         srt:StatementGeographicalAxis:c:CorporateAndOtherGeographicalMember  2.115000e+09
-                                           us-gaap:Revenues 2025-12-31                                                                                                                              8.522500e+10
-                                           us-gaap:Revenues 2024-12-31                                                                                                                              8.072200e+10
-                                           us-gaap:Revenues 2023-12-31                                                                                                                              7.806600e+10
-                                           us-gaap:Revenues 2025-12-31                                                                                    srt:StatementGeographicalAxis:country:GB  7.600000e+09
-                                           us-gaap:Revenues 2024-12-31                                                                                    srt:StatementGeographicalAxis:country:GB  6.700000e+09
-                                           us-gaap:Revenues 2023-12-31                                                                                    srt:StatementGeographicalAxis:country:GB  6.900000e+09
-                                           us-gaap:Revenues 2025-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  1.468200e+10
-                                           us-gaap:Revenues 2025-12-31       srt:ConsolidationItemsAxis:srt:ReportableLegalEntitiesMember; srt:ConsolidatedEntitiesAxis:srt:SubsidiaryIssuerMember  1.317100e+10
-                                           us-gaap:Revenues 2025-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  1.468200e+10
-                                           us-gaap:Revenues 2024-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  2.890000e+09
-                                           us-gaap:Revenues 2023-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  1.407900e+10
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                         srt:ProductOrServiceAxis:c:CommissionsAndFeesMember  2.816000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                         srt:ProductOrServiceAxis:c:CommissionsAndFeesMember  2.751000e+09
-                                           us-gaap:Revenues 2026-03-31                                                                                                                              2.463300e+10
-                                           us-gaap:Revenues 2025-03-31                                                                                                                              2.159600e+10
-                                           us-gaap:Revenues 2026-03-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  6.103000e+09
-                                           us-gaap:Revenues 2025-03-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  5.204000e+09
-                                           us-gaap:Revenues 2026-03-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  7.246000e+09
-                                           us-gaap:Revenues 2025-03-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  6.075000e+09
-                                           us-gaap:Revenues 2026-03-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  1.767000e+09
-                                           us-gaap:Revenues 2025-03-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  1.530000e+09
-                                           us-gaap:Revenues 2026-03-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  3.065000e+09
-                                           us-gaap:Revenues 2025-03-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  2.757000e+09
-                                           us-gaap:Revenues 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  4.757000e+09
-                                           us-gaap:Revenues 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  4.567000e+09
-                                           us-gaap:Revenues 2026-03-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  1.682000e+09
-                                           us-gaap:Revenues 2025-03-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  1.463000e+09
-                                           us-gaap:Revenues 2026-03-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.300000e+07
-                                           us-gaap:Revenues 2026-03-31                                                                                                                              2.463300e+10
-                                           us-gaap:Revenues 2025-03-31                                                                                                                              2.159600e+10
-                                           us-gaap:Revenues 2026-03-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.300000e+07
-                                           us-gaap:Revenues 2026-03-31          srt:ConsolidationItemsAxis:srt:ReportableLegalEntitiesMember; srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  1.054400e+10
-                                           us-gaap:Revenues 2026-03-31       srt:ConsolidationItemsAxis:srt:ReportableLegalEntitiesMember; srt:ConsolidatedEntitiesAxis:srt:SubsidiaryIssuerMember  3.807000e+09
+         Concept  PeriodEnd                                                                                                                        Dims         Value
+us-gaap:Revenues 2025-12-31                                                                                                                              8.522500e+10
+us-gaap:Revenues 2024-12-31                                                                                                                              8.072200e+10
+us-gaap:Revenues 2023-12-31                                                                                                                              7.806600e+10
+us-gaap:Revenues 2025-12-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  2.125600e+10
+us-gaap:Revenues 2024-12-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  1.961800e+10
+us-gaap:Revenues 2023-12-31          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  1.806200e+10
+us-gaap:Revenues 2025-12-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  2.197000e+10
+us-gaap:Revenues 2024-12-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  1.983600e+10
+us-gaap:Revenues 2023-12-31           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  1.864900e+10
+us-gaap:Revenues 2025-12-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  8.215000e+09
+us-gaap:Revenues 2024-12-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  6.201000e+09
+us-gaap:Revenues 2023-12-31    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  4.715000e+09
+us-gaap:Revenues 2025-12-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  8.559000e+09
+us-gaap:Revenues 2024-12-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  7.483000e+09
+us-gaap:Revenues 2023-12-31            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  6.997000e+09
+us-gaap:Revenues 2025-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  2.097100e+10
+us-gaap:Revenues 2024-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  2.005500e+10
+us-gaap:Revenues 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  1.890000e+10
+us-gaap:Revenues 2025-12-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  4.430000e+09
+us-gaap:Revenues 2024-12-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  7.503000e+09
+us-gaap:Revenues 2023-12-31                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  9.397000e+09
+us-gaap:Revenues 2025-12-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember -1.760000e+08
+us-gaap:Revenues 2024-12-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  2.600000e+07
+us-gaap:Revenues 2023-12-31                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.346000e+09
+us-gaap:Revenues 2025-12-31                                                                                                                              8.522500e+10
+us-gaap:Revenues 2024-12-31                                                                                                                              8.072200e+10
+us-gaap:Revenues 2023-12-31                                                                                                                              7.806600e+10
+us-gaap:Revenues 2025-12-31                                                                        srt:StatementGeographicalAxis:srt:NorthAmericaMember  4.401200e+10
+us-gaap:Revenues 2024-12-31                                                                        srt:StatementGeographicalAxis:srt:NorthAmericaMember  3.974800e+10
+us-gaap:Revenues 2023-12-31                                                                        srt:StatementGeographicalAxis:srt:NorthAmericaMember  3.640200e+10
+us-gaap:Revenues 2025-12-31                                                                         srt:StatementGeographicalAxis:c:InternationalMember  4.229500e+10
+us-gaap:Revenues 2024-12-31                                                                         srt:StatementGeographicalAxis:c:InternationalMember  4.030600e+10
+us-gaap:Revenues 2023-12-31                                                                         srt:StatementGeographicalAxis:c:InternationalMember  3.954900e+10
+us-gaap:Revenues 2025-12-31                                                         srt:StatementGeographicalAxis:c:CorporateAndOtherGeographicalMember -1.082000e+09
+us-gaap:Revenues 2024-12-31                                                         srt:StatementGeographicalAxis:c:CorporateAndOtherGeographicalMember  6.680000e+08
+us-gaap:Revenues 2023-12-31                                                         srt:StatementGeographicalAxis:c:CorporateAndOtherGeographicalMember  2.115000e+09
+us-gaap:Revenues 2025-12-31                                                                                                                              8.522500e+10
+us-gaap:Revenues 2024-12-31                                                                                                                              8.072200e+10
+us-gaap:Revenues 2023-12-31                                                                                                                              7.806600e+10
+us-gaap:Revenues 2025-12-31                                                                                    srt:StatementGeographicalAxis:country:GB  7.600000e+09
+us-gaap:Revenues 2024-12-31                                                                                    srt:StatementGeographicalAxis:country:GB  6.700000e+09
+us-gaap:Revenues 2023-12-31                                                                                    srt:StatementGeographicalAxis:country:GB  6.900000e+09
+us-gaap:Revenues 2025-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  1.468200e+10
+us-gaap:Revenues 2025-12-31       srt:ConsolidationItemsAxis:srt:ReportableLegalEntitiesMember; srt:ConsolidatedEntitiesAxis:srt:SubsidiaryIssuerMember  1.317100e+10
+us-gaap:Revenues 2025-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  1.468200e+10
+us-gaap:Revenues 2024-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  2.890000e+09
+us-gaap:Revenues 2023-12-31                                                                        srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember  1.407900e+10
+us-gaap:Revenues 2026-06-30                                                                                                                              2.476600e+10
+us-gaap:Revenues 2025-06-30                                                                                                                              2.166800e+10
+us-gaap:Revenues 2026-06-30                                                                                                                              4.939900e+10
+us-gaap:Revenues 2025-06-30                                                                                                                              4.326400e+10
+us-gaap:Revenues 2026-06-30          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  6.382000e+09
+us-gaap:Revenues 2025-06-30          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  5.430000e+09
+us-gaap:Revenues 2026-06-30           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  7.007000e+09
+us-gaap:Revenues 2025-06-30           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  5.980000e+09
+us-gaap:Revenues 2026-06-30    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  1.922000e+09
+us-gaap:Revenues 2025-06-30    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  1.434000e+09
+us-gaap:Revenues 2026-06-30            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  3.177000e+09
+us-gaap:Revenues 2025-06-30            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  2.814000e+09
+us-gaap:Revenues 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  4.521000e+09
+us-gaap:Revenues 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  4.471000e+09
+us-gaap:Revenues 2026-06-30                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  1.737000e+09
+us-gaap:Revenues 2025-06-30                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  1.716000e+09
+us-gaap:Revenues 2026-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  2.000000e+07
+us-gaap:Revenues 2025-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember -1.770000e+08
+us-gaap:Revenues 2026-06-30                                                                                                                              2.476600e+10
+us-gaap:Revenues 2025-06-30                                                                                                                              2.166800e+10
+us-gaap:Revenues 2026-06-30          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  1.248500e+10
+us-gaap:Revenues 2025-06-30          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:ServicesMember  1.063400e+10
+us-gaap:Revenues 2026-06-30           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  1.425300e+10
+us-gaap:Revenues 2025-06-30           srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:MarketsMember  1.205500e+10
+us-gaap:Revenues 2026-06-30    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  3.689000e+09
+us-gaap:Revenues 2025-06-30    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:BankingSegmentMember  2.964000e+09
+us-gaap:Revenues 2026-06-30            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  6.242000e+09
+us-gaap:Revenues 2025-06-30            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:WealthMember  5.571000e+09
+us-gaap:Revenues 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  9.278000e+09
+us-gaap:Revenues 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:c:USPersonalBankingMember  9.038000e+09
+us-gaap:Revenues 2026-06-30                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  3.419000e+09
+us-gaap:Revenues 2025-06-30                                                                srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  3.179000e+09
+us-gaap:Revenues 2026-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  3.300000e+07
+us-gaap:Revenues 2025-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember -1.770000e+08
+us-gaap:Revenues 2026-06-30                                                                                                                              4.939900e+10
+us-gaap:Revenues 2025-06-30                                                                                                                              4.326400e+10
+us-gaap:Revenues 2026-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  2.000000e+07
+us-gaap:Revenues 2025-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember -1.770000e+08
+us-gaap:Revenues 2026-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  3.300000e+07
+us-gaap:Revenues 2025-06-30                                                           srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember -1.770000e+08
+us-gaap:Revenues 2026-06-30          srt:ConsolidatedEntitiesAxis:srt:ParentCompanyMember; srt:ConsolidationItemsAxis:srt:ReportableLegalEntitiesMember  1.520000e+10
+us-gaap:Revenues 2026-06-30       srt:ConsolidatedEntitiesAxis:srt:SubsidiaryIssuerMember; srt:ConsolidationItemsAxis:srt:ReportableLegalEntitiesMember  7.810000e+09

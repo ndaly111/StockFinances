@@ -1,0 +1,33 @@
+{
+ "ticker": "DJT",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:41:56+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Subscription",
+     "revenue": {
+      "2025": 257300.0,
+      "TTM": 257300.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Advertising",
+     "revenue": {
+      "2025": 3425300.0,
+      "TTM": null
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

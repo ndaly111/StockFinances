@@ -1,0 +1,39 @@
+{
+ "ticker": "PYPL",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:56:11+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Transaction Revenue",
+     "revenue": {
+      "2023": 26857000000.0,
+      "2024": 28842000000.0,
+      "2025": 29798000000.0,
+      "TTM": 29798000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Revenues From Other Value Added Services",
+     "revenue": {
+      "2023": 2914000000.0,
+      "2024": 2955000000.0,
+      "2025": 3374000000.0,
+      "TTM": 3454000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

@@ -98,59 +98,125 @@ us-gaap:OperatingIncomeLoss 2023-12-31    srt:ConsolidationItemsAxis:us-gaap:Ope
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.502800e+10
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember -3.717000e+09
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                                    1.131100e+10
-           us-gaap:Revenues 2026-04-03                                                                                                                                    1.247200e+10
-           us-gaap:Revenues 2025-03-28                                                                                                                                    1.112900e+10
-           us-gaap:Revenues 2026-04-03                                 srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember; srt:StatementGeographicalAxis:country:US  2.188000e+09
-           us-gaap:Revenues 2026-04-03                        srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember  5.197000e+09
-           us-gaap:Revenues 2026-04-03                                                                           srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  7.385000e+09
-           us-gaap:Revenues 2026-04-03                             srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember; srt:StatementGeographicalAxis:country:US  2.557000e+09
-           us-gaap:Revenues 2026-04-03                    srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember  2.530000e+09
-           us-gaap:Revenues 2026-04-03                                                                       srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  5.087000e+09
-           us-gaap:Revenues 2026-04-03                                                                                          srt:StatementGeographicalAxis:country:US  4.745000e+09
-           us-gaap:Revenues 2026-04-03                                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  7.727000e+09
-           us-gaap:Revenues 2026-04-03                                                                                                                                    1.247200e+10
-           us-gaap:Revenues 2025-03-28                                 srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember; srt:StatementGeographicalAxis:country:US  1.975000e+09
-           us-gaap:Revenues 2025-03-28                        srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember  4.619000e+09
-           us-gaap:Revenues 2025-03-28                                                                           srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  6.594000e+09
-           us-gaap:Revenues 2025-03-28                             srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember; srt:StatementGeographicalAxis:country:US  2.278000e+09
-           us-gaap:Revenues 2025-03-28                    srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember  2.257000e+09
-           us-gaap:Revenues 2025-03-28                                                                       srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  4.535000e+09
-           us-gaap:Revenues 2025-03-28                                                                                          srt:StatementGeographicalAxis:country:US  4.253000e+09
-           us-gaap:Revenues 2025-03-28                                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  6.876000e+09
-           us-gaap:Revenues 2025-03-28                                                                                                                                    1.112900e+10
-           us-gaap:Revenues 2026-04-03 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  3.012000e+09
-           us-gaap:Revenues 2026-04-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  1.678000e+09
-           us-gaap:Revenues 2026-04-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  4.893000e+09
-           us-gaap:Revenues 2026-04-03              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  1.508000e+09
-           us-gaap:Revenues 2026-04-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  1.640000e+09
-           us-gaap:Revenues 2026-04-03                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.273100e+10
-           us-gaap:Revenues 2026-04-03                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  3.200000e+07
-           us-gaap:Revenues 2026-04-03                                                                    srt:ConsolidationItemsAxis:srt:ConsolidationEliminationsMember -2.910000e+08
-           us-gaap:Revenues 2026-04-03                                                                                                                                    1.247200e+10
-           us-gaap:Revenues 2025-03-28 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  2.657000e+09
-           us-gaap:Revenues 2025-03-28    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  1.477000e+09
-           us-gaap:Revenues 2025-03-28    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  4.361000e+09
-           us-gaap:Revenues 2025-03-28              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  1.421000e+09
-           us-gaap:Revenues 2025-03-28    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  1.463000e+09
-           us-gaap:Revenues 2025-03-28                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.137900e+10
-           us-gaap:Revenues 2025-03-28                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  2.600000e+07
-           us-gaap:Revenues 2025-03-28                                                                    srt:ConsolidationItemsAxis:srt:ConsolidationEliminationsMember -2.760000e+08
-           us-gaap:Revenues 2025-03-28                                                                                                                                    1.112900e+10
-us-gaap:OperatingIncomeLoss 2026-04-03                                                                                                                                    4.359000e+09
-us-gaap:OperatingIncomeLoss 2025-03-28                                                                                                                                    3.659000e+09
-us-gaap:OperatingIncomeLoss 2026-04-03 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  1.259000e+09
-us-gaap:OperatingIncomeLoss 2026-04-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  1.038000e+09
-us-gaap:OperatingIncomeLoss 2026-04-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  1.606000e+09
-us-gaap:OperatingIncomeLoss 2026-04-03              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  5.360000e+08
-us-gaap:OperatingIncomeLoss 2026-04-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  1.910000e+08
-us-gaap:OperatingIncomeLoss 2026-04-03                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  4.630000e+09
-us-gaap:OperatingIncomeLoss 2026-04-03                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember -2.710000e+08
-us-gaap:OperatingIncomeLoss 2026-04-03                                                                                                                                    4.359000e+09
-us-gaap:OperatingIncomeLoss 2025-03-28 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  1.065000e+09
-us-gaap:OperatingIncomeLoss 2025-03-28    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  9.040000e+08
-us-gaap:OperatingIncomeLoss 2025-03-28    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  1.341000e+09
-us-gaap:OperatingIncomeLoss 2025-03-28              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  6.240000e+08
-us-gaap:OperatingIncomeLoss 2025-03-28    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  1.190000e+08
-us-gaap:OperatingIncomeLoss 2025-03-28                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  4.053000e+09
-us-gaap:OperatingIncomeLoss 2025-03-28                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember -3.940000e+08
-us-gaap:OperatingIncomeLoss 2025-03-28                                                                                                                                    3.659000e+09
+        us-gaap:GrossProfit 2025-12-31                                                                                                                                    2.954400e+10
+        us-gaap:GrossProfit 2024-12-31                                                                                                                                    2.873700e+10
+        us-gaap:GrossProfit 2023-12-31                                                                                                                                    2.723400e+10
+        us-gaap:GrossProfit 2025-12-31        us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeOtherMember  4.217800e+10
+        us-gaap:GrossProfit 2024-12-31        us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeOtherMember  4.051600e+10
+        us-gaap:GrossProfit 2023-12-31        us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeOtherMember  3.808200e+10
+           us-gaap:Revenues 2026-07-03                                                                                                                                    1.338000e+10
+           us-gaap:Revenues 2025-06-27                                                                                                                                    1.253500e+10
+           us-gaap:Revenues 2026-07-03                                                                                                                                    2.585200e+10
+           us-gaap:Revenues 2025-06-27                                                                                                                                    2.366400e+10
+           us-gaap:Revenues 2026-07-03                                 srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  2.426000e+09
+           us-gaap:Revenues 2026-07-03                        srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  5.720000e+09
+           us-gaap:Revenues 2026-07-03                                                                           srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  8.146000e+09
+           us-gaap:Revenues 2026-07-03                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  2.834000e+09
+           us-gaap:Revenues 2026-07-03                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  2.400000e+09
+           us-gaap:Revenues 2026-07-03                                                                       srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  5.234000e+09
+           us-gaap:Revenues 2026-07-03                                                                                          srt:StatementGeographicalAxis:country:US  5.260000e+09
+           us-gaap:Revenues 2026-07-03                                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  8.120000e+09
+           us-gaap:Revenues 2026-07-03                                                                                                                                    1.338000e+10
+           us-gaap:Revenues 2025-06-27                                 srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  2.322000e+09
+           us-gaap:Revenues 2025-06-27                        srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  5.296000e+09
+           us-gaap:Revenues 2025-06-27                                                                           srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  7.618000e+09
+           us-gaap:Revenues 2025-06-27                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  2.613000e+09
+           us-gaap:Revenues 2025-06-27                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  2.304000e+09
+           us-gaap:Revenues 2025-06-27                                                                       srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  4.917000e+09
+           us-gaap:Revenues 2025-06-27                                                                                          srt:StatementGeographicalAxis:country:US  4.935000e+09
+           us-gaap:Revenues 2025-06-27                                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  7.600000e+09
+           us-gaap:Revenues 2025-06-27                                                                                                                                    1.253500e+10
+           us-gaap:Revenues 2026-07-03                                 srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  4.614000e+09
+           us-gaap:Revenues 2026-07-03                        srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  1.091700e+10
+           us-gaap:Revenues 2026-07-03                                                                           srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  1.553100e+10
+           us-gaap:Revenues 2026-07-03                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  5.391000e+09
+           us-gaap:Revenues 2026-07-03                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  4.930000e+09
+           us-gaap:Revenues 2026-07-03                                                                       srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  1.032100e+10
+           us-gaap:Revenues 2026-07-03                                                                                          srt:StatementGeographicalAxis:country:US  1.000500e+10
+           us-gaap:Revenues 2026-07-03                                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  1.584700e+10
+           us-gaap:Revenues 2026-07-03                                                                                                                                    2.585200e+10
+           us-gaap:Revenues 2025-06-27                                 srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  4.297000e+09
+           us-gaap:Revenues 2025-06-27                        srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  9.915000e+09
+           us-gaap:Revenues 2025-06-27                                                                           srt:ProductOrServiceAxis:ko:ConcentrateOperationsMember  1.421200e+10
+           us-gaap:Revenues 2025-06-27                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  4.891000e+09
+           us-gaap:Revenues 2025-06-27                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  4.561000e+09
+           us-gaap:Revenues 2025-06-27                                                                       srt:ProductOrServiceAxis:ko:FinishedProductOperationsMember  9.452000e+09
+           us-gaap:Revenues 2025-06-27                                                                                          srt:StatementGeographicalAxis:country:US  9.188000e+09
+           us-gaap:Revenues 2025-06-27                                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember  1.447600e+10
+           us-gaap:Revenues 2025-06-27                                                                                                                                    2.366400e+10
+           us-gaap:Revenues 2026-07-03 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  3.240000e+09
+           us-gaap:Revenues 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  1.839000e+09
+           us-gaap:Revenues 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  5.408000e+09
+           us-gaap:Revenues 2026-07-03              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  1.581000e+09
+           us-gaap:Revenues 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  1.527000e+09
+           us-gaap:Revenues 2026-07-03                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.359500e+10
+           us-gaap:Revenues 2026-07-03                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  3.700000e+07
+           us-gaap:Revenues 2026-07-03                                                                    srt:ConsolidationItemsAxis:srt:ConsolidationEliminationsMember -2.520000e+08
+           us-gaap:Revenues 2026-07-03                                                                                                                                    1.338000e+10
+           us-gaap:Revenues 2025-06-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  3.176000e+09
+           us-gaap:Revenues 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  1.587000e+09
+           us-gaap:Revenues 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  5.029000e+09
+           us-gaap:Revenues 2025-06-27              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  1.572000e+09
+           us-gaap:Revenues 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  1.411000e+09
+           us-gaap:Revenues 2025-06-27                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  1.277500e+10
+           us-gaap:Revenues 2025-06-27                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  3.900000e+07
+           us-gaap:Revenues 2025-06-27                                                                    srt:ConsolidationItemsAxis:srt:ConsolidationEliminationsMember -2.790000e+08
+           us-gaap:Revenues 2025-06-27                                                                                                                                    1.253500e+10
+           us-gaap:Revenues 2026-07-03 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  6.252000e+09
+           us-gaap:Revenues 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  3.517000e+09
+           us-gaap:Revenues 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  1.030100e+10
+           us-gaap:Revenues 2026-07-03              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  3.089000e+09
+           us-gaap:Revenues 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  3.167000e+09
+           us-gaap:Revenues 2026-07-03                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  2.632600e+10
+           us-gaap:Revenues 2026-07-03                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  6.900000e+07
+           us-gaap:Revenues 2026-07-03                                                                    srt:ConsolidationItemsAxis:srt:ConsolidationEliminationsMember -5.430000e+08
+           us-gaap:Revenues 2026-07-03                                                                                                                                    2.585200e+10
+           us-gaap:Revenues 2025-06-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  5.833000e+09
+           us-gaap:Revenues 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  3.064000e+09
+           us-gaap:Revenues 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  9.390000e+09
+           us-gaap:Revenues 2025-06-27              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  2.993000e+09
+           us-gaap:Revenues 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  2.874000e+09
+           us-gaap:Revenues 2025-06-27                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  2.415400e+10
+           us-gaap:Revenues 2025-06-27                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember  6.500000e+07
+           us-gaap:Revenues 2025-06-27                                                                    srt:ConsolidationItemsAxis:srt:ConsolidationEliminationsMember -5.550000e+08
+           us-gaap:Revenues 2025-06-27                                                                                                                                    2.366400e+10
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                                                                                    4.672000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                                                                                    4.280000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                                                                                    9.031000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                                                                                    7.939000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  1.309000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  1.177000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  1.695000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  6.560000e+08
+us-gaap:OperatingIncomeLoss 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  9.100000e+07
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  4.928000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember -2.560000e+08
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                                                                                    4.672000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  1.325000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  9.570000e+08
+us-gaap:OperatingIncomeLoss 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  1.621000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  6.470000e+08
+us-gaap:OperatingIncomeLoss 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  5.900000e+07
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  4.609000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember -3.290000e+08
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                                                                                    4.280000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  2.568000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  2.215000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  3.301000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  1.192000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  2.820000e+08
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  9.558000e+09
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember -5.270000e+08
+us-gaap:OperatingIncomeLoss 2026-07-03                                                                                                                                    9.031000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:EuropeMiddleEastAfricaMember  2.390000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:LatinAmericaSegmentMember  1.861000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:NorthAmericaSegmentMember  2.962000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27              srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:A.PacificMember  1.271000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27    srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:ko:BottlingInvestmentsMember  1.780000e+08
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                 srt:ConsolidationItemsAxis:us-gaap:MaterialReconcilingItemsMember  8.662000e+09
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                      srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember -7.230000e+08
+us-gaap:OperatingIncomeLoss 2025-06-27                                                                                                                                    7.939000e+09
+        us-gaap:GrossProfit 2026-07-03                                                                                                                                    8.415000e+09
+        us-gaap:GrossProfit 2025-06-27                                                                                                                                    7.821000e+09
+        us-gaap:GrossProfit 2026-07-03                                                                                                                                    1.626700e+10
+        us-gaap:GrossProfit 2025-06-27                                                                                                                                    1.478700e+10

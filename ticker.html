@@ -684,6 +684,23 @@ fetch('ticker_data/' + ticker + '.json', {cache: 'no-cache'})
       if(card) card.style.display = '';
     });
 
+    // Charts drawn while their card was still hidden sized to Plotly's
+    // default width; re-fit them now that the cards are visible.
+    Object.keys(figs).forEach(function(divId){
+      var el = document.getElementById(divId);
+      if(el && el.data) { try { Plotly.Plots.resize(el); } catch(e){} }
+    });
+
+    // Tickers with a single segment breakdown leave the second slot empty
+    if(figs['chart-segments-prod'] && !figs['chart-segments-geo']){
+      var geo = document.getElementById('chart-segments-geo');
+      if(geo){
+        geo.style.display = 'none';
+        var div = geo.parentNode.querySelector('.seg-divider');
+        if(div) div.style.display = 'none';
+      }
+    }
+
     // Force-show cards that only have tables (no chart)
     ['fwdest_table','balance_table','valuation_table','impliedgrowth_table','epsdiv_footnote']
       .forEach(function(k){

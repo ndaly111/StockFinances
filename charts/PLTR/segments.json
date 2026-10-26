@@ -1,0 +1,39 @@
+{
+ "ticker": "PLTR",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:55:59+00:00",
+ "axes": [
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Government Operating",
+     "revenue": {
+      "2023": 1222215000.0,
+      "2024": 1569605000.0,
+      "2025": 2402287000.0,
+      "TTM": 3210783000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Commercial",
+     "revenue": {
+      "2023": 1002797000.0,
+      "2024": 1295902000.0,
+      "2025": 2073159000.0,
+      "TTM": 2073159000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

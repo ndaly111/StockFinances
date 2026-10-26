@@ -1,0 +1,71 @@
+{
+ "ticker": "ANT",
+ "version": "S-1 seed",
+ "generated_at": "2026-10-26T18:54:41+00:00",
+ "axes": [
+  {
+   "axis": "RevenueTypeAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Consumption-based",
+     "revenue": {
+      "2023": 39000000.0,
+      "2024": 288000000.0,
+      "2025": 3796000000.0,
+      "TTM": 15877000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Subscription-based",
+     "revenue": {
+      "2023": 2000000.0,
+      "2024": 98000000.0,
+      "2025": 789000000.0,
+      "TTM": 3831000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementGeographicalAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "United States",
+     "revenue": {
+      "2023": 34000000.0,
+      "2024": 263000000.0,
+      "2025": 3362000000.0,
+      "TTM": 14305000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "International",
+     "revenue": {
+      "2023": 7000000.0,
+      "2024": 123000000.0,
+      "2025": 1223000000.0,
+      "TTM": 5403000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

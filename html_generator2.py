@@ -2,7 +2,7 @@
 # html_generator2.py – retro fix: economic data + segment carousel/table + dividend
 # ----------------------------------------------------------------
 from jinja2 import Environment, FileSystemLoader, Template
-import os, sqlite3, pandas as pd, yfinance as yf
+import json, os, sqlite3, pandas as pd, yfinance as yf
 
 from utils.news import fetch_company_headlines
 
@@ -193,6 +193,12 @@ td{padding:4px;border:1px solid #8080FF}
       <a href="ticker.html?t={{t}}" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}
     {% endfor %}
   </nav>
+  {% if pre_ipo %}
+  <p style="text-align:center;margin:6px 0;">
+    Pre-IPO (S-1 filed):
+    {% for t, m in pre_ipo %}<a href="ticker.html?t={{t}}" class="button">{{m.name}} ({{t}})</a>{% if not loop.last %} | {% endif %}{% endfor %}
+  </p>
+  {% endif %}
 
   <header><h1>Financial Overview</h1></header>
 
@@ -556,8 +562,14 @@ def create_home_page(
     news_box_html="",
 ):
     tpl = env.get_template("home_template.html")
+    try:  # pre-IPO pages (scripts/gen_ticker_json.py builds them from data/pre_ipo.json)
+        with open(os.path.join("data", "pre_ipo.json"), encoding="utf-8") as f:
+            pre_ipo = [(k, v) for k, v in json.load(f).items() if not k.startswith("_")]
+    except Exception:
+        pre_ipo = []
     rendered = tpl.render(
         tickers=tickers,
+        pre_ipo=pre_ipo,
         dashboard_table=dashboard_html,
         dashboard_data=avg_vals,
         spy_qqq_growth=spy_qqq_html,

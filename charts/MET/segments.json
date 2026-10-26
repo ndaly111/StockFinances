@@ -1,0 +1,181 @@
+{
+ "ticker": "MET",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:52:51+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Prepaidlegalplansandadministrativeonlycontracts",
+     "revenue": {
+      "2023": 516000000.0,
+      "2024": 572000000.0,
+      "2025": 637000000.0,
+      "TTM": 670000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Vision Fee For Service Arrangements",
+     "revenue": {
+      "2023": 598000000.0,
+      "2024": 536000000.0,
+      "2025": 561000000.0,
+      "TTM": 577000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Feebasedinvestmentmanagementservices",
+     "revenue": {
+      "2023": 316000000.0,
+      "2024": 301000000.0,
+      "2025": 369000000.0,
+      "TTM": 569000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Otherrevenuefromservicecontractsfromcustomers",
+     "revenue": {
+      "2023": 390000000.0,
+      "2024": 412000000.0,
+      "2025": 432000000.0,
+      "TTM": 411000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Administrative Service",
+     "revenue": {
+      "2023": 259000000.0,
+      "2024": 273000000.0,
+      "2025": 295000000.0,
+      "TTM": 311000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Distribution Service",
+     "revenue": {
+      "2023": 150000000.0,
+      "2024": 151000000.0,
+      "2025": 142000000.0,
+      "TTM": 141000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": "Operating Income",
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Asia",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 1282000000.0,
+      "2024": 1621000000.0,
+      "2025": 1702000000.0,
+      "TTM": 1891000000.0
+     }
+    },
+    {
+     "name": "E M E A",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 265000000.0,
+      "2024": 283000000.0,
+      "2025": 367000000.0,
+      "TTM": 402000000.0
+     }
+    },
+    {
+     "name": "Group Benefits",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 1655000000.0,
+      "2024": 1606000000.0,
+      "2025": 1692000000.0,
+      "TTM": 1863000000.0
+     }
+    },
+    {
+     "name": "Latin America",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 840000000.0,
+      "2024": 881000000.0,
+      "2025": 798000000.0,
+      "TTM": 843000000.0
+     }
+    },
+    {
+     "name": "Met Life Investment Management",
+     "revenue": {
+      "2023": 92000000.0,
+      "2024": 93000000.0,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 70000000.0,
+      "2024": 55000000.0,
+      "2025": 200000000.0,
+      "TTM": 222000000.0
+     }
+    },
+    {
+     "name": "Retirement And Income Solutions",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 1708000000.0,
+      "2024": 1667000000.0,
+      "2025": 1671000000.0,
+      "TTM": 1723000000.0
+     }
+    }
+   ]
+  }
+ ]
+}

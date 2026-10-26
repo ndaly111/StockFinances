@@ -1,0 +1,91 @@
+{
+ "ticker": "MPC",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:53:12+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Refined Products",
+     "revenue": {
+      "2023": 135978000000.0,
+      "2024": 126170000000.0,
+      "2025": 121325000000.0,
+      "TTM": 141205000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Crude Oil",
+     "revenue": {
+      "2023": 7423000000.0,
+      "2024": 7298000000.0,
+      "2025": 5817000000.0,
+      "TTM": 6750000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Services And Other",
+     "revenue": {
+      "2023": 4978000000.0,
+      "2024": 5396000000.0,
+      "2025": 5557000000.0,
+      "TTM": 5622000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Refining And Marketing",
+     "revenue": {
+      "2023": 141835000000.0,
+      "2024": 131588000000.0,
+      "2025": 124252000000.0,
+      "TTM": 144592000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Midstream",
+     "revenue": {
+      "2023": 4911000000.0,
+      "2024": 5197000000.0,
+      "2025": 5628000000.0,
+      "TTM": 5604000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Renewable Diesel",
+     "revenue": {
+      "2023": 1633000000.0,
+      "2024": 2079000000.0,
+      "2025": 2814000000.0,
+      "TTM": 3376000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

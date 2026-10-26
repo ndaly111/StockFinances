@@ -1,0 +1,99 @@
+{
+ "ticker": "GTIM",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:44:43+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Restaurant Sales",
+     "revenue": {
+      "2024": 283110000.0,
+      "2025": 281228000.0,
+      "TTM": 281228000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Franchise And Other Revenues",
+     "revenue": {
+      "2024": 1650000.0,
+      "2025": 2032000.0,
+      "TTM": 2032000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": "Operating Income",
+   "years": [
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Consolidated",
+     "revenue": {
+      "2024": 142380000.0,
+      "2025": 141630000.0,
+      "TTM": 128566000.0
+     },
+     "profit": {
+      "2024": 1380000.0,
+      "2025": 330000.0,
+      "TTM": 1773000.0
+     }
+    },
+    {
+     "name": "Bad Daddys",
+     "revenue": {
+      "2024": 103906000.0,
+      "2025": 102210000.0,
+      "TTM": 91294000.0
+     },
+     "profit": {
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     }
+    },
+    {
+     "name": "Good Times",
+     "revenue": {
+      "2024": 38471000.0,
+      "2025": 39420000.0,
+      "TTM": 37272000.0
+     },
+     "profit": {
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     }
+    },
+    {
+     "name": "Corporate",
+     "revenue": {
+      "2024": 3000.0,
+      "2025": null,
+      "TTM": 3000.0
+     },
+     "profit": {
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     }
+    }
+   ]
+  }
+ ]
+}

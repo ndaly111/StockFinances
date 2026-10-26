@@ -201,6 +201,8 @@ def _cleanup_stale_axis_artifacts(out_dir: Path, ticker: str) -> None:
         f"{ticker}_*_axis2.png",
         f"{ticker}_*_axis1*.html",
         f"{ticker}_*_axis2*.html",
+        # machine-readable copy read by the ticker page (scripts/build_aapl_mockup.py)
+        "segments.json",
     ]
     for pattern in stale_patterns:
         for old_file in out_dir.glob(pattern):
@@ -396,6 +398,7 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
         used_segments.update(segs)
         axes.append((axis_type, sub[sub["Segment"].isin(segs)].copy()))
     axes = axes[:2]
+    axes_json: List[dict] = []
 
     for idx in range(1, 3):
         axis_label = f"axis{idx}"
@@ -481,6 +484,25 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
             if sort_col:
                 rev_p = rev_p.sort_values(by=sort_col, ascending=False)
                 oi_p = oi_p.reindex(index=rev_p.index)
+
+            def _num(v):
+                v = pd.to_numeric(v, errors="coerce")
+                return None if pd.isna(v) else float(v)
+
+            axes_json.append({
+                "axis": str(axes[idx - 1][0]),
+                "profit_label": op_name if oi_present else None,
+                "years": list(rev_p.columns),
+                "segments": [
+                    {
+                        "name": str(seg),
+                        "revenue": {y: _num(rev_p.at[seg, y]) for y in rev_p.columns},
+                        "profit": ({y: _num(oi_p.at[seg, y]) for y in oi_p.columns}
+                                   if oi_present else {}),
+                    }
+                    for seg in rev_p.index
+                ],
+            })
 
             # Emit a manifest of segment filenames in size-desc order so the
             # page template can render the chart stack from largest to smallest
@@ -614,6 +636,14 @@ def generate_segment_charts_for_ticker(ticker: str, out_dir: Path) -> None:
                 f"<p>No segment data available for {ticker} (axis {idx}).</p>",
                 encoding="utf-8",
             )
+
+    if axes_json:
+        (out_dir / "segments.json").write_text(
+            json.dumps({"ticker": ticker, "version": VERSION,
+                        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                        "axes": axes_json}, indent=1),
+            encoding="utf-8",
+        )
 
     # Seeded tickers: append the prospectus expense breakdown below the axis1 table.
     if seed:

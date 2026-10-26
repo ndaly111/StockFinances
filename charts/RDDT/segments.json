@@ -1,0 +1,39 @@
+{
+ "ticker": "RDDT",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:56:29+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Advertising",
+     "revenue": {
+      "2023": 788782000.0,
+      "2024": 1185456000.0,
+      "2025": 2062480000.0,
+      "TTM": 2625360000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Other Revenue",
+     "revenue": {
+      "2023": 15247000.0,
+      "2024": 114749000.0,
+      "2025": 140026000.0,
+      "TTM": 153474000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}
