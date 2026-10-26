@@ -1,7 +1,7 @@
 {
  "ticker": "DAL",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:41:29+00:00",
+ "generated_at": "2026-10-26T19:23:16+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -14,32 +14,12 @@
    ],
    "segments": [
     {
-     "name": "Passenger",
-     "revenue": {
-      "2023": 48909000000.0,
-      "2024": 50894000000.0,
-      "2025": 51768000000.0,
-      "TTM": 56359000000.0
-     },
-     "profit": {}
-    },
-    {
      "name": "Passenger Air Traffic",
      "revenue": {
       "2023": 43596000000.0,
       "2024": 45096000000.0,
       "2025": 45488000000.0,
       "TTM": 49473000000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Product And Service Other",
-     "revenue": {
-      "2023": 8416000000.0,
-      "2024": 9927000000.0,
-      "2025": 10696000000.0,
-      "TTM": 14374000000.0
      },
      "profit": {}
     },

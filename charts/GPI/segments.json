@@ -1,7 +1,7 @@
 {
  "ticker": "GPI",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:44:08+00:00",
+ "generated_at": "2026-10-26T19:25:53+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "New And Used Vehicles",
-     "revenue": {
-      "2023": 14909500000.0,
-      "2024": 16614700000.0,
-      "2025": 18792200000.0,
-      "TTM": 18420500000.0
-     },
-     "profit": {}
-    },
     {
      "name": "New Vehicles Retail",
      "revenue": {

@@ -1,7 +1,7 @@
 {
  "ticker": "ORCL",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:55:12+00:00",
+ "generated_at": "2026-10-26T19:33:04+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,26 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Cloud Revenues",
-     "revenue": {
-      "2024": 19774000000.0,
-      "2025": 24506000000.0,
-      "2026": 33989000000.0,
-      "TTM": 38410000000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Software Revenues",
-     "revenue": {
-      "2024": 24690000000.0,
-      "2025": 24724000000.0,
-      "2026": 24541000000.0,
-      "TTM": 24370000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Cloud Infrastructure",
      "revenue": {

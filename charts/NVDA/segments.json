@@ -1,7 +1,7 @@
 {
  "ticker": "NVDA",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:54:49+00:00",
+ "generated_at": "2026-10-26T19:32:41+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Data Center",
-     "revenue": {
-      "2024": 47525000000.0,
-      "2025": 115186000000.0,
-      "2026": 193737000000.0,
-      "TTM": 277798000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Compute",
      "revenue": {

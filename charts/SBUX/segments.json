@@ -1,80 +1,8 @@
 {
  "ticker": "SBUX",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:57:01+00:00",
+ "generated_at": "2026-10-26T19:34:50+00:00",
  "axes": [
-  {
-   "axis": "ProductOrServiceAxis",
-   "profit_label": null,
-   "years": [
-    "2023",
-    "2024",
-    "2025",
-    "TTM"
-   ],
-   "segments": [
-    {
-     "name": "Company Operated Stores",
-     "revenue": {
-      "2023": 29462300000.0,
-      "2024": 29765900000.0,
-      "2025": 30744800000.0,
-      "TTM": 30744800000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Beverage",
-     "revenue": {
-      "2023": 21684800000.0,
-      "2024": 21883900000.0,
-      "2025": 22539900000.0,
-      "TTM": 22863600000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Other Products",
-     "revenue": {
-      "2023": 7705700000.0,
-      "2024": 7543100000.0,
-      "2025": 7594600000.0,
-      "TTM": 8119200000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Food",
-     "revenue": {
-      "2023": 6585100000.0,
-      "2024": 6749200000.0,
-      "2025": 7049900000.0,
-      "TTM": 7355600000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Licensed Stores",
-     "revenue": {
-      "2023": 4512700000.0,
-      "2024": 4505100000.0,
-      "2025": 4350400000.0,
-      "TTM": 4350400000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Product And Service Other",
-     "revenue": {
-      "2023": 2000600000.0,
-      "2024": 1905200000.0,
-      "2025": 2089199999.9999998,
-      "TTM": 2453100000.0
-     },
-     "profit": {}
-    }
-   ]
-  },
   {
    "axis": "StatementBusinessSegmentsAxis",
    "profit_label": "Operating Income",

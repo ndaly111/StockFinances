@@ -1,7 +1,7 @@
 {
  "ticker": "TGT",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:58:05+00:00",
+ "generated_at": "2026-10-26T19:35:58+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Product",
-     "revenue": {
-      "2024": 105803000000.0,
-      "2025": 104820000000.0,
-      "2026": 102717000000.0,
-      "TTM": 105434000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Food And Beverage",
      "revenue": {

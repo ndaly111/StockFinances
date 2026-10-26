@@ -1,1 +1,1 @@
-[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":2,"AxisScore":16.0,"Examples":"Google Advertising Revenue, Google Network"},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":2,"AxisScore":10.0,"Examples":"Google Cloud, Google Services"}]
+[{"AxisType":"ProductOrServiceAxis","AxisGroup":"PRODUCT","MembersMatched":1,"AxisScore":13.0,"Examples":"Google Network"},{"AxisType":"StatementBusinessSegmentsAxis","AxisGroup":"OPERATING","MembersMatched":2,"AxisScore":10.0,"Examples":"Google Cloud, Google Services"}]

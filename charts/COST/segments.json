@@ -1,7 +1,7 @@
 {
  "ticker": "COST",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:39:35+00:00",
+ "generated_at": "2026-10-26T19:22:19+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Product",
-     "revenue": {
-      "2024": 249625000000.0,
-      "2025": 269912000000.0,
-      "2026": 297247000000.0,
-      "TTM": 297247000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Foodand Sundries",
      "revenue": {

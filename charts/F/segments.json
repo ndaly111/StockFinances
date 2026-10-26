@@ -1,7 +1,7 @@
 {
  "ticker": "F",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:42:48+00:00",
+ "generated_at": "2026-10-26T19:24:30+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "All Sales Type Products And Services",
-     "revenue": {
-      "2023": 165827000000.0,
-      "2024": 172596000000.0,
-      "2025": 173749000000.0,
-      "TTM": 174087000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Vehicles Parts And Accessories",
      "revenue": {
@@ -95,16 +85,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Company Excluding Ford Credit",
-     "revenue": {
-      "2023": 165901000000.0,
-      "2024": 172706000000.0,
-      "2025": 173996000000.0,
-      "TTM": 174341000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Ford Blue",
      "revenue": {

@@ -385,6 +385,112 @@ def _collect_segment_facts(soup: BeautifulSoup, contexts: Dict[str, dict],
     return out, {ax: concepts[p] for ax, p in best.items()}
 
 
+def _consolidated_revenue(soup: BeautifulSoup, contexts: Dict[str, dict]) -> Dict[int, float]:
+    """Company-total fiscal-year revenue {year: value} (facts with no dimensions),
+    from the first REV_TAG that has any."""
+    for cname in REV_TAGS:
+        out: Dict[int, float] = {}
+        for fact in soup.find_all("nonFraction", attrs={"name": cname}):
+            ctx = contexts.get(fact.get("contextRef"))
+            if not ctx or ctx["dims"] or ctx["period_end"] is None or ctx.get("period_start") is None:
+                continue
+            days = (ctx["period_end"] - ctx["period_start"]).days + 1
+            if not (_FY_DAYS[0] <= days <= _FY_DAYS[1]):
+                continue
+            val = _scale_and_sign(fact.text, fact.get("decimals"), fact.get("scale"), fact.get("sign"))
+            if val is not None:
+                out.setdefault(ctx["period_end"].year, val)
+        if out:
+            return out
+    return {}
+
+
+def _find_parts(target: List[float], cands: List[Tuple[str, List[float]]], tol: float = 0.005):
+    """A subset of `cands` (>=2 members) whose per-year values sum to `target`
+    in every year, or None. Depth-first with pruning; candidates sorted large-first."""
+    cands = sorted(cands, key=lambda c: -sum(c[1]))
+    n_years = len(target)
+    budget = [200_000]  # node cap: give up rather than stall on a long list
+
+    def rec(start, acc, picked):
+        budget[0] -= 1
+        if budget[0] < 0:
+            return None
+        if len(picked) >= 2 and all(abs(acc[i] - target[i]) <= tol * abs(target[i]) for i in range(n_years)):
+            return list(picked)
+        for j in range(start, len(cands)):
+            name, vals = cands[j]
+            nxt = [acc[i] + vals[i] for i in range(n_years)]
+            if any(nxt[i] > target[i] * (1 + tol) for i in range(n_years)):
+                continue
+            picked.append(name)
+            res = rec(j + 1, nxt, picked)
+            if res:
+                return res
+            picked.pop()
+        return None
+
+    return rec(0, [0.0] * n_years, [])
+
+
+def drop_rollup_members(out: pd.DataFrame, consolidated: Dict[int, float]) -> pd.DataFrame:
+    """Remove members that are subtotals of other members on the same axis
+    (TSLA "Automotive Revenues" = Sales + Credits + Leasing; GOOGL "Google
+    Advertising" = Search + YouTube + Network), which made axis totals and mix
+    percentages double count.
+
+    Only acts on an axis whose fiscal-year total exceeds the company's
+    consolidated revenue, and only removes a member that equals the sum of the
+    same set of other members in every fiscal year — so coincidental sums in
+    long product lists don't remove real products. Largest subtotal goes first,
+    repeating until the axis total is back at consolidated revenue. An axis
+    still more than 10% above consolidated revenue after that is dropped
+    (smaller excesses are normally intersegment sales)."""
+    if out.empty or not consolidated:
+        return out
+    keep = pd.Series(True, index=out.index)
+    for axis, sub in out.groupby("AxisType"):
+        fy = sub[sub["Year"] != "TTM"]
+        years = sorted({int(y) for y in fy["Year"]} & set(consolidated))
+        if not years:
+            continue
+        piv = fy.assign(Year=fy["Year"].astype(int)).pivot_table(
+            index="Segment", columns="Year", values="Revenue", aggfunc="sum")
+        piv = piv.reindex(columns=years)
+        removed: set = set()
+
+        def over() -> bool:
+            live = piv.drop(index=list(removed))
+            return any(live[y].sum(skipna=True) > consolidated[y] * 1.005 for y in years)
+
+        while over():
+            live = piv.drop(index=list(removed)).dropna()  # need every year to compare
+            best = None
+            for seg, row in live.sort_values(by=years[-1], ascending=False).iterrows():
+                target = [float(row[y]) for y in years]
+                if any(t <= 0 for t in target):
+                    continue
+                cands = [(s, [float(r[y]) for y in years]) for s, r in live.iterrows()
+                         if s != seg and all(0 < r[y] < row[y] for y in years)]
+                if len(cands) > 24:  # bound the search on very long product lists
+                    cands = sorted(cands, key=lambda c: -sum(c[1]))[:24]
+                if _find_parts(target, cands):
+                    best = seg
+                    break
+            if best is None:
+                break
+            removed.add(best)
+        live = piv.drop(index=list(removed))
+        if any(live[y].sum(skipna=True) > consolidated[y] * 1.10 for y in years):
+            # Still far above company revenue: the axis mixes parallel breakdowns
+            # (MSFT, LLY, HD...). Its totals and mix would mislead, so drop it;
+            # the business-segment axis still ties to reported revenue.
+            keep &= out["AxisType"] != axis
+        elif removed:
+            keep &= ~((out["AxisType"] == axis) & out["Segment"].isin(removed))
+    return out[keep].reset_index(drop=True)
+
+
 def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
     """
     Parse a single iXBRL HTML file and return segmented revenue & profit.
@@ -428,6 +534,7 @@ def parse_ixbrl_segments(ix_path: Path) -> Tuple[pd.DataFrame, str, str]:
         df["Days"] = (df["PeriodEnd"] - df["PeriodStart"]).dt.days + 1
         df = df.sort_values(["PeriodEnd", "AxisType", "Segment"]).reset_index(drop=True)
     df.attrs["profit_by_axis"] = op_by_axis
+    df.attrs["consolidated_revenue"] = _consolidated_revenue(soup, contexts)
     return df, rev_used, op_used
 
 
@@ -570,6 +677,7 @@ def get_segment_data(
     op_used = ""
     raw_facts: List[pd.DataFrame] = []
     profit_by_axis: Dict[str, str] = {}
+    consolidated: Dict[int, float] = {}
 
     # Download iXBRL HTMLs and parse
     with pd.option_context("display.width", 200):
@@ -587,6 +695,8 @@ def get_segment_data(
                 k_df = k_raw
                 for ax, c in k_raw.attrs.get("profit_by_axis", {}).items():
                     profit_by_axis.setdefault(ax, c)
+                for y, v in k_raw.attrs.get("consolidated_revenue", {}).items():
+                    consolidated.setdefault(y, v)
             if dump_raw:
                 raw_facts.append(collect_all_segment_facts(k_path))
 
@@ -601,6 +711,8 @@ def get_segment_data(
                 q_df = q_raw
                 for ax, c in q_raw.attrs.get("profit_by_axis", {}).items():
                     profit_by_axis.setdefault(ax, c)
+                for y, v in q_raw.attrs.get("consolidated_revenue", {}).items():
+                    consolidated.setdefault(y, v)
             if dump_raw:
                 raw_facts.append(collect_all_segment_facts(q_path))
 
@@ -675,6 +787,7 @@ def get_segment_data(
         )
 
     out = out[["Segment", "Year", "Revenue", "OpIncome", "AxisType"]]
+    out = drop_rollup_members(out, consolidated)
 
     out.attrs["revenue_concept"] = rev_used
     out.attrs["op_income_concept"] = op_used
