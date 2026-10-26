@@ -1,0 +1,39 @@
+{
+ "ticker": "MA",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:52:06+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Payment Network",
+     "revenue": {
+      "2023": 15824000000.0,
+      "2024": 17335000000.0,
+      "2025": 19476000000.0,
+      "TTM": 20498000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Value Added Services And Solutions",
+     "revenue": {
+      "2023": 9274000000.0,
+      "2024": 10832000000.0,
+      "2025": 13315000000.0,
+      "TTM": 14585000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

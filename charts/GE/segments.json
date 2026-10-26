@@ -1,0 +1,81 @@
+{
+ "ticker": "GE",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:43:06+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Service",
+     "revenue": {
+      "2023": 22641000000.0,
+      "2024": 24847000000.0,
+      "2025": 30163000000.0,
+      "TTM": 35104000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product",
+     "revenue": {
+      "2023": 9318000000.0,
+      "2024": 10274000000.0,
+      "2025": 12159000000.0,
+      "TTM": 14294000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": "Operating Income",
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Commercial Engines And Services Reportable",
+     "revenue": {
+      "2023": 23855000000.0,
+      "2024": 26881000000.0,
+      "2025": 33314000000.0,
+      "TTM": 39476000000.0
+     },
+     "profit": {
+      "2023": 5643000000.0,
+      "2024": 7055000000.0,
+      "2025": 8861000000.0,
+      "TTM": 10259000000.0
+     }
+    },
+    {
+     "name": "Defense And Propulsion Technologies Reportable",
+     "revenue": {
+      "2023": 8961000000.0,
+      "2024": 9478000000.0,
+      "2025": 10554000000.0,
+      "TTM": 11753000000.0
+     },
+     "profit": {
+      "2023": 908000000.0,
+      "2024": 1061000000.0,
+      "2025": 1296000000.0,
+      "TTM": 1456000000.0
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,91 @@
+{
+ "ticker": "CCL",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:39:00+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Cruise Passenger Ticket",
+     "revenue": {
+      "2023": 14067000000.0,
+      "2024": 16463000000.0,
+      "2025": 17419000000.0,
+      "TTM": 17878000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Cruise Onboard And Other",
+     "revenue": {
+      "2023": 7526000000.0,
+      "2024": 8558000000.0,
+      "2025": 9202000000.0,
+      "TTM": 9715000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "North America",
+     "revenue": {
+      "2023": 14588000000.0,
+      "2024": 16802000000.0,
+      "2025": 17604000000.0,
+      "TTM": 18109000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Europe",
+     "revenue": {
+      "2023": 6535000000.0,
+      "2024": 7710000000.0,
+      "2025": 8467000000.0,
+      "TTM": 8872000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Cruise",
+     "revenue": {
+      "2023": 206000000.0,
+      "2024": 255000000.0,
+      "2025": 309000000.0,
+      "TTM": 358000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Tour And Other",
+     "revenue": {
+      "2023": 265000000.0,
+      "2024": 255000000.0,
+      "2025": 241000000.0,
+      "TTM": 253000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

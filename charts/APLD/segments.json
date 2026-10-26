@@ -1,0 +1,49 @@
+{
+ "ticker": "APLD",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:35:35+00:00",
+ "axes": [
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": "Operating Income",
+   "years": [
+    "2024",
+    "2025",
+    "2026",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "H P C Hosting Business",
+     "revenue": {
+      "2024": null,
+      "2025": null,
+      "2026": 270602000.0,
+      "TTM": 427824000.0
+     },
+     "profit": {
+      "2024": -4811000.0,
+      "2025": -12086000.0,
+      "2026": 39127000.0,
+      "TTM": 74580000.0
+     }
+    },
+    {
+     "name": "Data Center Hosting Business",
+     "revenue": {
+      "2024": 136618000.0,
+      "2025": 144193000.0,
+      "2026": 154403000.0,
+      "TTM": 154237000.0
+     },
+     "profit": {
+      "2024": 4812000.0,
+      "2025": 63927000.0,
+      "2026": 48337000.0,
+      "TTM": 55629000.0
+     }
+    }
+   ]
+  }
+ ]
+}

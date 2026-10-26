@@ -452,6 +452,12 @@ def mini_main():
                 if is_weekly:
                     # Core financial data + historical charts only on weekly.
                     annual_and_ttm_update(ticker, cursor)
+                    # Segment tables + charts/<T>/segments.json (read by the
+                    # ticker JSON's Segment Performance section).
+                    try:
+                        build_segments_for_ticker(ticker)
+                    except Exception as seg_err:
+                        print(f"[segments] {ticker} failed: {seg_err}")
                     financial_data_df = prepare_data_for_charts(ticker, cursor)
                     if not financial_data_df.empty:
                         generate_financial_charts(ticker, CHARTS_DIR, financial_data_df)
@@ -462,8 +468,8 @@ def mini_main():
                 # Phase 3: three weekly fetchers REMOVED — the Phase 2 companyfacts
                 # swap made the ticker JSON pull these sections straight from EDGAR,
                 # so the DB tables/charts these wrote are dead output:
-                #  - segments (build_segments_for_ticker): ~400 SEC iXBRL req/run,
-                #    wrote charts/<T>/ that no JSON references.
+                #  (segments came back 10/26 on weekly runs: the JSON's Segment
+                #   Performance section now reads charts/<T>/segments.json.)
                 #  - balance sheet (fetch_and_update_balance_sheet_data + chart):
                 #    BalanceSheetData is read only by the dead balancesheet_chart
                 #    PNG; the JSON balance section comes from fetch_concept(Assets..).

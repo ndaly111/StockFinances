@@ -20,17 +20,31 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31          
                                 us-gaap:OperatingIncomeLoss 2025-12-31                                                                 319883000.0
                                 us-gaap:OperatingIncomeLoss 2024-12-31                                                                 179817000.0
                                 us-gaap:OperatingIncomeLoss 2023-12-31                                                                -125678000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                1007514000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                 854988000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31 srt:StatementGeographicalAxis:pins:UnitedStatesAndCanadaMember  717448000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31 srt:StatementGeographicalAxis:pins:UnitedStatesAndCanadaMember  632134000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                 srt:StatementGeographicalAxis:srt:EuropeMember  192096000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                 srt:StatementGeographicalAxis:srt:EuropeMember  147176000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31           srt:StatementGeographicalAxis:pins:RestOfWorldMember   97970000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31           srt:StatementGeographicalAxis:pins:RestOfWorldMember   75678000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                1007514000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                 854988000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                       srt:StatementGeographicalAxis:country:US  684000000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                       srt:StatementGeographicalAxis:country:US  604500000.0
-                                us-gaap:OperatingIncomeLoss 2026-03-31                                                                 -80292000.0
-                                us-gaap:OperatingIncomeLoss 2025-03-31                                                                 -35477000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                                1179654000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                 998227000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                                2187168000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                1853215000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30 srt:StatementGeographicalAxis:pins:UnitedStatesAndCanadaMember  842607000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:StatementGeographicalAxis:pins:UnitedStatesAndCanadaMember  721801000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30 srt:StatementGeographicalAxis:pins:UnitedStatesAndCanadaMember 1560055000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:StatementGeographicalAxis:pins:UnitedStatesAndCanadaMember 1353935000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                 srt:StatementGeographicalAxis:srt:EuropeMember  223428000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                 srt:StatementGeographicalAxis:srt:EuropeMember  189620000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                 srt:StatementGeographicalAxis:srt:EuropeMember  415524000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                 srt:StatementGeographicalAxis:srt:EuropeMember  336796000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30           srt:StatementGeographicalAxis:pins:RestOfWorldMember  113619000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30           srt:StatementGeographicalAxis:pins:RestOfWorldMember   86806000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30           srt:StatementGeographicalAxis:pins:RestOfWorldMember  211589000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30           srt:StatementGeographicalAxis:pins:RestOfWorldMember  162484000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                                1179654000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                 998227000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                                2187168000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                1853215000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                       srt:StatementGeographicalAxis:country:US  800500000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                       srt:StatementGeographicalAxis:country:US  689400000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                       srt:StatementGeographicalAxis:country:US 1484500000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                       srt:StatementGeographicalAxis:country:US 1293900000.0
+                                us-gaap:OperatingIncomeLoss 2026-06-30                                                                 -55198000.0
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                  -4330000.0
+                                us-gaap:OperatingIncomeLoss 2026-06-30                                                                -135490000.0
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                 -39807000.0

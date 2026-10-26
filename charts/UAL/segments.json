@@ -1,0 +1,59 @@
+{
+ "ticker": "UAL",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:58:35+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Passenger",
+     "revenue": {
+      "2023": 49046000000.0,
+      "2024": 51829000000.0,
+      "2025": 53438000000.0,
+      "TTM": 59433000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Passenger Ancillary Fees",
+     "revenue": {
+      "2023": 4099999999.9999995,
+      "2024": 4500000000.0,
+      "2025": 4800000000.0,
+      "TTM": 5300000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other",
+     "revenue": {
+      "2023": 3176000000.0,
+      "2024": 3491000000.0,
+      "2025": 3853000000.0,
+      "TTM": 4151000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Cargo And Freight",
+     "revenue": {
+      "2023": 1495000000.0,
+      "2024": 1743000000.0,
+      "2025": 1779000000.0,
+      "TTM": 1967000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

@@ -37,27 +37,54 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31          
                                 us-gaap:OperatingIncomeLoss 2025-12-31                                                                                 4.280000e+08
                                 us-gaap:OperatingIncomeLoss 2024-12-31                                                                                 3.210000e+08
                                 us-gaap:OperatingIncomeLoss 2023-12-31                                                                                 2.240000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  6.591000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  5.811000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                         srt:ProductOrServiceAxis:us-gaap:CargoAndFreightMember  4.400000e+07
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                         srt:ProductOrServiceAxis:us-gaap:CargoAndFreightMember  4.100000e+07
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  6.140000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  5.760000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                                                                 7.249000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                                                                 6.428000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                  srt:ProductOrServiceAxis:luv:PassengerRevenueNonLoyaltyMember  5.188000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                  srt:ProductOrServiceAxis:luv:PassengerRevenueNonLoyaltyMember  4.766000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31           srt:ProductOrServiceAxis:luv:PassengerLoyaltyAirTransportationMember  6.880000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31           srt:ProductOrServiceAxis:luv:PassengerLoyaltyAirTransportationMember  8.000000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31            srt:ProductOrServiceAxis:luv:PassengerAncillarySoldSeparatelyMember  7.150000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31            srt:ProductOrServiceAxis:luv:PassengerAncillarySoldSeparatelyMember  2.450000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  6.591000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  5.811000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31        srt:ProductOrServiceAxis:luv:ProductAndServiceOtherLoyaltyProgramMember  5.570000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31        srt:ProductOrServiceAxis:luv:ProductAndServiceOtherLoyaltyProgramMember  5.440000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31    srt:ProductOrServiceAxis:luv:ProductAndServiceOtherOtherMiscellaneousMember  5.700000e+07
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31    srt:ProductOrServiceAxis:luv:ProductAndServiceOtherOtherMiscellaneousMember  3.200000e+07
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  6.140000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  5.760000e+08
-                                us-gaap:OperatingIncomeLoss 2026-03-31                                                                                 3.300000e+08
-                                us-gaap:OperatingIncomeLoss 2025-03-31                                                                                -2.230000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  7.754000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  6.313000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  2.209100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  1.875100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                         srt:ProductOrServiceAxis:us-gaap:CargoAndFreightMember  4.800000e+07
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                         srt:ProductOrServiceAxis:us-gaap:CargoAndFreightMember  4.200000e+07
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                         srt:ProductOrServiceAxis:us-gaap:CargoAndFreightMember  1.410000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                         srt:ProductOrServiceAxis:us-gaap:CargoAndFreightMember  1.270000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  6.210000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  5.940000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  1.872000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  1.743000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                                                 8.422000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                 6.949000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                                                 2.410400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                 2.062100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30 us-gaap:ChangeInAccountingEstimateByTypeAxis:luv:BreakageRevenueReversalMember -2.850000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30 us-gaap:ChangeInAccountingEstimateByTypeAxis:luv:BreakageRevenueReversalMember -2.850000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                  srt:ProductOrServiceAxis:luv:PassengerRevenueNonLoyaltyMember  6.122000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                  srt:ProductOrServiceAxis:luv:PassengerRevenueNonLoyaltyMember  4.896000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                  srt:ProductOrServiceAxis:luv:PassengerRevenueNonLoyaltyMember  1.741400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                  srt:ProductOrServiceAxis:luv:PassengerRevenueNonLoyaltyMember  1.511000e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30           srt:ProductOrServiceAxis:luv:PassengerLoyaltyAirTransportationMember  7.340000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30           srt:ProductOrServiceAxis:luv:PassengerLoyaltyAirTransportationMember  8.050000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30           srt:ProductOrServiceAxis:luv:PassengerLoyaltyAirTransportationMember  2.188000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30           srt:ProductOrServiceAxis:luv:PassengerLoyaltyAirTransportationMember  2.475000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30            srt:ProductOrServiceAxis:luv:PassengerAncillarySoldSeparatelyMember  8.980000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30            srt:ProductOrServiceAxis:luv:PassengerAncillarySoldSeparatelyMember  6.120000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30            srt:ProductOrServiceAxis:luv:PassengerAncillarySoldSeparatelyMember  2.489000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30            srt:ProductOrServiceAxis:luv:PassengerAncillarySoldSeparatelyMember  1.166000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  7.754000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  6.313000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  2.209100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                               srt:ProductOrServiceAxis:us-gaap:PassengerMember  1.875100e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30        srt:ProductOrServiceAxis:luv:ProductAndServiceOtherLoyaltyProgramMember  5.630000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30        srt:ProductOrServiceAxis:luv:ProductAndServiceOtherLoyaltyProgramMember  5.570000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30        srt:ProductOrServiceAxis:luv:ProductAndServiceOtherLoyaltyProgramMember  1.698000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30        srt:ProductOrServiceAxis:luv:ProductAndServiceOtherLoyaltyProgramMember  1.638000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30    srt:ProductOrServiceAxis:luv:ProductAndServiceOtherOtherMiscellaneousMember  5.800000e+07
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30    srt:ProductOrServiceAxis:luv:ProductAndServiceOtherOtherMiscellaneousMember  3.700000e+07
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30    srt:ProductOrServiceAxis:luv:ProductAndServiceOtherOtherMiscellaneousMember  1.740000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30    srt:ProductOrServiceAxis:luv:ProductAndServiceOtherOtherMiscellaneousMember  1.050000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  6.210000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  5.940000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  1.872000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember  1.743000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30 us-gaap:ChangeInAccountingEstimateByTypeAxis:luv:BreakageRevenueReversalMember -2.850000e+08
+                                us-gaap:OperatingIncomeLoss 2026-09-30                                                                                 3.790000e+08
+                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                 3.500000e+07
+                                us-gaap:OperatingIncomeLoss 2026-09-30                                                                                 9.940000e+08
+                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                 3.700000e+07

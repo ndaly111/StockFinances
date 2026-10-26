@@ -1,0 +1,39 @@
+{
+ "ticker": "CMG",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:39:16+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Food And Beverage",
+     "revenue": {
+      "2023": 9804124000.0,
+      "2024": 11247384000.0,
+      "2025": 11866051000.0,
+      "TTM": 12363988000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Delivery Service",
+     "revenue": {
+      "2023": 67525000.0,
+      "2024": 66469000.0,
+      "2025": 59550000.0,
+      "TTM": 59771000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

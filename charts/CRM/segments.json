@@ -1,0 +1,89 @@
+{
+ "ticker": "CRM",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:39:47+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2024",
+    "2025",
+    "2026",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Subscriptionand Support",
+     "revenue": {
+      "2024": 32537000000.0,
+      "2025": 35679000000.0,
+      "2026": 39388000000.0,
+      "TTM": 41814000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Agentforce Service",
+     "revenue": {
+      "2024": 8245000000.0,
+      "2025": 9054000000.0,
+      "2026": 9818000000.0,
+      "TTM": 9818000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Agentforce Sales",
+     "revenue": {
+      "2024": 7580000000.0,
+      "2025": 8322000000.0,
+      "2026": 9028000000.0,
+      "TTM": 9028000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Agentforce360 Platform Slack And Other",
+     "revenue": {
+      "2024": 6611000000.0,
+      "2025": 7247000000.0,
+      "2026": 8882000000.0,
+      "TTM": 8882000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Agentforce Integration And Agentforce Analytics",
+     "revenue": {
+      "2024": 5189000000.0,
+      "2025": 5775000000.0,
+      "2026": 6232000000.0,
+      "TTM": 6232000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Agentforce Marketing And Agentforce Commerce",
+     "revenue": {
+      "2024": 4912000000.0,
+      "2025": 5281000000.0,
+      "2026": 5428000000.0,
+      "TTM": 5428000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Professional Servicesand Other",
+     "revenue": {
+      "2024": 2320000000.0,
+      "2025": 2216000000.0,
+      "2026": 2137000000.0,
+      "TTM": 2124000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

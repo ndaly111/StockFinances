@@ -1,0 +1,99 @@
+{
+ "ticker": "COIN",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:39:26+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Bank Servicing",
+     "revenue": {
+      "2023": 1519654000.0,
+      "2024": 3986113000.0,
+      "2025": 4055390000.0,
+      "TTM": 3383893000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Subscription And Circulation",
+     "revenue": {
+      "2023": 1406886000.0,
+      "2024": 2307133000.0,
+      "2025": 2828048000.0,
+      "TTM": 2659860000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Bank Servicing Consumer Net",
+     "revenue": {
+      "2023": 1334018000.0,
+      "2024": 3430322000.0,
+      "2025": 3322835000.0,
+      "TTM": 2595990000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Subscription And Circulation Stablecoin",
+     "revenue": {
+      "2023": 694247000.0,
+      "2024": 910464000.0,
+      "2025": 1348821000.0,
+      "TTM": 1363452000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Bank Servicing Institutional",
+     "revenue": {
+      "2023": 90164000.0,
+      "2024": 345598000.0,
+      "2025": 479667000.0,
+      "TTM": 555759000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Subscription And Circulation Blockchain Infrastructure Service",
+     "revenue": {
+      "2023": 330885000.0,
+      "2024": 705757000.0,
+      "2025": 677405000.0,
+      "TTM": 520469000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Subscription And Circulation Other",
+     "revenue": {
+      "2023": 195069000.0,
+      "2024": 425113000.0,
+      "2025": 554775000.0,
+      "TTM": 517361000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Bank Servicing Other",
+     "revenue": {
+      "2023": 95472000.0,
+      "2024": 210193000.0,
+      "2025": 252888000.0,
+      "TTM": 232144000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

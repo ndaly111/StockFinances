@@ -1,0 +1,39 @@
+{
+ "ticker": "SHOP",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:57:27+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Service",
+     "revenue": {
+      "2023": 5223000000.0,
+      "2024": 6530000000.0,
+      "2025": 8804000000.0,
+      "TTM": 10241000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Subscription And Circulation",
+     "revenue": {
+      "2023": 1837000000.0,
+      "2024": 2350000000.0,
+      "2025": 2752000000.0,
+      "TTM": 3028000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,81 @@
+{
+ "ticker": "RTX",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:56:49+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Product",
+     "revenue": {
+      "2023": 49571000000.0,
+      "2024": 59612000000.0,
+      "2025": 64171000000.0,
+      "TTM": 69732000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Service",
+     "revenue": {
+      "2023": 19349000000.0,
+      "2024": 21126000000.0,
+      "2025": 24432000000.0,
+      "TTM": 26255000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "SegmentReconcilingItemsAxis",
+   "profit_label": "Operating Income",
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Acquisition Accounting Adjustments",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": -1998000000.0,
+      "2024": -2058000000.0,
+      "2025": -2005000000.0,
+      "TTM": -1934000000.0
+     }
+    },
+    {
+     "name": "F A S C A S Operating Adjustment",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 1127000000.0,
+      "2024": 833000000.0,
+      "2025": 753000000.0,
+      "TTM": 697000000.0
+     }
+    }
+   ]
+  }
+ ]
+}

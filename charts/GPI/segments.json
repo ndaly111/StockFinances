@@ -1,0 +1,111 @@
+{
+ "ticker": "GPI",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:44:08+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "New And Used Vehicles",
+     "revenue": {
+      "2023": 14909500000.0,
+      "2024": 16614700000.0,
+      "2025": 18792200000.0,
+      "TTM": 18420500000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "New Vehicles Retail",
+     "revenue": {
+      "2023": 8774600000.0,
+      "2024": 9972400000.0,
+      "2025": 10989900000.0,
+      "TTM": 10743000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Used Vehicles Retail",
+     "revenue": {
+      "2023": 5693500000.0,
+      "2024": 6179900000.0,
+      "2025": 7195000000.0,
+      "TTM": 7084600000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Parts And Service",
+     "revenue": {
+      "2023": 2222300000.0,
+      "2024": 2491000000.0,
+      "2025": 2844600000.0,
+      "TTM": 2831000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Financial Service",
+     "revenue": {
+      "2023": 741900000.0,
+      "2024": 828700000.0,
+      "2025": 934600000.0,
+      "TTM": 903300000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Used Vehicles Wholesale",
+     "revenue": {
+      "2023": 441400000.0,
+      "2024": 462400000.0,
+      "2025": 607300000.0,
+      "TTM": 592800000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "United States",
+     "revenue": {
+      "2023": 14814200000.0,
+      "2024": 15772900000.0,
+      "2025": 16626800000.0,
+      "TTM": 16225100000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "United Kingdom",
+     "revenue": {
+      "2023": 3059500000.0,
+      "2024": 4161500000.0,
+      "2025": 5944600000.0,
+      "TTM": 5929600000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

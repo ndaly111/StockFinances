@@ -1,0 +1,59 @@
+{
+ "ticker": "DKNG",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:42:07+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Sportsbook",
+     "revenue": {
+      "2023": 2106403000.0,
+      "2024": 2902857000.0,
+      "2025": 3827091000.0,
+      "TTM": 3827091000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "I Gaming",
+     "revenue": {
+      "2023": 1216749000.0,
+      "2024": 1507808000.0,
+      "2025": 1804613000.0,
+      "TTM": 1874712000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other",
+     "revenue": {
+      "2023": 342241000.0,
+      "2024": 357034000.0,
+      "2025": 422821000.0,
+      "TTM": 414113000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other Interest Income",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": 25600000.0,
+      "TTM": 25600000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

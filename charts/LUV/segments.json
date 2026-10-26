@@ -1,0 +1,89 @@
+{
+ "ticker": "LUV",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:51:56+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Passenger",
+     "revenue": {
+      "2023": 23637000000.0,
+      "2024": 24980000000.0,
+      "2025": 25535000000.0,
+      "TTM": 28875000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Passenger Revenue Non Loyalty",
+     "revenue": {
+      "2023": 19073000000.0,
+      "2024": 20467000000.0,
+      "2025": 20441000000.0,
+      "TTM": 22745000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Passenger Ancillary Sold Separately",
+     "revenue": {
+      "2023": 925000000.0,
+      "2024": 1029000000.0,
+      "2025": 1835000000.0,
+      "TTM": 3158000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Passenger Loyalty Air Transportation",
+     "revenue": {
+      "2023": 3639000000.0,
+      "2024": 3484000000.0,
+      "2025": 3259000000.0,
+      "TTM": 2972000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Other Revenue",
+     "revenue": {
+      "2023": 2100000000.0,
+      "2024": 2200000000.0,
+      "2025": 2600000000.0,
+      "TTM": 2600000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other",
+     "revenue": {
+      "2023": 2279000000.0,
+      "2024": 2328000000.0,
+      "2025": 2357000000.0,
+      "TTM": 2486000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Cargo And Freight",
+     "revenue": {
+      "2023": 175000000.0,
+      "2024": 175000000.0,
+      "2025": 171000000.0,
+      "TTM": 185000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

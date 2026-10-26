@@ -126,119 +126,234 @@ us-gaap:Revenues 2025-12-31 srt:ProductOrServiceAxis:lly:JardianceMember; us-gaa
 us-gaap:Revenues 2025-12-31                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 6.517900e+10
 us-gaap:Revenues 2024-12-31                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 4.504300e+10
 us-gaap:Revenues 2023-12-31                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 3.412400e+10
-us-gaap:Revenues 2026-03-31                                                                                                                   1.979900e+10
-us-gaap:Revenues 2025-03-31                                                                                                                   1.272900e+10
-us-gaap:Revenues 2026-03-31                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 1.845300e+10
-us-gaap:Revenues 2025-03-31                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 1.160100e+10
-us-gaap:Revenues 2026-03-31                                                   srt:ProductOrServiceAxis:lly:CollaborationandOtherRevenueMember 1.346000e+09
-us-gaap:Revenues 2025-03-31                                                   srt:ProductOrServiceAxis:lly:CollaborationandOtherRevenueMember 1.127000e+09
-us-gaap:Revenues 2026-03-31                                                                                                                   1.979900e+10
-us-gaap:Revenues 2025-03-31                                                                                                                   1.272900e+10
-us-gaap:Revenues 2026-03-31                             srt:ProductOrServiceAxis:lly:MounjaroMember; srt:StatementGeographicalAxis:country:US 4.232000e+09
-us-gaap:Revenues 2026-03-31                    srt:ProductOrServiceAxis:lly:MounjaroMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.430000e+09
-us-gaap:Revenues 2026-03-31                                                                       srt:ProductOrServiceAxis:lly:MounjaroMember 8.662000e+09
-us-gaap:Revenues 2025-03-31                             srt:ProductOrServiceAxis:lly:MounjaroMember; srt:StatementGeographicalAxis:country:US 2.656000e+09
-us-gaap:Revenues 2025-03-31                    srt:ProductOrServiceAxis:lly:MounjaroMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.186000e+09
-us-gaap:Revenues 2025-03-31                                                                       srt:ProductOrServiceAxis:lly:MounjaroMember 3.842000e+09
-us-gaap:Revenues 2026-03-31                             srt:ProductOrServiceAxis:lly:ZepboundMember; srt:StatementGeographicalAxis:country:US 4.134000e+09
-us-gaap:Revenues 2026-03-31                    srt:ProductOrServiceAxis:lly:ZepboundMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 2.600000e+07
-us-gaap:Revenues 2026-03-31                                                                       srt:ProductOrServiceAxis:lly:ZepboundMember 4.160000e+09
-us-gaap:Revenues 2025-03-31                             srt:ProductOrServiceAxis:lly:ZepboundMember; srt:StatementGeographicalAxis:country:US 2.305000e+09
-us-gaap:Revenues 2025-03-31                    srt:ProductOrServiceAxis:lly:ZepboundMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 7.000000e+06
-us-gaap:Revenues 2025-03-31                                                                       srt:ProductOrServiceAxis:lly:ZepboundMember 2.312000e+09
-us-gaap:Revenues 2026-03-31                            srt:ProductOrServiceAxis:lly:JardianceMember; srt:StatementGeographicalAxis:country:US 5.120000e+08
-us-gaap:Revenues 2026-03-31                   srt:ProductOrServiceAxis:lly:JardianceMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 6.020000e+08
-us-gaap:Revenues 2026-03-31                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.114000e+09
-us-gaap:Revenues 2025-03-31                            srt:ProductOrServiceAxis:lly:JardianceMember; srt:StatementGeographicalAxis:country:US 3.100000e+08
-us-gaap:Revenues 2025-03-31                   srt:ProductOrServiceAxis:lly:JardianceMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 7.050000e+08
-us-gaap:Revenues 2025-03-31                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.014000e+09
-us-gaap:Revenues 2026-03-31                            srt:ProductOrServiceAxis:lly:TrulicityMember; srt:StatementGeographicalAxis:country:US 6.000000e+08
-us-gaap:Revenues 2026-03-31                   srt:ProductOrServiceAxis:lly:TrulicityMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 3.180000e+08
-us-gaap:Revenues 2026-03-31                                                                      srt:ProductOrServiceAxis:lly:TrulicityMember 9.190000e+08
-us-gaap:Revenues 2025-03-31                            srt:ProductOrServiceAxis:lly:TrulicityMember; srt:StatementGeographicalAxis:country:US 7.710000e+08
-us-gaap:Revenues 2025-03-31                   srt:ProductOrServiceAxis:lly:TrulicityMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 3.250000e+08
-us-gaap:Revenues 2025-03-31                                                                      srt:ProductOrServiceAxis:lly:TrulicityMember 1.095000e+09
-us-gaap:Revenues 2026-03-31           srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember; srt:StatementGeographicalAxis:country:US 4.460000e+08
-us-gaap:Revenues 2026-03-31  srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.600000e+08
-us-gaap:Revenues 2026-03-31                                                     srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 9.050000e+08
-us-gaap:Revenues 2025-03-31           srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember; srt:StatementGeographicalAxis:country:US 5.350000e+08
-us-gaap:Revenues 2025-03-31  srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.100000e+08
-us-gaap:Revenues 2025-03-31                                                     srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 9.450000e+08
-us-gaap:Revenues 2026-03-31                srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember; srt:StatementGeographicalAxis:country:US 9.924000e+09
-us-gaap:Revenues 2026-03-31       srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 5.836000e+09
-us-gaap:Revenues 2026-03-31                                                          srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 1.576000e+10
-us-gaap:Revenues 2025-03-31                srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember; srt:StatementGeographicalAxis:country:US 6.577000e+09
-us-gaap:Revenues 2025-03-31       srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 2.631000e+09
-us-gaap:Revenues 2025-03-31                                                          srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 9.208000e+09
-us-gaap:Revenues 2026-03-31                             srt:ProductOrServiceAxis:lly:VerzenioMember; srt:StatementGeographicalAxis:country:US 7.060000e+08
-us-gaap:Revenues 2026-03-31                    srt:ProductOrServiceAxis:lly:VerzenioMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 5.960000e+08
-us-gaap:Revenues 2026-03-31                                                                       srt:ProductOrServiceAxis:lly:VerzenioMember 1.302000e+09
-us-gaap:Revenues 2025-03-31                             srt:ProductOrServiceAxis:lly:VerzenioMember; srt:StatementGeographicalAxis:country:US 6.580000e+08
-us-gaap:Revenues 2025-03-31                    srt:ProductOrServiceAxis:lly:VerzenioMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 5.010000e+08
-us-gaap:Revenues 2025-03-31                                                                       srt:ProductOrServiceAxis:lly:VerzenioMember 1.159000e+09
-us-gaap:Revenues 2026-03-31                        srt:ProductOrServiceAxis:lly:OtherOncologyMember; srt:StatementGeographicalAxis:country:US 5.220000e+08
-us-gaap:Revenues 2026-03-31               srt:ProductOrServiceAxis:lly:OtherOncologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.440000e+08
-us-gaap:Revenues 2026-03-31                                                                  srt:ProductOrServiceAxis:lly:OtherOncologyMember 9.660000e+08
-us-gaap:Revenues 2025-03-31                        srt:ProductOrServiceAxis:lly:OtherOncologyMember; srt:StatementGeographicalAxis:country:US 3.880000e+08
-us-gaap:Revenues 2025-03-31               srt:ProductOrServiceAxis:lly:OtherOncologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.000000e+08
-us-gaap:Revenues 2025-03-31                                                                  srt:ProductOrServiceAxis:lly:OtherOncologyMember 7.890000e+08
-us-gaap:Revenues 2026-03-31                             srt:ProductOrServiceAxis:lly:OncologyMember; srt:StatementGeographicalAxis:country:US 1.228000e+09
-us-gaap:Revenues 2026-03-31                    srt:ProductOrServiceAxis:lly:OncologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.040000e+09
-us-gaap:Revenues 2026-03-31                                                                       srt:ProductOrServiceAxis:lly:OncologyMember 2.268000e+09
-us-gaap:Revenues 2025-03-31                             srt:ProductOrServiceAxis:lly:OncologyMember; srt:StatementGeographicalAxis:country:US 1.046000e+09
-us-gaap:Revenues 2025-03-31                    srt:ProductOrServiceAxis:lly:OncologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 9.020000e+08
-us-gaap:Revenues 2025-03-31                                                                       srt:ProductOrServiceAxis:lly:OncologyMember 1.948000e+09
-us-gaap:Revenues 2026-03-31                                srt:ProductOrServiceAxis:lly:TaltzMember; srt:StatementGeographicalAxis:country:US 4.170000e+08
-us-gaap:Revenues 2026-03-31                       srt:ProductOrServiceAxis:lly:TaltzMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 3.150000e+08
-us-gaap:Revenues 2026-03-31                                                                          srt:ProductOrServiceAxis:lly:TaltzMember 7.330000e+08
-us-gaap:Revenues 2025-03-31                                srt:ProductOrServiceAxis:lly:TaltzMember; srt:StatementGeographicalAxis:country:US 4.770000e+08
-us-gaap:Revenues 2025-03-31                       srt:ProductOrServiceAxis:lly:TaltzMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 2.850000e+08
-us-gaap:Revenues 2025-03-31                                                                          srt:ProductOrServiceAxis:lly:TaltzMember 7.620000e+08
-us-gaap:Revenues 2026-03-31                      srt:ProductOrServiceAxis:lly:OtherImmunologyMember; srt:StatementGeographicalAxis:country:US 2.020000e+08
-us-gaap:Revenues 2026-03-31             srt:ProductOrServiceAxis:lly:OtherImmunologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 2.690000e+08
-us-gaap:Revenues 2026-03-31                                                                srt:ProductOrServiceAxis:lly:OtherImmunologyMember 4.700000e+08
-us-gaap:Revenues 2025-03-31                      srt:ProductOrServiceAxis:lly:OtherImmunologyMember; srt:StatementGeographicalAxis:country:US 1.020000e+08
-us-gaap:Revenues 2025-03-31             srt:ProductOrServiceAxis:lly:OtherImmunologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 2.250000e+08
-us-gaap:Revenues 2025-03-31                                                                srt:ProductOrServiceAxis:lly:OtherImmunologyMember 3.260000e+08
-us-gaap:Revenues 2026-03-31                           srt:ProductOrServiceAxis:lly:ImmunologyMember; srt:StatementGeographicalAxis:country:US 6.190000e+08
-us-gaap:Revenues 2026-03-31                  srt:ProductOrServiceAxis:lly:ImmunologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 5.840000e+08
-us-gaap:Revenues 2026-03-31                                                                     srt:ProductOrServiceAxis:lly:ImmunologyMember 1.203000e+09
-us-gaap:Revenues 2025-03-31                           srt:ProductOrServiceAxis:lly:ImmunologyMember; srt:StatementGeographicalAxis:country:US 5.780000e+08
-us-gaap:Revenues 2025-03-31                  srt:ProductOrServiceAxis:lly:ImmunologyMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 5.100000e+08
-us-gaap:Revenues 2025-03-31                                                                     srt:ProductOrServiceAxis:lly:ImmunologyMember 1.088000e+09
-us-gaap:Revenues 2026-03-31                         srt:ProductOrServiceAxis:lly:NeuroscienceMember; srt:StatementGeographicalAxis:country:US 2.930000e+08
-us-gaap:Revenues 2026-03-31                srt:ProductOrServiceAxis:lly:NeuroscienceMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 8.900000e+07
-us-gaap:Revenues 2026-03-31                                                                   srt:ProductOrServiceAxis:lly:NeuroscienceMember 3.820000e+08
-us-gaap:Revenues 2025-03-31                         srt:ProductOrServiceAxis:lly:NeuroscienceMember; srt:StatementGeographicalAxis:country:US 1.890000e+08
-us-gaap:Revenues 2025-03-31                srt:ProductOrServiceAxis:lly:NeuroscienceMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 8.300000e+07
-us-gaap:Revenues 2025-03-31                                                                   srt:ProductOrServiceAxis:lly:NeuroscienceMember 2.720000e+08
-us-gaap:Revenues 2026-03-31           srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember; srt:StatementGeographicalAxis:country:US 5.600000e+07
-us-gaap:Revenues 2026-03-31  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.300000e+08
-us-gaap:Revenues 2026-03-31                                                     srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 1.870000e+08
-us-gaap:Revenues 2025-03-31           srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember; srt:StatementGeographicalAxis:country:US 1.000000e+08
-us-gaap:Revenues 2025-03-31  srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember; srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.130000e+08
-us-gaap:Revenues 2025-03-31                                                     srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 2.130000e+08
-us-gaap:Revenues 2026-03-31                                                                          srt:StatementGeographicalAxis:country:US 1.211900e+10
-us-gaap:Revenues 2026-03-31                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember 7.680000e+09
-us-gaap:Revenues 2026-03-31                                                                                                                   1.979900e+10
-us-gaap:Revenues 2025-03-31                                                                          srt:StatementGeographicalAxis:country:US 8.489000e+09
-us-gaap:Revenues 2025-03-31                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.239000e+09
-us-gaap:Revenues 2025-03-31                                                                                                                   1.272900e+10
-us-gaap:Revenues 2026-03-31                                                                          srt:StatementGeographicalAxis:country:US 1.211900e+10
-us-gaap:Revenues 2025-03-31                                                                          srt:StatementGeographicalAxis:country:US 8.489000e+09
-us-gaap:Revenues 2026-03-31                                                                    srt:StatementGeographicalAxis:srt:EuropeMember 3.646000e+09
-us-gaap:Revenues 2025-03-31                                                                    srt:StatementGeographicalAxis:srt:EuropeMember 2.389000e+09
-us-gaap:Revenues 2026-03-31                                                                          srt:StatementGeographicalAxis:country:CN 6.930000e+08
-us-gaap:Revenues 2025-03-31                                                                          srt:StatementGeographicalAxis:country:CN 4.510000e+08
-us-gaap:Revenues 2026-03-31                                                                          srt:StatementGeographicalAxis:country:JP 5.710000e+08
-us-gaap:Revenues 2025-03-31                                                                          srt:StatementGeographicalAxis:country:JP 4.020000e+08
-us-gaap:Revenues 2026-03-31                                                               srt:StatementGeographicalAxis:lly:RestOfWorldMember 2.771000e+09
-us-gaap:Revenues 2025-03-31                                                               srt:StatementGeographicalAxis:lly:RestOfWorldMember 9.970000e+08
-us-gaap:Revenues 2026-03-31                                                                                                                   1.979900e+10
-us-gaap:Revenues 2025-03-31                                                                                                                   1.272900e+10
-us-gaap:Revenues 2026-03-31                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.114000e+09
-us-gaap:Revenues 2025-03-31                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.014000e+09
-us-gaap:Revenues 2026-03-31 srt:ProductOrServiceAxis:lly:JardianceMember; us-gaap:TypeOfArrangementAxis:lly:MilestonePaymentsSalesBasedMember 2.500000e+08
-us-gaap:Revenues 2025-03-31 srt:ProductOrServiceAxis:lly:JardianceMember; us-gaap:TypeOfArrangementAxis:lly:MilestonePaymentsSalesBasedMember 3.700000e+08
-us-gaap:Revenues 2026-03-31                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 1.979900e+10
-us-gaap:Revenues 2025-03-31                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 1.272900e+10
+us-gaap:Revenues 2026-06-30                                                                                                                   2.297400e+10
+us-gaap:Revenues 2025-06-30                                                                                                                   1.555800e+10
+us-gaap:Revenues 2026-06-30                                                                                                                   4.277300e+10
+us-gaap:Revenues 2025-06-30                                                                                                                   2.828600e+10
+us-gaap:Revenues 2026-06-30                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 2.140300e+10
+us-gaap:Revenues 2025-06-30                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 1.472600e+10
+us-gaap:Revenues 2026-06-30                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 3.985600e+10
+us-gaap:Revenues 2025-06-30                                                                    srt:ProductOrServiceAxis:us-gaap:ProductMember 2.632700e+10
+us-gaap:Revenues 2026-06-30                                                   srt:ProductOrServiceAxis:lly:CollaborationandOtherRevenueMember 1.571000e+09
+us-gaap:Revenues 2025-06-30                                                   srt:ProductOrServiceAxis:lly:CollaborationandOtherRevenueMember 8.320000e+08
+us-gaap:Revenues 2026-06-30                                                   srt:ProductOrServiceAxis:lly:CollaborationandOtherRevenueMember 2.917000e+09
+us-gaap:Revenues 2025-06-30                                                   srt:ProductOrServiceAxis:lly:CollaborationandOtherRevenueMember 1.959000e+09
+us-gaap:Revenues 2026-06-30                                                                                                                   2.297400e+10
+us-gaap:Revenues 2025-06-30                                                                                                                   1.555800e+10
+us-gaap:Revenues 2026-06-30                                                                                                                   4.277300e+10
+us-gaap:Revenues 2025-06-30                                                                                                                   2.828600e+10
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:MounjaroMember 4.791000e+09
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:MounjaroMember 5.152000e+09
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:MounjaroMember 9.943000e+09
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:MounjaroMember 3.302000e+09
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:MounjaroMember 1.897000e+09
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:MounjaroMember 5.199000e+09
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ZepboundMember 4.873000e+09
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ZepboundMember 5.500000e+07
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:ZepboundMember 4.928000e+09
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ZepboundMember 3.380000e+09
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ZepboundMember 2.000000e+06
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:ZepboundMember 3.381000e+09
+us-gaap:Revenues 2026-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:JardianceMember 6.160000e+08
+us-gaap:Revenues 2026-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:JardianceMember 6.150000e+08
+us-gaap:Revenues 2026-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.232000e+09
+us-gaap:Revenues 2025-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:JardianceMember 3.820000e+08
+us-gaap:Revenues 2025-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:JardianceMember 3.080000e+08
+us-gaap:Revenues 2025-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 6.900000e+08
+us-gaap:Revenues 2026-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TrulicityMember 9.080000e+08
+us-gaap:Revenues 2026-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TrulicityMember 3.120000e+08
+us-gaap:Revenues 2026-06-30                                                                      srt:ProductOrServiceAxis:lly:TrulicityMember 1.219000e+09
+us-gaap:Revenues 2025-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TrulicityMember 7.440000e+08
+us-gaap:Revenues 2025-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TrulicityMember 3.480000e+08
+us-gaap:Revenues 2025-06-30                                                                      srt:ProductOrServiceAxis:lly:TrulicityMember 1.092000e+09
+us-gaap:Revenues 2026-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 5.540000e+08
+us-gaap:Revenues 2026-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 4.770000e+08
+us-gaap:Revenues 2026-06-30                                                     srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 1.031000e+09
+us-gaap:Revenues 2025-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 5.560000e+08
+us-gaap:Revenues 2025-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 4.250000e+08
+us-gaap:Revenues 2025-06-30                                                     srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 9.800000e+08
+us-gaap:Revenues 2026-06-30                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 1.174200e+10
+us-gaap:Revenues 2026-06-30       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 6.611000e+09
+us-gaap:Revenues 2026-06-30                                                          srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 1.835300e+10
+us-gaap:Revenues 2025-06-30                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 8.363000e+09
+us-gaap:Revenues 2025-06-30       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 2.980000e+09
+us-gaap:Revenues 2025-06-30                                                          srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 1.134300e+10
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:VerzenioMember 8.450000e+08
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:VerzenioMember 6.290000e+08
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:VerzenioMember 1.474000e+09
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:VerzenioMember 9.290000e+08
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:VerzenioMember 5.600000e+08
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:VerzenioMember 1.489000e+09
+us-gaap:Revenues 2026-06-30                        srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherOncologyMember 6.280000e+08
+us-gaap:Revenues 2026-06-30               srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherOncologyMember 4.680000e+08
+us-gaap:Revenues 2026-06-30                                                                  srt:ProductOrServiceAxis:lly:OtherOncologyMember 1.096000e+09
+us-gaap:Revenues 2025-06-30                        srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherOncologyMember 4.900000e+08
+us-gaap:Revenues 2025-06-30               srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherOncologyMember 4.340000e+08
+us-gaap:Revenues 2025-06-30                                                                  srt:ProductOrServiceAxis:lly:OtherOncologyMember 9.240000e+08
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OncologyMember 1.473000e+09
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OncologyMember 1.097000e+09
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:OncologyMember 2.570000e+09
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OncologyMember 1.419000e+09
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OncologyMember 9.940000e+08
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:OncologyMember 2.414000e+09
+us-gaap:Revenues 2026-06-30                                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TaltzMember 5.390000e+08
+us-gaap:Revenues 2026-06-30                       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TaltzMember 3.170000e+08
+us-gaap:Revenues 2026-06-30                                                                          srt:ProductOrServiceAxis:lly:TaltzMember 8.560000e+08
+us-gaap:Revenues 2025-06-30                                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TaltzMember 5.490000e+08
+us-gaap:Revenues 2025-06-30                       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TaltzMember 2.990000e+08
+us-gaap:Revenues 2025-06-30                                                                          srt:ProductOrServiceAxis:lly:TaltzMember 8.480000e+08
+us-gaap:Revenues 2026-06-30                      srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 2.510000e+08
+us-gaap:Revenues 2026-06-30             srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 3.100000e+08
+us-gaap:Revenues 2026-06-30                                                                srt:ProductOrServiceAxis:lly:OtherImmunologyMember 5.610000e+08
+us-gaap:Revenues 2025-06-30                      srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 1.520000e+08
+us-gaap:Revenues 2025-06-30             srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 2.560000e+08
+us-gaap:Revenues 2025-06-30                                                                srt:ProductOrServiceAxis:lly:OtherImmunologyMember 4.080000e+08
+us-gaap:Revenues 2026-06-30                           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ImmunologyMember 7.900000e+08
+us-gaap:Revenues 2026-06-30                  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ImmunologyMember 6.270000e+08
+us-gaap:Revenues 2026-06-30                                                                     srt:ProductOrServiceAxis:lly:ImmunologyMember 1.417000e+09
+us-gaap:Revenues 2025-06-30                           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ImmunologyMember 7.010000e+08
+us-gaap:Revenues 2025-06-30                  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ImmunologyMember 5.550000e+08
+us-gaap:Revenues 2025-06-30                                                                     srt:ProductOrServiceAxis:lly:ImmunologyMember 1.256000e+09
+us-gaap:Revenues 2026-06-30                         srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:NeuroscienceMember 3.250000e+08
+us-gaap:Revenues 2026-06-30                srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:NeuroscienceMember 1.040000e+08
+us-gaap:Revenues 2026-06-30                                                                   srt:ProductOrServiceAxis:lly:NeuroscienceMember 4.290000e+08
+us-gaap:Revenues 2025-06-30                         srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:NeuroscienceMember 2.480000e+08
+us-gaap:Revenues 2025-06-30                srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:NeuroscienceMember 9.600000e+07
+us-gaap:Revenues 2025-06-30                                                                   srt:ProductOrServiceAxis:lly:NeuroscienceMember 3.440000e+08
+us-gaap:Revenues 2026-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 8.400000e+07
+us-gaap:Revenues 2026-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 1.220000e+08
+us-gaap:Revenues 2026-06-30                                                     srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 2.050000e+08
+us-gaap:Revenues 2025-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 8.300000e+07
+us-gaap:Revenues 2025-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 1.190000e+08
+us-gaap:Revenues 2025-06-30                                                     srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 2.020000e+08
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:US 1.441300e+10
+us-gaap:Revenues 2026-06-30                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember 8.561000e+09
+us-gaap:Revenues 2026-06-30                                                                                                                   2.297400e+10
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:US 1.081400e+10
+us-gaap:Revenues 2025-06-30                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember 4.743000e+09
+us-gaap:Revenues 2025-06-30                                                                                                                   1.555800e+10
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:MounjaroMember 9.024000e+09
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:MounjaroMember 9.582000e+09
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:MounjaroMember 1.860500e+10
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:MounjaroMember 5.958000e+09
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:MounjaroMember 3.083000e+09
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:MounjaroMember 9.041000e+09
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ZepboundMember 9.006000e+09
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ZepboundMember 8.100000e+07
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:ZepboundMember 9.088000e+09
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ZepboundMember 5.685000e+09
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ZepboundMember 8.000000e+06
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:ZepboundMember 5.693000e+09
+us-gaap:Revenues 2026-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:JardianceMember 1.128000e+09
+us-gaap:Revenues 2026-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:JardianceMember 1.218000e+09
+us-gaap:Revenues 2026-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 2.346000e+09
+us-gaap:Revenues 2025-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:JardianceMember 6.920000e+08
+us-gaap:Revenues 2025-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:JardianceMember 1.012000e+09
+us-gaap:Revenues 2025-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.704000e+09
+us-gaap:Revenues 2026-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TrulicityMember 1.508000e+09
+us-gaap:Revenues 2026-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TrulicityMember 6.300000e+08
+us-gaap:Revenues 2026-06-30                                                                      srt:ProductOrServiceAxis:lly:TrulicityMember 2.138000e+09
+us-gaap:Revenues 2025-06-30                            srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TrulicityMember 1.514000e+09
+us-gaap:Revenues 2025-06-30                   srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TrulicityMember 6.730000e+08
+us-gaap:Revenues 2025-06-30                                                                      srt:ProductOrServiceAxis:lly:TrulicityMember 2.187000e+09
+us-gaap:Revenues 2026-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 1.000000e+09
+us-gaap:Revenues 2026-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 9.360000e+08
+us-gaap:Revenues 2026-06-30                                                     srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 1.936000e+09
+us-gaap:Revenues 2025-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 1.091000e+09
+us-gaap:Revenues 2025-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 8.350000e+08
+us-gaap:Revenues 2025-06-30                                                     srt:ProductOrServiceAxis:lly:OtherCardiometabolicHealthMember 1.925000e+09
+us-gaap:Revenues 2026-06-30                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 2.166600e+10
+us-gaap:Revenues 2026-06-30       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 1.244700e+10
+us-gaap:Revenues 2026-06-30                                                          srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 3.411300e+10
+us-gaap:Revenues 2025-06-30                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 1.494000e+10
+us-gaap:Revenues 2025-06-30       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 5.611000e+09
+us-gaap:Revenues 2025-06-30                                                          srt:ProductOrServiceAxis:lly:CardiometabolicHealthMember 2.055100e+10
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:VerzenioMember 1.551000e+09
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:VerzenioMember 1.224000e+09
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:VerzenioMember 2.776000e+09
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:VerzenioMember 1.587000e+09
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:VerzenioMember 1.062000e+09
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:VerzenioMember 2.648000e+09
+us-gaap:Revenues 2026-06-30                        srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherOncologyMember 1.149000e+09
+us-gaap:Revenues 2026-06-30               srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherOncologyMember 9.140000e+08
+us-gaap:Revenues 2026-06-30                                                                  srt:ProductOrServiceAxis:lly:OtherOncologyMember 2.062000e+09
+us-gaap:Revenues 2025-06-30                        srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherOncologyMember 8.790000e+08
+us-gaap:Revenues 2025-06-30               srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherOncologyMember 8.350000e+08
+us-gaap:Revenues 2025-06-30                                                                  srt:ProductOrServiceAxis:lly:OtherOncologyMember 1.713000e+09
+us-gaap:Revenues 2026-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OncologyMember 2.700000e+09
+us-gaap:Revenues 2026-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OncologyMember 2.138000e+09
+us-gaap:Revenues 2026-06-30                                                                       srt:ProductOrServiceAxis:lly:OncologyMember 4.838000e+09
+us-gaap:Revenues 2025-06-30                             srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OncologyMember 2.465000e+09
+us-gaap:Revenues 2025-06-30                    srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OncologyMember 1.896000e+09
+us-gaap:Revenues 2025-06-30                                                                       srt:ProductOrServiceAxis:lly:OncologyMember 4.361000e+09
+us-gaap:Revenues 2026-06-30                                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TaltzMember 9.560000e+08
+us-gaap:Revenues 2026-06-30                       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TaltzMember 6.320000e+08
+us-gaap:Revenues 2026-06-30                                                                          srt:ProductOrServiceAxis:lly:TaltzMember 1.588000e+09
+us-gaap:Revenues 2025-06-30                                srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:TaltzMember 1.025000e+09
+us-gaap:Revenues 2025-06-30                       srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:TaltzMember 5.840000e+08
+us-gaap:Revenues 2025-06-30                                                                          srt:ProductOrServiceAxis:lly:TaltzMember 1.610000e+09
+us-gaap:Revenues 2026-06-30                      srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 4.530000e+08
+us-gaap:Revenues 2026-06-30             srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 5.790000e+08
+us-gaap:Revenues 2026-06-30                                                                srt:ProductOrServiceAxis:lly:OtherImmunologyMember 1.032000e+09
+us-gaap:Revenues 2025-06-30                      srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 2.540000e+08
+us-gaap:Revenues 2025-06-30             srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:OtherImmunologyMember 4.800000e+08
+us-gaap:Revenues 2025-06-30                                                                srt:ProductOrServiceAxis:lly:OtherImmunologyMember 7.340000e+08
+us-gaap:Revenues 2026-06-30                           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ImmunologyMember 1.409000e+09
+us-gaap:Revenues 2026-06-30                  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ImmunologyMember 1.211000e+09
+us-gaap:Revenues 2026-06-30                                                                     srt:ProductOrServiceAxis:lly:ImmunologyMember 2.620000e+09
+us-gaap:Revenues 2025-06-30                           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:ImmunologyMember 1.279000e+09
+us-gaap:Revenues 2025-06-30                  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:ImmunologyMember 1.065000e+09
+us-gaap:Revenues 2025-06-30                                                                     srt:ProductOrServiceAxis:lly:ImmunologyMember 2.344000e+09
+us-gaap:Revenues 2026-06-30                         srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:NeuroscienceMember 6.170000e+08
+us-gaap:Revenues 2026-06-30                srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:NeuroscienceMember 1.940000e+08
+us-gaap:Revenues 2026-06-30                                                                   srt:ProductOrServiceAxis:lly:NeuroscienceMember 8.110000e+08
+us-gaap:Revenues 2025-06-30                         srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:lly:NeuroscienceMember 4.370000e+08
+us-gaap:Revenues 2025-06-30                srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:lly:NeuroscienceMember 1.790000e+08
+us-gaap:Revenues 2025-06-30                                                                   srt:ProductOrServiceAxis:lly:NeuroscienceMember 6.160000e+08
+us-gaap:Revenues 2026-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 1.400000e+08
+us-gaap:Revenues 2026-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 2.520000e+08
+us-gaap:Revenues 2026-06-30                                                     srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 3.920000e+08
+us-gaap:Revenues 2025-06-30           srt:StatementGeographicalAxis:country:US; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 1.820000e+08
+us-gaap:Revenues 2025-06-30  srt:StatementGeographicalAxis:us-gaap:NonUsMember; srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 2.320000e+08
+us-gaap:Revenues 2025-06-30                                                     srt:ProductOrServiceAxis:us-gaap:ProductAndServiceOtherMember 4.140000e+08
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:US 2.653200e+10
+us-gaap:Revenues 2026-06-30                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember 1.624100e+10
+us-gaap:Revenues 2026-06-30                                                                                                                   4.277300e+10
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:US 1.930400e+10
+us-gaap:Revenues 2025-06-30                                                                 srt:StatementGeographicalAxis:us-gaap:NonUsMember 8.983000e+09
+us-gaap:Revenues 2025-06-30                                                                                                                   2.828600e+10
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:US 1.441300e+10
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:US 1.081400e+10
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:US 2.653200e+10
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:US 1.930400e+10
+us-gaap:Revenues 2026-06-30                                                                    srt:StatementGeographicalAxis:srt:EuropeMember 4.115000e+09
+us-gaap:Revenues 2025-06-30                                                                    srt:StatementGeographicalAxis:srt:EuropeMember 2.574000e+09
+us-gaap:Revenues 2026-06-30                                                                    srt:StatementGeographicalAxis:srt:EuropeMember 7.760000e+09
+us-gaap:Revenues 2025-06-30                                                                    srt:StatementGeographicalAxis:srt:EuropeMember 4.963000e+09
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:CN 9.410000e+08
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:CN 4.660000e+08
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:CN 1.635000e+09
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:CN 9.170000e+08
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:JP 6.280000e+08
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:JP 5.210000e+08
+us-gaap:Revenues 2026-06-30                                                                          srt:StatementGeographicalAxis:country:JP 1.199000e+09
+us-gaap:Revenues 2025-06-30                                                                          srt:StatementGeographicalAxis:country:JP 9.230000e+08
+us-gaap:Revenues 2026-06-30                                                               srt:StatementGeographicalAxis:lly:RestOfWorldMember 2.877000e+09
+us-gaap:Revenues 2025-06-30                                                               srt:StatementGeographicalAxis:lly:RestOfWorldMember 1.182000e+09
+us-gaap:Revenues 2026-06-30                                                               srt:StatementGeographicalAxis:lly:RestOfWorldMember 5.648000e+09
+us-gaap:Revenues 2025-06-30                                                               srt:StatementGeographicalAxis:lly:RestOfWorldMember 2.180000e+09
+us-gaap:Revenues 2026-06-30                                                                                                                   2.297400e+10
+us-gaap:Revenues 2025-06-30                                                                                                                   1.555800e+10
+us-gaap:Revenues 2026-06-30                                                                                                                   4.277300e+10
+us-gaap:Revenues 2025-06-30                                                                                                                   2.828600e+10
+us-gaap:Revenues 2026-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.232000e+09
+us-gaap:Revenues 2025-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 6.900000e+08
+us-gaap:Revenues 2026-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 2.346000e+09
+us-gaap:Revenues 2025-06-30                                                                      srt:ProductOrServiceAxis:lly:JardianceMember 1.704000e+09
+us-gaap:Revenues 2026-06-30 us-gaap:TypeOfArrangementAxis:lly:MilestonePaymentsSalesBasedMember; srt:ProductOrServiceAxis:lly:JardianceMember 2.500000e+08
+us-gaap:Revenues 2026-06-30 us-gaap:TypeOfArrangementAxis:lly:MilestonePaymentsSalesBasedMember; srt:ProductOrServiceAxis:lly:JardianceMember 5.000000e+08
+us-gaap:Revenues 2025-06-30 us-gaap:TypeOfArrangementAxis:lly:MilestonePaymentsSalesBasedMember; srt:ProductOrServiceAxis:lly:JardianceMember 3.700000e+08
+us-gaap:Revenues 2026-06-30                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 2.297400e+10
+us-gaap:Revenues 2025-06-30                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 1.555800e+10
+us-gaap:Revenues 2026-06-30                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 4.277300e+10
+us-gaap:Revenues 2025-06-30                                                 us-gaap:StatementBusinessSegmentsAxis:lly:ReportableSegmentMember 2.828600e+10

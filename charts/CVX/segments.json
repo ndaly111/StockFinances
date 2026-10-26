@@ -1,0 +1,59 @@
+{
+ "ticker": "CVX",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:41:16+00:00",
+ "axes": [
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Downstream",
+     "revenue": {
+      "2023": 302076000000.0,
+      "2024": 292868000000.0,
+      "2025": 261752000000.0,
+      "TTM": 295894000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Reportable Aggregation Before Other Operating",
+     "revenue": {
+      "2023": 245545000000.0,
+      "2024": 245615000000.0,
+      "2025": 230789000000.0,
+      "TTM": 267550000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Upstream",
+     "revenue": {
+      "2023": 91484000000.0,
+      "2024": 93696000000.0,
+      "2025": 106904000000.0,
+      "TTM": 121340000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "All Other Segments",
+     "revenue": {
+      "2023": 597000000.0,
+      "2024": 617000000.0,
+      "2025": 581000000.0,
+      "TTM": 589000000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

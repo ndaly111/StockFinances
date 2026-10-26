@@ -361,6 +361,30 @@ def load_cik_map() -> dict:
     return out
 
 
+def _apply_pre_ipo(tk: str, d: dict) -> None:
+    """Pre-IPO pages (data/pre_ipo.json): drop the price-driven sections, which
+    have nothing to show before the stock trades, and say where the numbers
+    come from."""
+    try:
+        meta = json.loads((ROOT / "data" / "pre_ipo.json").read_text(encoding="utf-8")).get(tk.upper())
+    except Exception:  # noqa: BLE001
+        meta = None
+    if not meta:
+        return
+    figs, html = d.get("figures", {}), d.get("html", {})
+    for k in [k for k in figs if k in ("chart-valuation", "chart-impliedgrowth")]:
+        del figs[k]
+    for k in [k for k in html if k.startswith(("valuation_", "impliedgrowth_"))]:
+        del html[k]
+    d["name"] = meta["name"]
+    d["metrics_footnote"] = (
+        f'Pre-IPO: {meta["name"]} filed its S-1 on {meta["filed"]} '
+        f'(<a href="{meta["s1_url"]}">prospectus</a>) and has not started trading. '
+        "Financials are from the S-1 (FY2023-2025 audited, quarters through Q2 2026 unaudited; "
+        "TTM = the four quarters ended June 30, 2026). Price and valuation appear once it lists."
+    )
+
+
 def _build_one(args):
     """Build + write one ticker's JSON. Runs in a worker process; returns a
     (ticker, size_or_None, error_or_None) tuple. Self-contained error handling
@@ -370,6 +394,7 @@ def _build_one(args):
         if not cik:
             return (tk, None, "no CIK")
         d = build_data(tk, cik)
+        _apply_pre_ipo(tk, d)
         out_path = OUT_DIR / f"{tk.upper()}.json"
         out_path.write_text(json.dumps(d, separators=(",", ":"), default=str), encoding="utf-8")
         return (tk, out_path.stat().st_size, None)
@@ -388,8 +413,24 @@ def main():
     except Exception as e:  # noqa: BLE001
         print(f"[gen_ticker_json] CIK map load failed ({e}); per-ticker fallback")
         cik_map = None
-    work = [(tk, (cik_map.get(tk.upper()) if cik_map is not None else cik_for(tk)))
-            for tk in tickers]
+    # Pre-IPO companies (public S-1, no listing yet) aren't in tickers.csv or
+    # SEC's ticker map: build them from data/pre_ipo.json on every full run.
+    pre_ipo = {}
+    try:
+        pre_ipo = {k: v for k, v in json.loads(
+            (ROOT / "data" / "pre_ipo.json").read_text(encoding="utf-8")).items()
+            if not k.startswith("_")}
+    except Exception as e:  # noqa: BLE001
+        print(f"[gen_ticker_json] pre_ipo.json unreadable ({e})")
+    if sys.argv[1:] and len(tickers) > 1:
+        tickers = tickers + [t for t in pre_ipo if t not in tickers]
+
+    def _cik(tk):
+        if tk.upper() in pre_ipo:
+            return pre_ipo[tk.upper()]["cik"]
+        return cik_map.get(tk.upper()) if cik_map is not None else cik_for(tk)
+
+    work = [(tk, _cik(tk)) for tk in tickers]
 
     failed = []
 

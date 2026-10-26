@@ -56,43 +56,83 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31          
                                 us-gaap:OperatingIncomeLoss 2025-12-31                                                                                               1435441000.0
                                 us-gaap:OperatingIncomeLoss 2024-12-31                                                                                               2307160000.0
                                 us-gaap:OperatingIncomeLoss 2023-12-31                                                                                               -161662000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                  srt:ProductOrServiceAxis:coin:BankServicingConsumerNetMember  566899000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                  srt:ProductOrServiceAxis:coin:BankServicingConsumerNetMember 1095506000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                srt:ProductOrServiceAxis:coin:BankServicingInstitutionalMember  135726000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                srt:ProductOrServiceAxis:coin:BankServicingInstitutionalMember   98888000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                        srt:ProductOrServiceAxis:coin:BankServicingOtherMember   53200000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                        srt:ProductOrServiceAxis:coin:BankServicingOtherMember   67814000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                                          srt:ProductOrServiceAxis:us-gaap:BankServicingMember  755825000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                                          srt:ProductOrServiceAxis:us-gaap:BankServicingMember 1262208000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                      srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationStablecoinMember  305435000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                      srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationStablecoinMember  274037000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31 srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationBlockchainInfrastructureServiceMember  100849000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31 srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationBlockchainInfrastructureServiceMember  196592000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                           srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationOtherMember  109434000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                           srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationOtherMember  140898000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-03-31                             srt:ProductOrServiceAxis:us-gaap:SubscriptionAndCirculationMember  583523000.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-03-31                             srt:ProductOrServiceAxis:us-gaap:SubscriptionAndCirculationMember  674613000.0
-                                           us-gaap:Revenues 2026-03-31                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1339348000.0
-                                           us-gaap:Revenues 2025-03-31                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1936821000.0
-                                           us-gaap:Revenues 2026-03-31                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember   73634000.0
-                                           us-gaap:Revenues 2025-03-31                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember   97474000.0
-                                           us-gaap:Revenues 2026-03-31                                                                                               1412982000.0
-                                           us-gaap:Revenues 2025-03-31                                                                                               2034295000.0
-                                           us-gaap:Revenues 2026-03-31                 srt:RestatementAxis:srt:RevisionOfPriorPeriodReclassificationAdjustmentMember   23500000.0
-                                           us-gaap:Revenues 2026-03-31                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1339348000.0
-                                           us-gaap:Revenues 2025-03-31                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1936821000.0
-                                           us-gaap:Revenues 2026-03-31                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember   73634000.0
-                                           us-gaap:Revenues 2025-03-31                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember   97474000.0
-                                           us-gaap:Revenues 2026-03-31                                                                                               1412982000.0
-                                           us-gaap:Revenues 2025-03-31                                                                                               2034295000.0
-                                           us-gaap:Revenues 2026-03-31                 srt:RestatementAxis:srt:RevisionOfPriorPeriodReclassificationAdjustmentMember   23500000.0
-                                           us-gaap:Revenues 2026-03-31                                                      srt:StatementGeographicalAxis:country:US 1184401000.0
-                                           us-gaap:Revenues 2025-03-31                                                      srt:StatementGeographicalAxis:country:US 1705652000.0
-                                           us-gaap:Revenues 2026-03-31                                             srt:StatementGeographicalAxis:us-gaap:NonUsMember  228581000.0
-                                           us-gaap:Revenues 2025-03-31                                             srt:StatementGeographicalAxis:us-gaap:NonUsMember  328643000.0
-                                           us-gaap:Revenues 2026-03-31                                                                                               1412982000.0
-                                           us-gaap:Revenues 2025-03-31                                                                                               2034295000.0
-                                           us-gaap:Revenues 2026-03-31                 us-gaap:RelatedPartyTransactionsByRelatedPartyAxis:us-gaap:RelatedPartyMember    1800000.0
-                                           us-gaap:Revenues 2025-03-31                 us-gaap:RelatedPartyTransactionsByRelatedPartyAxis:us-gaap:RelatedPartyMember    3600000.0
-                                us-gaap:OperatingIncomeLoss 2026-03-31                                                                                                -21421000.0
-                                us-gaap:OperatingIncomeLoss 2025-03-31                                                                                                705806000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                  srt:ProductOrServiceAxis:coin:BankServicingConsumerNetMember  451670000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                  srt:ProductOrServiceAxis:coin:BankServicingConsumerNetMember  649908000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                  srt:ProductOrServiceAxis:coin:BankServicingConsumerNetMember 1018569000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                  srt:ProductOrServiceAxis:coin:BankServicingConsumerNetMember 1745414000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                srt:ProductOrServiceAxis:coin:BankServicingInstitutionalMember  100073000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                srt:ProductOrServiceAxis:coin:BankServicingInstitutionalMember   60819000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                srt:ProductOrServiceAxis:coin:BankServicingInstitutionalMember  235799000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                srt:ProductOrServiceAxis:coin:BankServicingInstitutionalMember  159707000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                        srt:ProductOrServiceAxis:coin:BankServicingOtherMember   47413000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                        srt:ProductOrServiceAxis:coin:BankServicingOtherMember   53543000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                        srt:ProductOrServiceAxis:coin:BankServicingOtherMember  100613000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                        srt:ProductOrServiceAxis:coin:BankServicingOtherMember  121357000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                          srt:ProductOrServiceAxis:us-gaap:BankServicingMember  599156000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                          srt:ProductOrServiceAxis:us-gaap:BankServicingMember  764270000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                          srt:ProductOrServiceAxis:us-gaap:BankServicingMember 1354981000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                          srt:ProductOrServiceAxis:us-gaap:BankServicingMember 2026478000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                      srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationStablecoinMember  292147000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                      srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationStablecoinMember  308914000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                      srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationStablecoinMember  597582000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                      srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationStablecoinMember  582951000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30 srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationBlockchainInfrastructureServiceMember   83342000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationBlockchainInfrastructureServiceMember  144535000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30 srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationBlockchainInfrastructureServiceMember  184191000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30 srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationBlockchainInfrastructureServiceMember  341127000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                           srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationOtherMember  113528000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                           srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationOtherMember  119478000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                           srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationOtherMember  222962000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                           srt:ProductOrServiceAxis:coin:SubscriptionAndCirculationOtherMember  260376000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                             srt:ProductOrServiceAxis:us-gaap:SubscriptionAndCirculationMember  555145000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                             srt:ProductOrServiceAxis:us-gaap:SubscriptionAndCirculationMember  632243000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                             srt:ProductOrServiceAxis:us-gaap:SubscriptionAndCirculationMember 1138668000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                             srt:ProductOrServiceAxis:us-gaap:SubscriptionAndCirculationMember 1306856000.0
+                                           us-gaap:Revenues 2026-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1154301000.0
+                                           us-gaap:Revenues 2025-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1396513000.0
+                                           us-gaap:Revenues 2026-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 2493649000.0
+                                           us-gaap:Revenues 2025-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 3333334000.0
+                                           us-gaap:Revenues 2026-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember   65767000.0
+                                           us-gaap:Revenues 2025-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember  100695000.0
+                                           us-gaap:Revenues 2026-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember  139401000.0
+                                           us-gaap:Revenues 2025-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember  198169000.0
+                                           us-gaap:Revenues 2026-06-30                                                                                               1220068000.0
+                                           us-gaap:Revenues 2025-06-30                                                                                               1497208000.0
+                                           us-gaap:Revenues 2026-06-30                                                                                               2633050000.0
+                                           us-gaap:Revenues 2025-06-30                                                                                               3531503000.0
+                                           us-gaap:Revenues 2025-06-30                 srt:RestatementAxis:srt:RevisionOfPriorPeriodReclassificationAdjustmentMember   23600000.0
+                                           us-gaap:Revenues 2025-06-30                 srt:RestatementAxis:srt:RevisionOfPriorPeriodReclassificationAdjustmentMember   47100000.0
+                                           us-gaap:Revenues 2026-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1154301000.0
+                                           us-gaap:Revenues 2025-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 1396513000.0
+                                           us-gaap:Revenues 2026-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 2493649000.0
+                                           us-gaap:Revenues 2025-06-30                srt:ProductOrServiceAxis:coin:BankServicingAndSubscriptionAndCirculationMember 3333334000.0
+                                           us-gaap:Revenues 2026-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember   65767000.0
+                                           us-gaap:Revenues 2025-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember  100695000.0
+                                           us-gaap:Revenues 2026-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember  139401000.0
+                                           us-gaap:Revenues 2025-06-30                                              srt:ProductOrServiceAxis:coin:OtherRevenueMember  198169000.0
+                                           us-gaap:Revenues 2026-06-30                                                                                               1220068000.0
+                                           us-gaap:Revenues 2025-06-30                                                                                               1497208000.0
+                                           us-gaap:Revenues 2026-06-30                                                                                               2633050000.0
+                                           us-gaap:Revenues 2025-06-30                                                                                               3531503000.0
+                                           us-gaap:Revenues 2025-06-30                 srt:RestatementAxis:srt:RevisionOfPriorPeriodReclassificationAdjustmentMember   23600000.0
+                                           us-gaap:Revenues 2025-06-30                 srt:RestatementAxis:srt:RevisionOfPriorPeriodReclassificationAdjustmentMember   47100000.0
+                                           us-gaap:Revenues 2026-06-30                                                      srt:StatementGeographicalAxis:country:US 1037166000.0
+                                           us-gaap:Revenues 2025-06-30                                                      srt:StatementGeographicalAxis:country:US 1291616000.0
+                                           us-gaap:Revenues 2026-06-30                                                      srt:StatementGeographicalAxis:country:US 2221567000.0
+                                           us-gaap:Revenues 2025-06-30                                                      srt:StatementGeographicalAxis:country:US 2997268000.0
+                                           us-gaap:Revenues 2026-06-30                                             srt:StatementGeographicalAxis:us-gaap:NonUsMember  182902000.0
+                                           us-gaap:Revenues 2025-06-30                                             srt:StatementGeographicalAxis:us-gaap:NonUsMember  205592000.0
+                                           us-gaap:Revenues 2026-06-30                                             srt:StatementGeographicalAxis:us-gaap:NonUsMember  411483000.0
+                                           us-gaap:Revenues 2025-06-30                                             srt:StatementGeographicalAxis:us-gaap:NonUsMember  534235000.0
+                                           us-gaap:Revenues 2026-06-30                                                                                               1220068000.0
+                                           us-gaap:Revenues 2025-06-30                                                                                               1497208000.0
+                                           us-gaap:Revenues 2026-06-30                                                                                               2633050000.0
+                                           us-gaap:Revenues 2025-06-30                                                                                               3531503000.0
+                                           us-gaap:Revenues 2026-06-30                 us-gaap:RelatedPartyTransactionsByRelatedPartyAxis:us-gaap:RelatedPartyMember     900000.0
+                                           us-gaap:Revenues 2025-06-30                 us-gaap:RelatedPartyTransactionsByRelatedPartyAxis:us-gaap:RelatedPartyMember    1600000.0
+                                           us-gaap:Revenues 2026-06-30                 us-gaap:RelatedPartyTransactionsByRelatedPartyAxis:us-gaap:RelatedPartyMember    2700000.0
+                                           us-gaap:Revenues 2025-06-30                 us-gaap:RelatedPartyTransactionsByRelatedPartyAxis:us-gaap:RelatedPartyMember    5200000.0
+                                us-gaap:OperatingIncomeLoss 2026-06-30                                                                                               -113488000.0
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                -24650000.0
+                                us-gaap:OperatingIncomeLoss 2026-06-30                                                                                               -134909000.0
+                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                681156000.0

@@ -1,0 +1,39 @@
+{
+ "ticker": "SNAP",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:57:36+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Advertising Revenue",
+     "revenue": {
+      "2023": 4408306000.0,
+      "2024": 4903703000.0,
+      "2025": 5186077000.0,
+      "TTM": 5327644000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Other Revenue",
+     "revenue": {
+      "2023": 197809000.0,
+      "2024": 457695000.0,
+      "2025": 745370000.0,
+      "TTM": 1023440000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

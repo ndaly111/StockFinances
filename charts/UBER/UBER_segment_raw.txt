@@ -47,35 +47,67 @@ us-gaap:OperatingIncomeLoss 2025-12-31                                          
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                        1.110000e+09
 us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                        2.799000e+09
 us-gaap:OperatingIncomeLoss 2025-12-31                                                                                                                        5.565000e+09
-           us-gaap:Revenues 2025-03-31                                                                                                                        1.153300e+10
-           us-gaap:Revenues 2026-03-31                                                                                                                        1.320300e+10
-           us-gaap:Revenues 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  6.496000e+09
-           us-gaap:Revenues 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  3.777000e+09
-           us-gaap:Revenues 2025-03-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  1.260000e+09
-           us-gaap:Revenues 2025-03-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.153300e+10
-           us-gaap:Revenues 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  6.798000e+09
-           us-gaap:Revenues 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  5.068000e+09
-           us-gaap:Revenues 2026-03-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  1.337000e+09
-           us-gaap:Revenues 2026-03-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.320300e+10
-           us-gaap:Revenues 2025-03-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  6.219000e+09
-           us-gaap:Revenues 2026-03-31                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  7.128000e+09
-           us-gaap:Revenues 2025-03-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  7.170000e+08
-           us-gaap:Revenues 2026-03-31                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  9.780000e+08
-           us-gaap:Revenues 2025-03-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  3.321000e+09
-           us-gaap:Revenues 2026-03-31                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  3.420000e+09
-           us-gaap:Revenues 2025-03-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.276000e+09
-           us-gaap:Revenues 2026-03-31                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.677000e+09
-           us-gaap:Revenues 2025-03-31                                                                                                                        1.153300e+10
-           us-gaap:Revenues 2026-03-31                                                                                                                        1.320300e+10
-us-gaap:OperatingIncomeLoss 2025-03-31                                                                                                                        1.228000e+09
-us-gaap:OperatingIncomeLoss 2026-03-31                                                                                                                        1.923000e+09
-us-gaap:OperatingIncomeLoss 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.587000e+09
-us-gaap:OperatingIncomeLoss 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  6.710000e+08
-us-gaap:OperatingIncomeLoss 2025-03-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember -2.500000e+07
-us-gaap:OperatingIncomeLoss 2025-03-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  2.233000e+09
-us-gaap:OperatingIncomeLoss 2025-03-31                                                                                                                        1.228000e+09
-us-gaap:OperatingIncomeLoss 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  2.029000e+09
-us-gaap:OperatingIncomeLoss 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  9.610000e+08
-us-gaap:OperatingIncomeLoss 2026-03-31  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember -3.000000e+07
-us-gaap:OperatingIncomeLoss 2026-03-31                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  2.960000e+09
-us-gaap:OperatingIncomeLoss 2026-03-31                                                                                                                        1.923000e+09
+           us-gaap:Revenues 2025-06-30                                                                                                                        1.265100e+10
+           us-gaap:Revenues 2026-06-30                                                                                                                        1.419100e+10
+           us-gaap:Revenues 2025-06-30                                                                                                                        2.418400e+10
+           us-gaap:Revenues 2026-06-30                                                                                                                        2.739400e+10
+           us-gaap:Revenues 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  7.288000e+09
+           us-gaap:Revenues 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  4.102000e+09
+           us-gaap:Revenues 2025-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  1.261000e+09
+           us-gaap:Revenues 2025-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.265100e+10
+           us-gaap:Revenues 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  7.363000e+09
+           us-gaap:Revenues 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  5.245000e+09
+           us-gaap:Revenues 2026-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  1.583000e+09
+           us-gaap:Revenues 2026-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.419100e+10
+           us-gaap:Revenues 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.378400e+10
+           us-gaap:Revenues 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  7.879000e+09
+           us-gaap:Revenues 2025-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  2.521000e+09
+           us-gaap:Revenues 2025-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  2.418400e+10
+           us-gaap:Revenues 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.416100e+10
+           us-gaap:Revenues 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.031300e+10
+           us-gaap:Revenues 2026-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember  2.920000e+09
+           us-gaap:Revenues 2026-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  2.739400e+10
+           us-gaap:Revenues 2025-06-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  6.561000e+09
+           us-gaap:Revenues 2026-06-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  7.609000e+09
+           us-gaap:Revenues 2025-06-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  1.278000e+10
+           us-gaap:Revenues 2026-06-30                                                        srt:StatementGeographicalAxis:uber:UnitedStatesAndCanadaMember  1.473700e+10
+           us-gaap:Revenues 2025-06-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  7.890000e+08
+           us-gaap:Revenues 2026-06-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  1.022000e+09
+           us-gaap:Revenues 2025-06-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  1.506000e+09
+           us-gaap:Revenues 2026-06-30                                                                  srt:StatementGeographicalAxis:srt:LatinAmericaMember  2.000000e+09
+           us-gaap:Revenues 2025-06-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  3.897000e+09
+           us-gaap:Revenues 2026-06-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  3.752000e+09
+           us-gaap:Revenues 2025-06-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  7.218000e+09
+           us-gaap:Revenues 2026-06-30                                                                      srt:StatementGeographicalAxis:us-gaap:EMEAMember  7.172000e+09
+           us-gaap:Revenues 2025-06-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.404000e+09
+           us-gaap:Revenues 2026-06-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  1.808000e+09
+           us-gaap:Revenues 2025-06-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  2.680000e+09
+           us-gaap:Revenues 2026-06-30                                                                   srt:StatementGeographicalAxis:srt:AsiaPacificMember  3.485000e+09
+           us-gaap:Revenues 2025-06-30                                                                                                                        1.265100e+10
+           us-gaap:Revenues 2026-06-30                                                                                                                        1.419100e+10
+           us-gaap:Revenues 2025-06-30                                                                                                                        2.418400e+10
+           us-gaap:Revenues 2026-06-30                                                                                                                        2.739400e+10
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                        1.450000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                        1.890000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                        2.678000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                        3.813000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  1.729000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  7.660000e+08
+us-gaap:OperatingIncomeLoss 2025-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember -2.600000e+07
+us-gaap:OperatingIncomeLoss 2025-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  2.469000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                        1.450000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  2.215000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.055000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember -2.400000e+07
+us-gaap:OperatingIncomeLoss 2026-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  3.246000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                        1.890000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  3.316000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  1.437000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember -5.100000e+07
+us-gaap:OperatingIncomeLoss 2025-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  4.702000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                        2.678000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:MobilityMember  4.244000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:DeliveryMember  2.016000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:uber:FreightMember -5.400000e+07
+us-gaap:OperatingIncomeLoss 2026-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  6.206000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                        3.813000e+09

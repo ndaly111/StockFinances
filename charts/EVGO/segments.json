@@ -1,0 +1,90 @@
+{
+ "ticker": "EVGO",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:42:31+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Charging Network Revenue",
+     "revenue": {
+      "2024": 155672000.0,
+      "2025": 218345000.0,
+      "TTM": 236557000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Charging Revenue Retail",
+     "revenue": {
+      "2024": 96654000.0,
+      "2025": 133868000.0,
+      "TTM": 142643000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Extend",
+     "revenue": {
+      "2024": 86612000.0,
+      "2025": 116480000.0,
+      "TTM": 106811000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Ancillary Revenue",
+     "revenue": {
+      "2024": 14541000.0,
+      "2025": 49261000.0,
+      "TTM": 59580000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Charging Revenue Commercial",
+     "revenue": {
+      "2024": 26686000.0,
+      "2025": 34760000.0,
+      "TTM": 38038000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Network Revenue Oem",
+     "revenue": {
+      "2024": 7791000.0,
+      "2025": 13413000.0,
+      "TTM": 21843000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Charging Revenue Oem",
+     "revenue": {
+      "2024": 15554000.0,
+      "2025": 26112000.0,
+      "TTM": 21107000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Regulatory Credit Sales",
+     "revenue": {
+      "2024": 8987000.0,
+      "2025": 10192000.0,
+      "TTM": 12926000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

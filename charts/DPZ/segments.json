@@ -1,0 +1,121 @@
+{
+ "ticker": "DPZ",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:42:20+00:00",
+ "axes": [
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Supply Chain",
+     "revenue": {
+      "2023": 2715009000.0,
+      "2024": 2845781000.0,
+      "2025": 2989529000.0,
+      "TTM": 3112419000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "U S Stores",
+     "revenue": {
+      "2023": 1454272000.0,
+      "2024": 1541944000.0,
+      "2025": 1611761000.0,
+      "TTM": 1600006000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "International Franchise",
+     "revenue": {
+      "2023": 310077000.0,
+      "2024": 318691000.0,
+      "2025": 338704000.0,
+      "TTM": 353934000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "SubsegmentsAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Supply Chain Center",
+     "revenue": {
+      "2023": 2829224000.0,
+      "2024": 2966953000.0,
+      "2025": 3106047000.0,
+      "TTM": 3216937000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Domestic Franchise",
+     "revenue": {
+      "2023": 604897000.0,
+      "2024": 638193000.0,
+      "2025": 677114000.0,
+      "TTM": 700515000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Domestic Franchise Advertising",
+     "revenue": {
+      "2023": 473195000.0,
+      "2024": 509853000.0,
+      "2025": 559494000.0,
+      "TTM": 565782000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "International Franchise Royalties And Fees",
+     "revenue": {
+      "2023": 310077000.0,
+      "2024": 318691000.0,
+      "2025": 338704000.0,
+      "TTM": 353934000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Domestic Company Owned Stores",
+     "revenue": {
+      "2023": 376180000.0,
+      "2024": 393898000.0,
+      "2025": 375153000.0,
+      "TTM": 333709000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Supply Chain Intersegment Revenues",
+     "revenue": {
+      "2023": -114215000.0,
+      "2024": -121172000.0,
+      "2025": 116518000.0,
+      "TTM": 128518000.0
+     },
+     "profit": {}
+    }
+   ]
+  }
+ ]
+}

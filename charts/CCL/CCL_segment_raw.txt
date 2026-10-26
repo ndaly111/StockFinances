@@ -41,31 +41,59 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-11-30          
                                 us-gaap:OperatingIncomeLoss 2025-11-30                                                                     4.483000e+09
                                 us-gaap:OperatingIncomeLoss 2024-11-30                                                                     3.574000e+09
                                 us-gaap:OperatingIncomeLoss 2023-11-30                                                                     1.956000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28            srt:ProductOrServiceAxis:ccl:CruisePassengerTicketMember 4.023000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28            srt:ProductOrServiceAxis:ccl:CruisePassengerTicketMember 3.832000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28            srt:ProductOrServiceAxis:ccl:CruiseOnboardAndOtherMember 2.142000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28            srt:ProductOrServiceAxis:ccl:CruiseOnboardAndOtherMember 1.978000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28                                                                     6.165000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28                                                                     5.810000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28                            srt:StatementGeographicalAxis:country:US 3.293000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28                            srt:StatementGeographicalAxis:country:US 3.185000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28                            srt:StatementGeographicalAxis:country:DE 8.210000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28                            srt:StatementGeographicalAxis:country:DE 6.830000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28                            srt:StatementGeographicalAxis:country:GB 7.780000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28                            srt:StatementGeographicalAxis:country:GB 6.700000e+08
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28     srt:StatementGeographicalAxis:ccl:AllOtherGeographicAreasMember 1.274000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28     srt:StatementGeographicalAxis:ccl:AllOtherGeographicAreasMember 1.272000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28                                                                     6.165000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28                                                                     5.810000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28 us-gaap:StatementBusinessSegmentsAxis:ccl:NorthAmericaSegmentMember 4.019000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28       us-gaap:StatementBusinessSegmentsAxis:ccl:EuropeSegmentMember 2.069000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28              us-gaap:StatementBusinessSegmentsAxis:ccl:CruiseMember 7.700000e+07
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28        us-gaap:StatementBusinessSegmentsAxis:ccl:TourAndOtherMember 0.000000e+00
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-02-28                                                                     6.165000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28 us-gaap:StatementBusinessSegmentsAxis:ccl:NorthAmericaSegmentMember 3.906000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28       us-gaap:StatementBusinessSegmentsAxis:ccl:EuropeSegmentMember 1.830000e+09
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28              us-gaap:StatementBusinessSegmentsAxis:ccl:CruiseMember 7.200000e+07
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28        us-gaap:StatementBusinessSegmentsAxis:ccl:TourAndOtherMember 2.000000e+06
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-02-28                                                                     5.810000e+09
-                                us-gaap:OperatingIncomeLoss 2026-02-28                                                                     6.070000e+08
-                                us-gaap:OperatingIncomeLoss 2025-02-28                                                                     5.430000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31            srt:ProductOrServiceAxis:ccl:CruisePassengerTicketMember 5.529000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31            srt:ProductOrServiceAxis:ccl:CruisePassengerTicketMember 5.430000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31            srt:ProductOrServiceAxis:ccl:CruisePassengerTicketMember 1.382500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31            srt:ProductOrServiceAxis:ccl:CruisePassengerTicketMember 1.336600e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31            srt:ProductOrServiceAxis:ccl:CruiseOnboardAndOtherMember 2.906000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31            srt:ProductOrServiceAxis:ccl:CruiseOnboardAndOtherMember 2.723000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31            srt:ProductOrServiceAxis:ccl:CruiseOnboardAndOtherMember 7.438000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31            srt:ProductOrServiceAxis:ccl:CruiseOnboardAndOtherMember 6.925000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                                                                     8.435000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                                                                     8.153000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                                                                     2.126300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                                                                     2.029200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                            srt:StatementGeographicalAxis:country:US 4.989000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                            srt:StatementGeographicalAxis:country:US 4.764000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                            srt:StatementGeographicalAxis:country:US 1.187500e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                            srt:StatementGeographicalAxis:country:US 1.142400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                            srt:StatementGeographicalAxis:country:DE 9.910000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                            srt:StatementGeographicalAxis:country:DE 9.870000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                            srt:StatementGeographicalAxis:country:DE 2.678000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                            srt:StatementGeographicalAxis:country:DE 2.498000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                            srt:StatementGeographicalAxis:country:GB 9.030000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                            srt:StatementGeographicalAxis:country:GB 8.700000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                            srt:StatementGeographicalAxis:country:GB 2.472000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                            srt:StatementGeographicalAxis:country:GB 2.276000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31     srt:StatementGeographicalAxis:ccl:AllOtherGeographicAreasMember 1.552000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31     srt:StatementGeographicalAxis:ccl:AllOtherGeographicAreasMember 1.532000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31     srt:StatementGeographicalAxis:ccl:AllOtherGeographicAreasMember 4.239000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31     srt:StatementGeographicalAxis:ccl:AllOtherGeographicAreasMember 4.094000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                                                                     8.435000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                                                                     8.153000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                                                                     2.126300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                                                                     2.029200e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31 us-gaap:StatementBusinessSegmentsAxis:ccl:NorthAmericaSegmentMember 5.543000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31       us-gaap:StatementBusinessSegmentsAxis:ccl:EuropeSegmentMember 2.606000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31              us-gaap:StatementBusinessSegmentsAxis:ccl:CruiseMember 9.600000e+07
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31        us-gaap:StatementBusinessSegmentsAxis:ccl:TourAndOtherMember 1.910000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                                                                     8.435000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31 us-gaap:StatementBusinessSegmentsAxis:ccl:NorthAmericaSegmentMember 5.348000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31       us-gaap:StatementBusinessSegmentsAxis:ccl:EuropeSegmentMember 2.551000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31              us-gaap:StatementBusinessSegmentsAxis:ccl:CruiseMember 7.400000e+07
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31        us-gaap:StatementBusinessSegmentsAxis:ccl:TourAndOtherMember 1.790000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                                                                     8.153000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31 us-gaap:StatementBusinessSegmentsAxis:ccl:NorthAmericaSegmentMember 1.397400e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31       us-gaap:StatementBusinessSegmentsAxis:ccl:EuropeSegmentMember 6.797000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31              us-gaap:StatementBusinessSegmentsAxis:ccl:CruiseMember 2.680000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31        us-gaap:StatementBusinessSegmentsAxis:ccl:TourAndOtherMember 2.240000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-08-31                                                                     2.126300e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31 us-gaap:StatementBusinessSegmentsAxis:ccl:NorthAmericaSegmentMember 1.346900e+10
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31       us-gaap:StatementBusinessSegmentsAxis:ccl:EuropeSegmentMember 6.392000e+09
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31              us-gaap:StatementBusinessSegmentsAxis:ccl:CruiseMember 2.190000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31        us-gaap:StatementBusinessSegmentsAxis:ccl:TourAndOtherMember 2.120000e+08
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-08-31                                                                     2.029200e+10
+                                us-gaap:OperatingIncomeLoss 2026-08-31                                                                     2.220000e+09
+                                us-gaap:OperatingIncomeLoss 2025-08-31                                                                     2.271000e+09
+                                us-gaap:OperatingIncomeLoss 2026-08-31                                                                     3.678000e+09
+                                us-gaap:OperatingIncomeLoss 2025-08-31                                                                     3.748000e+09

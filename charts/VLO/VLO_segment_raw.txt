@@ -17,15 +17,27 @@ us-gaap:OperatingIncomeLoss 2023-12-31 srt:ConsolidationItemsAxis:us-gaap:Operat
 us-gaap:OperatingIncomeLoss 2023-12-31         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:EthanolMember  5.530000e+08
 us-gaap:OperatingIncomeLoss 2023-12-31                                                                  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.291600e+10
 us-gaap:OperatingIncomeLoss 2023-12-31                                                            srt:ConsolidationItemsAxis:us-gaap:IntersegmentEliminationMember -1.700000e+07
-us-gaap:OperatingIncomeLoss 2026-03-31                                                                                                                              1.731000e+09
-us-gaap:OperatingIncomeLoss 2025-03-31                                                                                                                             -9.000000e+08
-us-gaap:OperatingIncomeLoss 2026-03-31        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RefiningMember  1.806000e+09
-us-gaap:OperatingIncomeLoss 2026-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RenewableDieselMember  1.390000e+08
-us-gaap:OperatingIncomeLoss 2026-03-31         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:EthanolMember  9.000000e+07
-us-gaap:OperatingIncomeLoss 2026-03-31                                                                  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  2.035000e+09
-us-gaap:OperatingIncomeLoss 2026-03-31                                                            srt:ConsolidationItemsAxis:us-gaap:IntersegmentEliminationMember -7.000000e+06
-us-gaap:OperatingIncomeLoss 2025-03-31        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RefiningMember -5.300000e+08
-us-gaap:OperatingIncomeLoss 2025-03-31 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RenewableDieselMember -1.410000e+08
-us-gaap:OperatingIncomeLoss 2025-03-31         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:EthanolMember  2.000000e+07
-us-gaap:OperatingIncomeLoss 2025-03-31                                                                  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember -6.510000e+08
-us-gaap:OperatingIncomeLoss 2025-03-31                                                            srt:ConsolidationItemsAxis:us-gaap:IntersegmentEliminationMember  2.300000e+07
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                              5.196000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                              9.970000e+08
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                              6.927000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                              9.700000e+07
+us-gaap:OperatingIncomeLoss 2026-06-30        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RefiningMember  4.470000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RenewableDieselMember  7.170000e+08
+us-gaap:OperatingIncomeLoss 2026-06-30         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:EthanolMember  3.180000e+08
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  5.505000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:IntersegmentEliminationMember -5.400000e+07
+us-gaap:OperatingIncomeLoss 2025-06-30        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RefiningMember  1.266000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RenewableDieselMember -7.900000e+07
+us-gaap:OperatingIncomeLoss 2025-06-30         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:EthanolMember  5.400000e+07
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  1.241000e+09
+us-gaap:OperatingIncomeLoss 2025-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:IntersegmentEliminationMember  4.000000e+06
+us-gaap:OperatingIncomeLoss 2026-06-30        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RefiningMember  6.276000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RenewableDieselMember  8.560000e+08
+us-gaap:OperatingIncomeLoss 2026-06-30         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:EthanolMember  4.080000e+08
+us-gaap:OperatingIncomeLoss 2026-06-30                                                                  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  7.540000e+09
+us-gaap:OperatingIncomeLoss 2026-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:IntersegmentEliminationMember -6.100000e+07
+us-gaap:OperatingIncomeLoss 2025-06-30        srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RefiningMember  7.360000e+08
+us-gaap:OperatingIncomeLoss 2025-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:RenewableDieselMember -2.200000e+08
+us-gaap:OperatingIncomeLoss 2025-06-30         srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:vlo:EthanolMember  7.400000e+07
+us-gaap:OperatingIncomeLoss 2025-06-30                                                                  srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember  5.900000e+08
+us-gaap:OperatingIncomeLoss 2025-06-30                                                            srt:ConsolidationItemsAxis:us-gaap:IntersegmentEliminationMember  2.700000e+07

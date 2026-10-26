@@ -1,0 +1,201 @@
+{
+ "ticker": "DAL",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:41:29+00:00",
+ "axes": [
+  {
+   "axis": "ProductOrServiceAxis",
+   "profit_label": null,
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Passenger",
+     "revenue": {
+      "2023": 48909000000.0,
+      "2024": 50894000000.0,
+      "2025": 51768000000.0,
+      "TTM": 56359000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Passenger Air Traffic",
+     "revenue": {
+      "2023": 43596000000.0,
+      "2024": 45096000000.0,
+      "2025": 45488000000.0,
+      "TTM": 49473000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other",
+     "revenue": {
+      "2023": 8416000000.0,
+      "2024": 9927000000.0,
+      "2025": 10696000000.0,
+      "TTM": 14374000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other Refinery",
+     "revenue": {
+      "2023": 3379000000.0,
+      "2024": 4642000000.0,
+      "2025": 5077000000.0,
+      "TTM": 7743000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Passenger Loyalty Travel Awards",
+     "revenue": {
+      "2023": 3462000000.0,
+      "2024": 3841000000.0,
+      "2025": 4237000000.0,
+      "TTM": 4675000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other Loyalty Program",
+     "revenue": {
+      "2023": 3093000000.0,
+      "2024": 3297000000.0,
+      "2025": 3362000000.0,
+      "TTM": 3935000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Passenger Travel Related Services",
+     "revenue": {
+      "2023": 1851000000.0,
+      "2024": 1957000000.0,
+      "2025": 2043000000.0,
+      "TTM": 2211000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other Miscellaneous",
+     "revenue": {
+      "2023": 1104000000.0,
+      "2024": 1216000000.0,
+      "2025": 1320000000.0,
+      "TTM": 1390000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other Ancillary Businesses",
+     "revenue": {
+      "2023": 840000000.0,
+      "2024": 772000000.0,
+      "2025": 937000000.0,
+      "TTM": 1306000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Cargo And Freight",
+     "revenue": {
+      "2023": 723000000.0,
+      "2024": 822000000.0,
+      "2025": 900000000.0,
+      "TTM": 1067000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Product And Service Other M R O Business",
+     "revenue": {
+      "2023": null,
+      "2024": 658000000.0,
+      "2025": 822000000.0,
+      "TTM": 822000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Sales Of Refined Products To Third Parties",
+     "revenue": {
+      "2023": -304000000.0,
+      "2024": -231000000.0,
+      "2025": -154000000.0,
+      "TTM": -154000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Exchanged Products",
+     "revenue": {
+      "2023": -2400000000.0,
+      "2024": -1500000000.0,
+      "2025": -580000000.0,
+      "TTM": -580000000.0
+     },
+     "profit": {}
+    },
+    {
+     "name": "Sales To Airline",
+     "revenue": {
+      "2023": -1535000000.0,
+      "2024": -1421000000.0,
+      "2025": -1150000000.0,
+      "TTM": -1598000000.0
+     },
+     "profit": {}
+    }
+   ]
+  },
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": "Operating Income",
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Airline",
+     "revenue": {
+      "2023": 54669000000.0,
+      "2024": 57001000000.0,
+      "2025": 58287000000.0,
+      "TTM": 64057000000.0
+     },
+     "profit": {
+      "2023": 5136000000.0,
+      "2024": 5957000000.0,
+      "2025": 5665000000.0,
+      "TTM": 4893000000.0
+     }
+    },
+    {
+     "name": "Refinery",
+     "revenue": {
+      "2023": 7572000000.0,
+      "2024": 7767000000.0,
+      "2025": 6961000000.0,
+      "TTM": 9364000000.0
+     },
+     "profit": {
+      "2023": 385000000.0,
+      "2024": 38000000.0,
+      "2025": 157000000.0,
+      "TTM": 393000000.0
+     }
+    }
+   ]
+  }
+ ]
+}

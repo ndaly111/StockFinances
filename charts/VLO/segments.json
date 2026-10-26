@@ -1,0 +1,64 @@
+{
+ "ticker": "VLO",
+ "version": "SEGMENTS v2025-09-09",
+ "generated_at": "2026-10-26T18:59:27+00:00",
+ "axes": [
+  {
+   "axis": "StatementBusinessSegmentsAxis",
+   "profit_label": "Operating Income",
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "segments": [
+    {
+     "name": "Ethanol",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 553000000.0,
+      "2024": 288000000.0,
+      "2025": 374000000.0,
+      "TTM": 708000000.0
+     }
+    },
+    {
+     "name": "Refining",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 11511000000.0,
+      "2024": 3971000000.0,
+      "2025": 4040000000.0,
+      "TTM": 9580000000.0
+     }
+    },
+    {
+     "name": "Renewable Diesel",
+     "revenue": {
+      "2023": null,
+      "2024": null,
+      "2025": null,
+      "TTM": null
+     },
+     "profit": {
+      "2023": 852000000.0,
+      "2024": 507000000.0,
+      "2025": -156000000.0,
+      "TTM": 920000000.0
+     }
+    }
+   ]
+  }
+ ]
+}

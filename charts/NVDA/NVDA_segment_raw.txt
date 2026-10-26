@@ -65,41 +65,86 @@ us-gaap:OperatingIncomeLoss 2024-01-28                                          
 us-gaap:OperatingIncomeLoss 2026-01-25                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 1.392970e+11
 us-gaap:OperatingIncomeLoss 2025-01-26                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 8.796000e+10
 us-gaap:OperatingIncomeLoss 2024-01-28                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 3.786200e+10
-           us-gaap:Revenues 2026-04-26                                                                                                                                          8.161500e+10
-           us-gaap:Revenues 2025-04-27                                                                                                                                          4.406200e+10
-           us-gaap:Revenues 2026-04-26 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 7.455000e+10
-           us-gaap:Revenues 2026-04-26             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 7.065000e+09
-           us-gaap:Revenues 2026-04-26                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 8.161500e+10
-           us-gaap:Revenues 2025-04-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 3.958900e+10
-           us-gaap:Revenues 2025-04-27             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 4.473000e+09
-           us-gaap:Revenues 2025-04-27                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.406200e+10
-           us-gaap:Revenues 2026-04-26                                                                                                 srt:StatementGeographicalAxis:country:US 6.376900e+10
-           us-gaap:Revenues 2025-04-27                                                                                                 srt:StatementGeographicalAxis:country:US 2.568500e+10
-           us-gaap:Revenues 2026-04-26                                                                                                 srt:StatementGeographicalAxis:country:TW 1.200600e+10
-           us-gaap:Revenues 2025-04-27                                                                                                 srt:StatementGeographicalAxis:country:TW 7.648000e+09
-           us-gaap:Revenues 2026-04-26                                                                          srt:StatementGeographicalAxis:nvda:ChinaIncludingHongKongMember 4.550000e+09
-           us-gaap:Revenues 2025-04-27                                                                          srt:StatementGeographicalAxis:nvda:ChinaIncludingHongKongMember 9.659000e+09
-           us-gaap:Revenues 2026-04-26                                                                                  srt:StatementGeographicalAxis:nvda:OtherCountriesMember 1.290000e+09
-           us-gaap:Revenues 2025-04-27                                                                                  srt:StatementGeographicalAxis:nvda:OtherCountriesMember 1.070000e+09
-           us-gaap:Revenues 2026-04-26                                                                                                                                          8.161500e+10
-           us-gaap:Revenues 2025-04-27                                                                                                                                          4.406200e+10
-           us-gaap:Revenues 2026-04-26                                                                                           srt:ProductOrServiceAxis:nvda:DataCenterMember 7.524600e+10
-           us-gaap:Revenues 2025-04-27                                                                                           srt:ProductOrServiceAxis:nvda:DataCenterMember 3.911200e+10
-           us-gaap:Revenues 2026-04-26                                                                                           srt:ProductOrServiceAxis:nvda:HyperscaleMember 3.786900e+10
-           us-gaap:Revenues 2025-04-27                                                                                           srt:ProductOrServiceAxis:nvda:HyperscaleMember 1.759900e+10
-           us-gaap:Revenues 2026-04-26                                                                         srt:ProductOrServiceAxis:nvda:AICloudsIndustrialEnterpriseMember 3.737700e+10
-           us-gaap:Revenues 2025-04-27                                                                         srt:ProductOrServiceAxis:nvda:AICloudsIndustrialEnterpriseMember 2.151300e+10
-           us-gaap:Revenues 2026-04-26                                                                                        srt:ProductOrServiceAxis:nvda:EdgeComputingMember 6.369000e+09
-           us-gaap:Revenues 2025-04-27                                                                                        srt:ProductOrServiceAxis:nvda:EdgeComputingMember 4.950000e+09
-           us-gaap:Revenues 2026-04-26                                                                                                                                          8.161500e+10
-           us-gaap:Revenues 2025-04-27                                                                                                                                          4.406200e+10
-us-gaap:OperatingIncomeLoss 2026-04-26                                                                                                                                          5.353600e+10
-us-gaap:OperatingIncomeLoss 2025-04-27                                                                                                                                          2.163800e+10
-us-gaap:OperatingIncomeLoss 2026-04-26 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 5.333500e+10
-us-gaap:OperatingIncomeLoss 2026-04-26             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 2.941000e+09
-us-gaap:OperatingIncomeLoss 2026-04-26                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 5.627600e+10
-us-gaap:OperatingIncomeLoss 2025-04-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 2.205400e+10
-us-gaap:OperatingIncomeLoss 2025-04-27             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 1.640000e+09
-us-gaap:OperatingIncomeLoss 2025-04-27                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 2.369400e+10
-us-gaap:OperatingIncomeLoss 2026-04-26                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 5.627600e+10
-us-gaap:OperatingIncomeLoss 2025-04-27                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 2.369400e+10
+        us-gaap:GrossProfit 2026-01-25                                                                                                                                          1.534630e+11
+        us-gaap:GrossProfit 2025-01-26                                                                                                                                          9.785800e+10
+        us-gaap:GrossProfit 2024-01-28                                                                                                                                          4.430100e+10
+           us-gaap:Revenues 2026-07-26                                                                                                                                          9.622100e+10
+           us-gaap:Revenues 2025-07-27                                                                                                                                          4.674300e+10
+           us-gaap:Revenues 2026-07-26                                                                                                                                          1.778370e+11
+           us-gaap:Revenues 2025-07-27                                                                                                                                          9.080500e+10
+           us-gaap:Revenues 2026-07-26 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 8.829900e+10
+           us-gaap:Revenues 2026-07-26             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 7.922000e+09
+           us-gaap:Revenues 2026-07-26                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 9.622100e+10
+           us-gaap:Revenues 2025-07-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 4.133100e+10
+           us-gaap:Revenues 2025-07-27             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 5.412000e+09
+           us-gaap:Revenues 2025-07-27                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 4.674300e+10
+           us-gaap:Revenues 2026-07-26 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 1.628500e+11
+           us-gaap:Revenues 2026-07-26             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 1.498700e+10
+           us-gaap:Revenues 2026-07-26                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.778370e+11
+           us-gaap:Revenues 2025-07-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 8.092000e+10
+           us-gaap:Revenues 2025-07-27             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 9.885000e+09
+           us-gaap:Revenues 2025-07-27                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 9.080500e+10
+           us-gaap:Revenues 2026-07-26                                                                                                 srt:StatementGeographicalAxis:country:US 6.007400e+10
+           us-gaap:Revenues 2025-07-27                                                                                                 srt:StatementGeographicalAxis:country:US 3.289700e+10
+           us-gaap:Revenues 2026-07-26                                                                                                 srt:StatementGeographicalAxis:country:US 1.238430e+11
+           us-gaap:Revenues 2025-07-27                                                                                                 srt:StatementGeographicalAxis:country:US 5.858200e+10
+           us-gaap:Revenues 2026-07-26                                                                                                 srt:StatementGeographicalAxis:country:TW 2.698500e+10
+           us-gaap:Revenues 2025-07-27                                                                                                 srt:StatementGeographicalAxis:country:TW 8.902000e+09
+           us-gaap:Revenues 2026-07-26                                                                                                 srt:StatementGeographicalAxis:country:TW 3.899100e+10
+           us-gaap:Revenues 2025-07-27                                                                                                 srt:StatementGeographicalAxis:country:TW 1.655000e+10
+           us-gaap:Revenues 2026-07-26                                                                          srt:StatementGeographicalAxis:nvda:ChinaIncludingHongKongMember 7.880000e+09
+           us-gaap:Revenues 2025-07-27                                                                          srt:StatementGeographicalAxis:nvda:ChinaIncludingHongKongMember 3.985000e+09
+           us-gaap:Revenues 2026-07-26                                                                          srt:StatementGeographicalAxis:nvda:ChinaIncludingHongKongMember 1.243000e+10
+           us-gaap:Revenues 2025-07-27                                                                          srt:StatementGeographicalAxis:nvda:ChinaIncludingHongKongMember 1.364400e+10
+           us-gaap:Revenues 2026-07-26                                                                                  srt:StatementGeographicalAxis:nvda:OtherCountriesMember 1.282000e+09
+           us-gaap:Revenues 2025-07-27                                                                                  srt:StatementGeographicalAxis:nvda:OtherCountriesMember 9.590000e+08
+           us-gaap:Revenues 2026-07-26                                                                                  srt:StatementGeographicalAxis:nvda:OtherCountriesMember 2.573000e+09
+           us-gaap:Revenues 2025-07-27                                                                                  srt:StatementGeographicalAxis:nvda:OtherCountriesMember 2.029000e+09
+           us-gaap:Revenues 2026-07-26                                                                                                                                          9.622100e+10
+           us-gaap:Revenues 2025-07-27                                                                                                                                          4.674300e+10
+           us-gaap:Revenues 2026-07-26                                                                                                                                          1.778370e+11
+           us-gaap:Revenues 2025-07-27                                                                                                                                          9.080500e+10
+           us-gaap:Revenues 2026-07-26                                                                                           srt:ProductOrServiceAxis:nvda:DataCenterMember 8.902300e+10
+           us-gaap:Revenues 2025-07-27                                                                                           srt:ProductOrServiceAxis:nvda:DataCenterMember 4.109600e+10
+           us-gaap:Revenues 2026-07-26                                                                                           srt:ProductOrServiceAxis:nvda:DataCenterMember 1.642690e+11
+           us-gaap:Revenues 2025-07-27                                                                                           srt:ProductOrServiceAxis:nvda:DataCenterMember 8.020800e+10
+           us-gaap:Revenues 2026-07-26                                                                                           srt:ProductOrServiceAxis:nvda:HyperscaleMember 4.871000e+10
+           us-gaap:Revenues 2025-07-27                                                                                           srt:ProductOrServiceAxis:nvda:HyperscaleMember 2.416800e+10
+           us-gaap:Revenues 2026-07-26                                                                                           srt:ProductOrServiceAxis:nvda:HyperscaleMember 9.176100e+10
+           us-gaap:Revenues 2025-07-27                                                                                           srt:ProductOrServiceAxis:nvda:HyperscaleMember 4.642800e+10
+           us-gaap:Revenues 2026-07-26                                                                         srt:ProductOrServiceAxis:nvda:AICloudsIndustrialEnterpriseMember 4.031300e+10
+           us-gaap:Revenues 2025-07-27                                                                         srt:ProductOrServiceAxis:nvda:AICloudsIndustrialEnterpriseMember 1.692800e+10
+           us-gaap:Revenues 2026-07-26                                                                         srt:ProductOrServiceAxis:nvda:AICloudsIndustrialEnterpriseMember 7.250800e+10
+           us-gaap:Revenues 2025-07-27                                                                         srt:ProductOrServiceAxis:nvda:AICloudsIndustrialEnterpriseMember 3.378000e+10
+           us-gaap:Revenues 2026-07-26                                                                                        srt:ProductOrServiceAxis:nvda:EdgeComputingMember 7.198000e+09
+           us-gaap:Revenues 2025-07-27                                                                                        srt:ProductOrServiceAxis:nvda:EdgeComputingMember 5.647000e+09
+           us-gaap:Revenues 2026-07-26                                                                                        srt:ProductOrServiceAxis:nvda:EdgeComputingMember 1.356800e+10
+           us-gaap:Revenues 2025-07-27                                                                                        srt:ProductOrServiceAxis:nvda:EdgeComputingMember 1.059700e+10
+           us-gaap:Revenues 2026-07-26                                                                                                                                          9.622100e+10
+           us-gaap:Revenues 2025-07-27                                                                                                                                          4.674300e+10
+           us-gaap:Revenues 2026-07-26                                                                                                                                          1.778370e+11
+           us-gaap:Revenues 2025-07-27                                                                                                                                          9.080500e+10
+us-gaap:OperatingIncomeLoss 2026-07-26                                                                                                                                          6.373400e+10
+us-gaap:OperatingIncomeLoss 2025-07-27                                                                                                                                          2.844000e+10
+us-gaap:OperatingIncomeLoss 2026-07-26                                                                                                                                          1.172700e+11
+us-gaap:OperatingIncomeLoss 2025-07-27                                                                                                                                          5.007800e+10
+us-gaap:OperatingIncomeLoss 2026-07-26 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 6.269600e+10
+us-gaap:OperatingIncomeLoss 2026-07-26             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 3.899000e+09
+us-gaap:OperatingIncomeLoss 2026-07-26                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 6.659500e+10
+us-gaap:OperatingIncomeLoss 2025-07-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 2.836300e+10
+us-gaap:OperatingIncomeLoss 2025-07-27             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 2.242000e+09
+us-gaap:OperatingIncomeLoss 2025-07-27                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 3.060500e+10
+us-gaap:OperatingIncomeLoss 2026-07-26 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 1.160310e+11
+us-gaap:OperatingIncomeLoss 2026-07-26             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 6.840000e+09
+us-gaap:OperatingIncomeLoss 2026-07-26                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 1.228710e+11
+us-gaap:OperatingIncomeLoss 2025-07-27 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:ComputeAndNetworkingSegmentMember 5.041700e+10
+us-gaap:OperatingIncomeLoss 2025-07-27             srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:nvda:GraphicsSegmentMember 3.882000e+09
+us-gaap:OperatingIncomeLoss 2025-07-27                                                                               srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember 5.429900e+10
+us-gaap:OperatingIncomeLoss 2026-07-26                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 6.659500e+10
+us-gaap:OperatingIncomeLoss 2025-07-27                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 3.060500e+10
+us-gaap:OperatingIncomeLoss 2026-07-26                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 1.228710e+11
+us-gaap:OperatingIncomeLoss 2025-07-27                                                                             srt:ConsolidationItemsAxis:us-gaap:CorporateNonSegmentMember 5.429900e+10
+        us-gaap:GrossProfit 2026-07-26                                                                                                                                          7.214200e+10
+        us-gaap:GrossProfit 2025-07-27                                                                                                                                          3.385300e+10
+        us-gaap:GrossProfit 2026-07-26                                                                                                                                          1.332990e+11
+        us-gaap:GrossProfit 2025-07-27                                                                                                                                          6.052100e+10
