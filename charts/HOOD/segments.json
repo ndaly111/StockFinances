@@ -1,7 +1,7 @@
 {
  "ticker": "HOOD",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:45:16+00:00",
+ "generated_at": "2026-10-26T19:26:53+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Transaction Based Revenues",
-     "revenue": {
-      "2023": 785000000.0,
-      "2024": 1647000000.0,
-      "2025": 2628000000.0,
-      "TTM": 2905000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Options",
      "revenue": {

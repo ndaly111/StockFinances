@@ -1,7 +1,7 @@
 {
  "ticker": "LUV",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:51:56+00:00",
+ "generated_at": "2026-10-26T19:29:30+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Passenger",
-     "revenue": {
-      "2023": 23637000000.0,
-      "2024": 24980000000.0,
-      "2025": 25535000000.0,
-      "TTM": 28875000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Passenger Revenue Non Loyalty",
      "revenue": {

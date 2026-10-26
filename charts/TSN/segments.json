@@ -1,7 +1,7 @@
 {
  "ticker": "TSN",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:58:25+00:00",
+ "generated_at": "2026-10-26T19:36:22+00:00",
  "axes": [
   {
    "axis": "StatementBusinessSegmentsAxis",

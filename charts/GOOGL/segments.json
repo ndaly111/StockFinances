@@ -1,7 +1,7 @@
 {
  "ticker": "GOOGL",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:43:55+00:00",
+ "generated_at": "2026-10-26T19:25:41+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Google Advertising Revenue",
-     "revenue": {
-      "2023": 237855000000.0,
-      "2024": 264590000000.0,
-      "2025": 294691000000.0,
-      "TTM": 315348000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Google Search Other",
      "revenue": {

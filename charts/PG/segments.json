@@ -1,7 +1,7 @@
 {
  "ticker": "PG",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:55:46+00:00",
+ "generated_at": "2026-10-26T19:33:37+00:00",
  "axes": [
   {
    "axis": "StatementBusinessSegmentsAxis",

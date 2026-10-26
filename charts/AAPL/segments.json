@@ -1,7 +1,7 @@
 {
  "ticker": "AAPL",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:34:39+00:00",
+ "generated_at": "2026-10-26T19:17:45+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -13,16 +13,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Product",
-     "revenue": {
-      "2023": 298085000000.0,
-      "2024": 294866000000.0,
-      "2025": 307003000000.0,
-      "TTM": 346345000000.0
-     },
-     "profit": {}
-    },
     {
      "name": "I Phone",
      "revenue": {

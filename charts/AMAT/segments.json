@@ -1,7 +1,7 @@
 {
  "ticker": "AMAT",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:35:11+00:00",
+ "generated_at": "2026-10-26T19:18:24+00:00",
  "axes": [
   {
    "axis": "StatementBusinessSegmentsAxis",

@@ -1,7 +1,7 @@
 {
  "ticker": "CVS",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:40:57+00:00",
+ "generated_at": "2026-10-26T19:22:52+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -30,58 +30,6 @@
       "2024": 16239000000.0,
       "2025": 15175000000.0,
       "TTM": 15924000000.0
-     },
-     "profit": {}
-    }
-   ]
-  },
-  {
-   "axis": "StatementBusinessSegmentsAxis",
-   "profit_label": null,
-   "years": [
-    "2023",
-    "2024",
-    "2025",
-    "TTM"
-   ],
-   "segments": [
-    {
-     "name": "Health Services",
-     "revenue": {
-      "2023": 186843000000.0,
-      "2024": 173605000000.0,
-      "2025": 190425000000.0,
-      "TTM": 200542000000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Health Care Benefits",
-     "revenue": {
-      "2023": 105646000000.0,
-      "2024": 130665000000.0,
-      "2025": 143354000000.0,
-      "TTM": 145795000000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Pharmacy And Consumer Health",
-     "revenue": {
-      "2023": 116763000000.0,
-      "2024": 124500000000.0,
-      "2025": 139367000000.0,
-      "TTM": 139679000000.0
-     },
-     "profit": {}
-    },
-    {
-     "name": "Corporate And Other",
-     "revenue": {
-      "2023": 451000000.0,
-      "2024": 451000000.0,
-      "2025": 484000000.0,
-      "TTM": 528000000.0
      },
      "profit": {}
     }

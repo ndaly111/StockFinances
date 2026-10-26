@@ -1,7 +1,7 @@
 {
  "ticker": "EVGO",
  "version": "SEGMENTS v2025-09-09",
- "generated_at": "2026-10-26T18:42:31+00:00",
+ "generated_at": "2026-10-26T19:24:14+00:00",
  "axes": [
   {
    "axis": "ProductOrServiceAxis",
@@ -12,15 +12,6 @@
     "TTM"
    ],
    "segments": [
-    {
-     "name": "Charging Network Revenue",
-     "revenue": {
-      "2024": 155672000.0,
-      "2025": 218345000.0,
-      "TTM": 236557000.0
-     },
-     "profit": {}
-    },
     {
      "name": "Charging Revenue Retail",
      "revenue": {
