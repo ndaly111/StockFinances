@@ -425,7 +425,8 @@ def process_update_growth_csv(file_path, db_path="Stock Data.db"):
 # ---------------------------------------------------------------------------
 #  Master driver – called from main_remote.py
 # ---------------------------------------------------------------------------
-def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard):
+def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard,
+                     make_chart=True):
     db_path = "Stock Data.db"
 
     finviz_five_yr(ticker, cursor)
@@ -445,8 +446,9 @@ def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard):
     combo, n_pe, f_pe, n_ps, _ = calculate_valuations(
         combo, growth, treasury_yield, price, marketcap)
 
-    plot_valuation_chart(combo[["Year", "Nicks_Valuation", "Finviz_Valuation"]],
-                         price, ticker, growth)
+    if make_chart:
+        plot_valuation_chart(combo[["Year", "Nicks_Valuation", "Finviz_Valuation"]],
+                             price, ticker, growth)
 
     generate_valuation_tables(ticker, combo, growth, treasury_yield,
                               price, n_pe, f_pe, n_ps)
