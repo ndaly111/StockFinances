@@ -59,6 +59,37 @@
 
   <header><h1>Financial Overview</h1></header>
 
+  <div id="market-brief" class="center-table news-box" style="display:none">
+    <h2>Top Financial News <span id="mb-stamp" class="news-date"></span></h2>
+    <div id="mb-body"></div>
+  </div>
+  <script>
+    (function(){
+      // data/market_brief.json is written by market_brief.py on Nick's PC and
+      // committed to main. Read it from raw.githubusercontent first so a 2pm
+      // Fed decision shows within minutes, not at the next site refresh; fall
+      // back to the copy the refresh deployed alongside this page.
+      function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+      function render(d){
+        var up=d.updated?new Date(d.updated.replace('Z',':00Z')):null;
+        if(!d.stories||!d.stories.length)return;
+        if(up&&Date.now()-up.getTime()>48*36e5)return;   // stale brief: show nothing
+        var h='';
+        d.stories.forEach(function(s){
+          h+='<h3>'+esc(s.title)+'</h3>';
+          (s.sections||[]).forEach(function(x){h+='<div><b>'+esc(x.label)+'.</b> '+esc(x.text)+'</div>';});
+        });
+        if(d.next)h+='<div><b>Next.</b> '+esc(d.next)+'</div>';
+        document.getElementById('mb-body').innerHTML=h;
+        if(up)document.getElementById('mb-stamp').textContent='updated '+up.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+' '+up.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        document.getElementById('market-brief').style.display='';
+      }
+      function get(u){return fetch(u,{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.json();});}
+      get('https://raw.githubusercontent.com/ndaly111/StockFinances/main/data/market_brief.json')
+        .catch(function(){return get('data/market_brief.json');})
+        .then(render).catch(function(){});
+    })();
+  </script>
 
   <div id="news-box" class="center-table news-box">
     <h2>What Happened to My Stocks Today</h2>
