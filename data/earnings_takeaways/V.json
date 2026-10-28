@@ -1,0 +1,35 @@
+{
+ "ticker": "V",
+ "updated": "2026-10-28T20:26Z",
+ "last": {
+  "date": "2026-10-27",
+  "timing": "post",
+  "move_pct": -0.3,
+  "basis": "close",
+  "verdict": "Solid beat, but cautious 2027 outlook and rising bank payments left the stock about flat.",
+  "reasons": [
+   {
+    "label": "Cooler 2027 outlook",
+    "text": "Visa guided to low-double-digit revenue growth next year, versus 15% this year; some investors found that modest."
+   },
+   {
+    "label": "Rising payments to banks",
+    "text": "Payments to banks and partners to keep them on Visa jumped 21% to $5.1B; about 25% of volume renews in 2027."
+   },
+   {
+    "label": "Costs growing faster",
+    "text": "Adjusted operating expenses rose 12%, mostly marketing and staff, and 2027 profit growth is guided slightly below revenue growth."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001403161/000140316126000126/q42026earningsrelease.htm",
+   "https://za.investing.com/news/stock-market-news/visa-q4-fy2026-slides-13-revenue-growth-shares-dip-on-outlook-93CH-4529587",
+   "https://www.tikr.com/blog/visa-stock-slips-q4-2026-earnings-incentives-outlook",
+   "https://www.sec.gov/Archives/edgar/data/1403161/000140316126000044/q12026earningsrelease.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001403161/000140316126000103/q32026earningsrelease.htm",
+   "https://www.nasdaq.com/articles/visa-v-down-22-last-earnings-report-can-it-rebound"
+  ]
+ },
+ "story": "Revenue growth has stayed in the low-to-mid teens over the last four reports (15%, 17%, 14%, 13%). Payments to banks have grown faster each time (12%, 18%, 21% in the last three reports I checked). Shares have mostly shrugged off beats, with small dips after hours.",
+ "history": []
+}

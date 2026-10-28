@@ -65,6 +65,32 @@
     {{ news_box | safe }}
   </div>
 
+  <details id="earnings-takeaways" class="center-table news-box" style="display:none">
+    <summary><h2 style="display:inline">Why Stocks Moved After Earnings</h2> <span id="et-count" class="news-date"></span></summary>
+    <div id="et-list"></div>
+  </details>
+  <script>
+    fetch('data/earnings_takeaways/recent.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){
+      function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+      var cut=new Date(Date.now()-4*864e5).toISOString().slice(0,10);
+      var rows=(d.reports||[]).filter(function(r){return r.date>=cut;});
+      if(!rows.length)return;
+      var h='';
+      rows.forEach(function(r){
+        var m=r.move_pct,cls=m>0?'up':(m<0?'down':''),pct=(m>0?'+':(m<0?'−':''))+Math.abs(m).toFixed(1)+'%';
+        var dd=new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        h+='<h3><a href="ticker.html?t='+esc(r.ticker)+'">'+esc(r.ticker)+'</a> <span class="'+cls+'">'+pct+'</span>'+
+           (r.basis==='close'?'':' <span class="news-date">'+esc(r.basis)+'</span>')+' <span class="news-date">'+dd+'</span></h3>'+
+           '<div>'+esc(r.verdict)+'</div><ul class="news-list" style="list-style:disc;padding-left:18px">';
+        (r.reasons||[]).forEach(function(x){h+='<li><b>'+esc(x.label)+':</b> '+esc(x.text)+'</li>';});
+        h+='</ul>';
+      });
+      document.getElementById('et-list').innerHTML=h;
+      document.getElementById('et-count').textContent='('+rows.length+' report'+(rows.length>1?'s':'')+', tap to open)';
+      document.getElementById('earnings-takeaways').style.display='';
+    }).catch(function(){});
+  </script>
+
   <div id="spy-qqq-growth" class="center-table">
     <h2>SPY vs QQQ Overview</h2>
     {{ spy_qqq_growth | safe }}

@@ -1,0 +1,34 @@
+{
+ "ticker": "GOOGL",
+ "updated": "2026-10-28T20:29Z",
+ "last": {
+  "date": "2026-10-28",
+  "timing": "post",
+  "move_pct": -8.4,
+  "basis": "after hours",
+  "verdict": "Cloud growth doubled, but record spending and negative cash flow spooked investors.",
+  "reasons": [
+   {
+    "label": "Cash burn",
+    "text": "Free cash flow was negative $9.1 billion as spending outran cash from operations."
+   },
+   {
+    "label": "Huge AI spending",
+    "text": "Capex reached $51.4 billion for the quarter, more than double last year's $24.0 billion."
+   },
+   {
+    "label": "Rising costs",
+    "text": "Research costs rose 36% and borrowing costs climbed; debt more than doubled to $125 billion this year."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm",
+   "https://www.globalbankingandfinance.com/alphabets-google-cloud-unit-beats-quarterly-revenue/",
+   "https://www.fxleaders.com/news/2026/07/23/why-is-alphabet-googl-stock-down-today-record-quarter-7-billion-capex-shock-shares-fall-anyway/",
+   "https://www.tikr.com/blog/alphabet-stock-surged-10-after-q1-2026-earnings-whats-next-for-googl",
+   "https://www.heygotrade.com/en/blog/alphabet-q1-2026-earnings-reaction"
+  ]
+ },
+ "story": "Cloud growth has accelerated each quarter, from 63% in Q1 to 82% in Q2 to 103% now. Spending guidance keeps rising too. The stock jumped about 10% after Q1, then fell about 7% after Q2 on higher spending.",
+ "history": []
+}

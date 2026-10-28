@@ -466,6 +466,14 @@
     padding:5px 11px 4px 13px;
   }
   .back-btn::before{ content:"« " }
+  /* Earnings takeaways — why the stock moved after its last report */
+  .et-box{ margin:6px; padding:8px 10px; background:#FFFFEE; border:2px inset var(--gray);
+    font-family:Verdana,Geneva,sans-serif; font-size:12px; color:#000; line-height:1.45 }
+  .et-box .et-head{ font-weight:700 }
+  .et-box .et-up{ color:#008000; font-weight:700 } .et-box .et-down{ color:#CC0000; font-weight:700 }
+  .et-box ul{ margin:4px 0 6px; padding-left:18px } .et-box li{ margin:2px 0 }
+  .et-box .et-story{ margin:6px 0 0; padding-top:6px; border-top:1px dotted #999 }
+  .et-box .et-src{ font-size:10px; color:#555 }
 </style>
 </head>
 <body>
@@ -485,6 +493,11 @@
   <div class="data-table headlines-card" id="sect-headlines-card" style="display:none">
     <h2>Latest Headlines</h2>
     <div class="hl-list" id="sect-headlines"></div>
+  </div>
+
+  <div class="data-table" id="sect-earnings-card" style="display:none">
+    <h2>Earnings: What They Said</h2>
+    <div class="et-box" id="sect-earnings"></div>
   </div>
 
   <div class="data-table" id="sect-financial-card" style="display:none">
@@ -598,7 +611,32 @@
 
   var ticker = (getQuery('t') || getQuery('ticker') || 'AAPL').toUpperCase();
   document.title = ticker + " — Nick's Stock Financials";
-fetch('ticker_data/' + ticker + '.json', {cache: 'no-cache'})
+  // Earnings takeaways (written separately by earnings_takeaways.py)
+  function esc(x){ return String(x == null ? '' : x).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  fetch('data/earnings_takeaways/' + ticker + '.json', {cache: 'no-cache'})
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(d){
+      var L = d.last; if(!L || !L.verdict) return;
+      var dd = new Date(L.date + 'T12:00:00');
+      var when = dd.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      var pct = (L.move_pct > 0 ? '+' : (L.move_pct < 0 ? '−' : '')) + Math.abs(L.move_pct).toFixed(1) + '%';
+      var cls = L.move_pct > 0 ? 'et-up' : (L.move_pct < 0 ? 'et-down' : '');
+      var basis = L.basis === 'close' ? '' : ' ' + L.basis;
+      var h = '<div class="et-head">Last report (' + esc(when) + '): <span class="' + cls + '">' +
+              pct + '</span>' + esc(basis) + '</div><div>' + esc(L.verdict) + '</div><ul>';
+      (L.reasons || []).forEach(function(x){ h += '<li><b>' + esc(x.label) + ':</b> ' + esc(x.text) + '</li>'; });
+      h += '</ul>';
+      if(d.story) h += '<div class="et-story"><b>The story lately:</b> ' + esc(d.story) + '</div>';
+      var src = (L.sources || []).slice(0, 3).map(function(u, i){
+        return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + (i + 1) + '</a>'; }).join(' ');
+      if(src) h += '<div class="et-src">Sources: ' + src + '</div>';
+      $('sect-earnings').innerHTML = h;
+      show('sect-earnings-card');
+    })
+    .catch(function(){});
+
+  fetch('ticker_data/' + ticker + '.json', {cache: 'no-cache'})
     .then(function(r){
       if(!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
