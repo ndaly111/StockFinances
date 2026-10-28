@@ -161,8 +161,14 @@ def _from_fmp(ticker: str) -> List[Tuple[date, float, str]]:
 def fetch_split_history(ticker: str) -> List[Tuple[date, float, str]]:
     """Fetch split history from available providers and cache per ticker."""
     seen: dict[date, Tuple[float, str]] = {}
-    for source_events in (_from_yfinance(ticker), _from_fmp(ticker)):
-        for dt, ratio, source in source_events:
+    for dt, ratio, source in _from_yfinance(ticker):
+        if dt not in seen:
+            seen[dt] = (ratio, source)
+    # FMP only as a fallback when yfinance has no split history: every FMP
+    # call currently 403s (endpoint not on the plan), so calling it for all
+    # 105 tickers each run was ~9s of guaranteed failures.
+    if not seen:
+        for dt, ratio, source in _from_fmp(ticker):
             if dt not in seen:
                 seen[dt] = (ratio, source)
     return sorted([(dt, ratio, source) for dt, (ratio, source) in seen.items()], key=lambda r: r[0])

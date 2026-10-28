@@ -57,12 +57,26 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
+
+      # Cache the whole venv (not just wheels): a warm venv turns the ~20s
+      # install into a ~3s no-op. Key rotates weekly so unpinned packages
+      # (yfinance especially) still pick up fixes within a week.
+      - name: Venv cache key
+        id: venv-key
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+      - name: Cache venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.11-${{ hashFiles('requirements.txt') }}-${{ steps.venv-key.outputs.week }}
 
       - name: Install deps
         run: |
+          [ -d .venv ] || python -m venv .venv
+          . .venv/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Generate pages
         env:
@@ -123,6 +137,7 @@ jobs:
           rsync -av --delete \
             --exclude ".git" \
             --exclude ".github" \
+            --exclude ".venv" \
             --exclude "gh-pages" \
             --exclude "Stock Data.db" \
             --exclude "*.db-wal" --exclude "*.db-shm" --exclude "*.db-journal" \
