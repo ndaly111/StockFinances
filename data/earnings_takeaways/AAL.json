@@ -1,0 +1,34 @@
+{
+ "ticker": "AAL",
+ "updated": "2026-10-28T21:18Z",
+ "last": {
+  "date": "2026-10-22",
+  "timing": "pre",
+  "move_pct": 2.9,
+  "basis": "close",
+  "verdict": "Smaller-than-feared loss and record sales outweighed a deeper full-year profit cut.",
+  "reasons": [
+   {
+    "label": "Loss narrower than expected",
+    "text": "Adjusted loss was $0.28 a share, versus about $0.36 expected."
+   },
+   {
+    "label": "Record revenue growth",
+    "text": "Revenue rose 19.3% to $16.3 billion, above American's own forecast range."
+   },
+   {
+    "label": "Fuel still hurting",
+    "text": "Fuel cost $1.9 billion more; Q4 fuel is guided near $4.70 a gallon."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/6201/000000620126000064/a8kerexhibit991q3-26.htm",
+   "https://stocktwits.com/news-articles/markets/equity/aal-stock-slides-as-fuel-costs-cloud-2026-outlook-ceo-flags-historically-high-fuel-prices/cZxw7XmRBwv",
+   "https://www.barchart.com/story/news/3469617/american-airlines-stock-plunges-as-fuel-costs-surge-how-to-play-aal-now",
+   "https://finance.yahoo.com/markets/stocks/articles/american-airlines-shares-off-narrower-164500779.html",
+   "https://wtop.com/news/2026/04/american-airlines-q1-earnings-snapshot/"
+  ]
+ },
+ "story": "American has beaten revenue forecasts for months, but fuel costs keep cutting its profit outlook. The stock rose about 5% after April's report, then fell about 8% in July when the full-year forecast was cut. This quarter's loss was smaller than expected, and shares recovered some ground.",
+ "history": []
+}

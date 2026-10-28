@@ -1,0 +1,35 @@
+{
+ "ticker": "AXP",
+ "updated": "2026-10-28T21:19Z",
+ "last": {
+  "date": "2026-10-23",
+  "timing": "pre",
+  "move_pct": -3.7,
+  "basis": "close",
+  "verdict": "Shares fell despite a profit beat, as job cuts and in-line revenue overshadowed the raised outlook.",
+  "reasons": [
+   {
+    "label": "Job cuts, restructuring",
+    "text": "$336M restructuring charge to cut about 5% of jobs, raising cost and execution questions."
+   },
+   {
+    "label": "Revenue merely in line",
+    "text": "Revenue rose 9% to $20.1B, with no standout upside to cheer."
+   },
+   {
+    "label": "Flattered profit, costs rising",
+    "text": "EPS jumped 31%, but a sale gain helped; adjusted gain was 13%, marketing up 11%."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/4962/000000496226000405/q326exhibit991.htm",
+   "https://www.quiverquant.com/news/American+Express+Falls+as+Investors+Weigh+Mixed+Q3+Takeaways+and+Job+Cuts",
+   "https://www.tradingkey.com/news/transcripts/262236552-tradingkey",
+   "https://www.marketbeat.com/instant-alerts/american-express-nyseaxp-shares-gap-down-time-to-sell-2026-07-24/",
+   "https://247wallst.com/investing/2026/07/24/american-express-sinks-6-after-q2-earnings-beat-as-visa-mastercard-hold-steady/",
+   "https://finance.yahoo.com/news/american-express-reports-line-q4-124609892.html"
+  ]
+ },
+ "story": "Amex has beaten profit targets all year while revenue growth held near 10%. Yet shares fell after the January report (about 3.7%) and again in July (4-6%) on costs, taxes and a slight revenue miss. Guidance for 2026 was raised in July and again now.",
+ "history": []
+}

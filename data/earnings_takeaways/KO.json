@@ -1,0 +1,34 @@
+{
+ "ticker": "KO",
+ "updated": "2026-10-28T21:25Z",
+ "last": {
+  "date": "2026-10-27",
+  "timing": "pre",
+  "move_pct": -1.6,
+  "basis": "close",
+  "verdict": "Solid beat and raised outlook, but weak U.S. demand and restaurant pressure kept shares lower.",
+  "reasons": [
+   {
+    "label": "Flat North America volume",
+    "text": "U.S. and Canada volume was flat, down from 3% growth last quarter."
+   },
+   {
+    "label": "Restaurant pressure to persist",
+    "text": "CFO says restaurant weakness continues into 2027; at-home drinking beats away-from-home."
+   },
+   {
+    "label": "Growth reliant on overseas",
+    "text": "Global volume rose 5% and organic revenue 7%, driven by international markets."
+   }
+  ],
+  "sources": [
+   "https://www.fool.com/investing/2026/10/27/coca-cola-organic-revenue-jumps-7-despite-flat-north-america-volumes-heres-what-investors-need-to-know/",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-cocacola-beats-q3-2026-forecasts-as-sales-rise-93CH-4975880",
+   "https://www.cnbc.com/2026/10/27/coca-cola-ko-q3-2026-earnings.html",
+   "https://www.just-drinks.com/news/coca-cola-co-bumps-up-guidance-after-q2/",
+   "https://seekingalpha.com/pr/20272905"
+  ]
+ },
+ "story": "Coca-Cola has beaten estimates for several quarters and kept nudging guidance up, with organic growth of 6% a year ago and 7% now. Shares jumped after July's raise. This time, flat North America volume and cautious consumer comments dominated.",
+ "history": []
+}

@@ -1,0 +1,35 @@
+{
+ "ticker": "MSFT",
+ "updated": "2026-10-28T21:29Z",
+ "last": {
+  "date": "2026-10-28",
+  "timing": "post",
+  "move_pct": 3.6,
+  "basis": "after hours",
+  "verdict": "Cloud growth sped up and spending came in lower than feared, so shares rose.",
+  "reasons": [
+   {
+    "label": "Azure growth accelerated",
+    "text": "Azure revenue grew 48%, above the 44%\u201345% range Microsoft had guided."
+   },
+   {
+    "label": "Lower AI spending",
+    "text": "Capex was about $39.4B, below the $45.9B analysts expected; lease accounting may flatter it."
+   },
+   {
+    "label": "Beat on revenue, profit",
+    "text": "Revenue of $92.3B and adjusted EPS of $4.89 topped forecasts of $90.6B and $4.73."
+   }
+  ],
+  "sources": [
+   "https://financefeeds.com/microsoft-shares-rise-nearly-4-after-first-quarter-earnings-beat-wall-street-estimates/",
+   "https://www.sec.gov/Archives/edgar/data/789019/000119312526436122/msft-ex99_1.htm",
+   "https://letsdatascience.com/news/microsoft-posts-q3-beat-as-azure-grows-40-dfbf3c3c",
+   "https://letsdatascience.com/news/microsoft-posts-strong-cloud-results-slips-in-trading-6fd83722",
+   "https://stocks.observer-reporter.com/observerreporter/article/marketminute-2026-2-2-microsoft-shares-tumble-10-as-azure-growth-hits-ai-infrastructure-wall",
+   "https://247wallst.com/investing/2026/07/30/microsoft-surges-9-as-azure-tops-100b-and-q4-beat-lifts-most-price-targets/"
+  ]
+ },
+ "story": "Microsoft fell about 10% in January on heavy AI spending and OpenAI exposure, slipped again in April despite Azure growth near 40%, then jumped about 9% in July. Azure has since sped up to 48%, and investors keep watching spending.",
+ "history": []
+}

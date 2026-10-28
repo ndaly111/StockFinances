@@ -1,0 +1,34 @@
+{
+ "ticker": "PYPL",
+ "updated": "2026-10-28T21:33Z",
+ "last": {
+  "date": "2026-10-27",
+  "timing": "pre",
+  "move_pct": 2.0,
+  "basis": "close",
+  "verdict": "Investors liked a profit beat and a higher full-year outlook; shares rose modestly.",
+  "reasons": [
+   {
+    "label": "Raised profit outlook",
+    "text": "Full-year adjusted EPS guidance rose to about $5.60 from about $5.38 in July."
+   },
+   {
+    "label": "Earnings growth returns",
+    "text": "Adjusted EPS rose 8% to $1.45 on revenue up 2% to $8.6B."
+   },
+   {
+    "label": "Heavy buybacks",
+    "text": "PayPal bought back $1.5B of stock in the quarter, about $6.0B over 12 months."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001633917/000163391726000086/pypl3q-26earningsrelease.htm",
+   "https://www.marketbeat.com/instant-alerts/paypal-q2-earnings-call-highlights-2026-07-28/",
+   "https://finance.yahoo.com/markets/stocks/articles/paypal-tumbles-10-despite-q1-140847312.html",
+   "https://www.sherwood.news/markets/paypal-craters-on-earnings-miss-weak-2026-outlook-and-leadership-change/",
+   "https://www.tikr.com/blog/paypal-nasdaq-pypl-stock-craters-20-as-it-names-hp-veteran-enrique-lores-new-ceo"
+  ]
+ },
+ "story": "PayPal fell about 20% in February when it posted weak checkout growth, gave a soft 2026 outlook and replaced its CEO. It fell about 10% in May on a weak guide. After a July guidance raise, this report extends the new-CEO turnaround story.",
+ "history": []
+}

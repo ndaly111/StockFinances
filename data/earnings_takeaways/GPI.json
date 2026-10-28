@@ -1,0 +1,34 @@
+{
+ "ticker": "GPI",
+ "updated": "2026-10-28T21:23Z",
+ "last": {
+  "date": "2026-10-28",
+  "timing": "pre",
+  "move_pct": -1.8,
+  "basis": "close",
+  "verdict": "Earnings missed estimates and sales fell, so shares slipped modestly.",
+  "reasons": [
+   {
+    "label": "Profit fell short",
+    "text": "Adjusted earnings were $9.36 a share, down from $10.45 a year ago and below forecasts of about $11."
+   },
+   {
+    "label": "Sales keep shrinking",
+    "text": "Revenue fell 6.7% to $5.4 billion; used-car sales volume dropped 10.5%."
+   },
+   {
+    "label": "Debt load after Hennessy",
+    "text": "Buying 10 Atlanta stores adds debt; about $360 million of store sales should help pay it down."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1031203/000103120326000141/a2026q3exhibit991.htm",
+   "https://www.benzinga.com/quote/GPI/earnings-forecasts",
+   "https://finviz.com/news/375042/group-1-automotive-misses-second-quarter-estimates-as-consumer-spending-softens",
+   "https://www.tipranks.com/news/company-announcements/group-1-automotive-earnings-call-highlights-cost-discipline",
+   "https://quartr.com/events/group-1-automotive-inc-gpi-q2-2026_oflVB27H"
+  ]
+ },
+ "story": "Group 1 has missed profit estimates for several quarters as consumers struggle with car affordability and used-car sales fall. Management responded with $50 million in U.S. cost cuts and the Hennessy deal. The stock fell about 1.8% premarket after July's miss and slipped again now.",
+ "history": []
+}

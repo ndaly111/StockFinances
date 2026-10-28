@@ -1,0 +1,35 @@
+{
+ "ticker": "VZ",
+ "updated": "2026-10-28T21:37Z",
+ "last": {
+  "date": "2026-10-26",
+  "timing": "pre",
+  "move_pct": -3.5,
+  "basis": "close",
+  "verdict": "Revenue missed estimates, so the stock fell despite a strong customer quarter and raised guidance.",
+  "reasons": [
+   {
+    "label": "Revenue missed estimates",
+    "text": "Revenue of $34.31B fell short of the ~$34.77B expected; phone upgrade sales dropped 9%."
+   },
+   {
+    "label": "Big customer gains priced in",
+    "text": "406,000 new phone customers beat the ~195,000 expected, but shares still slipped."
+   },
+   {
+    "label": "Raised outlook not enough",
+    "text": "Full-year profit-per-share growth guidance rose to 7\u20137.5%, from 6\u20137%, yet the stock fell."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/732712/000073271226000049/a2026q3exhibit99.htm",
+   "https://ng.investing.com/news/stock-market-news/earnings-call-transcript-verizon-beats-q3-2026-eps-misses-revenue-93CH-2757692",
+   "https://moneycheck.com/verizon-vz-stock-slips-3-after-q3-earnings-beat-and-higher-guidance",
+   "https://www.tradingkey.com/news/market-movers/262240018-market-movers-vz-20261026",
+   "https://www.aol.com/finance/stock-market-today-jan-30-232848848.html",
+   "https://www.tikr.com/blog/verizon-raised-guidance-three-times-in-its-q2-earnings-release-heres-why"
+  ]
+ },
+ "story": "Shares jumped about 12% in January on a strong customer rebound and a $25B buyback. They rose about 3% in July on a profit beat and raised guidance, despite a revenue miss. Now a third raised outlook failed to lift the stock, as revenue disappointed again.",
+ "history": []
+}

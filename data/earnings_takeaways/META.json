@@ -1,0 +1,34 @@
+{
+ "ticker": "META",
+ "updated": "2026-10-28T21:28Z",
+ "last": {
+  "date": "2026-10-21",
+  "timing": "post",
+  "move_pct": -7.0,
+  "basis": "close",
+  "verdict": "Strong sales couldn't offset a huge legal bill, negative cash flow and AI-spending worries.",
+  "reasons": [
+   {
+    "label": "Heavy AI spending",
+    "text": "Capex hit $34.9B in the quarter, leaving free cash flow negative at $2.1B; 2026 capex guided to $135-145B."
+   },
+   {
+    "label": "Teen-harm legal settlement",
+    "text": "A $9.89B charge cut profit in half; EPS was $3.83 versus $7.40 without it."
+   },
+   {
+    "label": "New non-voting shares",
+    "text": "Meta will create Class C stock, usable to raise capital or buy companies, which could dilute holders."
+   }
+  ],
+  "sources": [
+   "https://www.ii.co.uk/analysis-commentary/ii-view-meta-enjoys-strong-q3-hit-costly-litigation-ii540660",
+   "https://finance.yahoo.com/markets/stocks/articles/meta-stock-sinks-after-q1-earnings-as-company-raises-2026-ai-spending-forecast-to-125-billion-145-billion-160136308.html",
+   "https://www.indmoney.com/blog/us-stocks/why-meta-stock-fell-q2-earnings-analysis",
+   "https://www.heygotrade.com/en/news/meta-q1-2026-net-profit-jumps-61-percent-ai-capex-drags-shares/",
+   "https://www.sec.gov/Archives/edgar/data/1326801/000162828026066700/meta-09302026xexhibit991.htm"
+  ]
+ },
+ "story": "Meta has beaten revenue forecasts every quarter in 2026, yet the stock fell after the last four reports. Each time, rising AI spending (2026 capex guidance climbed from $115-135B to $135-145B) and legal costs overshadowed strong ad growth. Reactions were roughly -7% in April and -8% in July.",
+ "history": []
+}

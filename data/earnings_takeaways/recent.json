@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-28T20:29Z",
+ "updated": "2026-10-28T21:37Z",
  "reports": [
   {
    "ticker": "GOOGL",
@@ -23,6 +23,216 @@
    ]
   },
   {
+   "ticker": "CMG",
+   "date": "2026-10-28",
+   "move_pct": 7.9,
+   "basis": "after hours",
+   "verdict": "Investors cheered sales and traffic beating forecasts, shrugging off weaker profit margins.",
+   "reasons": [
+    {
+     "label": "Sales beat forecasts",
+     "text": "Same-store sales rose 2.1%, versus about 1.5% expected and roughly 1% guided."
+    },
+    {
+     "label": "Customers still returning",
+     "text": "Third straight quarter of more transactions, up 0.8%, which suggests the turnaround is holding."
+    },
+    {
+     "label": "Profit squeeze, expected",
+     "text": "Earnings per share slipped to $0.27 from $0.29 as margins fell, but analysts had expected it."
+    }
+   ]
+  },
+  {
+   "ticker": "MSFT",
+   "date": "2026-10-28",
+   "move_pct": 3.6,
+   "basis": "after hours",
+   "verdict": "Cloud growth sped up and spending came in lower than feared, so shares rose.",
+   "reasons": [
+    {
+     "label": "Azure growth accelerated",
+     "text": "Azure revenue grew 48%, above the 44%\u201345% range Microsoft had guided."
+    },
+    {
+     "label": "Lower AI spending",
+     "text": "Capex was about $39.4B, below the $45.9B analysts expected; lease accounting may flatter it."
+    },
+    {
+     "label": "Beat on revenue, profit",
+     "text": "Revenue of $92.3B and adjusted EPS of $4.89 topped forecasts of $90.6B and $4.73."
+    }
+   ]
+  },
+  {
+   "ticker": "GPI",
+   "date": "2026-10-28",
+   "move_pct": -1.8,
+   "basis": "close",
+   "verdict": "Earnings missed estimates and sales fell, so shares slipped modestly.",
+   "reasons": [
+    {
+     "label": "Profit fell short",
+     "text": "Adjusted earnings were $9.36 a share, down from $10.45 a year ago and below forecasts of about $11."
+    },
+    {
+     "label": "Sales keep shrinking",
+     "text": "Revenue fell 6.7% to $5.4 billion; used-car sales volume dropped 10.5%."
+    },
+    {
+     "label": "Debt load after Hennessy",
+     "text": "Buying 10 Atlanta stores adds debt; about $360 million of store sales should help pay it down."
+    }
+   ]
+  },
+  {
+   "ticker": "F",
+   "date": "2026-10-28",
+   "move_pct": -1.3,
+   "basis": "after hours",
+   "verdict": "Profit beat estimates, but a thin guidance raise and falling sales left shares slightly lower.",
+   "reasons": [
+    {
+     "label": "Modest guidance raise",
+     "text": "Only the low end of 2026 profit guidance rose, to $10.5-11 billion from $10-11 billion."
+    },
+    {
+     "label": "Fewer vehicles sold",
+     "text": "Vehicles sold fell 9% to 1.05 million, and revenue slipped 2% to $49.5 billion."
+    },
+    {
+     "label": "Weaker core profits",
+     "text": "Gas-car profit fell 10% and commercial-truck profit fell 16%, on higher metal costs and launch costs."
+    }
+   ]
+  },
+  {
+   "ticker": "BA",
+   "date": "2026-10-27",
+   "move_pct": -10.7,
+   "basis": "close",
+   "verdict": "Investors sold hard on a wider loss and a slower 737 production ramp.",
+   "reasons": [
+    {
+     "label": "737 ramp slower",
+     "text": "Boeing cut its 2026 737 delivery target; 52 jets a month now seen only late 2027."
+    },
+    {
+     "label": "Bigger loss than expected",
+     "text": "Adjusted loss was $0.34 a share versus about $0.25 expected, with plane unit losing $697 million."
+    },
+    {
+     "label": "Cash recovery delayed",
+     "text": "Free cash flow was only $0.5 billion; the year to date is still $359 million negative."
+    }
+   ]
+  },
+  {
+   "ticker": "UPS",
+   "date": "2026-10-27",
+   "move_pct": 5.8,
+   "basis": "close",
+   "verdict": "Investors cheered a second guidance raise and growing profit in the U.S. delivery business.",
+   "reasons": [
+    {
+     "label": "Raised full-year outlook",
+     "text": "UPS lifted 2026 profit guidance to about $7.28 per share and revenue to about $92.6B."
+    },
+    {
+     "label": "U.S. profit margin improving",
+     "text": "U.S. delivery margin rose to 7.0% from 6.4% as revenue per package climbed 6.1%."
+    },
+    {
+     "label": "Revenue grew everywhere",
+     "text": "Sales rose 6.7% to $22.9B, with every segment growing and Q4 guided higher."
+    }
+   ]
+  },
+  {
+   "ticker": "RCL",
+   "date": "2026-10-27",
+   "move_pct": 5.5,
+   "basis": "close",
+   "verdict": "Shares rose as Royal Caribbean beat estimates, raised its yearly profit forecast, and 2027 bookings looked strong.",
+   "reasons": [
+    {
+     "label": "Raised profit forecast",
+     "text": "Full-year adjusted earnings per share forecast raised to $17.85\u2013$17.95 after a $6.57 third quarter."
+    },
+    {
+     "label": "Strong 2027 bookings",
+     "text": "2027 bookings are up in the high teens, and booking volumes rose in the mid-teens."
+    },
+    {
+     "label": "Beat on demand, costs",
+     "text": "Late bookings beat guidance, and some costs shifted into Q4, which flattered Q3."
+    }
+   ]
+  },
+  {
+   "ticker": "HOOD",
+   "date": "2026-10-27",
+   "move_pct": -3.3,
+   "basis": "close",
+   "verdict": "Record revenue, but a small miss and cooling trading volumes disappointed.",
+   "reasons": [
+    {
+     "label": "Revenue slightly missed",
+     "text": "Revenue of $1.42B came in about 2% below the $1.43B forecast."
+    },
+    {
+     "label": "Crypto revenue plunged",
+     "text": "Crypto revenue fell 55% to $120M as trading volume dropped 38%."
+    },
+    {
+     "label": "Early Q4 cooling",
+     "text": "October trading volumes ran slightly below Q3 records, and the CFO said spreads were tighter."
+    }
+   ]
+  },
+  {
+   "ticker": "PYPL",
+   "date": "2026-10-27",
+   "move_pct": 2.0,
+   "basis": "close",
+   "verdict": "Investors liked a profit beat and a higher full-year outlook; shares rose modestly.",
+   "reasons": [
+    {
+     "label": "Raised profit outlook",
+     "text": "Full-year adjusted EPS guidance rose to about $5.60 from about $5.38 in July."
+    },
+    {
+     "label": "Earnings growth returns",
+     "text": "Adjusted EPS rose 8% to $1.45 on revenue up 2% to $8.6B."
+    },
+    {
+     "label": "Heavy buybacks",
+     "text": "PayPal bought back $1.5B of stock in the quarter, about $6.0B over 12 months."
+    }
+   ]
+  },
+  {
+   "ticker": "KO",
+   "date": "2026-10-27",
+   "move_pct": -1.6,
+   "basis": "close",
+   "verdict": "Solid beat and raised outlook, but weak U.S. demand and restaurant pressure kept shares lower.",
+   "reasons": [
+    {
+     "label": "Flat North America volume",
+     "text": "U.S. and Canada volume was flat, down from 3% growth last quarter."
+    },
+    {
+     "label": "Restaurant pressure to persist",
+     "text": "CFO says restaurant weakness continues into 2027; at-home drinking beats away-from-home."
+    },
+    {
+     "label": "Growth reliant on overseas",
+     "text": "Global volume rose 5% and organic revenue 7%, driven by international markets."
+    }
+   ]
+  },
+  {
    "ticker": "V",
    "date": "2026-10-27",
    "move_pct": -0.3,
@@ -40,6 +250,48 @@
     {
      "label": "Costs growing faster",
      "text": "Adjusted operating expenses rose 12%, mostly marketing and staff, and 2027 profit growth is guided slightly below revenue growth."
+    }
+   ]
+  },
+  {
+   "ticker": "NUE",
+   "date": "2026-10-26",
+   "move_pct": 5.2,
+   "basis": "close",
+   "verdict": "Earnings beat Nucor's own forecast and the outlook held up, so shares rose.",
+   "reasons": [
+    {
+     "label": "Beat own forecast",
+     "text": "Earnings of $5.80 per share topped the $5.55-$5.65 range Nucor gave in September."
+    },
+    {
+     "label": "Higher steel prices",
+     "text": "Average selling price rose 9% from last quarter to $1,493 per ton, lifting profit."
+    },
+    {
+     "label": "Steady outlook",
+     "text": "Management expects fourth-quarter earnings flat to modestly higher, despite fewer shipping days and planned outages."
+    }
+   ]
+  },
+  {
+   "ticker": "VZ",
+   "date": "2026-10-26",
+   "move_pct": -3.5,
+   "basis": "close",
+   "verdict": "Revenue missed estimates, so the stock fell despite a strong customer quarter and raised guidance.",
+   "reasons": [
+    {
+     "label": "Revenue missed estimates",
+     "text": "Revenue of $34.31B fell short of the ~$34.77B expected; phone upgrade sales dropped 9%."
+    },
+    {
+     "label": "Big customer gains priced in",
+     "text": "406,000 new phone customers beat the ~195,000 expected, but shares still slipped."
+    },
+    {
+     "label": "Raised outlook not enough",
+     "text": "Full-year profit-per-share growth guidance rose to 7\u20137.5%, from 6\u20137%, yet the stock fell."
     }
    ]
   }

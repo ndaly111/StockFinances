@@ -1,0 +1,34 @@
+{
+ "ticker": "VRSN",
+ "updated": "2026-10-28T21:37Z",
+ "last": {
+  "date": "2026-10-22",
+  "timing": "post",
+  "move_pct": -1.4,
+  "basis": "close",
+  "verdict": "Record registrations and raised guidance, but shares slipped after a strong run.",
+  "reasons": [
+   {
+    "label": "Registrations spike before price hike",
+    "text": "New registrations hit a record 13.1 million, just ahead of a November .com price increase."
+   },
+   {
+    "label": "Renewal rate slipping",
+    "text": "Expected renewal rate fell to 74.3% from 75.4% a year earlier."
+   },
+   {
+    "label": "Guidance raised again",
+    "text": "2026 domain base growth outlook lifted to 6.5%-7.0%; revenue seen at $1.755-1.760 billion."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001014473/000101447326000038/q32026earningsrelease.htm",
+   "https://www.benzinga.com/node/62548639",
+   "https://bullfincher.io/companies/verisign/earnings-call/fy2026-q3",
+   "https://www.marketbeat.com/instant-alerts/verisign-q2-earnings-call-highlights-2026-07-23/",
+   "https://finance.yahoo.com/markets/stocks/articles/verisign-vrsn-q1-2026-earnings-214145132.html"
+  ]
+ },
+ "story": "Verisign has raised domain-growth guidance each quarter this year, from 3.1%-4.3% in April to 6.5%-7.0% now, on record sign-ups. Shares rose about 7% after both the April and July reports; this time they slipped.",
+ "history": []
+}

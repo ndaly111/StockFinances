@@ -1,0 +1,35 @@
+{
+ "ticker": "HOOD",
+ "updated": "2026-10-28T21:24Z",
+ "last": {
+  "date": "2026-10-27",
+  "timing": "post",
+  "move_pct": -3.3,
+  "basis": "close",
+  "verdict": "Record revenue, but a small miss and cooling trading volumes disappointed.",
+  "reasons": [
+   {
+    "label": "Revenue slightly missed",
+    "text": "Revenue of $1.42B came in about 2% below the $1.43B forecast."
+   },
+   {
+    "label": "Crypto revenue plunged",
+    "text": "Crypto revenue fell 55% to $120M as trading volume dropped 38%."
+   },
+   {
+    "label": "Early Q4 cooling",
+    "text": "October trading volumes ran slightly below Q3 records, and the CFO said spreads were tighter."
+   }
+  ],
+  "sources": [
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-robinhood-q3-2026-revenue-tops-14-billion-stock-falls-93CH-4977221",
+   "https://www.sec.gov/Archives/edgar/data/1783879/000178387926000164/q32026robinhoodexhibit991.htm",
+   "https://finance.yahoo.com/markets/stocks/articles/robinhood-stock-dropping-q1-2026-181954676.html",
+   "https://www.tikr.com/blog/robinhood-stock-fell-13-after-q1-2026-earnings-heres-why-the-selloff-may-be-overdone",
+   "https://tangem.com/en/news/investments/35097-robinhood-q2-prediction-markets-surpass-crypto-revenue/",
+   "https://beancount.io/blog/tags/robinhood"
+  ]
+ },
+ "story": "Robinhood fell about 13% after the April report on a revenue miss and a 47% crypto drop. July's beat still led to a dip, as crypto fell 38% and a one-time gain flattered profit. Prediction markets are growing fast, but crypto weakness keeps weighing.",
+ "history": []
+}

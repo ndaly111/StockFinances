@@ -1,0 +1,34 @@
+{
+ "ticker": "LUV",
+ "updated": "2026-10-28T21:27Z",
+ "last": {
+  "date": "2026-10-21",
+  "timing": "post",
+  "move_pct": 5.4,
+  "basis": "close",
+  "verdict": "Investors looked past the guidance cut to a Q3 beat and a 2027 margin recovery.",
+  "reasons": [
+   {
+    "label": "Q3 profit beat",
+    "text": "Adjusted EPS of $0.66 and record $8.4B revenue (up 21%) beat analyst estimates."
+   },
+   {
+    "label": "2027 margin recovery",
+    "text": "Management sees meaningful margin expansion in 2027 even if fuel stays high."
+   },
+   {
+    "label": "Fuel-driven guidance cut",
+    "text": "2026 EPS outlook cut to $2.60\u2013$2.85 as Q4 fuel nears $4.55 a gallon."
+   }
+  ],
+  "sources": [
+   "https://www.travelextra.ie/?p=153957",
+   "https://quartr.com/events/southwest-airlines-co-luv-q3-2026_3e9aLg1e",
+   "https://www.benzinga.com/node/62532593",
+   "https://www.chartmill.com/news/LUV/Chartmill-51390-Southwest-Airlines-Co-NYSELUV-Stock-Dips-on-Cautious-Outlook-Despite-Strong-Q2-Earnings-Beat",
+   "https://dc.fortune.com/2026/04/22/southwest-airlines-earnings-high-fuel-costs/"
+  ]
+ },
+ "story": "Fuel costs have driven the last few reports. In April, a weak Q2 outlook sent shares down 3.8%. In July, a beat and a lowered full-year outlook sent them down about 5%. October's report beat estimates and the stock rose.",
+ "history": []
+}

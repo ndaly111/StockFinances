@@ -1,0 +1,34 @@
+{
+ "ticker": "TSLA",
+ "updated": "2026-10-28T21:35Z",
+ "last": {
+  "date": "2026-10-21",
+  "timing": "post",
+  "move_pct": -3.1,
+  "basis": "close",
+  "verdict": "Investors shrugged off the EPS beat; flat sales and shrinking profit won out.",
+  "reasons": [
+   {
+    "label": "Spending crushed profit",
+    "text": "Operating costs jumped 39% to $4.78B, cutting operating income 56% to $718M."
+   },
+   {
+    "label": "Flat sales, fewer cars",
+    "text": "Revenue stayed near $28B year over year, and deliveries slipped 2% to 486,532."
+   },
+   {
+    "label": "Heavy AI investment",
+    "text": "Capex hit $4.7B, over double last year's, with R&D up 69% to $2.76B."
+   }
+  ],
+  "sources": [
+   "https://electrek.co/2026/10/21/tesla-tsla-q3-2026-financial-results/",
+   "https://www.heygotrade.com/en/news/tesla-tsla-stock-news-october-23-2026/",
+   "https://www.tikr.com/blog/tesla-q1-2026-earnings-beat-so-why-did-the-stock-fall-3-56",
+   "https://vestedfinance.com/blog/us-stocks/tesla-q2-earnings-capex-jumped-142-is-the-ai-bet-costing-too-much/",
+   "https://www.sec.gov/Archives/edgar/data/1318605/000162828026066738/exhibit9914.htm"
+  ]
+ },
+ "story": "Over the last three reports, heavy spending has been the recurring worry. April's report raised 2026 capex guidance above $25B and the stock fell 3.6%. July's capex hit $5.8B alongside an EPS miss, and shares sank. This quarter's spending again squeezed profit.",
+ "history": []
+}
