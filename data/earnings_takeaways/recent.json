@@ -1,0 +1,47 @@
+{
+ "updated": "2026-10-28T20:29Z",
+ "reports": [
+  {
+   "ticker": "GOOGL",
+   "date": "2026-10-28",
+   "move_pct": -8.4,
+   "basis": "after hours",
+   "verdict": "Cloud growth doubled, but record spending and negative cash flow spooked investors.",
+   "reasons": [
+    {
+     "label": "Cash burn",
+     "text": "Free cash flow was negative $9.1 billion as spending outran cash from operations."
+    },
+    {
+     "label": "Huge AI spending",
+     "text": "Capex reached $51.4 billion for the quarter, more than double last year's $24.0 billion."
+    },
+    {
+     "label": "Rising costs",
+     "text": "Research costs rose 36% and borrowing costs climbed; debt more than doubled to $125 billion this year."
+    }
+   ]
+  },
+  {
+   "ticker": "V",
+   "date": "2026-10-27",
+   "move_pct": -0.3,
+   "basis": "close",
+   "verdict": "Solid beat, but cautious 2027 outlook and rising bank payments left the stock about flat.",
+   "reasons": [
+    {
+     "label": "Cooler 2027 outlook",
+     "text": "Visa guided to low-double-digit revenue growth next year, versus 15% this year; some investors found that modest."
+    },
+    {
+     "label": "Rising payments to banks",
+     "text": "Payments to banks and partners to keep them on Visa jumped 21% to $5.1B; about 25% of volume renews in 2027."
+    },
+    {
+     "label": "Costs growing faster",
+     "text": "Adjusted operating expenses rose 12%, mostly marketing and staff, and 2027 profit growth is guided slightly below revenue growth."
+    }
+   ]
+  }
+ ]
+}
