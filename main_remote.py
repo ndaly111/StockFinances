@@ -395,6 +395,22 @@ def mini_main():
     treasury = fetch_10_year_treasury_yield()
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
+
+    # News box is pure network + file output (yfinance day moves, SEC filings,
+    # RSS) and never touches the DB, so it runs in the background (~30s) while
+    # the DB-bound loop below works. Joined right before html_generator2 pulls
+    # charts/news_box.html into index.html.
+    import threading
+    news_state = {}
+    def _news_worker():
+        try:
+            from generate_news_box import generate_news_box
+            generate_news_box()
+        except Exception as exc:  # surfaced after join, same as the old inline try
+            news_state["error"] = exc
+    news_thread = threading.Thread(target=_news_worker, name="news-box", daemon=True)
+    news_thread.start()
+
     if is_weekly:
         maybe_load_sp500_index_series(DB_PATH)
     conn = establish_database_connection(DB_PATH)
@@ -439,8 +455,19 @@ def mini_main():
         from valuation_update import prefetch_finviz
         with ThreadPoolExecutor(max_workers=8) as ex:
             list(ex.map(fetch_split_history, tickers))
-        prefetch_finviz(tickers)
-        print("[main] finviz + split prefetch complete")
+        # Finviz "EPS next 5Y" is an analyst estimate that doesn't move
+        # intraday; finviz throttles to ~2 concurrent so all 105 cost ~38s.
+        # Weekly refreshes everything; daily only fills tickers that have no
+        # stored value yet (new tickers, prior parse failures).
+        if is_weekly:
+            finviz_tickers = list(tickers)
+        else:
+            cursor.execute("SELECT ticker FROM Tickers_Info WHERE FINVIZ_5yr_gwth IS NOT NULL")
+            _have = {r[0] for r in cursor.fetchall()}
+            finviz_tickers = [t for t in tickers if t not in _have]
+        finviz_set = set(finviz_tickers)
+        prefetch_finviz(finviz_tickers)
+        print(f"[main] finviz ({len(finviz_tickers)} tickers) + split prefetch complete")
 
         print(f"[main] Batch scraping forward data for {len(scrape_tickers)} tickers...")
         scrape_forward_data_batch(scrape_tickers, max_workers=6)
@@ -493,7 +520,8 @@ def mini_main():
                 # make_chart=False on daily: the valuation PNG is legacy too;
                 # the DB row + dashboard entry are still written.
                 valuation_update(ticker, cursor, treasury, mktcap, dashboard_data,
-                                 make_chart=is_weekly)
+                                 make_chart=is_weekly,
+                                 refresh_finviz=ticker in finviz_set)
 
                 # (expense_reports removed — see Phase 3 note above)
                 conn.commit()
@@ -572,11 +600,9 @@ def mini_main():
         except Exception as exc:
             print(f"[WARN] Plotly index growth pages failed: {exc}")
 
-        try:
-            from generate_news_box import generate_news_box
-            generate_news_box()
-        except Exception as exc:
-            print(f"[WARN] News box failed: {exc}")
+        news_thread.join()
+        if "error" in news_state:
+            print(f"[WARN] News box failed: {news_state['error']}")
 
         html_generator2(
             tickers,

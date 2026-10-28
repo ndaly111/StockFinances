@@ -426,10 +426,11 @@ def process_update_growth_csv(file_path, db_path="Stock Data.db"):
 #  Master driver – called from main_remote.py
 # ---------------------------------------------------------------------------
 def valuation_update(ticker, cursor, treasury_yield, marketcap, dashboard,
-                     make_chart=True):
+                     make_chart=True, refresh_finviz=True):
     db_path = "Stock Data.db"
 
-    finviz_five_yr(ticker, cursor)
+    if refresh_finviz:
+        finviz_five_yr(ticker, cursor)
     combo, growth, price, fcst = fetch_financial_valuation_data(ticker, db_path)
 
     if price is None:
