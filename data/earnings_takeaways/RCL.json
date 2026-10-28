@@ -1,0 +1,33 @@
+{
+ "ticker": "RCL",
+ "updated": "2026-10-28T21:34Z",
+ "last": {
+  "date": "2026-10-27",
+  "timing": "pre",
+  "move_pct": 5.5,
+  "basis": "close",
+  "verdict": "Shares rose as Royal Caribbean beat estimates, raised its yearly profit forecast, and 2027 bookings looked strong.",
+  "reasons": [
+   {
+    "label": "Raised profit forecast",
+    "text": "Full-year adjusted earnings per share forecast raised to $17.85\u2013$17.95 after a $6.57 third quarter."
+   },
+   {
+    "label": "Strong 2027 bookings",
+    "text": "2027 bookings are up in the high teens, and booking volumes rose in the mid-teens."
+   },
+   {
+    "label": "Beat on demand, costs",
+    "text": "Late bookings beat guidance, and some costs shifted into Q4, which flattered Q3."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0000884887/000088488726000042/a2026q3earningsrelease.htm",
+   "https://www.seatrade-cruise.com/finance-legal-regulatory/royal-caribbean-s-q2-outperforms-guidance-rises-2027-encouraging-",
+   "https://www.trefis.com/articles/616310/should-you-buy-royal-caribbean-at-a-one-year-low/2026-09-23",
+   "https://www.chartmill.com/news/RCL/Chartmill-51804-Royal-Caribbean-NYSERCL-Posts-Earnings-Beat-and-Raises-Guidance-Despite-Pre-Market-Dip"
+  ]
+ },
+ "story": "In July, Royal Caribbean beat estimates and raised its yearly forecast, though war-related booking weakness weighed and the stock dipped early. Shares later hit a one-year low in September. October's beat and another raise, with firm 2027 bookings, drew a rebound.",
+ "history": []
+}

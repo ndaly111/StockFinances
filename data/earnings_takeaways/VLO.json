@@ -1,0 +1,35 @@
+{
+ "ticker": "VLO",
+ "updated": "2026-10-28T21:36Z",
+ "last": {
+  "date": "2026-10-22",
+  "timing": "pre",
+  "move_pct": -2.4,
+  "basis": "close",
+  "verdict": "Record profit beat forecasts, but shares slipped after an already huge run.",
+  "reasons": [
+   {
+    "label": "Profit far above forecasts",
+    "text": "Adjusted EPS of $23.90 beat the $20.30 estimate; refining margin hit $39.24 a barrel."
+   },
+   {
+    "label": "Peak-margin worries",
+    "text": "Refining margins nearly tripled from $13.14; investors may doubt they can stay this high."
+   },
+   {
+    "label": "Lower volumes, Port Arthur costs",
+    "text": "Throughput fell to 2.97M barrels a day from 3.09M; Port Arthur fire costs continue."
+   }
+  ],
+  "sources": [
+   "https://oilprice.com/Company-News/Valero-Q3-Earnings-Surge-Sixfold-to-68-Billion-on-Refining-Boom.amp.html",
+   "https://www.marketbeat.com/instant-alerts/transcript-valero-energy-q3-earnings-call-highlights-2026-10-22/",
+   "https://247wallst.com/cards/valero-energy-q3-2026-earnings-vlo-01m5hs2e7dnht5h4w2ey4hf68p",
+   "https://bullfincher.io/companies/valero-energy-corporation/earnings-call/fy2026-q3",
+   "https://www.sec.gov/Archives/edgar/data/0001035002/000162828026050822/a6302026exh9901earningsrel.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001035002/000162828026028602/a3312026exh9901earningsrel.htm"
+  ]
+ },
+ "story": "Profit has accelerated all year. Adjusted EPS rose from $4.22 in Q1 to $12.54 in Q2 and $23.90 in Q3, as refining margins climbed from $14.90 to $39.24 a barrel. Valero has now beaten EPS forecasts six quarters running.",
+ "history": []
+}

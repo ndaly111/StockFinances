@@ -1,0 +1,34 @@
+{
+ "ticker": "BA",
+ "updated": "2026-10-28T21:20Z",
+ "last": {
+  "date": "2026-10-27",
+  "timing": "pre",
+  "move_pct": -10.7,
+  "basis": "close",
+  "verdict": "Investors sold hard on a wider loss and a slower 737 production ramp.",
+  "reasons": [
+   {
+    "label": "737 ramp slower",
+    "text": "Boeing cut its 2026 737 delivery target; 52 jets a month now seen only late 2027."
+   },
+   {
+    "label": "Bigger loss than expected",
+    "text": "Adjusted loss was $0.34 a share versus about $0.25 expected, with plane unit losing $697 million."
+   },
+   {
+    "label": "Cash recovery delayed",
+    "text": "Free cash flow was only $0.5 billion; the year to date is still $359 million negative."
+   }
+  ],
+  "sources": [
+   "https://www.marketbeat.com/instant-alerts/price-boeing-nyse-ba-shares-down-107-following-weak-earnings-2026-10-27/",
+   "https://finance.yahoo.com/markets/stocks/articles/why-did-boeing-stock-crash-164440434.html",
+   "https://www.tradingpedia.com/2026/07/28/boeing-gains-as-cash-flow-improves-backlog-hits-high/",
+   "https://tribune.net.ph/2025/10/29/boeing-shares-drop-33-percent-amid-777x-delays",
+   "https://www.sec.gov/Archives/edgar/data/12927/000162828026067411/a202609sep308kprex991.htm"
+  ]
+ },
+ "story": "Boeing has stayed loss-making for a year. A $4.9 billion 777X charge hit the October 2025 report, and shares fell 3.3%. July's report beat on revenue and nudged shares up, but this one showed the 737 turnaround slipping.",
+ "history": []
+}

@@ -1,0 +1,32 @@
+{
+ "ticker": "CMG",
+ "updated": "2026-10-28T21:22Z",
+ "last": {
+  "date": "2026-10-28",
+  "timing": "post",
+  "move_pct": 7.9,
+  "basis": "after hours",
+  "verdict": "Investors cheered sales and traffic beating forecasts, shrugging off weaker profit margins.",
+  "reasons": [
+   {
+    "label": "Sales beat forecasts",
+    "text": "Same-store sales rose 2.1%, versus about 1.5% expected and roughly 1% guided."
+   },
+   {
+    "label": "Customers still returning",
+    "text": "Third straight quarter of more transactions, up 0.8%, which suggests the turnaround is holding."
+   },
+   {
+    "label": "Profit squeeze, expected",
+    "text": "Earnings per share slipped to $0.27 from $0.29 as margins fell, but analysts had expected it."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1058090/000105809026000103/cmg-20261028xex991.htm",
+   "https://finance.yahoo.com/markets/stocks/article/chipotle-stock-pops-on-sustained-sales-momentum-in-q3-203209272.html",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-chipotle-beats-q2-2026-estimates-as-stock-jumps-93CH-4821911"
+  ]
+ },
+ "story": "Same-store sales went from down 2.5% in late 2025 to up 0.5%, 2.2%, then 2.1%, with traffic recovering. Costs for beef, labor and marketing keep squeezing profits. The stock rose about 6% after hours on the July report but is still down about 20% this year.",
+ "history": []
+}

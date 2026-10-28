@@ -1,0 +1,34 @@
+{
+ "ticker": "BAH",
+ "updated": "2026-10-28T21:21Z",
+ "last": {
+  "date": "2026-10-23",
+  "timing": "pre",
+  "move_pct": -0.3,
+  "basis": "close",
+  "verdict": "Raised profit outlook was offset by falling revenue, so the stock barely moved.",
+  "reasons": [
+   {
+    "label": "Profit guidance raised",
+    "text": "Full-year adjusted EPS outlook lifted to $6.50-$6.70 from $6.00-$6.35."
+   },
+   {
+    "label": "Revenue still shrinking",
+    "text": "Sales fell 3.9% to $2.8 billion; civil business revenue dropped from $827M to $702M."
+   },
+   {
+    "label": "Cash flow and debt",
+    "text": "Free cash flow fell to $263M from $395M; net debt rose after acquisitions."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1443646/000162828026066971/bahexhibit991q2fy27.htm",
+   "https://www.quiverquant.com/news/Booz+Allen+Q2+Revenue+Falls+3.9%25+to+%242.8+Billion+as+Net+Income+Rises",
+   "https://fool.com/investing/2026/07/24/why-booz-allen-hamilton-stock-soared-today",
+   "https://www.webull.com.au/news-detail/14925821437158400",
+   "https://www.trefis.com/stock/bah/articles2/608972/booz-allen-soared-on-a-beat-not-a-boom/2026-07-27"
+  ]
+ },
+ "story": "Booz Allen has repeatedly beaten profit estimates while revenue shrinks on weaker government civil spending. The stock slipped after the May report, then jumped about 10% in July on strong margins. This time the raised profit outlook met another sales decline.",
+ "history": []
+}

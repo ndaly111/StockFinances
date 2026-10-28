@@ -1,0 +1,34 @@
+{
+ "ticker": "SPOT",
+ "updated": "2026-10-28T21:35Z",
+ "last": {
+  "date": "2026-10-22",
+  "timing": "pre",
+  "move_pct": 11.1,
+  "basis": "close",
+  "verdict": "Investors cheered extra subscribers and a stronger profit outlook, shrugging off the earnings miss.",
+  "reasons": [
+   {
+    "label": "Subscribers beat forecasts",
+    "text": "Premium subscribers hit 306 million, about 1 million above forecasts, with 9% growth."
+   },
+   {
+    "label": "Stronger profit outlook",
+    "text": "Q4 operating profit guided to \u20ac820 million, above analyst estimates."
+   },
+   {
+    "label": "Margins and costs improved",
+    "text": "Operating income of \u20ac672 million beat guidance on lower marketing and staff costs."
+   }
+  ],
+  "sources": [
+   "https://pluang.com/en/news-feed/spotify-naik-10-persen-berkat-pertumbuhan-pelanggan",
+   "https://www.rttnews.com/3701721/spotify-q3-maus-up-11-yoy-issues-q4-outlook.aspx?type=alleco",
+   "https://finviz.com/news/376732/spotify-shares-slide-after-second-quarter-earnings-miss",
+   "https://finance.yahoo.com/markets/stocks/articles/spotify-drops-14-soft-q2-163841520.html",
+   "https://finance.yahoo.com/news/spotify-stock-pops-strong-fourth-160300587.html"
+  ]
+ },
+ "story": "Spotify jumped about 16% in February on strong subscriber growth. It fell roughly 14% in April on a soft profit outlook, then slipped in August after a weaker profit forecast. October's subscriber beat and bigger profit guidance flipped sentiment back.",
+ "history": []
+}

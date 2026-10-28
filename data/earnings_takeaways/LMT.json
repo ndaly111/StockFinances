@@ -1,0 +1,35 @@
+{
+ "ticker": "LMT",
+ "updated": "2026-10-28T21:26Z",
+ "last": {
+  "date": "2026-10-22",
+  "timing": "pre",
+  "move_pct": 7.0,
+  "basis": "close",
+  "verdict": "Raised outlook and a huge record backlog outweighed F-35 funding worries.",
+  "reasons": [
+   {
+    "label": "Guidance raised again",
+    "text": "Second straight raise: 2026 EPS now about $30.35\u2013$30.75, from $29.95\u2013$30.65."
+   },
+   {
+    "label": "Record backlog",
+    "text": "Backlog jumped 27% in one quarter to $292 billion, led by a giant PAC-3 missile award."
+   },
+   {
+    "label": "Cash flow upgrade",
+    "text": "Full-year free cash flow outlook lifted to $7.8\u2013$8.0 billion from $7.0\u2013$7.2 billion."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/936468/000162828026066780/ex991q32026.htm",
+   "https://betafinch.com/episodes/LMT_2026_Q3_en",
+   "https://www.rttnews.com/3670085/lockheed-martin-jumps-10-after-q2-earnings-raises-fy26-outlook.aspx",
+   "https://wtop.com/news/2026/07/lockheed-q2-earnings-snapshot/",
+   "https://finance.yahoo.com/news/lockheed-martin-stock-jumps-q4-162826863.html",
+   "https://stocks.observer-reporter.com/observerreporter/article/stockstory-2026-1-29-lockheed-martin-lmt-stock-trades-up-here-is-why"
+  ]
+ },
+ "story": "Lockheed has moved from a Q1 revenue and earnings miss (shares fell) to back-to-back guidance raises. The stock rose about 6% after January's outlook and about 11% after July's, and now about 7%. Missile demand drives growth, while F-35 contract timing remains a watch item.",
+ "history": []
+}

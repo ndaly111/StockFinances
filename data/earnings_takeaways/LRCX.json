@@ -1,0 +1,32 @@
+{
+ "ticker": "LRCX",
+ "updated": "2026-10-28T21:27Z",
+ "last": {
+  "date": "2026-10-21",
+  "timing": "post",
+  "move_pct": -11.8,
+  "basis": "close",
+  "verdict": "Record quarter and above-forecast outlook, but growth looks set to slow sharply.",
+  "reasons": [
+   {
+    "label": "Growth slowing",
+    "text": "December revenue guide of $8.6B implies under 5% growth after 22% last quarter."
+   },
+   {
+    "label": "China share to drop",
+    "text": "China was 35% of sales; management expects a meaningfully lower share in December."
+   },
+   {
+    "label": "Supply shortages cap sales",
+    "text": "CFO said the outlook would have been higher without parts shortages; shipments slip to March."
+   }
+  ],
+  "sources": [
+   "https://www.tikr.com/blog/lam-research-stock-sinks-7-on-a-guide-that-beat-would-have-been-a-bit-higher",
+   "https://invezz.com/news/2026/07/30/lam-research-stock-jumps-17-as-ai-demand-fuels-earnings-beat-outlook/",
+   "https://betafinch.com/episodes/LRCX_2027_Q1_en"
+  ]
+ },
+ "story": "Lam's sales growth sped up through 2026 (9%, then 15%, then 22% by September), and July's guidance sent the stock up sharply. Expectations became very high, so a beat with slower guidance now triggered a sell-off.",
+ "history": []
+}
