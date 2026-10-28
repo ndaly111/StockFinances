@@ -462,8 +462,13 @@ def mini_main():
                     if not financial_data_df.empty:
                         generate_financial_charts(ticker, CHARTS_DIR, financial_data_df)
 
-                # Forecast charts use forward data which IS refreshed daily.
-                generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
+                if is_weekly:
+                    # Forecast PNGs + YoY HTML under charts/ are legacy output:
+                    # the site is ticker.html + ticker_data/<T>.json (built by
+                    # scripts/gen_ticker_json.py from EDGAR/yfinance + the DB),
+                    # and nothing reads these files. No DB writes here, so
+                    # skipping on daily runs loses nothing (~40s/run).
+                    generate_forecast_charts_and_tables(ticker, DB_PATH, CHARTS_DIR)
 
                 # Phase 3: three weekly fetchers REMOVED — the Phase 2 companyfacts
                 # swap made the ticker JSON pull these sections straight from EDGAR,
@@ -481,9 +486,14 @@ def mini_main():
                 prepared, mktcap = prepare_data_for_display(
                     ticker, treasury, conn=conn, cursor=cursor, commit=False
                 )
-                generate_html_table(prepared, ticker)
+                if is_weekly:
+                    # charts/<T>_ticker_info.html — legacy, unread (see above).
+                    generate_html_table(prepared, ticker)
                 conn.commit()
-                valuation_update(ticker, cursor, treasury, mktcap, dashboard_data)
+                # make_chart=False on daily: the valuation PNG is legacy too;
+                # the DB row + dashboard entry are still written.
+                valuation_update(ticker, cursor, treasury, mktcap, dashboard_data,
+                                 make_chart=is_weekly)
 
                 # (expense_reports removed — see Phase 3 note above)
                 conn.commit()
@@ -505,10 +515,13 @@ def mini_main():
             eps_dividend_generator()
 
         generate_all_summaries()
-        # Forward estimate history snapshots run daily so the chart gets
-        # one new dot per day; on weekly runs they no-op for that day.
-        generate_all_forward_eps_assets(tickers)
-        generate_all_forward_revenue_assets(tickers)
+        if is_weekly:
+            # Forward EPS/revenue history charts + HTML summaries (~420
+            # matplotlib renders, ~43s). Read-only on the DB: the daily
+            # snapshot the ticker JSON reads (Forward_EPS_FY_History) is
+            # written by scrape_forward_data_batch above, not here.
+            generate_all_forward_eps_assets(tickers)
+            generate_all_forward_revenue_assets(tickers)
 
         full_html, avg_vals = generate_dashboard_table(dashboard_data)
         log_average_valuations(avg_vals, TICKERS_FILE_PATH)
