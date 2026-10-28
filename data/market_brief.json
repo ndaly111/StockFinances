@@ -1,0 +1,130 @@
+{
+ "updated": "2026-10-28T22:22Z",
+ "stories": [
+  {
+   "title": "Fed holds at 3.75–4.00%, two dissenters wanted a hike",
+   "sections": [
+    {
+     "label": "Decision",
+     "text": "The Fed held rates steady after hiking 25 basis points in September. Two of the 12 voters dissented, and both wanted another quarter-point hike. Chairman Kevin Warsh said future moves can't be determined yet. He also said one 2027 meeting and two 2028 meetings will focus on strategy, with no rate vote."
+    },
+    {
+     "label": "Market read",
+     "text": "Stocks and long-term yields edged higher as Wall Street read Warsh as hesitant to hike aggressively. CME FedWatch still puts the odds of a December hike at 85%. WSJ reported oil above $115."
+    }
+   ]
+  },
+  {
+   "title": "Alphabet falls 10% on a rare miss while Microsoft rises on Azure",
+   "sections": [
+    {
+     "label": "Alphabet",
+     "text": "Alphabet missed on both revenue and earnings for the first time in nearly four years. Free cash flow was negative $9.07 billion, against an expected negative $2.70 billion. Long-term debt rose to $125.1 billion from $21.6 billion. Capex is expected to exceed $300 billion in 2027."
+    },
+    {
+     "label": "Microsoft",
+     "text": "Microsoft rose 4% after hours. Azure grew 48%, and the company guided Azure growth to 49–50%, against a 45.1% consensus."
+    }
+   ]
+  },
+  {
+   "title": "Oracle jumps 11%, and a DoorDash–Instacart deal could come Thursday",
+   "sections": [
+    {
+     "label": "Movers",
+     "text": "Oracle rose 11% after forecasting $225 billion in fiscal 2030 revenue and capping new fundraising at $20 billion. Sources told CNBC that DoorDash could announce a deal for Instacart as early as Thursday. Reports value Instacart at about $17 billion. Wendy's jumped 15% on a $1.4 billion offer from Trian."
+    }
+   ]
+  }
+ ],
+ "next": "Next FOMC decision Dec 9, 2026",
+ "sources": [
+  {
+   "title": "Alphabet sinks 10% as it holds 2026 capex unchanged, expects significant increase in 2027",
+   "link": "https://www.cnbc.com/2026/10/28/alphabet-googl-earnings-q3-2026.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Microsoft stock jumps 4% as cloud growth drives earnings and revenue beat",
+   "link": "https://www.cnbc.com/2026/10/28/microsoft-msft-q1-earnings-report-2027.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Bond investor Jeff Gundlach on Fed's rate pause: 'What are you waiting for?'",
+   "link": "https://www.cnbc.com/2026/10/28/bond-investor-jeff-gundlach-talks-feds-rate-pause-with-cnbc.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Here are five key takeaways from the Fed rate decision and Warsh news conference",
+   "link": "https://www.cnbc.com/2026/10/28/fed-rate-decision-warsh-takeaways.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "DoorDash's deal to buy Instacart coming as early as Thursday morning, sources tell CNBC",
+   "link": "https://www.cnbc.com/2026/10/28/doordash-instacart-maplebear.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Chipotle shares rise 7% after CEO says same-store sales growth will continue",
+   "link": "https://www.cnbc.com/2026/10/28/chipotle-mexican-grill-cmg-q3-2026-earnings.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Three media outlets seek full White House access in amended lawsuit",
+   "link": "https://www.cnbc.com/2026/10/28/trump-white-house-media-ban-cnn-msnow-politico.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "10-year Treasury yield creeps higher even as Fed keeps rates the same",
+   "link": "https://www.cnbc.com/2026/10/28/us-treasurys-bonds-yields-federal-reserve.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Bessent says 'not necessarily' a mistake if the Fed hikes again",
+   "link": "https://www.cnbc.com/2026/10/28/scott-bessent-interview.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Fed leaves rates unchanged: What it means for credit cards, mortgages, auto loans and savings accounts",
+   "link": "https://www.cnbc.com/2026/10/28/fed-rate-decision-consumer-borrowing-costs.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "FedEx beats expectations, raises outlook in first report since calendar adjustment",
+   "link": "https://www.cnbc.com/2026/10/28/fedex-fdx-sept-2026-earnings.html",
+   "source": "CNBC Top News"
+  },
+  {
+   "title": "Ford reports mixed third-quarter results, says 2027 earnings will be in line with this year",
+   "link": "https://www.cnbc.com/2026/10/28/ford-motor-f-earnings-q3-2026.html",
+   "source": "CNBC Top News"
+  }
+ ],
+ "fingerprint": [
+  "10year treasury yield creeps higher even as fed keeps rates the same",
+  "alphabet sinks 10 as it holds 2026 capex unchanged expects significant increase in 2027",
+  "apple brings touch to the mac reversing yearsold stance on touchscreen laptop",
+  "bessent says not necessarily a mistake if the fed hikes again",
+  "bond investor jeff gundlach on feds rate pause what are you waiting for",
+  "chipotle shares rise 7 after ceo says samestore sales growth will continue",
+  "doordashs deal to buy instacart coming as early as thursday morning sources tell cnbc",
+  "fed chairman talks tough on inflation  plus whats behind microns big rally",
+  "fed holds rates steady despite concerns over inflation",
+  "fed leaves rates unchanged what it means for credit cards mortgages auto loans and savings accounts",
+  "fedex beats expectations raises outlook in first report since calendar adjustment",
+  "flavor flav hillary clinton weigh in as wnba takes flak for weekday lunchtime finals game",
+  "ford reports mixed thirdquarter results says 2027 earnings will be in line with this year",
+  "here are five key takeaways from the fed rate decision and warsh news conference",
+  "here is what changed in the new fed statement",
+  "luxury roundtheworld cruise ends abruptly as fuel costs skyrocket",
+  "microsoft stock jumps 4 as cloud growth drives earnings and revenue beat",
+  "nvidias 129 billion hugging face deal draws doj scrutiny",
+  "oracle stock pops 11 as longterm revenue forecast and clarity on financing ease debt concerns",
+  "peltola campaign aides dscc officials helped recruit second dan sullivan in alaska race nyt",
+  "the magnificent seven is no more time to pick winners and losers as groups correlation breaks down",
+  "three media outlets seek full white house access in amended lawsuit",
+  "trump is using tariffs as a tool for grift raskin says in demand for donor records",
+  "wendys shares jump 15 as nelson peltzs trian offers 14 billion to buy burger chain",
+  "were adding a new highprofile ai play to our bullpen stocks to watch list"
+ ]
+}
