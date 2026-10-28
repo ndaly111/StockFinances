@@ -9,6 +9,6 @@ New-Item -ItemType Directory -Force (Split-Path $log) | Out-Null
 "=== $(Get-Date -Format 'yyyy-MM-dd HH:mm') backfill=$Backfill" | Add-Content $log
 git pull -q --rebase origin main *>> $log
 $env:PYTHONIOENCODING = 'utf-8'
-$args = @('earnings_takeaways.py', '--push')
-if ($Backfill -gt 0) { $args += @('--backfill', "$Backfill") }
-& py -3.12 @args *>> $log
+$pyArgs = @('earnings_takeaways.py', '--push')
+if ($Backfill -gt 0) { $pyArgs += @('--backfill', "$Backfill") }
+& py -3.12 @pyArgs *>> $log
