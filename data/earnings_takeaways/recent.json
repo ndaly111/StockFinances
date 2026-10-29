@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-29T13:47Z",
+ "updated": "2026-10-29T16:43Z",
  "reports": [
   {
    "ticker": "NCLH",
@@ -40,6 +40,27 @@
     {
      "label": "Profit outlook improving",
      "text": "Profit margin target raised to 52\u201352.5%; the EPS cut was only from $4.57/share acquired-research charges."
+    }
+   ]
+  },
+  {
+   "ticker": "MA",
+   "date": "2026-10-29",
+   "move_pct": 4.2,
+   "basis": "intraday",
+   "verdict": "Investors cheered revenue and profit that beat expectations, pushing shares to new highs.",
+   "reasons": [
+    {
+     "label": "Revenue beat estimates",
+     "text": "Revenue rose 14% to $9.8B, versus the roughly 12% growth analysts expected."
+    },
+    {
+     "label": "Profit topped forecasts",
+     "text": "Adjusted earnings of $5.31 a share beat the $5.16 forecast, up 21% from last year."
+    },
+    {
+     "label": "Services and travel strength",
+     "text": "Fraud-protection and other services revenue grew 19%, and spending across borders rose 11%."
     }
    ]
   },

@@ -1,0 +1,34 @@
+{
+ "ticker": "MA",
+ "updated": "2026-10-29T16:42Z",
+ "last": {
+  "date": "2026-10-29",
+  "timing": "pre",
+  "move_pct": 4.2,
+  "basis": "intraday",
+  "verdict": "Investors cheered revenue and profit that beat expectations, pushing shares to new highs.",
+  "reasons": [
+   {
+    "label": "Revenue beat estimates",
+    "text": "Revenue rose 14% to $9.8B, versus the roughly 12% growth analysts expected."
+   },
+   {
+    "label": "Profit topped forecasts",
+    "text": "Adjusted earnings of $5.31 a share beat the $5.16 forecast, up 21% from last year."
+   },
+   {
+    "label": "Services and travel strength",
+    "text": "Fraud-protection and other services revenue grew 19%, and spending across borders rose 11%."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001141391/000114139126000122/ma09302026-exx991xearnings.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001141391/000114139126000081/ma06302026-exx991xearnings.htm",
+   "https://247wallst.com/investing/2026/10/25/mastercard-near-all-time-highs-3-crucial-metrics-that-will-make-or-break-q3-earnings-on-oct-29/",
+   "https://www.tikr.com/blog/mastercards-q2-earnings-beat-on-every-line-the-cfo-handoff-adds-a-twist",
+   "https://www.hl.co.uk/shares/stock-market-news/company--news/mastercard-posts-better-than-expected-third-quarter"
+  ]
+ },
+ "story": "Growth has held steady: revenue rose 17% in Q3 2025, then 14% in Q2 2026, with profit beating forecasts. Shares slid to the mid-$470s by June, then rose about 2.5% after Q2. Stock came into this report near record highs.",
+ "history": []
+}
