@@ -22,9 +22,9 @@ Usage:
   python market_brief.py --push           # ...and commit + push to main
   --force rewrites even when the headlines haven't changed.
 
-Cost control: the brief is rewritten only when the headline set has changed
-meaningfully (Jaccard < SKIP_IF_SIMILAR) or the last brief is > MAX_BRIEF_AGE_H
-old, so a 30-minute schedule costs a handful of calls a day.
+Schedule (Nick, 2026-10-28): 07:00 and 12:00 ET daily (Windows task "MarketBrief").
+The change gate (skip when headlines are unchanged and the last brief is
+< MAX_BRIEF_AGE_H old) stays in place so ad-hoc reruns are cheap.
 """
 from __future__ import annotations
 
