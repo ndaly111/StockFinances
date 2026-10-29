@@ -1,0 +1,34 @@
+{
+ "ticker": "BABA",
+ "updated": "2026-10-29T05:39Z",
+ "last": {
+  "date": "2026-08-20",
+  "timing": "pre",
+  "move_pct": 1.3,
+  "basis": "close",
+  "verdict": "Shares edged up as faster cloud growth outweighed a sharp profit decline.",
+  "reasons": [
+   {
+    "label": "Cloud speeds up",
+    "text": "Alibaba Cloud's outside revenue grew 45%, with AI product sales tripling for a twelfth straight quarter."
+   },
+   {
+    "label": "Profit drops sharply",
+    "text": "Adjusted net profit fell 38% to 20.7 billion yuan, missing the 25.4 billion forecast."
+   },
+   {
+    "label": "Heavy AI spending",
+    "text": "Capital spending rose 75% to 67.7 billion yuan, squeezing earnings; a 550 million euro EU fine also hit."
+   }
+  ],
+  "sources": [
+   "https://www.insiderfinance.io/news/alibaba-earnings-show-ai-cloud-growth-profit-pressure",
+   "https://www.sec.gov/Archives/edgar/data/0001577552/000110465926099220/tm2623667d1_ex99-1.htm",
+   "https://www.itiger.com/news/1101568835",
+   "https://www.placera.se/telegram/update-alibaba-shares-up-after-fiscal-q4-revenue-rises-20260513",
+   "https://www.thestandard.com.hk/finance/article/153579/Alibaba-June-quarter-net-jumps-to-475b-yuan-China-marketplaces-and-cloud-thrive"
+  ]
+ },
+ "story": "Cloud growth has climbed from 36% in the December quarter to 45% now, but profit keeps shrinking as AI spending rises. The stock fell over 8% after the March report, then rose after the May report.",
+ "history": []
+}

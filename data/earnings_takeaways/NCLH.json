@@ -1,0 +1,32 @@
+{
+ "ticker": "NCLH",
+ "updated": "2026-10-29T13:47Z",
+ "last": {
+  "date": "2026-10-29",
+  "timing": "pre",
+  "move_pct": 12.0,
+  "basis": "intraday",
+  "verdict": "Better-than-guided quarter, a raised full-year outlook and a firmer 2027 view sent shares sharply higher.",
+  "reasons": [
+   {
+    "label": "Beat own forecast",
+    "text": "Adjusted profit was $1.12 a share, well above the company's own $0.90 forecast."
+   },
+   {
+    "label": "Full-year outlook raised",
+    "text": "2026 profit forecast lifted to about $1.70 a share, after three straight cuts."
+   },
+   {
+    "label": "2027 pricing recovery",
+    "text": "Ticket prices expected to rise 1-2% in 2027, speeding up in the second half."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001513761/000117184326006957/exh_991.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001513761/000117184326005050/exh_991.htm",
+   "https://www.zacks.com/stock/news/2964995/norwegian-cruise-q2-earnings-revenues-beat-estimates-stock-down"
+  ]
+ },
+ "story": "Norwegian cut its full-year profit forecast at each of its last three reports, from $2.38 a share to about $1.50. Weaker demand and higher fuel costs hurt, and the stock fell about 6% premarket in July despite a beat. This is the first raise.",
+ "history": []
+}

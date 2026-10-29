@@ -1,0 +1,35 @@
+{
+ "ticker": "BAC",
+ "updated": "2026-10-29T05:40Z",
+ "last": {
+  "date": "2026-10-14",
+  "timing": "pre",
+  "move_pct": -4.8,
+  "basis": "close",
+  "verdict": "Investors sold BofA on a trading miss and a $1.2 billion regulatory penalty.",
+  "reasons": [
+   {
+    "label": "$1.2B regulatory penalty",
+    "text": "A $1.2 billion charge for anti-money-laundering failures cut EPS to $0.91 from about $1.08."
+   },
+   {
+    "label": "Weak bond trading",
+    "text": "Fixed-income trading fell 17% to $2.5 billion, roughly $450 million below analyst estimates."
+   },
+   {
+    "label": "Profit miss",
+    "text": "Adjusted EPS of $1.08 missed the $1.10 expected, with lower advisory and debt deal fees."
+   }
+  ],
+  "sources": [
+   "https://www.cnbc.com/2026/10/14/bank-of-america-bac-q3-2026-earnings.html",
+   "http://www.kitco.com/news/off-the-wire/2026-10-14/bofa-misses-profit-estimates-trading-weakness-books-12-billion-charge",
+   "https://www.webull.com/news/15746982287336448",
+   "https://www.tradingpedia.com/2026/07/14/bank-of-america-slips-despite-strong-earnings-beat/",
+   "https://finviz.com/news/276360/bacs-q4-earnings-top-as-trading-nii-shine-stock-slides-on-weak-ib",
+   "https://www.sec.gov/Archives/edgar/data/70858/000007085826000481/bac-09302026ex993.htm"
+  ]
+ },
+ "story": "Earlier quarters beat estimates, but the stock still slipped: down about 2% premarket in January on weak deal fees, and pressured in July near its highs. Interest income guidance kept rising. Shares were already down 16% from August's high before this report.",
+ "history": []
+}

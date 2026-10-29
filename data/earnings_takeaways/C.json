@@ -1,0 +1,35 @@
+{
+ "ticker": "C",
+ "updated": "2026-10-29T05:45Z",
+ "last": {
+  "date": "2026-10-13",
+  "timing": "pre",
+  "move_pct": -5.6,
+  "basis": "close",
+  "verdict": "Profit beat estimates, but a weaker trading outlook sent the stock down.",
+  "reasons": [
+   {
+    "label": "Trading slowdown warning",
+    "text": "CFO said fourth-quarter Markets revenue could fall roughly 20% from a year earlier."
+   },
+   {
+    "label": "Investment banking dip",
+    "text": "Investment banking revenue fell 13% from the prior quarter to $1.35 billion."
+   },
+   {
+    "label": "Credit cost worries",
+    "text": "Provisions for credit losses were about $2.6 billion, adding to concern over earnings staying strong."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/831001/000110465926115323/c-20261013xex99d3.htm",
+   "https://www.money365.market/news/latest/citigroup-shares-fall-5-6-despite-earnings-beat-72c4bb3c",
+   "https://pro.edgex.exchange/en-US/news/article/citigroup-q3-profit-jumps-40-stock-slips",
+   "https://beinsure.com/news/citigroup-q3-profit-jumps-beating-wall-street-estimates/",
+   "https://www.fxleaders.com/news/2026/07/15/citigroup-c-stock-price-forecast-citi-slides-as-strong-earnings-fail-to-ease-spending-concerns/",
+   "https://parameter.io/citigroup-inc-c-stock-slide-after-management-signals-higher-second-half-costs/"
+  ]
+ },
+ "story": "Citi has beaten profit estimates for two straight quarters, with profit up about 45% in Q2 and 40% in Q3. Even so, the stock fell after both: about 4% in July on higher spending plans, then about 5.6% now.",
+ "history": []
+}

@@ -1,0 +1,35 @@
+{
+ "ticker": "AVGO",
+ "updated": "2026-10-29T05:38Z",
+ "last": {
+  "date": "2026-09-02",
+  "timing": "post",
+  "move_pct": -2.7,
+  "basis": "close",
+  "verdict": "Record results and strong AI growth, but guidance fell just short of lofty expectations.",
+  "reasons": [
+   {
+    "label": "Guidance just missed",
+    "text": "Q4 revenue forecast of $34.8B came in about $200M below the roughly $35B analysts expected."
+   },
+   {
+    "label": "Sky-high expectations",
+    "text": "Revenue up 86% and AI chip sales up 221% were not enough for investors."
+   },
+   {
+    "label": "AI growth still accelerating",
+    "text": "Broadcom expects AI chip revenue of $21.7B next quarter, up 236% from a year ago."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+   "https://www.techloy.com/why-broadcom-stock-fell-200-million-miss/",
+   "https://www.xtb.com/en/market-analysis/broadcom-delivers-record-results-the-market-is-already-looking-much-further-ahead",
+   "https://www.shacknews.com/article/149434/broadcom-avgo-q2-fy26-earnings-results",
+   "https://www.nasdaq.com/articles/broadcom-slips-post-earnings-even-ai-demand-goes-parabolic",
+   "https://finance.yahoo.com/news/broadcom-reports-record-q1-revenue-212900474.html"
+  ]
+ },
+ "story": "Broadcom's AI chip sales have grown faster every quarter, from 74% to 106%, 143% and now 221%. Yet the stock fell after the December and June reports and slipped again now, because investors expected even more.",
+ "history": []
+}

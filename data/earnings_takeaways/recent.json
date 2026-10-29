@@ -1,6 +1,90 @@
 {
- "updated": "2026-10-28T21:37Z",
+ "updated": "2026-10-29T16:43Z",
  "reports": [
+  {
+   "ticker": "NCLH",
+   "date": "2026-10-29",
+   "move_pct": 12.0,
+   "basis": "intraday",
+   "verdict": "Better-than-guided quarter, a raised full-year outlook and a firmer 2027 view sent shares sharply higher.",
+   "reasons": [
+    {
+     "label": "Beat own forecast",
+     "text": "Adjusted profit was $1.12 a share, well above the company's own $0.90 forecast."
+    },
+    {
+     "label": "Full-year outlook raised",
+     "text": "2026 profit forecast lifted to about $1.70 a share, after three straight cuts."
+    },
+    {
+     "label": "2027 pricing recovery",
+     "text": "Ticket prices expected to rise 1-2% in 2027, speeding up in the second half."
+    }
+   ]
+  },
+  {
+   "ticker": "LLY",
+   "date": "2026-10-29",
+   "move_pct": 8.7,
+   "basis": "intraday",
+   "verdict": "Investors cheered a big revenue beat and a sharply higher full-year sales forecast.",
+   "reasons": [
+    {
+     "label": "Sales forecast raised",
+     "text": "2026 revenue outlook lifted to $91\u201392B from $85\u201387B, a $5.5B jump at the midpoint."
+    },
+    {
+     "label": "Weight-loss drugs surge",
+     "text": "Revenue up 39% to $24.4B; Mounjaro hit $10.7B (+65%) and Zepbound $5.3B in the U.S."
+    },
+    {
+     "label": "Profit outlook improving",
+     "text": "Profit margin target raised to 52\u201352.5%; the EPS cut was only from $4.57/share acquired-research charges."
+    }
+   ]
+  },
+  {
+   "ticker": "MA",
+   "date": "2026-10-29",
+   "move_pct": 4.2,
+   "basis": "intraday",
+   "verdict": "Investors cheered revenue and profit that beat expectations, pushing shares to new highs.",
+   "reasons": [
+    {
+     "label": "Revenue beat estimates",
+     "text": "Revenue rose 14% to $9.8B, versus the roughly 12% growth analysts expected."
+    },
+    {
+     "label": "Profit topped forecasts",
+     "text": "Adjusted earnings of $5.31 a share beat the $5.16 forecast, up 21% from last year."
+    },
+    {
+     "label": "Services and travel strength",
+     "text": "Fraud-protection and other services revenue grew 19%, and spending across borders rose 11%."
+    }
+   ]
+  },
+  {
+   "ticker": "BUD",
+   "date": "2026-10-29",
+   "move_pct": -2.2,
+   "basis": "intraday",
+   "verdict": "Profit growth slowed and missed estimates, with China and US beer sales both shrinking.",
+   "reasons": [
+    {
+     "label": "Profit slightly short",
+     "text": "Core profit rose 3.9% to $5.96B, a bit below the roughly $5.98B analysts expected."
+    },
+    {
+     "label": "China sales collapse",
+     "text": "China volumes fell 16.8% and its profit dropped 30.5%, with the industry also weak."
+    },
+    {
+     "label": "Margins and US slip",
+     "text": "Profit margin fell to 36.1% on higher marketing and costs; US volumes dropped 2.5%."
+    }
+   ]
+  },
   {
    "ticker": "GOOGL",
    "date": "2026-10-28",

@@ -1,0 +1,33 @@
+{
+ "ticker": "BIRD",
+ "updated": "2026-10-29T05:41Z",
+ "last": {
+  "date": "2026-03-31",
+  "timing": "pre",
+  "move_pct": 1.0,
+  "basis": "close",
+  "verdict": "Shares edged up as a $39M asset sale and wind-down left little upside.",
+  "reasons": [
+   {
+    "label": "Company being sold",
+    "text": "Agreed to sell its brand and assets to American Exchange Group for about $39 million."
+   },
+   {
+    "label": "Payout, not growth",
+    "text": "Sale proceeds are expected to go to shareholders in Q3, so the business itself isn't the story."
+   },
+   {
+    "label": "Modest premium to price",
+    "text": "Shares closed at $2.98 (a $24.5M market cap) before the news, so $39M was a premium."
+   }
+  ],
+  "sources": [
+   "https://techcrunch.com/2026/03/30/allbirds-is-selling-for-39-million-it-raised-nearly-10-times-that-amount-in-its-ipo/",
+   "https://pulse2.com/allbirds-39-million-asset-sale-to-american-exchange-group",
+   "https://quartr.com/events/smartbird-inc-bird-q3-2025_oj5A3m6M",
+   "https://quartr.com/events/smartbird-inc-bird-q4-2024_oj5A39Qg"
+  ]
+ },
+ "story": "Revenue kept shrinking: down 22% in 2024's fourth quarter and 23% in Q3 2025, with guidance cut and going-concern doubt raised. By March 2026 the company chose a sale and wind-down over turning things around.",
+ "history": []
+}
