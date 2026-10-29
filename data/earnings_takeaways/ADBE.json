@@ -1,0 +1,34 @@
+{
+ "ticker": "ADBE",
+ "updated": "2026-10-29T05:33Z",
+ "last": {
+  "date": "2026-09-10",
+  "timing": "post",
+  "move_pct": 1.4,
+  "basis": "close",
+  "verdict": "Record quarter and a raised outlook, offset by a soft Q4 forecast and a CEO change.",
+  "reasons": [
+   {
+    "label": "Soft Q4 forecast",
+    "text": "Q4 revenue guide of $6.80\u20136.85B had a midpoint just under the $6.85B analysts expected."
+   },
+   {
+    "label": "Beat and raised year",
+    "text": "Revenue rose 13% to $6.76B, and the full-year outlook was raised to $26.58\u201326.63B."
+   },
+   {
+    "label": "New CEO surprise",
+    "text": "Anil Chakravarthy replaces Shantanu Narayen on Dec. 1; he ran a much smaller unit."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/796343/000079634326000147/adbeex991q326.htm",
+   "https://stocktwits.com/news-articles/markets/equity/adbe-stock-falls-after-strong-q3-why-are-investors-still-worried/cZta8JzRJ6V",
+   "https://247wallst.com/investing/2026/09/11/adobe-pulls-back-then-recovers-as-ceo-handoff-meets-soft-q4-outlook-intuit-and-servicenow-hold-steady/",
+   "https://sherwood.news/markets/adobe-beats-on-q2-earnings-revenue-cfo-to-step-down/",
+   "https://finance.yahoo.com/news/adobe-slides-5-q1-beat-173926268.html"
+  ]
+ },
+ "story": "Adobe has beaten estimates and raised its outlook for three straight reports, yet fear of AI competition keeps weighing on the stock. It fell about 5\u20138% after the March report, when the CEO announced he would leave, and again in June after the CFO's exit. This time it ended up 1.4%.",
+ "history": []
+}

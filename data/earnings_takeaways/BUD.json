@@ -1,0 +1,34 @@
+{
+ "ticker": "BUD",
+ "updated": "2026-10-29T05:43Z",
+ "last": {
+  "date": "2026-07-30",
+  "timing": "pre",
+  "move_pct": 1.5,
+  "basis": "close",
+  "verdict": "Beat on profit and volumes, but a big run-up left only a small gain.",
+  "reasons": [
+   {
+    "label": "Profit beat",
+    "text": "Organic operating profit rose 5.8%, above the 4.6% analysts expected."
+   },
+   {
+    "label": "World Cup volume lift",
+    "text": "Volumes grew 0.9%, a second straight rise; management still expects a 25 basis point World Cup boost despite Brazil and Mexico exiting early."
+   },
+   {
+    "label": "Weak US and China",
+    "text": "US sales to retailers and wholesalers fell, and China volumes dropped 9.7%."
+   }
+  ],
+  "sources": [
+   "https://www.globalbankingandfinance.com/ab-inbev-q2-profit-revenue-beat-forecasts/",
+   "https://www.sec.gov/Archives/edgar/data/0001668717/000119312526326285/d175040dex991.htm",
+   "https://secure.businesswire.com/news/home/20260504526109/en/AB-InBev-Reports-First-Quarter-2026-Results",
+   "https://www.businesswire.com/news/home/20260211688662/en",
+   "https://extraetf.com/de/news/dpa-afx/roundup-fuball-wm-treibt-bierabsatz-von-ab-inbev-an-aktie-gibt-nach--1785408696-06905-1785408693961"
+  ]
+ },
+ "story": "Volumes fell 1.5% in late 2025, then turned positive in the first quarter of 2026 (+0.8%) and again in Q2 (+0.9%). Profit growth has run around 5-6% a year, with the full-year outlook kept. The stock has gained about 36% this year, so good news is already largely priced in.",
+ "history": []
+}

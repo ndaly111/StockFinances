@@ -1,0 +1,34 @@
+{
+ "ticker": "APLD",
+ "updated": "2026-10-29T05:37Z",
+ "last": {
+  "date": "2026-10-07",
+  "timing": "post",
+  "move_pct": 0.2,
+  "basis": "close",
+  "verdict": "Huge revenue beat and 1.4 GW pipeline, but shares ended flat.",
+  "reasons": [
+   {
+    "label": "Revenue far above forecasts",
+    "text": "Revenue jumped 322% to $341.9M, versus analyst estimates near $120\u2013132M."
+   },
+   {
+    "label": "Pricing and leases ahead",
+    "text": "Expects about 250 MW of new leases by year-end at 15%+ higher rates."
+   },
+   {
+    "label": "Heavy debt, ongoing losses",
+    "text": "About $6.4B of debt and a $0.82 per-share GAAP loss tempered the enthusiasm."
+   }
+  ],
+  "sources": [
+   "https://quartr.com/events/applied-digital-corp-apld-q1-2027_Fk7bLqEL",
+   "https://www.webull.com/news/15743801368060928",
+   "https://www.barchart.com/story/news/3558433/applied-digital-posted-a-solid-quarter-and-the-stock-is-moving-higher-what-to-expect-next",
+   "https://seekingalpha.com/news/4573315",
+   "https://www.valuethemarkets.com/news/applied-digital-q2-2026-earnings-surge"
+  ]
+ },
+ "story": "Revenue has beaten forecasts for four straight reports, rising from $126.6M in January to $341.9M now. Reactions were mixed: gains in January and July, a drop in April, and now flat. Heavy debt and a stock down roughly 35% over a year keep investors cautious.",
+ "history": []
+}

@@ -1,0 +1,34 @@
+{
+ "ticker": "AMAT",
+ "updated": "2026-10-29T05:35Z",
+ "last": {
+  "date": "2026-08-13",
+  "timing": "post",
+  "move_pct": -5.1,
+  "basis": "close",
+  "verdict": "Record quarter, but a stock priced for perfection wanted more.",
+  "reasons": [
+   {
+    "label": "Flat margin outlook",
+    "text": "Gross margin guided flat near 50.4% despite $10.25B revenue outlook, as hiring costs rise."
+   },
+   {
+    "label": "Sky-high expectations",
+    "text": "Shares rose about 22% into the report and were up roughly 109% this year."
+   },
+   {
+    "label": "Guidance looked soft",
+    "text": "Analysts said the revenue guide implies slower growth in chipmaking system shipments."
+   }
+  ],
+  "sources": [
+   "https://247wallst.com/investing/2026/08/14/applied-materials-is-down-6-premarket-will-it-drag-down-lam-research-kla-and-other-semi-equipment-stocks/",
+   "https://www.tikr.com/blog/applied-materials-stock-fell-5-after-a-record-q3-2026-quarter-heres-where-the-stock-could-go",
+   "https://www.tikr.com/blog/applied-materials-beat-q2-estimates-and-raised-its-2026-outlook-the-stock-dipped-heres-what-investors-should-know",
+   "https://invezz.com/news/2025/11/14/applied-materials-shares-slide-as-china-outlook-darkens-despite-strong-earnings/",
+   "https://www.sec.gov/Archives/edgar/data/6951/000162828026056699/exhibit991q32026earningsre.htm"
+  ]
+ },
+ "story": "Sales fell 3% in November amid China worries, then AI demand pushed growth to 25% now. Outlooks keep rising, yet the stock slipped about 1% in May and fell again now, after roughly doubling this year.",
+ "history": []
+}

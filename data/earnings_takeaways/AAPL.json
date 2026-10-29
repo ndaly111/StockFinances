@@ -1,0 +1,34 @@
+{
+ "ticker": "AAPL",
+ "updated": "2026-10-29T05:32Z",
+ "last": {
+  "date": "2026-07-30",
+  "timing": "post",
+  "move_pct": -7.4,
+  "basis": "close",
+  "verdict": "Strong quarter, but weaker outlook and rising costs spooked investors.",
+  "reasons": [
+   {
+    "label": "Slower growth ahead",
+    "text": "Apple guided September-quarter revenue growth of 9% to 11%, down from 16% now, citing supply limits."
+   },
+   {
+    "label": "Margins set to shrink",
+    "text": "Gross margin guided to 47%\u201348% versus 50.1%, as tariff refunds fade and memory costs rise."
+   },
+   {
+    "label": "Services fell short",
+    "text": "Services revenue grew 12% to $30.7 billion, slightly below analyst expectations."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+   "https://www.webull.com/news/15364638775387136",
+   "https://www.fxleaders.com/news/2026/07/31/why-apple-aapl-stock-down-today-services-miss-post-earnings-selloff/",
+   "https://vestedfinance.com/blog/us-stocks/apple-q2-2026-earnings-111-billion-a-new-ceo-and-a-memory-problem-that-wont-go-away/",
+   "https://www.afaqs.com/news/digital/apples-q1-fy26-revenue-jumps-16-yoy-to-1438-billion-11057025"
+  ]
+ },
+ "story": "Apple has guided for 13\u201317% growth in each of the last two reports and beaten it, but now guides 9\u201311%. Memory chip costs have grown as a worry. The stock rose after hours on the January and April reports, then fell 7.4% this time.",
+ "history": []
+}

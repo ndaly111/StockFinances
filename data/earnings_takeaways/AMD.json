@@ -1,0 +1,33 @@
+{
+ "ticker": "AMD",
+ "updated": "2026-10-29T05:36Z",
+ "last": {
+  "date": "2026-08-04",
+  "timing": "post",
+  "move_pct": -7.0,
+  "basis": "close",
+  "verdict": "Solid beat and strong outlook, but the stock had run too far, too fast.",
+  "reasons": [
+   {
+    "label": "Sky-high expectations",
+    "text": "Stock jumped 21% in the five days before the report, so a modest beat wasn't enough."
+   },
+   {
+    "label": "Flat profit margin outlook",
+    "text": "Gross margin guided to 56% for next quarter, unchanged from this quarter's 56%."
+   },
+   {
+    "label": "Cash flow and AI timing",
+    "text": "Free cash flow fell 39% as spending doubled; big Helios AI rack sales come later."
+   }
+  ],
+  "sources": [
+   "https://www.indmoney.com/blog/us-stocks/amd-stock-crashes-q2-earnings-analysis",
+   "https://seekingalpha.com/article/4930351-advanced-micro-devices-inc-amd-q2-2026-earnings-call-transcript",
+   "https://old-vers-news.alphastreet.com/?p=247435",
+   "https://fintool.com/app/research/companies/AMD/earnings/Q4 2025"
+  ]
+ },
+ "story": "AMD has beaten estimates for several quarters, with data center sales more than doubling this year. Yet reactions have been mixed: shares slipped after February's report on a soft first-quarter outlook, while the May reaction is unclear in sources. Expectations now run very high.",
+ "history": []
+}
