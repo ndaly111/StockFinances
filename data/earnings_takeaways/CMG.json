@@ -1,32 +1,35 @@
 {
  "ticker": "CMG",
- "updated": "2026-10-28T21:22Z",
+ "updated": "2026-10-29T21:20Z",
  "last": {
   "date": "2026-10-28",
   "timing": "post",
-  "move_pct": 7.9,
-  "basis": "after hours",
-  "verdict": "Investors cheered sales and traffic beating forecasts, shrugging off weaker profit margins.",
+  "move_pct": 8.9,
+  "basis": "close",
+  "verdict": "Investors cheered a third straight quarter of more customer visits and brushed off the margin dip.",
   "reasons": [
    {
-    "label": "Sales beat forecasts",
-    "text": "Same-store sales rose 2.1%, versus about 1.5% expected and roughly 1% guided."
+    "label": "Customer traffic keeps growing",
+    "text": "Transactions rose 0.8%, a third straight gain, lifting comparable sales 2.1% versus about 1.5% expected."
    },
    {
-    "label": "Customers still returning",
-    "text": "Third straight quarter of more transactions, up 0.8%, which suggests the turnaround is holding."
+    "label": "Steady outlook",
+    "text": "2026 sales guidance held at low single digits; management pointed to roughly 2% comparable sales growth in Q4."
    },
    {
-    "label": "Profit squeeze, expected",
-    "text": "Earnings per share slipped to $0.27 from $0.29 as margins fell, but analysts had expected it."
+    "label": "Lower profit margins",
+    "text": "Restaurant margin fell to 23.3% from 24.5%; EPS of $0.27 missed the $0.29 estimate."
    }
   ],
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1058090/000105809026000103/cmg-20261028xex991.htm",
-   "https://finance.yahoo.com/markets/stocks/article/chipotle-stock-pops-on-sustained-sales-momentum-in-q3-203209272.html",
-   "https://www.investing.com/news/transcripts/earnings-call-transcript-chipotle-beats-q2-2026-estimates-as-stock-jumps-93CH-4821911"
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-chipotle-beats-revenue-in-q3-2026-shares-jump-after-hours-93CH-4981040",
+   "https://www.benzinga.com/analyst-stock-ratings/analyst-color/26/10/62713994/chipotle-mexican-grill-q3-analysts-2027",
+   "https://www.tradingpedia.com/2026/10/29/chipotle-jumps-on-strong-sales-trends-upbeat-outlook/",
+   "https://www.tradingpedia.com/2026/07/30/chipotle-surges-after-earnings-beat-and-forecast-lift/",
+   "https://newsroom.chipotle.com/2026-04-29-CHIPOTLE-ANNOUNCES-FIRST-QUARTER-2026-RESULTS"
   ]
  },
- "story": "Same-store sales went from down 2.5% in late 2025 to up 0.5%, 2.2%, then 2.1%, with traffic recovering. Costs for beef, labor and marketing keep squeezing profits. The stock rose about 6% after hours on the July report but is still down about 20% this year.",
+ "story": "Sales turned around over 2026: comparable sales went from down 2.5% in late 2025 to up 0.5%, then 2.2%, then 2.1%. Margins keep shrinking on higher costs. The stock rose after the last three reports, as traffic recovered.",
  "history": []
 }

@@ -234,11 +234,6 @@ td{padding:4px;border:1px solid #8080FF}
     })();
   </script>
 
-  <div id="news-box" class="center-table news-box">
-    <h2>What Happened to My Stocks Today</h2>
-    {{ news_box | safe }}
-  </div>
-
   <details id="earnings-takeaways" class="center-table news-box" style="display:none">
     <summary><h2 style="display:inline">Why Stocks Moved After Earnings</h2> <span id="et-count" class="news-date"></span></summary>
     <div id="et-list"></div>
@@ -616,7 +611,6 @@ def create_home_page(
     earnings_upcoming="",
     economic_html="",
     market_summary_html="",
-    news_box_html="",
 ):
     tpl = env.get_template("home_template.html")
     try:  # pre-IPO pages (scripts/gen_ticker_json.py builds them from data/pre_ipo.json)
@@ -634,7 +628,6 @@ def create_home_page(
         earnings_upcoming=earnings_upcoming,
         economic_data=economic_html,
         daily_market_summary=market_summary_html,
-        news_box=news_box_html,
     )
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(rendered)
@@ -658,7 +651,6 @@ def html_generator2(
         get_file_or_placeholder("charts/earnings_upcoming.html"),
         get_file_or_placeholder("charts/economic_data.html", "No economic data available."),
         daily_market_summary_html,
-        get_file_or_placeholder("charts/news_box.html", "<p>News unavailable this run.</p>"),
     )
     # Per-ticker pages/*.html are retired: the site now serves a single static
     # shell (ticker.html?t=<TICKER>) that loads ticker_data/<TICKER>.json. Nothing

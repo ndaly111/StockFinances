@@ -2,7 +2,7 @@
 
 What Nick asked for (2026-10-28): on an FOMC day, the decision, a short excerpt
 of why, and anything notable in the dissents; after a CPI print, the number and
-what drove it; on a quiet day, the two or three stories that matter for markets.
+what drove it; on a quiet day, no filler: macro prints and one story per earnings report only.
 Built from news headlines (plus the article text where the site lets us read
 it), NOT by scraping the Fed/BLS ourselves.
 
@@ -61,7 +61,7 @@ MAX_AGE_HOURS = 36          # ignore feed items older than this
 MAX_HEADLINES = 45          # headlines handed to the writer
 MAX_ARTICLES = 6            # article bodies handed to the writer
 ARTICLE_CHARS = 2500
-MAX_STORIES = 4
+MAX_STORIES = 6
 MAX_SECTIONS = 4
 SKIP_IF_SIMILAR = 0.6       # Jaccard of headline sets at/above this = "nothing new"
 MAX_BRIEF_AGE_H = 3         # ...unless the last brief is older than this
@@ -214,14 +214,22 @@ The reader is a well-informed investor who wants, in under a minute, what actual
 in markets and the economy and why. Today is {today} (Eastern). Write from the material
 below ONLY; you have no tools and must not use outside knowledge for facts.
 
-SHAPE
-- If one event dominates (a Fed decision, a CPI/jobs/GDP print, a major policy or market
-  shock), write ONE story, 110-160 words total, with sections in this order:
-  "Decision" (or "The number" / "What happened"), "Why", then "Dissents" or "Details" if
-  there is something notable, then stop. Title it like a dateline, e.g.
-  "FOMC · Oct 28, 2026 · Held at 3.75–4.00% · Vote 10–2".
-- Otherwise write 2-3 stories, the ones that matter most for markets, 35-55 words each,
-  with one or two sections each. Title = a plain headline.
+SHAPE — only two kinds of story exist; everything else is noise and is left out.
+1. MACRO: if a Fed decision or a CPI/jobs/GDP print happened, write ONE story for it,
+   110-160 words, sections in this order: "Decision" (or "The number"), "Why", then
+   "Dissents" or "Details" if notable. Title it like a dateline, e.g.
+   "FOMC · Oct 28, 2026 · Held at 3.75–4.00% · Vote 10–2".
+2. EARNINGS: one story PER COMPANY that reported earnings. Never combine two companies in
+   one story or one title. Title = "TICKER · Company · Qn results", e.g.
+   "GOOGL · Alphabet · Q3 results". Sections, 50-80 words total:
+   "Results" (revenue and EPS vs expectations), "Guidance" (if the material gives it),
+   "Stock" (the move and the stated reason). Skip a section the material does not support.
+   If more than 5 companies reported, keep the 5 biggest by market impact.
+- Do NOT write about deals, M&A rumors, analyst calls, upgrades, generic movers, oil,
+  or anything that is not a macro print/decision or an earnings report.
+- If there is neither a macro event nor an earnings report, write ONE short story
+  (35-55 words) on the single thing that moved the broad market, titled "Markets".
+- Order: macro story first, then earnings stories by market impact.
 - "next": one line on the next scheduled market-moving event if the material names one
   (the FOMC calendar line below counts), else "".
 
