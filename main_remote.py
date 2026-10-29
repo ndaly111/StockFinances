@@ -396,21 +396,6 @@ def mini_main():
 
     tickers = manage_tickers(TICKERS_FILE_PATH, is_remote=True)
 
-    # News box is pure network + file output (yfinance day moves, SEC filings,
-    # RSS) and never touches the DB, so it runs in the background (~30s) while
-    # the DB-bound loop below works. Joined right before html_generator2 pulls
-    # charts/news_box.html into index.html.
-    import threading
-    news_state = {}
-    def _news_worker():
-        try:
-            from generate_news_box import generate_news_box
-            generate_news_box()
-        except Exception as exc:  # surfaced after join, same as the old inline try
-            news_state["error"] = exc
-    news_thread = threading.Thread(target=_news_worker, name="news-box", daemon=True)
-    news_thread.start()
-
     if is_weekly:
         maybe_load_sp500_index_series(DB_PATH)
     conn = establish_database_connection(DB_PATH)
@@ -599,10 +584,6 @@ def mini_main():
             generate_index_growth_pages(DB_PATH)
         except Exception as exc:
             print(f"[WARN] Plotly index growth pages failed: {exc}")
-
-        news_thread.join()
-        if "error" in news_state:
-            print(f"[WARN] News box failed: {news_state['error']}")
 
         html_generator2(
             tickers,
