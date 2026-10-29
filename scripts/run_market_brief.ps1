@@ -1,6 +1,6 @@
 # Scheduled runner for market_brief.py (Windows task "MarketBrief").
 # Runs in the same dedicated worktree on main as the earnings takeaways; the
-# writer is `claude -p` on Nick's subscription. Cheap when nothing changed:
+# writer is `claude -p` on Nick's subscription. Scheduled 07:00 and 12:00 ET;
 # the script itself skips the model call if the headlines are unchanged.
 $ErrorActionPreference = 'Continue'
 Set-Location 'C:\Users\ndaly\projects\sf-earnings-bot'
