@@ -1,34 +1,51 @@
 {
  "ticker": "BUD",
- "updated": "2026-10-29T05:43Z",
+ "updated": "2026-10-29T13:41Z",
  "last": {
-  "date": "2026-07-30",
+  "date": "2026-10-29",
   "timing": "pre",
-  "move_pct": 1.5,
-  "basis": "close",
-  "verdict": "Beat on profit and volumes, but a big run-up left only a small gain.",
+  "move_pct": -2.2,
+  "basis": "intraday",
+  "verdict": "Profit growth slowed and missed estimates, with China and US beer sales both shrinking.",
   "reasons": [
    {
-    "label": "Profit beat",
-    "text": "Organic operating profit rose 5.8%, above the 4.6% analysts expected."
+    "label": "Profit slightly short",
+    "text": "Core profit rose 3.9% to $5.96B, a bit below the roughly $5.98B analysts expected."
    },
    {
-    "label": "World Cup volume lift",
-    "text": "Volumes grew 0.9%, a second straight rise; management still expects a 25 basis point World Cup boost despite Brazil and Mexico exiting early."
+    "label": "China sales collapse",
+    "text": "China volumes fell 16.8% and its profit dropped 30.5%, with the industry also weak."
    },
    {
-    "label": "Weak US and China",
-    "text": "US sales to retailers and wholesalers fell, and China volumes dropped 9.7%."
+    "label": "Margins and US slip",
+    "text": "Profit margin fell to 36.1% on higher marketing and costs; US volumes dropped 2.5%."
    }
   ],
   "sources": [
-   "https://www.globalbankingandfinance.com/ab-inbev-q2-profit-revenue-beat-forecasts/",
-   "https://www.sec.gov/Archives/edgar/data/0001668717/000119312526326285/d175040dex991.htm",
-   "https://secure.businesswire.com/news/home/20260504526109/en/AB-InBev-Reports-First-Quarter-2026-Results",
-   "https://www.businesswire.com/news/home/20260211688662/en",
-   "https://extraetf.com/de/news/dpa-afx/roundup-fuball-wm-treibt-bierabsatz-von-ab-inbev-an-aktie-gibt-nach--1785408696-06905-1785408693961"
+   "https://www.sec.gov/Archives/edgar/data/0001668717/000119312526437051/d159047dex991.htm",
+   "https://www.hudson-labs.com/research/anheuser-busch-inbev-q3-2026-earnings-preview-abi-results-preview"
   ]
  },
- "story": "Volumes fell 1.5% in late 2025, then turned positive in the first quarter of 2026 (+0.8%) and again in Q2 (+0.9%). Profit growth has run around 5-6% a year, with the full-year outlook kept. The stock has gained about 36% this year, so good news is already largely priced in.",
- "history": []
+ "story": "Growth has been steady but unspectacular. Profit beat in July, helped by World Cup volumes, yet China and US weakness persisted. The 4%-8% profit growth outlook is unchanged, and the stock has swung between small gains and small drops.",
+ "history": [
+  {
+   "date": "2026-07-30",
+   "move_pct": 1.5,
+   "verdict": "Beat on profit and volumes, but a big run-up left only a small gain.",
+   "reasons": [
+    {
+     "label": "Profit beat",
+     "text": "Organic operating profit rose 5.8%, above the 4.6% analysts expected."
+    },
+    {
+     "label": "World Cup volume lift",
+     "text": "Volumes grew 0.9%, a second straight rise; management still expects a 25 basis point World Cup boost despite Brazil and Mexico exiting early."
+    },
+    {
+     "label": "Weak US and China",
+     "text": "US sales to retailers and wholesalers fell, and China volumes dropped 9.7%."
+    }
+   ]
+  }
+ ]
 }

@@ -1,0 +1,35 @@
+{
+ "ticker": "LLY",
+ "updated": "2026-10-29T13:43Z",
+ "last": {
+  "date": "2026-10-29",
+  "timing": "pre",
+  "move_pct": 8.7,
+  "basis": "intraday",
+  "verdict": "Investors cheered a big revenue beat and a sharply higher full-year sales forecast.",
+  "reasons": [
+   {
+    "label": "Sales forecast raised",
+    "text": "2026 revenue outlook lifted to $91\u201392B from $85\u201387B, a $5.5B jump at the midpoint."
+   },
+   {
+    "label": "Weight-loss drugs surge",
+    "text": "Revenue up 39% to $24.4B; Mounjaro hit $10.7B (+65%) and Zepbound $5.3B in the U.S."
+   },
+   {
+    "label": "Profit outlook improving",
+    "text": "Profit margin target raised to 52\u201352.5%; the EPS cut was only from $4.57/share acquired-research charges."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0000059478/000005947826000104/q326lillysalesandearningsp.htm",
+   "https://www.marketbeat.com/instant-alerts/eli-lilly-and-company-nyselly-trading-49-higher-after-strong-earnings-2026-08-05/",
+   "https://www.thepharmaletter.com/pharma-news/lilly-beats-forecasts-as-mounjaro-zepbound-drive-48-revenue-surge",
+   "https://www.barchart.com/story/news/1745234/do-wall-street-analysts-like-eli-lilly-stock",
+   "https://www.itiger.com/news/1161501977",
+   "https://finance.yahoo.com/news/eli-lilly-shares-soar-q4-154100756.html"
+  ]
+ },
+ "story": "Lilly has beaten forecasts and raised guidance every quarter this year as Mounjaro and Zepbound sales soared. The stock jumped about 10% in February and April, then 3\u20135% in August. Falling drug prices remain the offsetting worry.",
+ "history": []
+}
