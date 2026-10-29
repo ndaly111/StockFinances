@@ -1,0 +1,34 @@
+{
+ "ticker": "GM",
+ "updated": "2026-10-29T19:06Z",
+ "last": {
+  "date": "2026-10-20",
+  "timing": "pre",
+  "move_pct": -6.8,
+  "basis": "close",
+  "verdict": "Earnings beat, but a narrower outlook and rising costs sent shares lower.",
+  "reasons": [
+   {
+    "label": "Outlook underwhelmed",
+    "text": "New full-year profit range midpoint of $13.25 per share sat below the $13.41 analyst consensus."
+   },
+   {
+    "label": "Costs and weaker Q4",
+    "text": "About $2bn of commodity inflation expected; CFO said Q4 profit will fall from Q3."
+   },
+   {
+    "label": "Cautious management tone",
+    "text": "CEO Barra said the outlook has become harder, though 2027 should be stronger if demand holds."
+   }
+  ],
+  "sources": [
+   "https://www.asktraders.com/?p=256827",
+   "https://www.tipranks.com/news/general-motors-plunges-5-4-despite-exceeding-q3-expectations",
+   "https://www.itiger.com/news/1190706662",
+   "https://www.briefing.com/story-stocks/archive/2026/4/28/general-motors-delivers-a-powerful-q1-yet-onetime-gains-put-a-speed-bump-in-the-rally",
+   "https://finance.yahoo.com/markets/stocks/articles/gm-raises-2026-profit-forecast-112035195.html"
+  ]
+ },
+ "story": "GM has beaten profit estimates for several quarters and raised its outlook in April and July. Shares fell about 3-4% in April, when a one-time tariff refund flattered results. They jumped about 5% in July. October's beat was overshadowed by cost worries.",
+ "history": []
+}

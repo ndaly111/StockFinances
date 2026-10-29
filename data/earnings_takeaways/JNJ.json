@@ -1,0 +1,33 @@
+{
+ "ticker": "JNJ",
+ "updated": "2026-10-29T19:15Z",
+ "last": {
+  "date": "2026-10-13",
+  "timing": "pre",
+  "move_pct": -5.7,
+  "basis": "close",
+  "verdict": "Investors sold J&J despite a raised outlook, focusing on a weak profit and soft MedTech.",
+  "reasons": [
+   {
+    "label": "Talc charge crushed profit",
+    "text": "Reported earnings fell 96% to $210 million on a one-time talc litigation charge."
+   },
+   {
+    "label": "Weak medical devices",
+    "text": "MedTech sales grew only 2.5%, and management said this fell short of its own expectations."
+   },
+   {
+    "label": "Small guidance bump",
+    "text": "Full-year profit outlook rose just $0.06 to $11.10, modest after a strong run in the shares."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/200406/000020040626000189/a2026q3exhibit991.htm",
+   "https://www.rttnews.com/3698614/johnson-johnson-stock-falls-5-after-q3-profit-plunges.aspx",
+   "https://www.quiverquant.com/news/Johnson+%26+Johnson+falls+after+quarterly+report+despite+higher+2026+outlook",
+   "https://www.rttnews.com/3667174/johnson-johnson-lifts-fy26-view-despite-nearly-flat-q2-profit-stock-down.aspx"
+  ]
+ },
+ "story": "J&J has grown sales about 6% a quarter and kept nudging its yearly outlook up. Drug sales are strong, but Stelara's loss of sales to cheaper copies and a slower device business hold it back. Shares slipped after July's report too.",
+ "history": []
+}

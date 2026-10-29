@@ -1,0 +1,34 @@
+{
+ "ticker": "JPM",
+ "updated": "2026-10-29T19:16Z",
+ "last": {
+  "date": "2026-10-13",
+  "timing": "pre",
+  "move_pct": -0.9,
+  "basis": "close",
+  "verdict": "Earnings missed estimates, but higher interest-income guidance left shares only slightly lower.",
+  "reasons": [
+   {
+    "label": "Profit missed estimates",
+    "text": "Adjusted EPS of $5.75 trailed the roughly $5.90 expected, with dealmaking and bond trading weaker."
+   },
+   {
+    "label": "Higher interest income outlook",
+    "text": "2026 net interest income guidance rose to about $106.2B from $105.5B; 2027 pegged near $107B."
+   },
+   {
+    "label": "Rising costs, smaller buybacks",
+    "text": "Expense guidance rose to about $108.6B from $107.5B, and share buybacks were cut."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/19617/000162828026065582/a3q26erfex992supplement.htm",
+   "https://www.tradingnews.com/news/jpm-reverses-3-percent-premarket-drop-to-336-usd-as-20-percent-rotce-and-107b-usd-2027-nii-outlook",
+   "https://www.tradingnews.com/news/jpm-335-usd-holds-330-usd-as-nii-guide-rises-to-106-usd-but-expenses-climb-to-108-usd",
+   "https://www.money365.market/articles/jp-morgan-q3-2026-earnings-analysis",
+   "https://www.xtb.com/cy/market-analysis/news-and-research/jpmorgan-reports-strong-q2-earnings-as-investment-banking-drives-growth"
+  ]
+ },
+ "story": "JPMorgan has posted strong, growing profits all year, with Q1 and Q2 beating estimates but shares reacting only modestly. This quarter was the first miss in nearly three years. Higher interest-income guidance has been the steadying factor, while costs and Dimon's economic warnings weigh.",
+ "history": []
+}

@@ -1,0 +1,34 @@
+{
+ "ticker": "NFLX",
+ "updated": "2026-10-29T19:25Z",
+ "last": {
+  "date": "2026-10-20",
+  "timing": "post",
+  "move_pct": -5.3,
+  "basis": "close",
+  "verdict": "Profit beat, but a slower Q4 outlook and lower ad forecast hurt the stock.",
+  "reasons": [
+   {
+    "label": "Ad forecast cut",
+    "text": "2026 ad revenue now expected near $2.7B, down from about $3B, on slower ad-product rollout."
+   },
+   {
+    "label": "Slowing growth",
+    "text": "Revenue growth slowed to 12% in Q3, with Q4 guided to about 12% too."
+   },
+   {
+    "label": "Timing flattered profit",
+    "text": "Margin of 34.6% beat forecast mainly from expense timing; Q4 margin guided down to 26%."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1065280/000106528026000290/ex991_q326.htm",
+   "https://www.newsbytesapp.com/news/business/netflix-profit-beats-estimates-but-shares-slide-nearly-6/story",
+   "https://www.zacks.com/stock/news/2955750/netflix-q2-earnings-beat,-stock-falls-on-revenue-miss,-lower-outlook",
+   "https://www.xtb.com/en/market-analysis/netflix-sinks-9-after-q1-earnings-report",
+   "https://pepperstone.com/en-gb/insights/market-analysis/shares/netflix-q1-26-earnings-review-solid-results-weak-guidance-valuation-enters-repricing"
+  ]
+ },
+ "story": "Netflix has dropped after each of the last three reports despite solid results. April fell about 9% on soft guidance, July about 7% as growth outlook slowed. Revenue growth has faded from 16% to 12% while buybacks hit records.",
+ "history": []
+}

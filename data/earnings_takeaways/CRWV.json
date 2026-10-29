@@ -1,0 +1,35 @@
+{
+ "ticker": "CRWV",
+ "updated": "2026-10-29T18:53Z",
+ "last": {
+  "date": "2026-08-11",
+  "timing": "post",
+  "move_pct": 19.3,
+  "basis": "close",
+  "verdict": "Profit beat and a higher revenue outlook outweighed bigger spending plans and widening losses.",
+  "reasons": [
+   {
+    "label": "Profit far above plan",
+    "text": "Adjusted operating income hit $128M, more than double the company's own ~$60M target."
+   },
+   {
+    "label": "Higher revenue outlook",
+    "text": "2026 revenue guidance rose to $12.4\u201313.2B; Q3 guide of $3.45\u20133.6B beat $3.43B consensus."
+   },
+   {
+    "label": "Backlog keeps ballooning",
+    "text": "Contracted backlog reached about $104B, up 246% from a year earlier."
+   }
+  ],
+  "sources": [
+   "https://dashboard.channelchek.com/?p=104902",
+   "https://trendspider.com/blog/coreweave-stock-q2-earnings-guidance-2026/",
+   "https://www.placera.se/telegram/coreweave-update-coreweave-q1-loss-narrows-revenue-rises-2026-capex-outlook-revised-shares-down-pre-bell-20260508",
+   "https://cryptobriefing.com/coreweave-raises-fy2026-revenue-guidance/",
+   "https://www.briefing.com/story-stocks/archive/2026/2/27/coreweave-plunges-on-eps-miss-soft-q1-guide-which-overshadows-record-revenue-backlog-(crwv)",
+   "https://finder.techleap.nl/news/feed/coreweave-stock-plummets-18-despite-beating-revenue-expectations"
+  ]
+ },
+ "story": "CoreWeave has beaten revenue estimates for several quarters, yet the stock fell after the last two reports. Feb's weak Q1 guide caused an 18% drop. May's wider loss and bigger capex cost about 7%. Backlog grew from $66.8B to $104B.",
+ "history": []
+}

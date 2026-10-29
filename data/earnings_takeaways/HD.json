@@ -1,0 +1,33 @@
+{
+ "ticker": "HD",
+ "updated": "2026-10-29T19:13Z",
+ "last": {
+  "date": "2026-08-18",
+  "timing": "pre",
+  "move_pct": -0.1,
+  "basis": "close",
+  "verdict": "Solid beat, but unchanged guidance left shares flat after an early pop.",
+  "reasons": [
+   {
+    "label": "Guidance only reaffirmed",
+    "text": "Home Depot beat estimates but kept its full-year outlook; the CFO cited a frozen housing market."
+   },
+   {
+    "label": "Beat helped by refunds",
+    "text": "EPS of $4.92 topped $4.73 expected, aided by tariff refunds that offset higher fuel and input costs."
+   },
+   {
+    "label": "Small projects, weak traffic",
+    "text": "Comparable sales rose 1.7%, but customer transactions fell 1.0% as big-project demand stayed soft."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/354950/000035495026000145/hd_exhibit991x08022026.htm",
+   "https://stocktwits.com/news-articles/markets/equity/hd-stock-gains-on-q2-beat-home-depot-guidance-cfo-tariff-refunds-help-maintain-value/cZYcaSVRJjP",
+   "https://www.sec.gov/Archives/edgar/data/0000354950/000035495026000101/hd_exhibit991x05032026.htm",
+   "https://corporate.homedepot.com/news/earnings/home-depot-announces-fourth-quarter-2025-earnings"
+  ]
+ },
+ "story": "Home Depot has kept guiding to little or no growth. Comparable sales were 0.4% last winter, 0.6% in spring and 1.7% now. Results have beaten estimates, but a stuck housing market and reaffirmed guidance keep the stock muted, down about 15% over 12 months.",
+ "history": []
+}

@@ -1,0 +1,34 @@
+{
+ "ticker": "MU",
+ "updated": "2026-10-29T19:23Z",
+ "last": {
+  "date": "2026-09-30",
+  "timing": "post",
+  "move_pct": 3.0,
+  "basis": "close",
+  "verdict": "Record quarter and a big guide higher; shares edged up as spending rises.",
+  "reasons": [
+   {
+    "label": "Guidance far above forecasts",
+    "text": "Next-quarter revenue guided to $61.5 billion, versus roughly $56.8 billion analysts expected."
+   },
+   {
+    "label": "Another big beat",
+    "text": "Revenue hit $54.2 billion and profit $33.42 a share, versus about $51.1 billion and $31.61 expected."
+   },
+   {
+    "label": "Tight supply, locked-in demand",
+    "text": "Customer deals cover over 35% of revenue through 2030; supply seen much tighter in 2027."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/723125/000072312526000018/a2026q4ex991-pressrelease.htm",
+   "https://www.kaohooninternational.com/markets/591866",
+   "https://www.blocksandfiles.com/flash/2026/10/01/memory-gold-rush-bonanza-makes-billions-for-micron/5300445",
+   "https://seekingalpha.com/news/4565881-micron-ticks-down-even-as-q2-results-guidance-blow-past-forecasts-on-ai-strength",
+   "https://www.tradingpedia.com/2026/06/25/micron-record-quarter-sparks-semiconductor-rally/"
+  ]
+ },
+ "story": "Revenue has climbed from $23.9 billion to $41.5 billion to $54.2 billion in three quarters, with each guide above forecasts. Reactions varied: down about 6% in March after a capex jump, up sharply in June, and only a modest gain now.",
+ "history": []
+}

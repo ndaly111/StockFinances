@@ -1,0 +1,34 @@
+{
+ "ticker": "GE",
+ "updated": "2026-10-29T19:02Z",
+ "last": {
+  "date": "2026-10-20",
+  "timing": "pre",
+  "move_pct": -3.7,
+  "basis": "close",
+  "verdict": "Strong beat and raised outlook, but a soft Q4 and weak cash flow disappointed.",
+  "reasons": [
+   {
+    "label": "Soft fourth quarter",
+    "text": "New full-year outlook implies Q4 profit of about $1.87-$1.97 per share, below the roughly $2.04 expected."
+   },
+   {
+    "label": "Weaker cash flow",
+    "text": "Free cash flow fell 14% to $2.0 billion in the quarter."
+   },
+   {
+    "label": "2027 cost warning",
+    "text": "Ramping up GE9X engines for Boeing's delayed 777X is expected to cut 2027 profit by about $300 million."
+   }
+  ],
+  "sources": [
+   "https://www.tikr.com/blog/ge-aerospace-stock-drops-despite-q3-earnings-beat",
+   "https://www.marketbeat.com/instant-alerts/price-ge-aerospace-nyse-ge-shares-down-43-whats-next-2026-10-20/",
+   "https://finviz.com/news/404707/ge-aerospace-stock-sinks-as-cash-flow-concerns-arise",
+   "https://www.nasdaq.com/articles/ge-aerospace-faces-prove-it-moment-q2-earnings",
+   "https://www.rttnews.com/3667607/ge-aerospace-lifts-annual-guidance-on-strong-q2-results-but-stock-down-in-pre-market.aspx"
+  ]
+ },
+ "story": "GE Aerospace has beaten estimates and raised its yearly outlook at each recent report. The stock has still slipped after the last few, including about 5% after July's report. A high price (about 46x expected earnings) leaves little room for anything short of perfect.",
+ "history": []
+}

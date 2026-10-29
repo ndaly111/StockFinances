@@ -1,0 +1,34 @@
+{
+ "ticker": "EVGO",
+ "updated": "2026-10-29T18:59Z",
+ "last": {
+  "date": "2026-08-05",
+  "timing": "pre",
+  "move_pct": -11.6,
+  "basis": "close",
+  "verdict": "Investors sold EVgo after the company cut its full-year outlook and cash burn rose.",
+  "reasons": [
+   {
+    "label": "Lower 2026 outlook",
+    "text": "Revenue guidance cut to $400-430M from $410-470M; below analysts' roughly $433M."
+   },
+   {
+    "label": "Bigger expected losses",
+    "text": "Full-year adjusted EBITDA now a $5-25M loss, versus a range reaching up to +$20M before."
+   },
+   {
+    "label": "Cash and slower ramp",
+    "text": "Operating cash burn widened and new stalls ramped slower than hoped, despite Tesla deal."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1821159/000182115926000017/exhibit991evgoearningsrele.htm",
+   "https://www.barchart.com/story/news/3661243/evgos-nasdaqevgo-q2-cy2026-sales-beat-estimates-but-stock-drops-12-7",
+   "https://www.marketbeat.com/instant-alerts/evgo-nasdaqevgo-releases-quarterly-earnings-results-beats-expectations-by-003-eps-2026-08-05/",
+   "https://www.sec.gov/Archives/edgar/data/0001821159/000182115926000009/evgoearningsrelease20260505.htm",
+   "https://www.mexc.com/news/850739"
+  ]
+ },
+ "story": "Revenue and stall growth stayed strong through early 2026, but guidance kept disappointing. The March outlook came in below analyst hopes and the stock fell about 5%. May's outlook was reaffirmed with a muted reaction. August cut it, and shares sank.",
+ "history": []
+}

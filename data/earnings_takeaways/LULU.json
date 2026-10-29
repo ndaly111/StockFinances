@@ -1,0 +1,33 @@
+{
+ "ticker": "LULU",
+ "updated": "2026-10-29T19:18Z",
+ "last": {
+  "date": "2026-09-03",
+  "timing": "post",
+  "move_pct": -17.4,
+  "basis": "close",
+  "verdict": "Another full-year forecast cut and falling U.S. sales sent the stock sharply lower.",
+  "reasons": [
+   {
+    "label": "Forecast cut again",
+    "text": "Full-year EPS guidance fell to $9.48\u2013$9.73 from $10.95\u2013$11.15; sales now seen down 5\u20137%."
+   },
+   {
+    "label": "U.S. sales sliding",
+    "text": "Americas comparable sales fell 12%, and total revenue missed expectations at about $2.42 billion."
+   },
+   {
+    "label": "Earnings flattered by refund",
+    "text": "$2.92 EPS included $0.86 of tariff refunds; Q3 sales are guided down 10\u201311%."
+   }
+  ],
+  "sources": [
+   "https://www.tikr.com/blog/lululemon-stock-crashed-17-on-friday-the-guidance-cut-was-the-real-story",
+   "https://www.xtb.com/int/market-analysis/news-and-research/lululemon-athletica-slumps-14-after-earnings-amid-weak-north-america-sales",
+   "https://fashionunited.uk/news/business/lululemon-ceo-calvin-mcdonald-to-step-down-amid-u-s-challenges/2025121285318",
+   "https://www.sec.gov/Archives/edgar/data/1397187/000139718726000126/lulu-20260802xex991.htm"
+  ]
+ },
+ "story": "Lululemon has slid from growth to shrinking sales, with U.S. demand weak and market share lost to rivals. Its CEO left in December, and the June report brought a first big guidance cut and a 12\u201314% drop. September's second cut hit harder.",
+ "history": []
+}

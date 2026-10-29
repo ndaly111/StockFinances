@@ -1,0 +1,35 @@
+{
+ "ticker": "UAL",
+ "updated": "2026-10-29T19:49Z",
+ "last": {
+  "date": "2026-10-20",
+  "timing": "post",
+  "move_pct": 4.0,
+  "basis": "close",
+  "verdict": "Investors looked past soft Q4 profit guidance to record revenue growth and a stronger sales outlook.",
+  "reasons": [
+   {
+    "label": "Record revenue growth",
+    "text": "Q3 revenue rose 17% to $17.9 billion, the best unit revenue growth since the pandemic."
+   },
+   {
+    "label": "Q4 sales accelerating",
+    "text": "United expects Q4 revenue growth of over 20%, faster than Q3's 17%."
+   },
+   {
+    "label": "Fuel squeezing profit",
+    "text": "Fuel expense jumped 62%; adjusted EPS of $2.54 sat slightly under the roughly $2.58 expected."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/100517/000010051726000184/ual_erx09302026xex991.htm",
+   "https://finviz.com/news/405045/why-is-united-airlines-stock-falling-in-pre-market-trading",
+   "https://united.mediaroom.com/2026-07-15-United-Posts-Q2-Results-Above-Wall-Street-Expectations-and-Raises-Full-Year-2026-Adjusted-EPS-Guidance1-Despite-a-Nearly-6-Billion-Increase-In-Anticipated-Fuel-Costs",
+   "https://www.tikr.com/blog/united-airlines-q2-earnings-absorbed-a-2-3-billion-fuel-shock-the-guide-went-up-anyway",
+   "https://finance.yahoo.com/markets/stocks/articles/united-airlines-lowers-full-profit-155300770.html",
+   "https://www.zacks.com/stock/news/2905641/united-airlines-q1-earnings-revenues-surpass-estimates-up-y-y"
+  ]
+ },
+ "story": "Fuel costs have dominated 2026. In April United cut its full-year profit outlook and shares fell over 6%. In July it beat estimates and raised its outlook despite about $6 billion in extra fuel costs. Revenue growth has since accelerated to 17%.",
+ "history": []
+}

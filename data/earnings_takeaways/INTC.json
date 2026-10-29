@@ -1,0 +1,32 @@
+{
+ "ticker": "INTC",
+ "updated": "2026-10-29T19:14Z",
+ "last": {
+  "date": "2026-07-23",
+  "timing": "post",
+  "move_pct": -7.9,
+  "basis": "close",
+  "verdict": "Strong beat and raised outlook, but shares sold off after a huge run.",
+  "reasons": [
+   {
+    "label": "Priced for perfection",
+    "text": "Stock was up about 170% this year, so a big beat wasn't enough."
+   },
+   {
+    "label": "Huge paper loss",
+    "text": "GAAP net loss of $11.0B, mostly a $12.5B non-cash charge tied to US government-held shares."
+   },
+   {
+    "label": "Rising costs and spending",
+    "text": "2026 capex raised to over $20B; memory and substrate inflation could squeeze margins."
+   }
+  ],
+  "sources": [
+   "https://www.indmoney.com/blog/us-stocks/intel-q2-earnings-results-intc-stock-reaction",
+   "https://www.nasdaq.com/articles/stock-market-today-jan-23-intel-plunges-after-weak-outlook-highlights-supply-constraints",
+   "https://www.tikr.com/blog/intel-stock-rose-24-after-q1-2026-earnings-heres-what-the-market-is-still-missing"
+  ]
+ },
+ "story": "Intel fell about 17% in January on weak guidance and supply shortages. It then jumped about 24% in April on a big beat and stronger chip-making yields. July's strong results and higher outlook still met a sell-off after the huge run.",
+ "history": []
+}

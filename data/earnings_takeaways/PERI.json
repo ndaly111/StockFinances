@@ -1,0 +1,34 @@
+{
+ "ticker": "PERI",
+ "updated": "2026-10-29T19:30Z",
+ "last": {
+  "date": "2026-08-10",
+  "timing": "pre",
+  "move_pct": 0.0,
+  "basis": "close",
+  "verdict": "Cut top end of guidance and weaker profit left investors unmoved, with shares flat.",
+  "reasons": [
+   {
+    "label": "Guidance range trimmed",
+    "text": "2026 contribution ex-TAC outlook cut to $215\u2013225M from $215\u2013235M; profit target held near $52M."
+   },
+   {
+    "label": "Big deals slipped",
+    "text": "Two large agency agreements slipped; material contribution now expected late Q3, not Q2."
+   },
+   {
+    "label": "Profit fell sharply",
+    "text": "Adjusted EBITDA fell 61% to $2.8M as promotions cut margins and search shrank 30%."
+   }
+  ],
+  "sources": [
+   "https://ppc.land/perion-ebitda-drops-61-to-2-8m-as-open-web-pulls-revenue-down-5/",
+   "https://www.barchart.com/story/news/3752414/perion-reports-second-quarter-2026-results",
+   "https://www.stocktaper.com/earningsCallSummary/PERI/2026/Q2",
+   "https://stocktwits.com/news-articles/Markets/Equity/peri-stock-clocks-worst-session-in-nearly-two-years-q1-earnings/cZXxPGpRen0",
+   "https://www.aol.com/articles/perion-peri-q4-2025-earnings-220247658.html"
+  ]
+ },
+ "story": "Perion guided 2026 growth in February and repeated it in May, promising a second-half ramp. May's results sent shares to their worst day in nearly two years. August's trimmed outlook and delayed deals left shares flat.",
+ "history": []
+}

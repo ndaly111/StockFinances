@@ -1,0 +1,35 @@
+{
+ "ticker": "SHOP",
+ "updated": "2026-10-29T19:39Z",
+ "last": {
+  "date": "2026-08-05",
+  "timing": "pre",
+  "move_pct": 17.0,
+  "basis": "close",
+  "verdict": "Growth sped up and the outlook stayed strong, so a beaten-down stock jumped.",
+  "reasons": [
+   {
+    "label": "Growth speeding up",
+    "text": "Revenue rose 34%, ahead of the high-twenties growth Shopify had guided for this quarter."
+   },
+   {
+    "label": "Strong profit and cash",
+    "text": "Free cash flow margin reached 18%, up from 16%, and operating income rose 68%."
+   },
+   {
+    "label": "Confident next-quarter outlook",
+    "text": "Shopify guided Q3 revenue growth to the low thirties and free cash flow margin to the high-teens to low-twenties."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1594805/000159480526000046/exhibit991pressreleaseq220.htm",
+   "https://www.schaeffersresearch.com/content/news/2026/08/05/shopify-stock-surges-after-strong-q2-results",
+   "https://www.proactiveinvestors.com/companies/news/1096600/shopify-stock-surges-on-strong-second-quarter-results-upbeat-outlook-1096600.html",
+   "https://www.proactiveinvestors.co.uk/companies/news/1091753/shopify-shares-slide-on-q1-loss-and-cautious-guidance-1091753.html",
+   "https://invezz.com/news/2026/02/11/why-shopify-stock-is-crashing-despite-strong-q4-earnings-beat/",
+   "https://finance.yahoo.com/news/shopify-shares-slide-despite-q4-172200437.html"
+  ]
+ },
+ "story": "Revenue has grown above 30% for several quarters, but guidance has driven the stock. It fell over 10% in February on a weaker cash outlook and AI worries, then dropped again in May on cautious guidance. August reversed that.",
+ "history": []
+}

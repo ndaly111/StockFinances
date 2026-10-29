@@ -1,0 +1,33 @@
+{
+ "ticker": "DAL",
+ "updated": "2026-10-29T18:55Z",
+ "last": {
+  "date": "2026-10-09",
+  "timing": "pre",
+  "move_pct": 0.0,
+  "basis": "close",
+  "verdict": "Shares ended flat as a big profit-forecast cut was weighed against strong sales growth.",
+  "reasons": [
+   {
+    "label": "Full-year forecast slashed",
+    "text": "2026 profit forecast cut to $5.10-$5.60 a share from $6.50-$7.50."
+   },
+   {
+    "label": "Fuel costs hit margins",
+    "text": "Fuel ran over $500 million above July guidance; operating margin fell to 9.4% from 11.1%."
+   },
+   {
+    "label": "Sales still surging",
+    "text": "Revenue rose 21% to $20.2 billion; management said demand continues into the December quarter."
+   }
+  ],
+  "sources": [
+   "https://www.rttnews.com/3697924/delta-stock-drops-on-cautious-earnings-view-in-q4-fy27-after-weak-q3.aspx",
+   "https://www.rttnews.com/3666035/delta-air-lines-affirms-fy26-outlook-update.aspx",
+   "https://briefing.com/stock-market-update/archive/2026/7/10/delta-air-lines-lower-after-earnings",
+   "https://parameter.io/delta-air-lines-dal-stock-drops-4-despite-strong-q2-earnings-beat/"
+  ]
+ },
+ "story": "In July, Delta beat profit estimates and kept its full-year forecast, but the stock still fell as fuel costs surged. By October, higher fuel had forced a deep forecast cut, while revenue kept growing strongly.",
+ "history": []
+}

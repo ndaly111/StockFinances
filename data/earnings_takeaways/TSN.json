@@ -1,0 +1,34 @@
+{
+ "ticker": "TSN",
+ "updated": "2026-10-29T19:46Z",
+ "last": {
+  "date": "2026-08-03",
+  "timing": "pre",
+  "move_pct": 2.8,
+  "basis": "close",
+  "verdict": "Shares rose despite a lower profit outlook, as chicken strength and a CEO handoff offset beef worries.",
+  "reasons": [
+   {
+    "label": "Chicken keeps delivering",
+    "text": "Chicken profit rose $40 million to $488 million, and its full-year outlook was held."
+   },
+   {
+    "label": "Beef loss deepens",
+    "text": "Full-year beef loss now seen at $500-650 million; total profit outlook cut $100 million."
+   },
+   {
+    "label": "New CEO named",
+    "text": "Board member Jeff Schomburger becomes CEO in fiscal 2027; management expects 2027 to look like 2026."
+   }
+  ],
+  "sources": [
+   "https://meatingplace.com/tysons-chicken-segment-still-hot-while-beef-forces-lower-outlook/",
+   "https://www.marketbeat.com/instant-alerts/tyson-foods-q3-earnings-call-highlights-2026-08-03/",
+   "https://www.feedstuffs.com/agribusiness-news/tyson-credits-chicken-segment-strength-in-2026-q3-results",
+   "https://www.feedstuffs.com/agribusiness-news/tyson-revises-2026-outlook-due-to-beef-segment-pressure",
+   "https://wtop.com/news/2026/08/tyson-fiscal-q3-earnings-snapshot/"
+  ]
+ },
+ "story": "Over recent reports, Tyson's chicken and prepared foods have stayed strong while beef losses keep growing because cattle are scarce. Beef plant closures and repeated outlook cuts followed. Earlier stock reactions were not clearly confirmed in sources.",
+ "history": []
+}

@@ -1,0 +1,35 @@
+{
+ "ticker": "SNAP",
+ "updated": "2026-10-29T19:40Z",
+ "last": {
+  "date": "2026-08-03",
+  "timing": "post",
+  "move_pct": 14.9,
+  "basis": "close",
+  "verdict": "Revenue beat and a stronger Q3 forecast sent the stock sharply higher.",
+  "reasons": [
+   {
+    "label": "Big revenue beat",
+    "text": "Revenue rose 19% to about $1.6B, above the roughly $1.53B analysts expected."
+   },
+   {
+    "label": "Upbeat Q3 forecast",
+    "text": "Snap guided Q3 revenue to $1.70\u20131.74B and Adjusted EBITDA (core profit) to $300\u2013350M."
+   },
+   {
+    "label": "Cost cuts, cash, Specs",
+    "text": "Post-layoff cost cuts drove $121M free cash flow; Specs AR glasses got a launch date."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001564408/000156440826000047/snap-20260803xexx991pressr.htm",
+   "https://www.kucoin.com/blog/en-snap-q2-earnings-beat-expectations-with-1-6b-revenue-stock-surges-13-after-hours-as-specs-glasses-launch-nears",
+   "https://quartr.com/events/snap-inc-snap-q2-2026_3YobnL4d",
+   "https://www.tikr.com/blog/snap-beat-q1-2026-earnings-and-the-stock-still-fell-heres-what-a-32-target-means-for-investors",
+   "https://www.sec.gov/Archives/edgar/data/1564408/000156440826000011/snap-20260204xexx991pressr.htm",
+   "https://fintool.com/app/research/companies/SNAP/earnings/Q4 2025"
+  ]
+ },
+ "story": "Growth has been choppy. Q4 2025 revenue grew 10% with soft Q1 guidance. After the Q1 2026 report, shares fell on weak Q2 guidance and a lost Perplexity deal. April layoffs cut about 1,000 jobs. This report reversed the gloom.",
+ "history": []
+}

@@ -1,0 +1,34 @@
+{
+ "ticker": "OPEN",
+ "updated": "2026-10-29T19:27Z",
+ "last": {
+  "date": "2026-08-04",
+  "timing": "post",
+  "move_pct": -8.7,
+  "basis": "close",
+  "verdict": "Investors sold on a weak margin outlook despite revenue and cash-burn improvement.",
+  "reasons": [
+   {
+    "label": "Lower margin outlook",
+    "text": "Next-quarter contribution margin guided to 4%\u20134.5%, below this quarter's 5.8%, blamed on seasonality."
+   },
+   {
+    "label": "Sales far below last year",
+    "text": "Revenue was $883M, down about 44% from a year ago, and below analyst estimates."
+   },
+   {
+    "label": "Bigger loss, mostly stock pay",
+    "text": "Net loss was $162M versus $29M a year ago, driven by about $119M of stock-based pay."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000019/exhibit992-q22026form8xk.htm",
+   "https://www.barchart.com/story/news/3648301/opendoor-nasdaqopen-reports-sales-below-analyst-estimates-in-q2-cy2026-earnings-stock-drops",
+   "https://quartr.com/events/opendoor-technologies-inc-open-q2-2026_3eirsAzV",
+   "https://www.inman.com/2026/02/19/opendoor-lost-1b-in-q4-but-investors-are-still-bullish/",
+   "https://www.tipranks.com/news/open-earnings-opendoor-tanks-amid-weak-earnings-figures"
+  ]
+ },
+ "story": "Opendoor has shrunk sharply since 2025, with revenue falling year over year under new CEO Kaz Nejatian. Q3 2025 guidance disappointed, Q4 2025 saw a $1.1B loss tied to debt costs but a stock rise, and Q1 2026 reportedly narrowed losses. The stock reacts mainly to margin guidance and the path to breakeven.",
+ "history": []
+}

@@ -1,0 +1,34 @@
+{
+ "ticker": "SBUX",
+ "updated": "2026-10-29T19:38Z",
+ "last": {
+  "date": "2026-07-29",
+  "timing": "post",
+  "move_pct": 1.6,
+  "basis": "close",
+  "verdict": "Big beat and a sharply raised profit outlook, but the stock rose only modestly.",
+  "reasons": [
+   {
+    "label": "Profit outlook raised",
+    "text": "Full-year adjusted earnings forecast lifted to $2.55\u2013$2.65 a share, from $2.25\u2013$2.45."
+   },
+   {
+    "label": "Strong sales growth",
+    "text": "Same-store sales rose 7.9% worldwide, with 4.2% more customer transactions."
+   },
+   {
+    "label": "Earnings crushed estimates",
+    "text": "Adjusted profit was $0.85 a share versus roughly $0.66 expected."
+   }
+  ],
+  "sources": [
+   "https://www.businesswire.com/news/home/20260729476494/en/Starbucks-Reports-Q3-Fiscal-Year-2026-Results",
+   "https://www.sec.gov/Archives/edgar/data/0000829224/000082922426000129/sbux-06282026xearningsrele.htm",
+   "https://www.sec.gov/Archives/edgar/data/0000829224/000082922426000078/sbux-03292026xearningsrele.htm",
+   "https://www.thestandard.com.hk/market/article/322961/Starbucks-signals-US-growth-revival-as-CEOs-turnaround-takes-root",
+   "https://www.tikr.com/blog/starbucks-q3-earnings-margins-just-inflected-for-the-first-time-since-2024"
+  ]
+ },
+ "story": "Starbucks' turnaround has built steadily. Same-store sales were up 4% in North America in the January report, and shares jumped. They rose 6.2% worldwide in April, with the full-year outlook raised, and 7.9% now, with the outlook raised again.",
+ "history": []
+}

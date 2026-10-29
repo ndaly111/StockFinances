@@ -1,0 +1,34 @@
+{
+ "ticker": "PLTR",
+ "updated": "2026-10-29T19:34Z",
+ "last": {
+  "date": "2026-08-03",
+  "timing": "post",
+  "move_pct": 29.5,
+  "basis": "close",
+  "verdict": "Record growth and a huge forecast raise crushed expectations, sending shares soaring.",
+  "reasons": [
+   {
+    "label": "Biggest guidance raise ever",
+    "text": "2026 revenue outlook lifted to about $8.15B from $7.65B, well above Wall Street's view."
+   },
+   {
+    "label": "Revenue beat by wide margin",
+    "text": "Revenue rose 93% to $1.94B versus roughly $1.81B expected; U.S. business grew 149%."
+   },
+   {
+    "label": "Record deals, high profits",
+    "text": "U.S. commercial deal bookings hit $2.13B, up 153%, with a 62% adjusted operating margin."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000039/a2026q2ex991pressrelease.htm",
+   "https://finviz.com/news/376477/palantir-shares-soar-after-record-quarter-and-major-guidance-upgrade",
+   "https://www.tikr.com/blog/palantirs-q2-earnings-call-produced-its-largest-ever-guidance-raise-heres-what-changed",
+   "https://finance.yahoo.com/markets/stocks/articles/palantir-q1-2026-earnings-revenue-205048964.html",
+   "https://trendspider.com/blog/palantir-stock-bounces-on-q4-beat-strong-fy26-guidance/"
+  ]
+ },
+ "story": "Palantir has beaten forecasts and raised its outlook every quarter. Revenue growth sped up from 70% in late 2025 to 85% in early 2026 and 93% now. The stock was down about 18% this year before this report, on worries about expensive AI shares.",
+ "history": []
+}

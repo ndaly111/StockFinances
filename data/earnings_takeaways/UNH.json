@@ -1,0 +1,35 @@
+{
+ "ticker": "UNH",
+ "updated": "2026-10-29T19:50Z",
+ "last": {
+  "date": "2026-10-13",
+  "timing": "pre",
+  "move_pct": -0.2,
+  "basis": "close",
+  "verdict": "Beat and raised guidance, but shares faded to a flat close.",
+  "reasons": [
+   {
+    "label": "Beat and raised outlook",
+    "text": "Adjusted EPS $4.69 beat $4.14 estimate; 2026 guidance lifted to at least $20.50."
+   },
+   {
+    "label": "Shrinking membership",
+    "text": "UnitedHealthcare served 48.3 million people, down from about 50.1 million a year earlier."
+   },
+   {
+    "label": "Early gains already faded",
+    "text": "Shares were up 3\u20134.5% early, but the rally didn't hold into the close."
+   }
+  ],
+  "sources": [
+   "https://stocktwits.com/news-articles/markets/equity/unh-stock-gains-after-q3-earnings-beat-guidance-raise/cZxBKedRBoD",
+   "https://www.sec.gov/Archives/edgar/data/0000731766/000073176626000255/earningsrelease3q26unh.htm",
+   "https://www.xtb.com/en/market-analysis/news-and-research/unitedhealth-group-shares-gain-3-after-stronger-than-expected-earnings-and-guidance",
+   "https://www.hl.co.uk/shares/stock-market-news/company--news/unitedhealth-lifts-guidance-as-q2-profits-smash-forecasts",
+   "https://www.tikr.com/blog/unitedhealth-stock-surges-8-after-q1-2026-earnings-beat-what-investors-need-to-know",
+   "https://finance.yahoo.com/news/unitedhealth-forecasts-2026-profit-slightly-105714467.html"
+  ]
+ },
+ "story": "UnitedHealth fell about 20% in January after a weak revenue outlook and a near-flat Medicare Advantage rate proposal. Since then it has beaten estimates and raised guidance each quarter, with April up about 8% and July up sharply. This time the good news barely moved the stock.",
+ "history": []
+}

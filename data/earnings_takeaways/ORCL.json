@@ -1,0 +1,34 @@
+{
+ "ticker": "ORCL",
+ "updated": "2026-10-29T19:28Z",
+ "last": {
+  "date": "2026-09-10",
+  "timing": "post",
+  "move_pct": -1.7,
+  "basis": "close",
+  "verdict": "Strong cloud growth, but heavy cash burn and debt kept investors cautious.",
+  "reasons": [
+   {
+    "label": "Cash still burning",
+    "text": "Free cash flow was negative $5.4 billion despite record $23 billion operating cash flow."
+   },
+   {
+    "label": "Heavy debt load",
+    "text": "Oracle carries about $125 billion of debt while spending $28.5 billion on data centers this quarter."
+   },
+   {
+    "label": "Dilution from stock sales",
+    "text": "Oracle raised $20 billion selling new shares, adding to the share count investors own."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1341439/000119312526387905/orcl-ex99_1.htm",
+   "https://www.cnbc.com/2026/09/10/oracle-orcl-q1-earnings-report-2027.html",
+   "https://trendspider.com/blog/orcl-stock-drops-10-after-40b-capital-raise-despite-q4-beat/",
+   "https://www.tikr.com/blog/oracle-stock-fell-8-after-a-record-quarter-heres-why-the-selloff-may-be-overblown",
+   "https://seekingalpha.com/news/4563089-oracle-surges-after-strong-q3-and-outlook-gets-upgrade-at-jp-morgan"
+  ]
+ },
+ "story": "Oracle jumped about 9% in March on a huge backlog of cloud contracts. In June it fell about 8.5% as spending and financing plans grew. Now cloud growth is accelerating, but cash burn and debt keep capping the stock.",
+ "history": []
+}

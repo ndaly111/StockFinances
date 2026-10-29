@@ -1,0 +1,35 @@
+{
+ "ticker": "WMT",
+ "updated": "2026-10-29T19:51Z",
+ "last": {
+  "date": "2026-08-20",
+  "timing": "pre",
+  "move_pct": -9.2,
+  "basis": "close",
+  "verdict": "Beat and raise, but weak U.S. sales and soft guidance disappointed investors.",
+  "reasons": [
+   {
+    "label": "U.S. sales slowed",
+    "text": "U.S. same-store sales rose 2.6%, well short of the roughly 3.7% expected."
+   },
+   {
+    "label": "Profit outlook too low",
+    "text": "Full-year EPS guide of $2.80\u2013$2.87 trailed the roughly $2.90 Wall Street expected."
+   },
+   {
+    "label": "Weak next-quarter forecast",
+    "text": "Q3 EPS guide of $0.62\u2013$0.64 barely tops last year's $0.62, signaling slowing growth."
+   }
+  ],
+  "sources": [
+   "https://www.tikr.com/blog/walmart-wmt-stock-tumbles-weak-sales-growth-soft-outlook",
+   "https://www.tradingpedia.com/2026/08/20/walmart-shares-drop-as-sales-growth-lags-earnings-beat/",
+   "https://finviz.com/news/384218/walmart-stock-slips-as-raised-outlook-disappoints",
+   "https://www.zacks.com/commentary/2924547/walmart-posts-q1-beat-stock-sags-as-bar-was-already-sky-high",
+   "https://www.briefing.com/story-stocks/archive/2026/2/19/walmart-bags-solid-q4-results-30-bln-buyback-offsets-conservative-guidance-(wmt)",
+   "https://xtb.com/en/market-analysis/walmart-shares-jump-on-strong-q3-results-raised-guidance"
+  ]
+ },
+ "story": "Walmart has beaten estimates for several quarters, but the stock has stopped rewarding it. November 2025's raised outlook lifted shares. In February and May 2026, cautious guidance and fuel costs hurt the stock, and August's slowing U.S. sales added to the selloff.",
+ "history": []
+}

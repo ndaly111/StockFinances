@@ -1,0 +1,33 @@
+{
+ "ticker": "SCHW",
+ "updated": "2026-10-29T19:39Z",
+ "last": {
+  "date": "2026-10-15",
+  "timing": "pre",
+  "move_pct": -2.7,
+  "basis": "close",
+  "verdict": "Record quarter, but softer interest-income growth and trimmed targets sent shares lower.",
+  "reasons": [
+   {
+    "label": "Guidance toward low end",
+    "text": "Full-year revenue growth and margin gains now expected near the low end of ranges."
+   },
+   {
+    "label": "Slowing interest income",
+    "text": "Net interest revenue rose 14% to $3.48B, the slowest growth in recent quarters."
+   },
+   {
+    "label": "Revenue just short",
+    "text": "Revenue of $7.17B was a touch under the roughly $7.2B expected, despite 17% growth."
+   }
+  ],
+  "sources": [
+   "https://www.tikr.com/blog/schwab-stock-falls-5-despite-record-190-billion-in-flows-heres-why",
+   "https://www.sec.gov/Archives/edgar/data/316709/000031670926000035/a3q26exhibit991.htm",
+   "https://www.chartmill.com/news/external/85170/schwab-stock-slides-despite-q2-earnings-beat-on-robust-trading-nir",
+   "https://www.tikr.com/blog/charles-schwab-posted-record-q1-2026-earnings-why-did-the-stock-fall"
+  ]
+ },
+ "story": "Schwab has posted record results several quarters running, with interest income growth cooling from 37% a year ago to 14% now. Stock has repeatedly slipped on the news; one analyst calls this the third straight quarter of a record report followed by a decline.",
+ "history": []
+}

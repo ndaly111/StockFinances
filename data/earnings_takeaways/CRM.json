@@ -1,0 +1,36 @@
+{
+ "ticker": "CRM",
+ "updated": "2026-10-29T18:52Z",
+ "last": {
+  "date": "2026-08-26",
+  "timing": "post",
+  "move_pct": 22.6,
+  "basis": "close",
+  "verdict": "Investors cheered faster backlog growth, a raised outlook, and fading fears that AI hurts Salesforce.",
+  "reasons": [
+   {
+    "label": "Faster contracted growth",
+    "text": "Backlog due within 12 months grew 14%, speeding up, with the same 14% guided for next quarter."
+   },
+   {
+    "label": "AI fears eased",
+    "text": "AI products topped $1.5B in yearly sales, up over 240%, easing worries AI threatens Salesforce."
+   },
+   {
+    "label": "Raised outlook, cash surge",
+    "text": "Full-year revenue forecast raised to $46.1\u201346.4B; free cash flow jumped 81% to $1.1B."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000187/crm-q2fy27xexhibit991.htm",
+   "https://www.fool.com/investing/2026/09/08/why-salesforce-stock-skyrocketed-40-last-month/",
+   "https://www.salesforceben.com/salesforce-stock-shoots-up-14-after-strong-q2-earnings/",
+   "https://finance.yahoo.com/markets/stocks/articles/salesforce-q1-fy2027-earnings-beat-114153377.html",
+   "https://www.zacks.com/stock/news/2943846/salesforce-crm-down-14-8-since-last-earnings-report-can-it-rebound",
+   "https://daytraders.com/news/2025/12/04/these-analysts-cut-their-forecasts-on-salesforce-after-q3-results",
+   "https://www.metatradingclub.com/?p=21090"
+  ]
+ },
+ "story": "Salesforce has beaten profit estimates for several quarters, but stock reactions swung from a small gain in December to a drop after cautious guidance in February and May. Growth stuck near 11% and AI worries weighed until this report.",
+ "history": []
+}

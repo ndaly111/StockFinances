@@ -1,0 +1,35 @@
+{
+ "ticker": "CVS",
+ "updated": "2026-10-29T18:54Z",
+ "last": {
+  "date": "2026-08-05",
+  "timing": "pre",
+  "move_pct": -5.1,
+  "basis": "close",
+  "verdict": "Strong beat and raise, but a soft 2027 outlook sent shares lower.",
+  "reasons": [
+   {
+    "label": "Soft 2027 outlook",
+    "text": "First 2027 view of at least $8.44 per share was only in line with expectations."
+   },
+   {
+    "label": "Caremark pressure ahead",
+    "text": "Management expects 2027 profit pressure from 340B drug-discount rules and fewer Caremark members."
+   },
+   {
+    "label": "Big beat already priced",
+    "text": "Earnings of $2.58 per share beat about $1.85 expected, and 2026 guidance rose to $7.90-$8.10."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/64803/000006480326000097/cvs_ex99x1q2-26.htm",
+   "https://www.tikr.com/blog/cvs-raised-2026-guidance-its-first-2027-number-is-what-spooked-the-market",
+   "https://www.marketbeat.com/instant-alerts/cvs-health-nysecvs-posts-quarterly-earnings-results-beats-expectations-by-072-eps-2026-08-05/",
+   "https://finance.yahoo.com/sectors/healthcare/articles/cvs-health-raises-2026-guidance-121242930.html",
+   "https://fn2.ai/earnings/cvs/2026-q1",
+   "https://healthcaredive.com/news/cvs-q4-2025-outlook-stable-ma-caremark/811781"
+  ]
+ },
+ "story": "CVS has beaten estimates for seven straight quarters as Aetna's margins recovered. Guidance rose from $7.00-$7.20 in February to $7.90-$8.10 now. The stock fell 3.7% on February's unchanged outlook, reportedly jumped after May's raise, then slid on 2027 worries.",
+ "history": []
+}

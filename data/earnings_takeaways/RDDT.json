@@ -1,0 +1,34 @@
+{
+ "ticker": "RDDT",
+ "updated": "2026-10-29T19:35Z",
+ "last": {
+  "date": "2026-07-30",
+  "timing": "post",
+  "move_pct": -21.0,
+  "basis": "close",
+  "verdict": "Strong quarter, but weaker user and search-traffic signs sent investors selling hard.",
+  "reasons": [
+   {
+    "label": "Search traffic wobbling",
+    "text": "CEO called Google search referrals \"choppy,\" more volatile late in the quarter; no new licensing deals."
+   },
+   {
+    "label": "U.S. users slipped",
+    "text": "U.S. daily users reportedly dipped from the prior quarter; only 6% year-over-year growth."
+   },
+   {
+    "label": "Sky-high expectations",
+    "text": "Revenue grew 61% to $805M, but the stock had run up and priced in more."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1713445/000171344526000098/exhibit992q226.htm",
+   "https://www.webull.com/news/15324723391046656",
+   "https://www.tikr.com/blog/reddit-stock-is-down-40-in-2026-despite-record-earnings-heres-what-the-data-says",
+   "https://thenextweb.com/news/reddit-q1-2026-earnings",
+   "https://www.tipranks.com/news/rddt-earnings-reddit-rises-after-beating-q3-estimates"
+  ]
+ },
+ "story": "Reddit has beaten estimates and guided above forecasts for several quarters. The stock jumped after Q3 2025 and rose about 9% after hours following Q1 2026's 69% growth. Revenue growth has since slowed to 61%, and attention has shifted to Google-driven traffic and user growth.",
+ "history": []
+}

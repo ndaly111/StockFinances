@@ -1,0 +1,35 @@
+{
+ "ticker": "FSLR",
+ "updated": "2026-10-29T18:59Z",
+ "last": {
+  "date": "2026-07-30",
+  "timing": "post",
+  "move_pct": 2.4,
+  "basis": "close",
+  "verdict": "Big profit beat and steady outlook outweighed a small sales dip; shares edged up.",
+  "reasons": [
+   {
+    "label": "Profit well above forecasts",
+    "text": "Earnings of $3.92 a share beat analyst estimates of roughly $2.74\u2013$2.89."
+   },
+   {
+    "label": "Much fatter margins",
+    "text": "Adjusted EBITDA margin hit 61% versus 51% a year ago, as costs fell."
+   },
+   {
+    "label": "Guidance held, sales dipped",
+    "text": "Full-year targets were reaffirmed; sales fell 4% to $1.06B on terminated customer contracts."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1274494/000127449426000169/ex991pressreleaseq2-2026.htm",
+   "https://247wallst.com/companies/fslr/earnings/2026/Q2",
+   "https://www.nasdaq.com/articles/first-solars-q2-earnings-beat-estimates-revenues-decrease-y-y",
+   "https://www.chartmill.com/news/FSLR/Chartmill-52333-First-Solar-NASDAQFSLR-Surges-After-Hours-as-Q2-Earnings-Beat-Offsets-Revenue-Miss",
+   "https://finviz.com/news/320945/first-solar-nasdaq-fslr-beats-q4-cy2025-sales-expectations-but-stock-drops-102",
+   "https://www.nasdaq.com/articles/first-solars-q4-earnings-lag-estimates-revenues-surpass"
+  ]
+ },
+ "story": "February's weak 2026 sales outlook sent shares down roughly 10%. Contract cancellations, including 6.6 GW tied to BP affiliates late last year, have trimmed sales. This quarter's profit beat and reaffirmed guidance brought some relief, while tariff and policy uncertainty lingers.",
+ "history": []
+}
