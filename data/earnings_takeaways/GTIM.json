@@ -1,0 +1,32 @@
+{
+ "ticker": "GTIM",
+ "updated": "2026-10-29T19:11Z",
+ "last": {
+  "date": "2020-02-11",
+  "timing": "post",
+  "move_pct": 8.7,
+  "basis": "close",
+  "verdict": "Investors liked the raised profit outlook and the improving margins despite weak Bad Daddy's sales.",
+  "reasons": [
+   {
+    "label": "Profit outlook raised",
+    "text": "Full-year adjusted EBITDA guidance rose to $6.3-6.5 million from $6.0-6.2 million in December."
+   },
+   {
+    "label": "Margins recovering",
+    "text": "Management said the year-over-year margin gap narrowed through the quarter, with more progress expected."
+   },
+   {
+    "label": "Burger sales growth",
+    "text": "Revenue rose 21.5% to $30.8 million, helped by new restaurants and an extra week."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/825324/000121465920001175/ex99_1.htm",
+   "https://www.sec.gov/Archives/edgar/data/825324/000121465919007703/ex99_1.htm",
+   "https://www.franchising.com/news/20191213_good_times_restaurants_reports_results_for_the_fis.html"
+  ]
+ },
+ "story": "Fiscal 2019 ended with falling margins, weak Bad Daddy's sales, and the CEO leaving in October 2019. In December, the acting CEO guided to flat Bad Daddy's sales and stabilizing margins. This report added a raised profit outlook.",
+ "history": []
+}

@@ -1,0 +1,34 @@
+{
+ "ticker": "GS",
+ "updated": "2026-10-29T19:09Z",
+ "last": {
+  "date": "2026-10-13",
+  "timing": "pre",
+  "move_pct": -0.2,
+  "basis": "close",
+  "verdict": "Strong beat, but investors saw a peak quarter and held back.",
+  "reasons": [
+   {
+    "label": "Stock trading cooled",
+    "text": "Equities revenue was $6.44B, up 72% from last year but 13% below Q2's record."
+   },
+   {
+    "label": "Bond trading slump",
+    "text": "Fixed income revenue fell 24% from the prior quarter to $3.47B."
+   },
+   {
+    "label": "Smaller deal pipeline",
+    "text": "Investment banking fees fell 5% from Q2, and the backlog of pending deals shrank."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0000886982/000088698226000529/a3q26gsearningsresults.htm",
+   "https://beinsure.com/news/goldman-sachs-nyse-gs-stock-price-forecast-q3-earnings-beat-as-equities-jump-72/",
+   "https://www.quiverquant.com/news/Goldman+Sachs+Q3+Revenue+Rises+23%25+as+Diluted+EPS+Reaches+%2417.01",
+   "https://news.bloomberglaw.com/capital-markets/goldman-blows-past-stock-trading-records-with-7-42-billion-boon",
+   "https://www.sec.gov/Archives/edgar/data/0000886982/000088698226000294/a2q26gsearningsresults.htm"
+  ]
+ },
+ "story": "Goldman has posted three straight record quarters of stock trading, peaking at $7.42B in Q2. Q3 earnings still beat forecasts, but trading and revenue slipped from that peak. Analysts remain at Hold, and the stock barely reacted.",
+ "history": []
+}

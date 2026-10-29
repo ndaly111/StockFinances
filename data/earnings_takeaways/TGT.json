@@ -1,0 +1,35 @@
+{
+ "ticker": "TGT",
+ "updated": "2026-10-29T19:44Z",
+ "last": {
+  "date": "2026-08-19",
+  "timing": "pre",
+  "move_pct": 4.3,
+  "basis": "close",
+  "verdict": "Investors cheered strong sales and a raised full-year outlook, shrugging off one-time tariff refunds.",
+  "reasons": [
+   {
+    "label": "Sales beat, more shoppers",
+    "text": "Sales rose 5.3% to $26.5B, above forecasts, with customer traffic up 3.6%."
+   },
+   {
+    "label": "Raised full-year outlook",
+    "text": "Sales growth now seen near 5%, a point higher. Profit guidance excluding refunds rose $0.75 at the midpoint."
+   },
+   {
+    "label": "Tariff refund flattered profit",
+    "text": "A $994M tariff refund added $1.65 per share; excluding it, earnings rose 20%."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/27419/000002741926000034/a2026q2ex-99.htm",
+   "https://stocktwits.com/news-articles/markets/equity/target-reports-upbeat-q2-revenue-improves-guidance-retail-eyes-potential-for-pe-multiple-re-rating-in-coming-times/cZYdLVxRJkz",
+   "https://www.rttnews.com/3682086/target-lifts-fy26-outlook-after-q2-profit-growth-on-tariff-benefit-comps.aspx?type=corp",
+   "https://www.marketscreener.com/news/wall-street-punishes-target-despite-earnings-beat-ce7f5ad9dd89f020",
+   "https://finance.yahoo.com/markets/stocks/articles/target-q1-2026-earnings-beat-115009086.html",
+   "https://www.nasdaq.com/articles/target-sees-earnings-net-sales-growth-fy26-update"
+  ]
+ },
+ "story": "Target's sales fell through late 2025 (comparable sales down 2.7% in the fall, 2.5% in the winter). Growth returned in 2026, with comparable sales up 5.6% in spring and 3.8% now, and outlooks rose each time. The stock jumped after the March report but fell about 6% in May despite the beat.",
+ "history": []
+}

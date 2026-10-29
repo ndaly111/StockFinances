@@ -1,0 +1,34 @@
+{
+ "ticker": "COST",
+ "updated": "2026-10-29T18:51Z",
+ "last": {
+  "date": "2026-09-24",
+  "timing": "post",
+  "move_pct": 2.9,
+  "basis": "close",
+  "verdict": "Solid beat on sales and profit; shares rose despite a rich valuation.",
+  "reasons": [
+   {
+    "label": "Beat on estimates",
+    "text": "Earnings of $6.75 a share and $95.7B revenue topped forecasts of about $6.54 and $94.9B."
+   },
+   {
+    "label": "Strong underlying sales",
+    "text": "Sales at stores open a year rose 6.7% excluding gas and currency, with traffic up 3.3%."
+   },
+   {
+    "label": "Tariff refunds passed on",
+    "text": "$184M in refunds added $0.15 a share, but most is going back to members as lower prices."
+   }
+  ],
+  "sources": [
+   "https://www.trefis.com/stock/cost/articles2/617156/what-should-costco-stock-holders-take-from-its-fiscal-fourth-quarter/2026-09-30",
+   "https://www.marketbeat.com/articles/costco-ends-its-fiscal-year-on-a-high-note-eyes-big-expansion/",
+   "https://www.marketbeat.com/originals/costcos-strong-quarter-still-leaves-investors-with-a-valuation-problem/",
+   "https://www.nasdaq.com/articles/compared-estimates-costco-cost-q3-earnings-look-key-metrics",
+   "https://www.sec.gov/Archives/edgar/data/909832/000090983226000084/costex9918-k92426.htm"
+  ]
+ },
+ "story": "Costco has kept posting steady sales gains and beats, with gas lifting reported sales. The stock trades at a high multiple, about 46 times earnings. After the May report it fell about 4% despite record revenue. This time it rose.",
+ "history": []
+}

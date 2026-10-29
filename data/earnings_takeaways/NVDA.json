@@ -1,0 +1,32 @@
+{
+ "ticker": "NVDA",
+ "updated": "2026-10-29T19:26Z",
+ "last": {
+  "date": "2026-08-26",
+  "timing": "post",
+  "move_pct": 8.7,
+  "basis": "close",
+  "verdict": "Investors cheered a huge revenue beat and a surprisingly strong growth outlook for next year.",
+  "reasons": [
+   {
+    "label": "Big growth outlook",
+    "text": "Management expects about 70% revenue growth next fiscal year versus roughly 44% analysts expected."
+   },
+   {
+    "label": "Strong next-quarter forecast",
+    "text": "Next-quarter revenue guided to $108B, above the roughly $104B analysts expected, with no China sales assumed."
+   },
+   {
+    "label": "Beat on sales and profit",
+    "text": "Revenue hit $96.2B versus about $92.2B expected; AI data center sales rose 117%."
+   }
+  ],
+  "sources": [
+   "https://app.sentisense.ai/stories/nvidia-beats-across-the-board-guides-108-billion-with-zero-china-revenue-assume-08262026",
+   "https://www.xtb.com/en/market-analysis/nvidia-shares-react-to-solid-earnings-report-and-stonger-guidance-what-s-next-for-the-ai-giant",
+   "https://invezz.com/in/news/2026/08/26/nvidia-stock-slips-1percent-despite-beating-earnings-expectations-and-raising-guidance/"
+  ]
+ },
+ "story": "Nvidia has beaten estimates and raised forecasts for several quarters as AI chip demand surged. Yet the stock fell the day after each of its last four reports, by 0.8% to 5.5%. This time a stronger long-term outlook broke that pattern.",
+ "history": []
+}

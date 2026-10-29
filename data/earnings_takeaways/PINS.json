@@ -1,0 +1,33 @@
+{
+ "ticker": "PINS",
+ "updated": "2026-10-29T19:33Z",
+ "last": {
+  "date": "2026-08-04",
+  "timing": "post",
+  "move_pct": -8.7,
+  "basis": "close",
+  "verdict": "Beat on sales and profit, but weaker Q3 outlook sent shares lower.",
+  "reasons": [
+   {
+    "label": "Slower growth ahead",
+    "text": "Q3 revenue guided to $1.19\u20131.21B, only 13\u201315% growth versus 18% in Q2."
+   },
+   {
+    "label": "One-time Q2 boosts",
+    "text": "Amazon's Prime Day shifted into Q2 and World Cup ad spending won't repeat in Q3."
+   },
+   {
+    "label": "Ad competition worries",
+    "text": "Investors fretted over rivals Instagram and Reddit, plus weakness in Europe and rising GPU costs."
+   }
+  ],
+  "sources": [
+   "https://www.tikr.com/blog/pinterest-pins-stock-drops-q2-2026-earnings-guidance",
+   "https://www.barchart.com/story/news/3770820/pinterests-q2-earnings-call-our-top-5-analyst-questions",
+   "https://www.cnbc.com/2026/02/13/-pinterest-stock-price-tariff-earnings-layoffs.html",
+   "https://www.cnbc.com/2025/11/05/pinterest-stock-earnings-tariffs-ads.html"
+  ]
+ },
+ "story": "Pinterest fell about 21% after November 2025 results and about 17% after February 2026, blamed on tariffs hitting big retail advertisers and soft guidance. Q2 brought a beat, but guidance that merely met expectations still disappointed.",
+ "history": []
+}

@@ -1,0 +1,35 @@
+{
+ "ticker": "TEVA",
+ "updated": "2026-10-29T19:43Z",
+ "last": {
+  "date": "2026-07-29",
+  "timing": "pre",
+  "move_pct": 9.6,
+  "basis": "close",
+  "verdict": "Stronger brand-drug sales and raised guidance outweighed a profit miss.",
+  "reasons": [
+   {
+    "label": "Austedo outlook raised",
+    "text": "2026 Austedo sales guidance lifted to $2.45\u20132.6 billion; U.S. sales up 33%."
+   },
+   {
+    "label": "Revenue guidance raised",
+    "text": "2026 revenue outlook raised to $16.5\u201316.85 billion on Austedo, Ajovy and Uzedy."
+   },
+   {
+    "label": "Miss blamed on deal",
+    "text": "Adjusted EPS of 2 cents missed; Emalex acquisition cost about 61 cents per share."
+   }
+  ],
+  "sources": [
+   "https://www.zacks.com/stock/news/2964912/teva-q2-earnings-lag-estimates,-2026-revenue-view-raised,-stock-rises",
+   "https://www.webull.com/news/15343888733774848",
+   "https://www.thepharmaletter.com/pharma-news/teva-delivers-strong-2nd-qtr-results-and-raises-outlook",
+   "https://www.zacks.com/stock/news/2825449/teva-s-q4-earnings-beat-branded-drugs-drive-revenue-growth",
+   "https://www.zacks.com/stock/news/2787028/teva-q3-earnings-revenues-beat-austedo-sales-view-raised-stock-up",
+   "https://www.fool.com/investing/2025/11/05/why-teva-pharmaceutical-stock-rocked-the-market-to/"
+  ]
+ },
+ "story": "Branded drugs like Austedo keep lifting Teva while generics shrink. The November report sent shares up roughly 13% before the open as Austedo guidance rose. February's 2026 revenue outlook came in below analyst estimates.",
+ "history": []
+}

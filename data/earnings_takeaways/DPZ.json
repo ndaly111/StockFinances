@@ -1,0 +1,35 @@
+{
+ "ticker": "DPZ",
+ "updated": "2026-10-29T18:58Z",
+ "last": {
+  "date": "2026-10-13",
+  "timing": "pre",
+  "move_pct": -4.8,
+  "basis": "close",
+  "verdict": "Profit beat, but U.S. sales growth nearly stalled and customers are ordering less.",
+  "reasons": [
+   {
+    "label": "Stalled U.S. sales",
+    "text": "U.S. same-store sales rose only 0.3%, versus 5.2% a year earlier."
+   },
+   {
+    "label": "Smaller orders",
+    "text": "New CEO said budget-stretched customers order fewer items per order, and pressure should last through year-end."
+   },
+   {
+    "label": "Weak full-year outlook",
+    "text": "U.S. sales growth now seen at the low end of low-single digits; international roughly flat."
+   }
+  ],
+  "sources": [
+   "https://stocktwits.com/news-articles/markets/equity/dominos-pizza-q3-earnings-outlook-ceo-joe-jordon-weak-sales-growth/cZxfKzmRBp1",
+   "https://finance.yahoo.com/markets/stocks/articles/dominos-shares-fall-11-sales-193347968.html",
+   "https://www.nasdaq.com/articles/dominos-pizza-q2-earnings-call-highlights",
+   "https://qz.com/dominos-pizza-q2-2026-earnings-revenue-profit-072026",
+   "https://www.zacks.com/stock/news/2873823/dominos-q4-earnings-miss-estimates-revenues-beat-stock-up",
+   "https://www.sec.gov/Archives/edgar/data/1286681/000128668126000039/dpz-ex99_1.htm"
+  ]
+ },
+ "story": "Domino's U.S. sales growth has faded from 3.7% in late 2025 to 0.3% now. A first-quarter miss and a cut to the 2026 outlook sent shares down as much as 11%. A July rebound did not last, and a new CEO now faces weak spending.",
+ "history": []
+}

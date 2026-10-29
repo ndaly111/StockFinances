@@ -1,0 +1,34 @@
+{
+ "ticker": "MPC",
+ "updated": "2026-10-29T19:21Z",
+ "last": {
+  "date": "2026-08-04",
+  "timing": "pre",
+  "move_pct": 1.8,
+  "basis": "close",
+  "verdict": "Huge profit beat on record refining margins, but shares rose only modestly.",
+  "reasons": [
+   {
+    "label": "Big earnings beat",
+    "text": "Earnings were $17.73 a share, versus about $13\u201314.5 analysts expected."
+   },
+   {
+    "label": "Record refining margins",
+    "text": "Profit per barrel refined hit $36.33, double last year's $17.58."
+   },
+   {
+    "label": "Cash returned, higher output",
+    "text": "$2.5 billion of buybacks; refinery output is guided up to 3.0 million barrels a day."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001510295/000151029526000060/mpcq22026earningsrelease.htm",
+   "https://finviz.com/news/376901/marathon-petroleum-beats-second-quarter-estimates-as-refining-margins-surge",
+   "https://allmind.ai/earnings/event/2935924",
+   "https://oilprice.com/Company-News/Marathon-Petroleum-Profit-Quadruples-on-Higher-Refining-Margins.amp.html",
+   "https://inspenet.com/en/news/marathon-petroleum-exceeds-forecasts-q1/"
+  ]
+ },
+ "story": "Refining profits have climbed for three straight reports: $18.65 a barrel in Q4 2025, $17.74 in Q1 2026, and $36.33 now. Tight global fuel supply drove this. The stock rose about 7% premarket after Q4 and about 1% after Q1.",
+ "history": []
+}

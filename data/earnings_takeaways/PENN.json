@@ -1,0 +1,33 @@
+{
+ "ticker": "PENN",
+ "updated": "2026-10-29T19:29Z",
+ "last": {
+  "date": "2026-08-06",
+  "timing": "pre",
+  "move_pct": 2.6,
+  "basis": "close",
+  "verdict": "Record casino results and a smaller digital loss won modest approval.",
+  "reasons": [
+   {
+    "label": "Record casino quarter",
+    "text": "Retail revenue hit a record $1.5 billion; nine properties set Q2 records, and July trends stayed strong."
+   },
+   {
+    "label": "Digital losses shrinking",
+    "text": "Interactive lost $9.5 million versus $62.0 million a year ago; iCasino revenue hit a record."
+   },
+   {
+    "label": "Profit jump, debt falling",
+    "text": "Adjusted EBITDA rose to $312.6 million from $236.1 million; net debt fell to $1.9 billion."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000019/pennex991-q22026.htm",
+   "https://www.benzinga.com/node/62265462",
+   "https://finance.yahoo.com/markets/stocks/articles/why-penn-entertainment-penn-shares-114123664.html",
+   "https://www.barchart.com/story/news/448269/why-penn-entertainment-penn-stock-is-up-today"
+  ]
+ },
+ "story": "PENN has been shrinking its online betting losses after ending the ESPN Bet tie-up and relaunching as theScore Bet. Casino guidance was raised in April, while online revenue guidance was trimmed. Shares jumped on the last two reports, but August's gain was modest.",
+ "history": []
+}

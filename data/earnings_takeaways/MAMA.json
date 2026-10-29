@@ -1,0 +1,35 @@
+{
+ "ticker": "MAMA",
+ "updated": "2026-10-29T19:20Z",
+ "last": {
+  "date": "2026-09-03",
+  "timing": "post",
+  "move_pct": -5.0,
+  "basis": "close",
+  "verdict": "Strong profit growth, but investors balked at a high valuation and slow margin gains.",
+  "reasons": [
+   {
+    "label": "Rich valuation",
+    "text": "Shares trade near 97 times earnings, so even a doubling of profit left little room."
+   },
+   {
+    "label": "Margins still short",
+    "text": "Gross margin edged up to 24.0% from 23.6%, still below the mid-to-high-20s goal."
+   },
+   {
+    "label": "Spending flattered profit",
+    "text": "About $0.5M moved from marketing to retailer discounts, helping expenses fall to 18.5% of revenue."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1520358/000149315226041400/ex99-1.htm",
+   "https://www.webull.com/news/15524068187120640",
+   "https://www.webull.com/news/15516597035344896",
+   "https://www.sec.gov/Archives/edgar/data/1520358/000149315226016548/ex99-1.htm",
+   "https://www.barchart.com/story/news/2364696/mama-s-creations-reports-first-quarter-fiscal-2027-financial-results",
+   "https://www.chartmill.com/news/MAMA/Chartmill-54361-Mamas-Creations-NASDAQMAMA-Posts-Strong-Q2-Beat-but-Shares-Dip-After-Hours"
+  ]
+ },
+ "story": "Revenue growth has stayed strong: up 61% in the January quarter, about 50% in April, and 55% now. Profit has grown alongside it, but gross margin has stayed under 26%. A July stock offering raised about $108.6M for acquisitions.",
+ "history": []
+}

@@ -1,0 +1,35 @@
+{
+ "ticker": "KHC",
+ "updated": "2026-10-29T19:17Z",
+ "last": {
+  "date": "2026-08-05",
+  "timing": "pre",
+  "move_pct": -3.4,
+  "basis": "close",
+  "verdict": "Investors sold the stock as profit kept shrinking while spending on brands rose.",
+  "reasons": [
+   {
+    "label": "Profit falling sharply",
+    "text": "Adjusted operating income fell 18.4% to $1.0B as advertising and costs rose."
+   },
+   {
+    "label": "Spending raised again",
+    "text": "Extra 2026 brand investment rose $100M to about $700M, weighing on near-term profit."
+   },
+   {
+    "label": "Sales still shrinking",
+    "text": "Sales fell 1.3% as meats and Lunchables-type products lagged; outlook only trimmed to down 0.5-2%."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000052/ex991-erq22026.htm",
+   "https://www.businesswire.com/news/home/20260805074009/en/Kraft-Heinz-Reports-Second-Quarter-2026-Results-Updates-2026-Full-Year-Outlook",
+   "https://www.barchart.com/story/news/3727158/khc-q2-deep-dive-sales-slide-continues-investment-in-brands-ramps-up",
+   "https://www.nasdaq.com/articles/kraft-heinz-reaffirms-fy26-outlook-update",
+   "https://www.businesswire.com/news/home/20260211322087/en/Kraft-Heinz-Reports-Fourth-Quarter-and-Full-Year-2025-Results/",
+   "https://metalpackager.com/2026/02/kraftheinz-2025-results/"
+  ]
+ },
+ "story": "Kraft Heinz began 2026 with weak guidance, a roughly $600M investment plan and its planned split paused. Q1 beat expectations and held guidance. Sales have kept slipping since, and now that spending is rising again, profit is down.",
+ "history": []
+}

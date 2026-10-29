@@ -1,0 +1,31 @@
+{
+ "ticker": "GME",
+ "updated": "2026-10-29T19:07Z",
+ "last": {
+  "date": "2026-09-08",
+  "timing": "pre",
+  "move_pct": -1.4,
+  "basis": "close",
+  "verdict": "Shrinking sales outweighed higher profit and a raised outlook, so shares slipped slightly.",
+  "reasons": [
+   {
+    "label": "Sales fell sharply",
+    "text": "Revenue dropped to $790.2M from $972.2M, hurt by last year's Switch 2 launch and store closures."
+   },
+   {
+    "label": "Profit jumped",
+    "text": "Net income rose to $298.7M from $168.6M; adjusted EPS of $0.27 matched expectations."
+   },
+   {
+    "label": "Outlook nudged up",
+    "text": "Full-year adjusted EBITDA forecast raised to over $650M from over $600M."
+   }
+  ],
+  "sources": [
+   "https://247wallst.com/investing/2026/09/08/gamestops-next-big-move-could-matter-more-than-its-earnings/",
+   "https://goldesel.de/aktien/news/gamestop-ceo-ryan-cohen-kauft-1-million-aktien-fur-204-mio-us-dollar"
+  ]
+ },
+ "story": "Recent reports have beaten estimates, with Q1 sales up 14% to $835.3M, wider margins and a $2B buyback. Yet the average first-day reaction has been about -1%. Investors keep watching the proposed eBay acquisition more than the quarterly numbers.",
+ "history": []
+}

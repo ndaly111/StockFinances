@@ -1,0 +1,34 @@
+{
+ "ticker": "GILD",
+ "updated": "2026-10-29T19:05Z",
+ "last": {
+  "date": "2026-08-04",
+  "timing": "post",
+  "move_pct": -2.6,
+  "basis": "close",
+  "verdict": "Shares slipped despite a raised sales outlook, as huge deal charges and a trial failure weighed.",
+  "reasons": [
+   {
+    "label": "Huge deal-driven loss",
+    "text": "Acquired research charges of $11.2 billion pushed the quarter to an $8.45 per-share loss."
+   },
+   {
+    "label": "Lung cancer trial stopped",
+    "text": "Gilead and Merck ended the Phase 3 EVOKE-03 study of Trodelvy in lung cancer."
+   },
+   {
+    "label": "Cell therapy shrinking",
+    "text": "Cell therapy sales fell 14% to $417 million on competition, offsetting HIV growth of 12%."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/882095/000088209526000028/exhibit991earningspressrel.htm",
+   "https://wtop.com/news/2026/08/gilead-q2-earnings-snapshot/",
+   "https://www.thepharmaletter.com/biotech-news/gilead-lifts-sales-outlook-on-strong-q2-hiv-growth-despite-acquisition-related-loss",
+   "https://finviz.com/news/306553/gilead-stock-slips-after-q4-earnings-weak-fy26-guidance",
+   "https://www.barchart.com/story/news/155175/gild-q4-deep-dive-hiv-prevention-and-oncology-advances-drive-mixed-outlook"
+  ]
+ },
+ "story": "Gilead's February 2026 outlook disappointed, partly because of a U.S. drug-pricing deal and insurance uncertainty, and shares dipped. Since then HIV and Trodelvy have driven steady growth, and sales guidance has crept up. Large acquisitions now dominate the profit picture.",
+ "history": []
+}

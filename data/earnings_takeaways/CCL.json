@@ -1,0 +1,35 @@
+{
+ "ticker": "CCL",
+ "updated": "2026-10-29T18:48Z",
+ "last": {
+  "date": "2026-09-29",
+  "timing": "pre",
+  "move_pct": 13.4,
+  "basis": "close",
+  "verdict": "Record bookings and a profit-forecast raise sent the stock sharply higher.",
+  "reasons": [
+   {
+    "label": "Record 2027 demand",
+    "text": "2027 is about half booked, with record occupancy and pricing; 2028 bookings also ahead of last year."
+   },
+   {
+    "label": "Profit forecast raised",
+    "text": "Full-year earnings forecast rose to about $2.24 a share from $2.22, despite fuel costs."
+   },
+   {
+    "label": "Beat on record quarter",
+    "text": "Quarterly earnings of $1.43 a share beat the roughly $1.35 expected, on record $8.44 billion revenue."
+   }
+  ],
+  "sources": [
+   "https://www.benzinga.com/node/62054158",
+   "https://www.marketbeat.com/instant-alerts/transcript-carnival-q3-earnings-call-highlights-2026-09-29/",
+   "https://parameter.io/carnival-ccl-stock-surges-13-on-stellar-q3-results-and-record-customer-deposits/",
+   "https://gcaptain.com/carnival-posts-record-1-9-billion-profit-as-2027-bookings-hit-new-high/",
+   "https://www.seatrade-cruise.com/finance-legal-regulatory/carnival-beats-q2-forecasts-but-trims-q3-profit-outlook",
+   "https://www.tikr.com/blog/carnival-stock-falls-after-q1-2026-earnings-beat-is-the-500m-fuel-headwind-worth-this-selloff"
+  ]
+ },
+ "story": "Carnival's earlier 2026 reports each beat estimates but sent the stock lower, as higher fuel costs forced guidance cuts in March and a weak outlook in June. This report finally paired a forecast raise with record bookings, and the shares rebounded.",
+ "history": []
+}

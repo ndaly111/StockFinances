@@ -1,0 +1,34 @@
+{
+ "ticker": "DIS",
+ "updated": "2026-10-29T18:56Z",
+ "last": {
+  "date": "2026-08-05",
+  "timing": "pre",
+  "move_pct": 3.6,
+  "basis": "close",
+  "verdict": "Investors liked the profit beat and bigger buyback, shrugging off a slight revenue miss.",
+  "reasons": [
+   {
+    "label": "Big profit beat",
+    "text": "Adjusted EPS of $2.06 beat the roughly $1.85 expected and rose from $1.61."
+   },
+   {
+    "label": "Parks and cruises strong",
+    "text": "Parks and cruise revenue rose 10%; profit up 20%, helped by a $100M tariff refund."
+   },
+   {
+    "label": "Bigger buyback, guidance held",
+    "text": "Share repurchases raised to at least $9 billion; full-year earnings growth outlook reiterated."
+   }
+  ],
+  "sources": [
+   "https://www.tikr.com/blog/disney-stock-rises-theme-park-revenue-q3-fiscal-2026-earnings-beat",
+   "https://www.webull.com/news/15350262722421760",
+   "https://www.fool.com/investing/2026/05/06/why-walt-disney-stock-jumped-86-today/",
+   "https://www.tikr.com/blog/disney-stock-jumps-7-after-q2-revenue-and-eps-both-beat-expectations",
+   "https://www.sec.gov/Archives/edgar/data/1744489/000174448926000056/fy2026_q3xerxex991.htm"
+  ]
+ },
+ "story": "Disney has delivered steady profit beats under new CEO Josh D'Amaro while holding its growth targets. Streaming profit and parks have driven results. The stock jumped about 7% after the May report on streaming strength and rose again now.",
+ "history": []
+}

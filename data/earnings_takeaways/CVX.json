@@ -1,0 +1,34 @@
+{
+ "ticker": "CVX",
+ "updated": "2026-10-29T18:55Z",
+ "last": {
+  "date": "2026-07-31",
+  "timing": "pre",
+  "move_pct": 2.4,
+  "basis": "close",
+  "verdict": "Huge profit beat, but investors expected it; shares gained a modest 2.4%.",
+  "reasons": [
+   {
+    "label": "Oil price windfall",
+    "text": "Brent averaged $104 versus $68 a year ago; earnings jumped to $12.1 billion."
+   },
+   {
+    "label": "Beat, but priced in",
+    "text": "Adjusted EPS of $6.06 topped roughly $5.55\u20135.80 forecasts, but high oil prices were already known."
+   },
+   {
+    "label": "Cash and cost wins",
+    "text": "$3 billion cost savings hit six months early; debt cut a record $8.4 billion."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/93410/000009341026000162/a06302026ex9918-k.htm",
+   "https://www.marketbeat.com/instant-alerts/chevron-nysecvx-trading-25-higher-on-strong-earnings-2026-07-31/",
+   "https://wtop.com/news/2026/07/chevron-q2-earnings-snapshot/",
+   "https://www.tikr.com/blog/what-chevron-q1-2026-earnings-call-revealed-that-the-market-missed?",
+   "https://www.businesswire.com/news/home/20260130488543/en"
+  ]
+ },
+ "story": "Chevron's profit was weak in the first quarter, helped by Hess-driven production gains, then surged in the second as oil prices spiked amid Middle East conflict. Reactions have been muted: the stock rose about 0.9% after the first-quarter beat and 2.4% now.",
+ "history": []
+}

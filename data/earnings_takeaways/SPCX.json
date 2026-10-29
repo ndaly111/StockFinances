@@ -1,0 +1,33 @@
+{
+ "ticker": "SPCX",
+ "updated": "2026-10-29T19:41Z",
+ "last": {
+  "date": "2026-10-20",
+  "timing": "post",
+  "move_pct": 7.8,
+  "basis": "close",
+  "verdict": "Investors cheered a first profit and a huge revenue forecast, despite soaring spending.",
+  "reasons": [
+   {
+    "label": "Huge revenue forecast",
+    "text": "Next-quarter revenue guided to $33\u201337 billion, far above the roughly $22 billion analysts expected."
+   },
+   {
+    "label": "First profit, big beat",
+    "text": "Revenue jumped 161% to $14.6 billion, beating estimates by 13%, with $4.4 billion net income."
+   },
+   {
+    "label": "AI business surging",
+    "text": "AI revenue nearly tripled to $7.6 billion and now outsells Starlink's $5.2 billion."
+   }
+  ],
+  "sources": [
+   "https://spaceq.ca/spacex-q3-2026-ai-passes-starlink-profit/",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-spacex-tops-q3-2026-estimates-shares-jump-after-hours-93CH-4961292",
+   "https://www.cnbc.com/2026/08/04/spacex-spcx-earnings-live-updates-q2-2026.html",
+   "https://www.bloomberg.com/news/articles/2026-08-04/spacex-exceeds-revenue-estimates-in-first-earnings-since-ipo"
+  ]
+ },
+ "story": "SpaceX has reported only one earnings report since its IPO. In August, revenue of $7.8 billion beat estimates, yet shares fell about 7% after hours on heavy AI spending plans. This time a profit and bigger guidance won investors over, though the gain faded within days.",
+ "history": []
+}

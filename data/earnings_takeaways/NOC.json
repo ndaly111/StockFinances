@@ -1,0 +1,35 @@
+{
+ "ticker": "NOC",
+ "updated": "2026-10-29T19:25Z",
+ "last": {
+  "date": "2026-10-20",
+  "timing": "pre",
+  "move_pct": 4.6,
+  "basis": "close",
+  "verdict": "Investors cheered a profit beat, higher earnings guidance and a strong 2027 outlook.",
+  "reasons": [
+   {
+    "label": "Raised profit outlook",
+    "text": "2026 earnings guidance raised to $29.35\u2013$29.75 a share from $28.60\u2013$29.10."
+   },
+   {
+    "label": "Beat on earnings",
+    "text": "Earnings of $7.89 a share beat the $7.18 expected, helped by a lower tax rate and pension gain."
+   },
+   {
+    "label": "B-21 ramp, record orders",
+    "text": "Sales grew about 14% on faster B-21 bomber output. Backlog hit a record of about $110B."
+   }
+  ],
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/0001133421/000113342126000037/noc-09302026xearningsrelea.htm",
+   "https://quartr.com/events/northrop-grumman-corporation-noc-q3-2026_3sEl5AeM",
+   "https://www.vermoegenszentrum.ch/en/stock-exchange-and-markets/news/northrop-grumman-publishes-q3-2026-earnings-call-transcript",
+   "https://beancount.io/blog/2026/10/21/northrop-grumman-fy2026-q3-earnings-analysis",
+   "https://www.tikr.com/blog/northrop-grummans-q2-earnings-beat-on-eps-by-13-two-program-charges-held-it-back",
+   "https://www.marketbeat.com/instant-alerts/northrop-grumman-nysenoc-updates-fy-2026-earnings-guidance-2026-07-21/"
+  ]
+ },
+ "story": "Earnings beat estimates in April and July, and 2026 guidance was raised in July and again now. July brought cost charges on two programs, and the stock dipped that day despite the beat. October's reaction was clearly positive.",
+ "history": []
+}
