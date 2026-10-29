@@ -1,35 +1,35 @@
 {
  "ticker": "F",
- "updated": "2026-10-28T21:23Z",
+ "updated": "2026-10-29T21:21Z",
  "last": {
   "date": "2026-10-28",
   "timing": "post",
-  "move_pct": -1.3,
-  "basis": "after hours",
-  "verdict": "Profit beat estimates, but a thin guidance raise and falling sales left shares slightly lower.",
+  "move_pct": 3.4,
+  "basis": "close",
+  "verdict": "Investors liked the earnings beat and the higher profit floor, despite weak sales.",
   "reasons": [
    {
-    "label": "Modest guidance raise",
-    "text": "Only the low end of 2026 profit guidance rose, to $10.5-11 billion from $10-11 billion."
+    "label": "Beat expectations",
+    "text": "Adjusted profit of 49 cents a share topped the roughly 40 cents analysts expected."
    },
    {
-    "label": "Fewer vehicles sold",
-    "text": "Vehicles sold fell 9% to 1.05 million, and revenue slipped 2% to $49.5 billion."
+    "label": "Profit outlook nudged up",
+    "text": "Low end of 2026 profit guidance rose $500 million, to $10.5 billion\u2013$11 billion."
    },
    {
-    "label": "Weaker core profits",
-    "text": "Gas-car profit fell 10% and commercial-truck profit fell 16%, on higher metal costs and launch costs."
+    "label": "Steady 2027 signal",
+    "text": "Management expects 2027 profit about flat versus 2026, despite roughly $2 billion of cost pressure."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/37996/000003799626000190/exhibit99tooctober282026.htm",
-   "https://www.benzinga.com/markets/earnings/26/10/62675716/ford-motor-posts-strong-q3-results-eps-revenue-above-expectations",
-   "https://www.proactiveinvestors.com/companies/news/1100874/ford-beats-third-quarter-profit-estimates-raises-low-end-of-annual-outlook-1100874.html",
+   "https://www.fool.com/earnings/call-transcripts/2026/10/29/ford-f-q3-2026-earnings-call-transcript/",
+   "https://au.investing.com/news/stock-market-news/fords-thirdquarter-core-profit-ticks-higher-despite-rising-commodity-costs-4722899",
    "https://247wallst.com/investing/2026/07/29/ford-jumps-6-outstrips-gm-and-tesla-on-q2-earnings-beat-raised-2026-guidance-citi-upgrade/",
-   "https://financebuzz.com/news/ford-investors-overlooking-key-signal",
-   "https://www.just-auto.com/news/ford-raises-2026-ebit-outlook/"
+   "https://www.cbtnews.com/ford-2026-outlook-q1-earnings/",
+   "https://www.alpha-sense.com/earnings/f/",
+   "https://www.sec.gov/Archives/edgar/data/37996/000003799626000190/exhibit99tooctober282026.htm"
   ]
  },
- "story": "Ford has beaten profit estimates and nudged guidance up at each of the last three reports. The first-quarter lift leaned on a one-time $1.3 billion tariff refund. The stock jumped about 6% after the second quarter, then faded. This quarter's reaction is a small dip.",
+ "story": "Ford has raised 2026 profit guidance at each report this year. Q1 got a one-time $1.3 billion tariff-refund boost and jumped over 6% after hours. Q2 rose about 6% but faded within a month. Rising metal costs and weak EV results remain the worries.",
  "history": []
 }

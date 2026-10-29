@@ -1,33 +1,50 @@
 {
  "ticker": "RIVN",
- "updated": "2026-10-29T19:36Z",
+ "updated": "2026-10-29T21:29Z",
  "last": {
-  "date": "2026-07-30",
+  "date": "2026-10-29",
   "timing": "post",
-  "move_pct": -9.6,
-  "basis": "close",
-  "verdict": "Investors sold the stock despite a delivery raise, focusing on cash burn and weak car margins.",
+  "move_pct": 6.6,
+  "basis": "after hours",
+  "verdict": "Investors cheered record R2-driven deliveries and a raised 2026 outlook, looking past heavy cash burn.",
   "reasons": [
    {
-    "label": "Cars still lose money",
-    "text": "Automotive gross profit stayed negative at $(36) million, helped by $108 million of regulatory credits."
+    "label": "Raised 2026 outlook",
+    "text": "Delivery goal lifted to 67,000-70,000 and expected loss narrowed by $100 million at midpoint."
    },
    {
-    "label": "R2 launch costs",
-    "text": "R2 ramp added about $100 million in costs; free cash flow was $(849) million."
+    "label": "R2 takes off",
+    "text": "Record 19,248 deliveries, up 46%; new R2 SUV already outsold both R1 and vans."
    },
    {
-    "label": "Dilution and funding needs",
-    "text": "July's $1.3 billion share sale, plus more outside capital needed for the Georgia plant, weighed on the stock."
+    "label": "Software profits grow",
+    "text": "Software and services brought in $605 million at a 42% margin, mostly Volkswagen venture work."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1874178/000187417826000053/ex-9912q26rivianearningspr.htm",
-   "https://www.shacknews.com/article/150201/rivian-rivn-q2-2026-earnings-results-beat-revenue-on-smaller-than-expected-eps-loss",
-   "https://www.marketbeat.com/articles/rivian-posts-biggest-gain-since-ipo-after-q4-2025-earnings/",
-   "https://evwire.com/p/rivian-q1-2026-earnings-everything-you-need-to-know"
+   "https://www.sec.gov/Archives/edgar/data/1874178/000187417826000065/ex-9913q26rivianearningspr.htm"
   ]
  },
- "story": "Rivian jumped about 27% in February on 2026 delivery guidance of 62,000-67,000 vehicles and the R2 launch. It slipped after the April report as car margins turned negative. Guidance has since been raised to 65,000-70,000, but costs and cash burn keep weighing.",
- "history": []
+ "story": "Deliveries climbed from 10,365 in the first quarter to 19,248 as R2 ramped, and guidance has kept improving. Cash burn stays above $1 billion a quarter. The stock fell 9.6% in July on those worries but rose this time.",
+ "history": [
+  {
+   "date": "2026-07-30",
+   "move_pct": -9.6,
+   "verdict": "Investors sold the stock despite a delivery raise, focusing on cash burn and weak car margins.",
+   "reasons": [
+    {
+     "label": "Cars still lose money",
+     "text": "Automotive gross profit stayed negative at $(36) million, helped by $108 million of regulatory credits."
+    },
+    {
+     "label": "R2 launch costs",
+     "text": "R2 ramp added about $100 million in costs; free cash flow was $(849) million."
+    },
+    {
+     "label": "Dilution and funding needs",
+     "text": "July's $1.3 billion share sale, plus more outside capital needed for the Georgia plant, weighed on the stock."
+    }
+   ]
+  }
+ ]
 }

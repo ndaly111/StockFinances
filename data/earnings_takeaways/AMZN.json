@@ -1,34 +1,50 @@
 {
  "ticker": "AMZN",
- "updated": "2026-10-29T05:36Z",
+ "updated": "2026-10-29T21:17Z",
  "last": {
-  "date": "2026-07-30",
+  "date": "2026-10-29",
   "timing": "post",
-  "move_pct": 15.3,
-  "basis": "close",
-  "verdict": "Investors cheered AWS's fastest growth in 18 quarters and big profit gains.",
+  "move_pct": -5.9,
+  "basis": "after hours",
+  "verdict": "Record AWS growth and margin were not enough; spending and slower retail sales weighed.",
   "reasons": [
    {
-    "label": "AWS speeds up",
-    "text": "Cloud sales grew 37%, the fastest in 18 quarters, and AI and chip businesses each topped $25B yearly."
+    "label": "Cash burning on AI",
+    "text": "Free cash flow was a $42.4B outflow over 12 months; 2026 capex stays near $220B."
    },
    {
-    "label": "Profit jumps",
-    "text": "Operating income rose 43% to $27.5B; AWS profit grew from $10.2B to $16.6B."
+    "label": "Retail sales slowed",
+    "text": "Total sales grew 12%; North America rose 6%, International 5%, partly from Prime Day timing."
    },
    {
-    "label": "Spending seen as paying off",
-    "text": "Yearly spending plan rose to about $220B, but investors accepted it given AWS's $496B backlog."
+    "label": "Wide profit outlook",
+    "text": "Q4 operating income guided to $28.5B-$33.5B, a wide range versus $28.1B this quarter."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000024/amzn-20260630xex991.htm",
-   "https://www.thedailyupside.com/technology/artificial-intelligence/booming-aws-revenue-saves-amazon-from-meta-sized-backlash/",
-   "https://www.webull.com/news/15322651091952640",
-   "https://www.xtb.com/sca-en/market-analysis/news-and-research/amazon-shares-tumble-10-as-investors-recoil-at-the-price-of-ai-dominance",
-   "https://www.heygotrade.com/en/blog/amazon-q1-2026-earnings-reaction/"
+   "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000038/amzn-20260930xex991.htm"
   ]
  },
- "story": "Amazon fell about 10% in February when it planned roughly $200B of AI spending and gave weak profit guidance. AWS growth then sped up from 24% to 28% to 37%. Investors now reward that growth despite higher spending.",
- "history": []
+ "story": "Amazon's cloud unit has sped up, with AWS growth rising from 37% last quarter to 39% now, and profit margins keep hitting records. Yearly spending is steady near $220B, but cash is now flowing out. After July's 15% jump, the stock fell this time.",
+ "history": [
+  {
+   "date": "2026-07-30",
+   "move_pct": 15.3,
+   "verdict": "Investors cheered AWS's fastest growth in 18 quarters and big profit gains.",
+   "reasons": [
+    {
+     "label": "AWS speeds up",
+     "text": "Cloud sales grew 37%, the fastest in 18 quarters, and AI and chip businesses each topped $25B yearly."
+    },
+    {
+     "label": "Profit jumps",
+     "text": "Operating income rose 43% to $27.5B; AWS profit grew from $10.2B to $16.6B."
+    },
+    {
+     "label": "Spending seen as paying off",
+     "text": "Yearly spending plan rose to about $220B, but investors accepted it given AWS's $496B backlog."
+    }
+   ]
+  }
+ ]
 }

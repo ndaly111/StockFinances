@@ -1,34 +1,39 @@
 {
  "ticker": "GOOGL",
- "updated": "2026-10-28T20:29Z",
+ "updated": "2026-10-29T21:23Z",
  "last": {
   "date": "2026-10-28",
   "timing": "post",
-  "move_pct": -8.4,
-  "basis": "after hours",
-  "verdict": "Cloud growth doubled, but record spending and negative cash flow spooked investors.",
+  "move_pct": -12.6,
+  "basis": "close",
+  "verdict": "Cloud doubled, but a big profit miss and cash drain sent shares tumbling.",
   "reasons": [
    {
-    "label": "Cash burn",
-    "text": "Free cash flow was negative $9.1 billion as spending outran cash from operations."
+    "label": "Profit missed badly",
+    "text": "EPS $2.12 vs $3.02 expected, hurt by an $8.7 billion paper loss on investments.",
+    "tag": "earnings"
    },
    {
-    "label": "Huge AI spending",
-    "text": "Capex reached $51.4 billion for the quarter, more than double last year's $24.0 billion."
+    "label": "Cash burn from spending",
+    "text": "Capex hit $51.4 billion, leaving free cash flow at negative $9.1 billion.",
+    "tag": "capex"
    },
    {
-    "label": "Rising costs",
-    "text": "Research costs rose 36% and borrowing costs climbed; debt more than doubled to $125 billion this year."
+    "label": "More spending coming",
+    "text": "2026 capex held at $195-205 billion; 2027 expected to rise significantly, raising payoff doubts.",
+    "tag": "guidance"
    }
   ],
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm",
-   "https://www.globalbankingandfinance.com/alphabets-google-cloud-unit-beats-quarterly-revenue/",
-   "https://www.fxleaders.com/news/2026/07/23/why-is-alphabet-googl-stock-down-today-record-quarter-7-billion-capex-shock-shares-fall-anyway/",
-   "https://www.tikr.com/blog/alphabet-stock-surged-10-after-q1-2026-earnings-whats-next-for-googl",
-   "https://www.heygotrade.com/en/blog/alphabet-q1-2026-earnings-reaction"
+   "https://www.cnbc.com/2026/10/29/alphabet-google-microsoft-msft-shares-today-earnings.html",
+   "https://finance.yahoo.com/markets/stocks/articles/why-alphabet-shares-falling-more-115645721.html",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-alphabet-q3-2026-profit-miss-sparks-10-afterhours-drop-93CH-4981037",
+   "https://siliconangle.com/2026/07/22/alphabets-stock-sinks-bumps-ai-infrastructure-spending-yet/",
+   "https://www.heygotrade.com/en/blog/alphabet-q1-2026-earnings-reaction",
+   "https://finance.yahoo.com/markets/stocks/articles/stock-market-today-april-30-221337592.html"
   ]
  },
- "story": "Cloud growth has accelerated each quarter, from 63% in Q1 to 82% in Q2 to 103% now. Spending guidance keeps rising too. The stock jumped about 10% after Q1, then fell about 7% after Q2 on higher spending.",
+ "story": "Alphabet's cloud growth has accelerated from 63% in Q1 to 103% now, but AI spending keeps climbing. Shares fell after the February and July reports on capex plans, rose after April's cloud acceleration, and now fell 12.6%.",
  "history": []
 }

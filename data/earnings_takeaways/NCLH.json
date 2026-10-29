@@ -1,32 +1,33 @@
 {
  "ticker": "NCLH",
- "updated": "2026-10-29T13:47Z",
+ "updated": "2026-10-29T21:27Z",
  "last": {
   "date": "2026-10-29",
   "timing": "pre",
-  "move_pct": 12.0,
-  "basis": "intraday",
-  "verdict": "Better-than-guided quarter, a raised full-year outlook and a firmer 2027 view sent shares sharply higher.",
+  "move_pct": 13.4,
+  "basis": "close",
+  "verdict": "Investors cheered a big profit beat and a higher full-year outlook.",
   "reasons": [
    {
-    "label": "Beat own forecast",
-    "text": "Adjusted profit was $1.12 a share, well above the company's own $0.90 forecast."
+    "label": "Raised 2026 outlook",
+    "text": "Full-year profit forecast lifted $0.20 to about $1.70 a share; EBITDA about $2.55B."
    },
    {
-    "label": "Full-year outlook raised",
-    "text": "2026 profit forecast lifted to about $1.70 a share, after three straight cuts."
+    "label": "Big earnings beat",
+    "text": "Adjusted profit of $1.12 a share beat the roughly $0.93 analysts expected."
    },
    {
-    "label": "2027 pricing recovery",
-    "text": "Ticket prices expected to rise 1-2% in 2027, speeding up in the second half."
+    "label": "Fuller ships, lower costs",
+    "text": "Ships ran 106.5% full versus 104% guided; another $100M in savings found."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0001513761/000117184326006957/exh_991.htm",
-   "https://www.sec.gov/Archives/edgar/data/0001513761/000117184326005050/exh_991.htm",
+   "https://uk.investing.com/news/stock-market-news/earnings-call-transcript-norwegian-cruise-line-beats-q3-2026-estimates-shares-jump-11-93CH-4942518",
+   "https://www.tradingpedia.com/2026/10/29/norwegian-cruise-jumps-on-q3-beat-raised-outlook/",
+   "https://finance.yahoo.com/markets/stocks/articles/norwegian-cruise-line-cuts-2026-121031666.html",
    "https://www.zacks.com/stock/news/2964995/norwegian-cruise-q2-earnings-revenues-beat-estimates-stock-down"
   ]
  },
- "story": "Norwegian cut its full-year profit forecast at each of its last three reports, from $2.38 a share to about $1.50. Weaker demand and higher fuel costs hurt, and the stock fell about 6% premarket in July despite a beat. This is the first raise.",
+ "story": "Guidance had been sliding all year. In May, Norwegian cut its 2026 profit forecast on fuel costs and weak European demand. In July it trimmed again to about $1.50 and the stock fell. This report reversed the trend.",
  "history": []
 }

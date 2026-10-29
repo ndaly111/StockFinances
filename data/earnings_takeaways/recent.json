@@ -1,45 +1,108 @@
 {
- "updated": "2026-10-29T19:52Z",
+ "updated": "2026-10-29T21:29Z",
  "reports": [
+  {
+   "ticker": "RDDT",
+   "date": "2026-10-29",
+   "move_pct": -17.1,
+   "basis": "after hours",
+   "verdict": "Great quarter, but a warning that daily users could drop sharply next quarter.",
+   "reasons": [
+    {
+     "label": "Users could fall sharply",
+     "text": "Reddit said daily users could fall by a low-double-digit percentage in Q4 from 130 million."
+    },
+    {
+     "label": "Google traffic keeps shrinking",
+     "text": "Search referrals fell by more than 1 million a week in October, after a decline that sped up late in Q3."
+    },
+    {
+     "label": "U.S. users shrinking",
+     "text": "U.S. daily users fell 2% from a year earlier; growth came from outside the U.S."
+    }
+   ]
+  },
   {
    "ticker": "NCLH",
    "date": "2026-10-29",
-   "move_pct": 12.0,
-   "basis": "intraday",
-   "verdict": "Better-than-guided quarter, a raised full-year outlook and a firmer 2027 view sent shares sharply higher.",
+   "move_pct": 13.4,
+   "basis": "close",
+   "verdict": "Investors cheered a big profit beat and a higher full-year outlook.",
    "reasons": [
     {
-     "label": "Beat own forecast",
-     "text": "Adjusted profit was $1.12 a share, well above the company's own $0.90 forecast."
+     "label": "Raised 2026 outlook",
+     "text": "Full-year profit forecast lifted $0.20 to about $1.70 a share; EBITDA about $2.55B."
     },
     {
-     "label": "Full-year outlook raised",
-     "text": "2026 profit forecast lifted to about $1.70 a share, after three straight cuts."
+     "label": "Big earnings beat",
+     "text": "Adjusted profit of $1.12 a share beat the roughly $0.93 analysts expected."
     },
     {
-     "label": "2027 pricing recovery",
-     "text": "Ticket prices expected to rise 1-2% in 2027, speeding up in the second half."
+     "label": "Fuller ships, lower costs",
+     "text": "Ships ran 106.5% full versus 104% guided; another $100M in savings found."
     }
    ]
   },
   {
    "ticker": "LLY",
    "date": "2026-10-29",
-   "move_pct": 8.7,
-   "basis": "intraday",
-   "verdict": "Investors cheered a big revenue beat and a sharply higher full-year sales forecast.",
+   "move_pct": 6.6,
+   "basis": "close",
+   "verdict": "Investors cheered a big revenue beat and a $5 billion jump in the sales outlook.",
    "reasons": [
     {
-     "label": "Sales forecast raised",
-     "text": "2026 revenue outlook lifted to $91\u201392B from $85\u201387B, a $5.5B jump at the midpoint."
+     "label": "Sales outlook raised sharply",
+     "text": "2026 revenue forecast lifted to $91\u201392 billion from $85\u201387 billion."
     },
     {
-     "label": "Weight-loss drugs surge",
-     "text": "Revenue up 39% to $24.4B; Mounjaro hit $10.7B (+65%) and Zepbound $5.3B in the U.S."
+     "label": "Obesity and diabetes drugs booming",
+     "text": "Mounjaro sales rose 65% to $10.7 billion, Zepbound 49% to $5.35 billion."
     },
     {
-     "label": "Profit outlook improving",
-     "text": "Profit margin target raised to 52\u201352.5%; the EPS cut was only from $4.57/share acquired-research charges."
+     "label": "New pill ramping, pipeline wins",
+     "text": "Foundayo pill sold $184 million; retatrutide beat Ozempic in a head-to-head trial."
+    }
+   ]
+  },
+  {
+   "ticker": "RIVN",
+   "date": "2026-10-29",
+   "move_pct": 6.6,
+   "basis": "after hours",
+   "verdict": "Investors cheered record R2-driven deliveries and a raised 2026 outlook, looking past heavy cash burn.",
+   "reasons": [
+    {
+     "label": "Raised 2026 outlook",
+     "text": "Delivery goal lifted to 67,000-70,000 and expected loss narrowed by $100 million at midpoint."
+    },
+    {
+     "label": "R2 takes off",
+     "text": "Record 19,248 deliveries, up 46%; new R2 SUV already outsold both R1 and vans."
+    },
+    {
+     "label": "Software profits grow",
+     "text": "Software and services brought in $605 million at a 42% margin, mostly Volkswagen venture work."
+    }
+   ]
+  },
+  {
+   "ticker": "AMZN",
+   "date": "2026-10-29",
+   "move_pct": -5.9,
+   "basis": "after hours",
+   "verdict": "Record AWS growth and margin were not enough; spending and slower retail sales weighed.",
+   "reasons": [
+    {
+     "label": "Cash burning on AI",
+     "text": "Free cash flow was a $42.4B outflow over 12 months; 2026 capex stays near $220B."
+    },
+    {
+     "label": "Retail sales slowed",
+     "text": "Total sales grew 12%; North America rose 6%, International 5%, partly from Prime Day timing."
+    },
+    {
+     "label": "Wide profit outlook",
+     "text": "Q4 operating income guided to $28.5B-$33.5B, a wide range versus $28.1B this quarter."
     }
    ]
   },
@@ -47,104 +110,149 @@
    "ticker": "MA",
    "date": "2026-10-29",
    "move_pct": 4.2,
-   "basis": "intraday",
-   "verdict": "Investors cheered revenue and profit that beat expectations, pushing shares to new highs.",
+   "basis": "close",
+   "verdict": "Investors cheered a clean beat and fast growth in Mastercard's add-on services.",
    "reasons": [
     {
-     "label": "Revenue beat estimates",
-     "text": "Revenue rose 14% to $9.8B, versus the roughly 12% growth analysts expected."
+     "label": "Beat on sales and profit",
+     "text": "Revenue rose 14% to $9.8B and adjusted EPS of $5.31 beat the roughly $5.16 expected."
     },
     {
-     "label": "Profit topped forecasts",
-     "text": "Adjusted earnings of $5.31 a share beat the $5.16 forecast, up 21% from last year."
+     "label": "Services growing fast",
+     "text": "Value-added services and solutions revenue jumped 19%, outpacing the core payment network's 11% growth."
     },
     {
-     "label": "Services and travel strength",
-     "text": "Fraud-protection and other services revenue grew 19%, and spending across borders rose 11%."
+     "label": "Resilient consumer spending",
+     "text": "Cross-border volume grew 11% and switched transactions 9%, and the company reaffirmed low-teens revenue growth for 2026."
+    }
+   ]
+  },
+  {
+   "ticker": "GILD",
+   "date": "2026-10-29",
+   "move_pct": 2.7,
+   "basis": "after hours",
+   "verdict": "Investors cheered another sales forecast hike and the fastest base-business growth in over a decade.",
+   "reasons": [
+    {
+     "label": "Sales outlook raised again",
+     "text": "Full-year product sales now seen at $31.0-31.3 billion, up from $30.1-30.4 billion."
+    },
+    {
+     "label": "HIV growth surged",
+     "text": "HIV sales rose 18% to $6.2 billion, with prevention sales nearly doubling."
+    },
+    {
+     "label": "Higher profit margins",
+     "text": "Adjusted product margin rose to 88.1% from 86.5% as a royalty obligation expired."
     }
    ]
   },
   {
    "ticker": "BUD",
    "date": "2026-10-29",
-   "move_pct": -2.2,
-   "basis": "intraday",
-   "verdict": "Profit growth slowed and missed estimates, with China and US beer sales both shrinking.",
+   "move_pct": -1.8,
+   "basis": "close",
+   "verdict": "Solid revenue growth, but a margin squeeze and China slump kept shares lower.",
    "reasons": [
     {
-     "label": "Profit slightly short",
-     "text": "Core profit rose 3.9% to $5.96B, a bit below the roughly $5.98B analysts expected."
+     "label": "Margin slipped",
+     "text": "Profit margin fell 0.34 points to 36.1% on higher marketing spend and commodity costs."
     },
     {
      "label": "China sales collapse",
-     "text": "China volumes fell 16.8% and its profit dropped 30.5%, with the industry also weak."
+     "text": "China volumes fell 16.8% and its profit dropped 30.5%, which the company blamed on inventory management."
     },
     {
-     "label": "Margins and US slip",
-     "text": "Profit margin fell to 36.1% on higher marketing and costs; US volumes dropped 2.5%."
+     "label": "Weak North America",
+     "text": "North America beer volumes fell 2.2%, and US revenue fell 1.2%."
+    }
+   ]
+  },
+  {
+   "ticker": "FSLR",
+   "date": "2026-10-29",
+   "move_pct": -1.8,
+   "basis": "after hours",
+   "verdict": "Shares slipped as lower sales guidance outweighed record-margin profit and a new buyback.",
+   "reasons": [
+    {
+     "label": "Sales outlook cut",
+     "text": "2026 sales forecast lowered to $4.6B\u2013$4.9B from $4.9B\u2013$5.2B; fewer modules expected to ship."
+    },
+    {
+     "label": "Sales fell 23%",
+     "text": "Quarterly sales dropped to $1.23B as fewer modules were sold to outside customers."
+    },
+    {
+     "label": "Profit and buyback cushion",
+     "text": "Earnings rose 25% to $5.30 a share; board approved a $500M share buyback."
     }
    ]
   },
   {
    "ticker": "GOOGL",
    "date": "2026-10-28",
-   "move_pct": -8.4,
-   "basis": "after hours",
-   "verdict": "Cloud growth doubled, but record spending and negative cash flow spooked investors.",
+   "move_pct": -12.6,
+   "basis": "close",
+   "verdict": "Cloud doubled, but a big profit miss and cash drain sent shares tumbling.",
    "reasons": [
     {
-     "label": "Cash burn",
-     "text": "Free cash flow was negative $9.1 billion as spending outran cash from operations."
+     "label": "Profit missed badly",
+     "text": "EPS $2.12 vs $3.02 expected, hurt by an $8.7 billion paper loss on investments.",
+     "tag": "earnings"
     },
     {
-     "label": "Huge AI spending",
-     "text": "Capex reached $51.4 billion for the quarter, more than double last year's $24.0 billion."
+     "label": "Cash burn from spending",
+     "text": "Capex hit $51.4 billion, leaving free cash flow at negative $9.1 billion.",
+     "tag": "capex"
     },
     {
-     "label": "Rising costs",
-     "text": "Research costs rose 36% and borrowing costs climbed; debt more than doubled to $125 billion this year."
+     "label": "More spending coming",
+     "text": "2026 capex held at $195-205 billion; 2027 expected to rise significantly, raising payoff doubts.",
+     "tag": "guidance"
     }
    ]
   },
   {
    "ticker": "CMG",
    "date": "2026-10-28",
-   "move_pct": 7.9,
-   "basis": "after hours",
-   "verdict": "Investors cheered sales and traffic beating forecasts, shrugging off weaker profit margins.",
+   "move_pct": 8.9,
+   "basis": "close",
+   "verdict": "Investors cheered a third straight quarter of more customer visits and brushed off the margin dip.",
    "reasons": [
     {
-     "label": "Sales beat forecasts",
-     "text": "Same-store sales rose 2.1%, versus about 1.5% expected and roughly 1% guided."
+     "label": "Customer traffic keeps growing",
+     "text": "Transactions rose 0.8%, a third straight gain, lifting comparable sales 2.1% versus about 1.5% expected."
     },
     {
-     "label": "Customers still returning",
-     "text": "Third straight quarter of more transactions, up 0.8%, which suggests the turnaround is holding."
+     "label": "Steady outlook",
+     "text": "2026 sales guidance held at low single digits; management pointed to roughly 2% comparable sales growth in Q4."
     },
     {
-     "label": "Profit squeeze, expected",
-     "text": "Earnings per share slipped to $0.27 from $0.29 as margins fell, but analysts had expected it."
+     "label": "Lower profit margins",
+     "text": "Restaurant margin fell to 23.3% from 24.5%; EPS of $0.27 missed the $0.29 estimate."
     }
    ]
   },
   {
-   "ticker": "MSFT",
+   "ticker": "F",
    "date": "2026-10-28",
-   "move_pct": 3.6,
-   "basis": "after hours",
-   "verdict": "Cloud growth sped up and spending came in lower than feared, so shares rose.",
+   "move_pct": 3.4,
+   "basis": "close",
+   "verdict": "Investors liked the earnings beat and the higher profit floor, despite weak sales.",
    "reasons": [
     {
-     "label": "Azure growth accelerated",
-     "text": "Azure revenue grew 48%, above the 44%\u201345% range Microsoft had guided."
+     "label": "Beat expectations",
+     "text": "Adjusted profit of 49 cents a share topped the roughly 40 cents analysts expected."
     },
     {
-     "label": "Lower AI spending",
-     "text": "Capex was about $39.4B, below the $45.9B analysts expected; lease accounting may flatter it."
+     "label": "Profit outlook nudged up",
+     "text": "Low end of 2026 profit guidance rose $500 million, to $10.5 billion\u2013$11 billion."
     },
     {
-     "label": "Beat on revenue, profit",
-     "text": "Revenue of $92.3B and adjusted EPS of $4.89 topped forecasts of $90.6B and $4.73."
+     "label": "Steady 2027 signal",
+     "text": "Management expects 2027 profit about flat versus 2026, despite roughly $2 billion of cost pressure."
     }
    ]
   },
@@ -170,23 +278,23 @@
    ]
   },
   {
-   "ticker": "F",
+   "ticker": "MSFT",
    "date": "2026-10-28",
-   "move_pct": -1.3,
-   "basis": "after hours",
-   "verdict": "Profit beat estimates, but a thin guidance raise and falling sales left shares slightly lower.",
+   "move_pct": -0.2,
+   "basis": "close",
+   "verdict": "Strong cloud beat, but heavy AI spending left the stock flat.",
    "reasons": [
     {
-     "label": "Modest guidance raise",
-     "text": "Only the low end of 2026 profit guidance rose, to $10.5-11 billion from $10-11 billion."
+     "label": "Azure accelerates",
+     "text": "Azure grew 48%, above Microsoft's own 44-45% forecast, with Microsoft Cloud up 30%."
     },
     {
-     "label": "Fewer vehicles sold",
-     "text": "Vehicles sold fell 9% to 1.05 million, and revenue slipped 2% to $49.5 billion."
+     "label": "Huge AI spending",
+     "text": "Capital spending hit $45.2 billion, up about 30% from a year ago."
     },
     {
-     "label": "Weaker core profits",
-     "text": "Gas-car profit fell 10% and commercial-truck profit fell 16%, on higher metal costs and launch costs."
+     "label": "Backlog jumps",
+     "text": "Contracted future cloud revenue rose 73% to $677 billion, a demand signal."
     }
    ]
   },
