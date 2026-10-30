@@ -1,34 +1,51 @@
 {
  "ticker": "COIN",
- "updated": "2026-10-29T18:50Z",
+ "updated": "2026-10-30T05:32Z",
  "last": {
-  "date": "2026-07-30",
+  "date": "2026-10-29",
   "timing": "post",
-  "move_pct": -10.6,
-  "basis": "close",
-  "verdict": "Third straight revenue miss and weak July trading pushed investors to sell hard.",
+  "move_pct": -4.7,
+  "basis": "after hours",
+  "verdict": "Revenue edged past forecasts, but a jump in planned spending worried investors.",
   "reasons": [
    {
-    "label": "Revenue missed again",
-    "text": "Revenue was $1.22B versus about $1.32B expected, down 19% from a year ago."
+    "label": "Higher spending ahead",
+    "text": "Next-quarter expenses guided to $1.01B-$1.16B, versus $975M this quarter."
    },
    {
-    "label": "Weak July trading",
-    "text": "Trading revenue was only about $130M through July 26, after $599M in the second quarter."
+    "label": "Sales still shrinking",
+    "text": "Revenue of $1.22B is down 35% from a year ago, with trading volume falling."
    },
    {
-    "label": "Services revenue fell short",
-    "text": "Subscription and services revenue missed Coinbase's own guide. Next quarter is guided at $500M-$580M."
+    "label": "Profit flattered by gain",
+    "text": "$719M net income came mostly from a $715M crypto holding gain; adjusted profit was $78M."
    }
   ],
   "sources": [
-   "https://siliconangle.com/2026/07/30/coinbase-shares-slide-revenue-earnings-miss-despite-record-market-share/",
-   "https://www.kucoin.com/news/flash/coinbase-q2-revenue-misses-estimates-shares-drop-5",
-   "https://finance.yahoo.com/markets/crypto/articles/coinbase-q1-2026-revenue-falls-210348048.html",
-   "https://cryptobriefing.com/coinbase-q1-earnings-trading-slowdown/?rand=59535",
-   "https://www.mexc.com/news/714929"
+   "https://www.sec.gov/Archives/edgar/data/0001679788/000167978826000121/q326earningsdeck_vsec.htm",
+   "https://247wallst.com/investing/2026/10/25/coinbase-q3-earnings-preview-can-cryptos-rebound-save-coin-from-a-fourth-consecutive-miss-oct-29/"
   ]
  },
- "story": "Coinbase has missed estimates three quarters running as falling crypto prices cut trading and staking income. It posted losses and cut 14% of staff in the spring. Shares fell 4-5% after the May report. The February report was followed by a rebound.",
- "history": []
+ "story": "Revenue has stalled near $1.2B for two quarters after three straight misses; this time it narrowly beat forecasts. Quiet crypto trading keeps weighing on results, and the stock has now fallen after the last two reports.",
+ "history": [
+  {
+   "date": "2026-07-30",
+   "move_pct": -10.6,
+   "verdict": "Third straight revenue miss and weak July trading pushed investors to sell hard.",
+   "reasons": [
+    {
+     "label": "Revenue missed again",
+     "text": "Revenue was $1.22B versus about $1.32B expected, down 19% from a year ago."
+    },
+    {
+     "label": "Weak July trading",
+     "text": "Trading revenue was only about $130M through July 26, after $599M in the second quarter."
+    },
+    {
+     "label": "Services revenue fell short",
+     "text": "Subscription and services revenue missed Coinbase's own guide. Next quarter is guided at $500M-$580M."
+    }
+   ]
+  }
+ ]
 }

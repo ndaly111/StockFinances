@@ -1,33 +1,50 @@
 {
  "ticker": "PINS",
- "updated": "2026-10-29T19:33Z",
+ "updated": "2026-10-30T05:34Z",
  "last": {
-  "date": "2026-08-04",
+  "date": "2026-10-29",
   "timing": "post",
-  "move_pct": -8.7,
-  "basis": "close",
-  "verdict": "Beat on sales and profit, but weaker Q3 outlook sent shares lower.",
+  "move_pct": -7.6,
+  "basis": "after hours",
+  "verdict": "Growth slowed again and weak Q4 guidance disappointed, so shares fell.",
   "reasons": [
    {
-    "label": "Slower growth ahead",
-    "text": "Q3 revenue guided to $1.19\u20131.21B, only 13\u201315% growth versus 18% in Q2."
+    "label": "Weak holiday outlook",
+    "text": "Q4 revenue guided to $1.425\u20131.475B, only 8\u201312% growth, down from 12% in Q3."
    },
    {
-    "label": "One-time Q2 boosts",
-    "text": "Amazon's Prime Day shifted into Q2 and World Cup ad spending won't repeat in Q3."
+    "label": "Missed own forecast",
+    "text": "Q3 revenue was $1.174B, up 12%, below the $1.19\u20131.21B range given in August."
    },
    {
-    "label": "Ad competition worries",
-    "text": "Investors fretted over rivals Instagram and Reddit, plus weakness in Europe and rising GPU costs."
+    "label": "Ad revenue per user",
+    "text": "Revenue per user rose just 1%; Europe fell 7% despite record 661M users."
    }
   ],
   "sources": [
-   "https://www.tikr.com/blog/pinterest-pins-stock-drops-q2-2026-earnings-guidance",
-   "https://www.barchart.com/story/news/3770820/pinterests-q2-earnings-call-our-top-5-analyst-questions",
-   "https://www.cnbc.com/2026/02/13/-pinterest-stock-price-tariff-earnings-layoffs.html",
-   "https://www.cnbc.com/2025/11/05/pinterest-stock-earnings-tariffs-ads.html"
+   "https://www.sec.gov/Archives/edgar/data/0001506293/000150629326000151/q3-26xpressrelease.htm"
   ]
  },
- "story": "Pinterest fell about 21% after November 2025 results and about 17% after February 2026, blamed on tariffs hitting big retail advertisers and soft guidance. Q2 brought a beat, but guidance that merely met expectations still disappointed.",
- "history": []
+ "story": "Growth has cooled from 18% in Q2 to 12% in Q3, and the Q4 forecast points to 8\u201312%. Revenue came in under the company's own August forecast. Shares have now fallen after back-to-back reports, with ad competition a recurring worry.",
+ "history": [
+  {
+   "date": "2026-08-04",
+   "move_pct": -8.7,
+   "verdict": "Beat on sales and profit, but weaker Q3 outlook sent shares lower.",
+   "reasons": [
+    {
+     "label": "Slower growth ahead",
+     "text": "Q3 revenue guided to $1.19\u20131.21B, only 13\u201315% growth versus 18% in Q2."
+    },
+    {
+     "label": "One-time Q2 boosts",
+     "text": "Amazon's Prime Day shifted into Q2 and World Cup ad spending won't repeat in Q3."
+    },
+    {
+     "label": "Ad competition worries",
+     "text": "Investors fretted over rivals Instagram and Reddit, plus weakness in Europe and rising GPU costs."
+    }
+   ]
+  }
+ ]
 }
