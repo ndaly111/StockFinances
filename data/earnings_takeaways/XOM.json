@@ -1,34 +1,51 @@
 {
  "ticker": "XOM",
- "updated": "2026-10-29T19:52Z",
+ "updated": "2026-10-30T13:44Z",
  "last": {
-  "date": "2026-07-31",
+  "date": "2026-10-30",
   "timing": "pre",
-  "move_pct": -1.0,
-  "basis": "close",
-  "verdict": "Record profit and a small EPS miss left investors cautious; shares slipped.",
+  "move_pct": 2.1,
+  "basis": "intraday",
+  "verdict": "Big profit beat and a $20 billion 2027 buyback lifted shares.",
   "reasons": [
    {
-    "label": "Slight profit miss",
-    "text": "Adjusted earnings of $3.52 a share came in below some analyst forecasts, about $3.60."
+    "label": "Earnings beat",
+    "text": "Adjusted profit was $4.23 a share, well above the roughly $3.83 analysts expected."
    },
    {
-    "label": "One-time hits",
-    "text": "$2.6 billion of write-downs and other charges were partly offset by $2.5 billion of timing gains."
+    "label": "Refining windfall",
+    "text": "Strong refining margins pushed adjusted profit up from $3.52 last quarter; Gulf Coast plants ran at 100%."
    },
    {
-    "label": "Flat oil output",
-    "text": "Production was 4.51 million barrels a day, down from 4.59 million last quarter, despite a record Permian."
+    "label": "Bigger buybacks",
+    "text": "Exxon announced $20 billion of 2027 share buybacks and cut net debt to $22.1 billion."
    }
   ],
   "sources": [
-   "https://www.ogj.com/general-interest/companies/news/55394938/exxonmobil-second-quarter-earnings-climb-to-145-billion-on-rising-oil-prices-record-permian-output",
-   "https://site.financialmodelingprep.com/market-news/exxon-mobil-xom-q2-2026-profit-surges-eps-misses-estimates",
-   "https://www.nasdaq.com/articles/exxonmobil-q1-earnings-beat-estimates-higher-upstream-production",
-   "https://fn2.ai/earnings/xom",
-   "https://seekingalpha.com/news/4401350-exxon-edges-higher-as-q4-earnings-top-consensus-as-production-rises"
+   "https://www.sec.gov/Archives/edgar/data/0002115436/000211543626000018/livef8k3q26991.htm",
+   "https://www.itiger.com/news/1165213991"
   ]
  },
- "story": "Exxon has leaned on record Permian and Guyana output while Middle East disruptions and timing swings muddied profits. Q4 2025 beat estimates but shares dipped. Q1 2026 also beat, yet shares fell about 1.3%. Q2 profit surged to $14.5 billion on higher oil prices.",
- "history": []
+ "story": "After July's small miss, Exxon was dinged for flat oil output and one-time charges. This quarter refining profits did the lifting, with cash flow strong and output still flat near 4.5 million barrels a day. Shares have swung from a small drop to a gain.",
+ "history": [
+  {
+   "date": "2026-07-31",
+   "move_pct": -1.0,
+   "verdict": "Record profit and a small EPS miss left investors cautious; shares slipped.",
+   "reasons": [
+    {
+     "label": "Slight profit miss",
+     "text": "Adjusted earnings of $3.52 a share came in below some analyst forecasts, about $3.60."
+    },
+    {
+     "label": "One-time hits",
+     "text": "$2.6 billion of write-downs and other charges were partly offset by $2.5 billion of timing gains."
+    },
+    {
+     "label": "Flat oil output",
+     "text": "Production was 4.51 million barrels a day, down from 4.59 million last quarter, despite a record Permian."
+    }
+   ]
+  }
+ ]
 }

@@ -1,6 +1,90 @@
 {
- "updated": "2026-10-29T21:29Z",
+ "updated": "2026-10-30T16:44Z",
  "reports": [
+  {
+   "ticker": "XOM",
+   "date": "2026-10-30",
+   "move_pct": 2.1,
+   "basis": "intraday",
+   "verdict": "Big profit beat and a $20 billion 2027 buyback lifted shares.",
+   "reasons": [
+    {
+     "label": "Earnings beat",
+     "text": "Adjusted profit was $4.23 a share, well above the roughly $3.83 analysts expected."
+    },
+    {
+     "label": "Refining windfall",
+     "text": "Strong refining margins pushed adjusted profit up from $3.52 last quarter; Gulf Coast plants ran at 100%."
+    },
+    {
+     "label": "Bigger buybacks",
+     "text": "Exxon announced $20 billion of 2027 share buybacks and cut net debt to $22.1 billion."
+    }
+   ]
+  },
+  {
+   "ticker": "ABBV",
+   "date": "2026-10-30",
+   "move_pct": 1.8,
+   "basis": "intraday",
+   "verdict": "Beat on sales and profit, raised the yearly outlook, and lifted the dividend.",
+   "reasons": [
+    {
+     "label": "Profit outlook raised",
+     "text": "2026 EPS guidance lifted to $13.95\u2013$13.99 from $13.76\u2013$13.96, despite Apogee deal costs."
+    },
+    {
+     "label": "Brain drugs beat",
+     "text": "Neuroscience sales rose 19% to $3.4B, the quarter's biggest beat per William Blair."
+    },
+    {
+     "label": "Skyrizi and Rinvoq growth",
+     "text": "Skyrizi rose 23% and Rinvoq 24%, more than offsetting Humira's 31% drop."
+    }
+   ]
+  },
+  {
+   "ticker": "CVX",
+   "date": "2026-10-30",
+   "move_pct": 1.4,
+   "basis": "intraday",
+   "verdict": "Earnings slipped from last quarter, but a Venezuela growth plan and strong cash kept shares up.",
+   "reasons": [
+    {
+     "label": "Venezuela growth plan",
+     "text": "Venture partners plan to invest $7 billion over five years, potentially more than doubling output."
+    },
+    {
+     "label": "Profit down from Q2",
+     "text": "Adjusted EPS was $5.28 versus $6.06 last quarter as Brent fell to $97 from $104."
+    },
+    {
+     "label": "Cash and debt payoff",
+     "text": "Free cash flow was $12.0 billion; debt fell another $3.5 billion; dividend set at $1.78."
+    }
+   ]
+  },
+  {
+   "ticker": "INTC",
+   "date": "2026-10-29",
+   "move_pct": NaN,
+   "basis": "after hours",
+   "verdict": "Strong quarter, but a weaker fourth-quarter outlook and PC slowdown give investors pause.",
+   "reasons": [
+    {
+     "label": "Weaker year-end outlook",
+     "text": "Q4 revenue guided to $15.0\u201316.0B, below Q3's $16.5B; gross margin falls to 38%."
+    },
+    {
+     "label": "PC slowdown continues",
+     "text": "CFO expects the PC slowdown to last at least through the first half of 2027; PC chip sales fell 5%."
+    },
+    {
+     "label": "AI data center boom",
+     "text": "Data center and AI sales jumped 78% to $7.3B; total revenue rose 21% to $16.5B."
+    }
+   ]
+  },
   {
    "ticker": "RDDT",
    "date": "2026-10-29",
@@ -40,6 +124,27 @@
     {
      "label": "Fuller ships, lower costs",
      "text": "Ships ran 106.5% full versus 104% guided; another $100M in savings found."
+    }
+   ]
+  },
+  {
+   "ticker": "PINS",
+   "date": "2026-10-29",
+   "move_pct": -7.6,
+   "basis": "after hours",
+   "verdict": "Growth slowed again and weak Q4 guidance disappointed, so shares fell.",
+   "reasons": [
+    {
+     "label": "Weak holiday outlook",
+     "text": "Q4 revenue guided to $1.425\u20131.475B, only 8\u201312% growth, down from 12% in Q3."
+    },
+    {
+     "label": "Missed own forecast",
+     "text": "Q3 revenue was $1.174B, up 12%, below the $1.19\u20131.21B range given in August."
+    },
+    {
+     "label": "Ad revenue per user",
+     "text": "Revenue per user rose just 1%; Europe fell 7% despite record 661M users."
     }
    ]
   },
@@ -103,6 +208,27 @@
     {
      "label": "Wide profit outlook",
      "text": "Q4 operating income guided to $28.5B-$33.5B, a wide range versus $28.1B this quarter."
+    }
+   ]
+  },
+  {
+   "ticker": "COIN",
+   "date": "2026-10-29",
+   "move_pct": -4.7,
+   "basis": "after hours",
+   "verdict": "Revenue edged past forecasts, but a jump in planned spending worried investors.",
+   "reasons": [
+    {
+     "label": "Higher spending ahead",
+     "text": "Next-quarter expenses guided to $1.01B-$1.16B, versus $975M this quarter."
+    },
+    {
+     "label": "Sales still shrinking",
+     "text": "Revenue of $1.22B is down 35% from a year ago, with trading volume falling."
+    },
+    {
+     "label": "Profit flattered by gain",
+     "text": "$719M net income came mostly from a $715M crypto holding gain; adjusted profit was $78M."
     }
    ]
   },
@@ -187,6 +313,27 @@
     {
      "label": "Profit and buyback cushion",
      "text": "Earnings rose 25% to $5.30 a share; board approved a $500M share buyback."
+    }
+   ]
+  },
+  {
+   "ticker": "SBUX",
+   "date": "2026-10-29",
+   "move_pct": NaN,
+   "basis": "after hours",
+   "verdict": "Strong turnaround quarter and solid 2027 outlook; stock reaction not yet known.",
+   "reasons": [
+    {
+     "label": "Profit nearly doubled",
+     "text": "Adjusted profit was $0.80 a share, up from $0.52 a year earlier."
+    },
+    {
+     "label": "Fiscal 2027 outlook",
+     "text": "Adjusted profit guided to $3.15\u2013$3.25 a share, helped by an extra week."
+    },
+    {
+     "label": "Sales and margin gains",
+     "text": "Same-store sales rose 7.2% worldwide; operating margin widened to 14.0% from 9.4%."
     }
    ]
   },
