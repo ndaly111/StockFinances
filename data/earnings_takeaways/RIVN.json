@@ -1,31 +1,33 @@
 {
  "ticker": "RIVN",
- "updated": "2026-10-29T21:29Z",
+ "updated": "2026-10-30T21:27Z",
  "last": {
   "date": "2026-10-29",
   "timing": "post",
-  "move_pct": 6.6,
-  "basis": "after hours",
-  "verdict": "Investors cheered record R2-driven deliveries and a raised 2026 outlook, looking past heavy cash burn.",
+  "move_pct": 6.2,
+  "basis": "close",
+  "verdict": "Investors cheered a big revenue beat, a smaller loss and a raised delivery outlook.",
   "reasons": [
    {
-    "label": "Raised 2026 outlook",
-    "text": "Delivery goal lifted to 67,000-70,000 and expected loss narrowed by $100 million at midpoint."
+    "label": "Beat on sales and loss",
+    "text": "Revenue was $2.155 billion, up 38%, versus about $1.99 billion expected; loss per share was $0.48, not $0.64."
    },
    {
-    "label": "R2 takes off",
-    "text": "Record 19,248 deliveries, up 46%; new R2 SUV already outsold both R1 and vans."
+    "label": "R2 sells fast",
+    "text": "R2 was the best-selling Rivian by volume, and deliveries rose 46% to a record 19,248."
    },
    {
-    "label": "Software profits grow",
-    "text": "Software and services brought in $605 million at a 42% margin, mostly Volkswagen venture work."
+    "label": "Outlook improved",
+    "text": "Delivery guidance rose to 67,000-70,000 and the expected 2026 adjusted loss shrank by about $100 million."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1874178/000187417826000065/ex-9913q26rivianearningspr.htm"
+   "https://www.sec.gov/Archives/edgar/data/1874178/000187417826000065/ex-9913q26rivianearningspr.htm",
+   "https://in.investing.com/news/stock-market-news/earnings-call-transcript-rivian-beats-q3-2026-estimates-as-r2-ramps-93CH-5666210",
+   "https://www.marketbeat.com/instant-alerts/price-rivian-automotive-nasdaq-rivn-stock-jumps-62-on-better-than-expected-earnings-2026-10-30/"
   ]
  },
- "story": "Deliveries climbed from 10,365 in the first quarter to 19,248 as R2 ramped, and guidance has kept improving. Cash burn stays above $1 billion a quarter. The stock fell 9.6% in July on those worries but rose this time.",
+ "story": "Rivian has moved from slow, loss-heavy quarters to fast growth as R2 ramps. The July report fell 9.6% on cash burn and weak car margins. This time sales and guidance beat expectations, though cash burn remains heavy at $1.1 billion and the stock is near lows.",
  "history": [
   {
    "date": "2026-07-30",

@@ -1,31 +1,33 @@
 {
  "ticker": "PINS",
- "updated": "2026-10-30T05:34Z",
+ "updated": "2026-10-30T21:26Z",
  "last": {
   "date": "2026-10-29",
   "timing": "post",
-  "move_pct": -7.6,
-  "basis": "after hours",
-  "verdict": "Growth slowed again and weak Q4 guidance disappointed, so shares fell.",
+  "move_pct": -2.8,
+  "basis": "close",
+  "verdict": "Growth slowed to 12% and holiday outlook disappointed, though shares recovered from early lows.",
   "reasons": [
    {
     "label": "Weak holiday outlook",
-    "text": "Q4 revenue guided to $1.425\u20131.475B, only 8\u201312% growth, down from 12% in Q3."
+    "text": "Q4 revenue guided to $1.425\u20131.475B (8\u201312% growth), below the roughly $1.52B analysts expected."
    },
    {
-    "label": "Missed own forecast",
-    "text": "Q3 revenue was $1.174B, up 12%, below the $1.19\u20131.21B range given in August."
+    "label": "Europe sellers pulled back",
+    "text": "After the EU ended a tariff exemption, cross-border sellers cut ads; Europe revenue was flat."
    },
    {
-    "label": "Ad revenue per user",
-    "text": "Revenue per user rose just 1%; Europe fell 7% despite record 661M users."
+    "label": "Missed Q3 targets",
+    "text": "Revenue of $1.174B (up 12%, from 18% in Q2) missed the $1.19\u20131.21B guidance."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0001506293/000150629326000151/q3-26xpressrelease.htm"
+   "https://www.sec.gov/Archives/edgar/data/0001506293/000150629326000151/q3-26xpressrelease.htm",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-pinterest-misses-q3-2026-estimates-as-shares-slide-93CH-4985533",
+   "https://www.benzinga.com/markets/earnings/26/10/62722387/pinterest-stock-plunges-after-q3-earnings-disappoint"
   ]
  },
- "story": "Growth has cooled from 18% in Q2 to 12% in Q3, and the Q4 forecast points to 8\u201312%. Revenue came in under the company's own August forecast. Shares have now fallen after back-to-back reports, with ad competition a recurring worry.",
+ "story": "Growth has slowed from 18% in Q2 to 12% in Q3, and the Q3 outlook was missed. Each report has brought a cautious forecast. Shares fell 8.7% last time and 2.8% now, a smaller drop.",
  "history": [
   {
    "date": "2026-08-04",

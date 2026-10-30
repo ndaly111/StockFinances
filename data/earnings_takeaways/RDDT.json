@@ -1,32 +1,31 @@
 {
  "ticker": "RDDT",
- "updated": "2026-10-29T21:28Z",
+ "updated": "2026-10-30T21:26Z",
  "last": {
   "date": "2026-10-29",
   "timing": "post",
-  "move_pct": -17.1,
-  "basis": "after hours",
-  "verdict": "Great quarter, but a warning that daily users could drop sharply next quarter.",
+  "move_pct": -29.2,
+  "basis": "close",
+  "verdict": "Search traffic is collapsing and Reddit warned of fewer users ahead, outweighing strong profits.",
   "reasons": [
    {
-    "label": "Users could fall sharply",
-    "text": "Reddit said daily users could fall by a low-double-digit percentage in Q4 from 130 million."
+    "label": "Warning of user drop",
+    "text": "Reddit said daily users could fall by a low-double-digit percentage in Q4 if trends hold."
    },
    {
     "label": "Google traffic keeps shrinking",
-    "text": "Search referrals fell by more than 1 million a week in October, after a decline that sped up late in Q3."
+    "text": "Search referrals fell \"meaningfully,\" worsened late in Q3, and dropped over 1 million a week in October."
    },
    {
     "label": "U.S. users shrinking",
-    "text": "U.S. daily users fell 2% from a year earlier; growth came from outside the U.S."
+    "text": "U.S. daily users fell 2% from a year ago; revenue growth slowed to 53%."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1713445/000171344526000114/exhibit992q326.htm",
-   "https://www.ebc.com/forex/why-reddit-stock-fell-after-q2-2026-earnings"
+   "https://www.sec.gov/Archives/edgar/data/1713445/000171344526000114/exhibit992q326.htm"
   ]
  },
- "story": "Reddit's growth is slowing, from 61% last quarter to 53% now, but profits keep climbing. The recurring worry is falling Google search traffic and weak U.S. user growth. The stock fell 21% after the last report and is down again.",
+ "story": "Revenue growth has slowed from 61% last quarter to 53%, while search-traffic worries have grown from \"choppy\" in July to a flagged user decline. Strong profits haven't offset this; the stock fell 21% after the last report and 29% now.",
  "history": [
   {
    "date": "2026-07-30",
