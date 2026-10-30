@@ -438,8 +438,15 @@ def mini_main():
         from concurrent.futures import ThreadPoolExecutor
         from split_utils import fetch_split_history
         from valuation_update import prefetch_finviz
+        def _warm_splits(t):
+            # Warm-up only: a failure here must not kill the run. lru_cache
+            # doesn't cache exceptions, so the per-ticker loop retries it.
+            try:
+                fetch_split_history(t)
+            except Exception as exc:
+                print(f"[splits prefetch] {t}: {exc}")
         with ThreadPoolExecutor(max_workers=8) as ex:
-            list(ex.map(fetch_split_history, tickers))
+            list(ex.map(_warm_splits, tickers))
         # Finviz "EPS next 5Y" is an analyst estimate that doesn't move
         # intraday; finviz throttles to ~2 concurrent so all 105 cost ~38s.
         # Weekly refreshes everything; daily only fills tickers that have no
