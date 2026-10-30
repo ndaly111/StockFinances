@@ -1,31 +1,34 @@
 {
  "ticker": "SBUX",
- "updated": "2026-10-30T01:10Z",
+ "updated": "2026-10-30T21:28Z",
  "last": {
   "date": "2026-10-29",
   "timing": "post",
-  "move_pct": NaN,
-  "basis": "after hours",
-  "verdict": "Strong turnaround quarter and solid 2027 outlook; stock reaction not yet known.",
+  "move_pct": -1.7,
+  "basis": "close",
+  "verdict": "Profit beat, but a weaker sales outlook for next year weighed on shares.",
   "reasons": [
    {
-    "label": "Profit nearly doubled",
-    "text": "Adjusted profit was $0.80 a share, up from $0.52 a year earlier."
+    "label": "Weak revenue outlook",
+    "text": "Next year's sales are forecast to fall about 1%, versus the roughly 1.4% growth analysts expected."
    },
    {
-    "label": "Fiscal 2027 outlook",
-    "text": "Adjusted profit guided to $3.15\u2013$3.25 a share, helped by an extra week."
+    "label": "International stores lag",
+    "text": "International same-store sales rose just 0.9% and customer transactions fell 2.8%, while U.S. sales rose 7.7%."
    },
    {
-    "label": "Sales and margin gains",
-    "text": "Same-store sales rose 7.2% worldwide; operating margin widened to 14.0% from 9.4%."
+    "label": "Profit beat, buyback ahead",
+    "text": "Adjusted profit was $0.80 a share versus about $0.72 expected; 2027 forecast is $3.15\u2013$3.25."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0000829224/000082922426000154/sbux-09272026xearningsrele.htm"
+   "https://www.sec.gov/Archives/edgar/data/0000829224/000082922426000154/sbux-09272026xearningsrele.htm",
+   "https://www.cnbc.com/2026/10/29/starbucks-sbux-q4-2026-earnings.html",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-starbucks-beats-q4-2026-eps-shares-slip-after-hours-93CH-4985343",
+   "https://www.marketscreener.com/news/starbucks-beats-quarterly-sales-and-profit-expectations-ce785fdadc89f02d"
   ]
  },
- "story": "Starbucks' turnaround has built for four reports. Sales have swung back to growth, margins keep widening, and last quarter's big profit-outlook raise lifted the stock only modestly. Now the focus shifts to 2027, with North America sales growth guided near 4%.",
+ "story": "Starbucks' turnaround has built momentum, with U.S. sales growth strengthening and profit forecasts raised through the year. The worry has shifted to overall revenue and weak international trends. Reactions have been muted: shares rose only 1.6% after July's big beat and slipped this time.",
  "history": [
   {
    "date": "2026-07-29",

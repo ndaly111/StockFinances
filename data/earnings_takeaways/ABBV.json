@@ -1,33 +1,32 @@
 {
  "ticker": "ABBV",
- "updated": "2026-10-30T16:41Z",
+ "updated": "2026-10-30T21:16Z",
  "last": {
   "date": "2026-10-30",
   "timing": "pre",
-  "move_pct": 1.8,
-  "basis": "intraday",
-  "verdict": "Beat on sales and profit, raised the yearly outlook, and lifted the dividend.",
+  "move_pct": 1.4,
+  "basis": "close",
+  "verdict": "Revenue beat estimates and AbbVie raised its outlook again, lifting the stock modestly.",
   "reasons": [
    {
-    "label": "Profit outlook raised",
-    "text": "2026 EPS guidance lifted to $13.95\u2013$13.99 from $13.76\u2013$13.96, despite Apogee deal costs."
+    "label": "Outlook raised again",
+    "text": "2026 profit guidance lifted to $13.95\u2013$13.99 from $13.76\u2013$13.96, and the dividend rises 5.2%."
    },
    {
-    "label": "Brain drugs beat",
-    "text": "Neuroscience sales rose 19% to $3.4B, the quarter's biggest beat per William Blair."
+    "label": "Revenue beat estimates",
+    "text": "Sales of $17.4B (up 10.3%) topped the roughly $17.3B analysts expected."
    },
    {
-    "label": "Skyrizi and Rinvoq growth",
-    "text": "Skyrizi rose 23% and Rinvoq 24%, more than offsetting Humira's 31% drop."
+    "label": "Immunology drugs surging",
+    "text": "Skyrizi grew 22.7% and Rinvoq 23.9%, more than offsetting Humira's 31% decline."
    }
   ],
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1551152/000155115226000033/abbv-20260930xexhibit991.htm",
-   "https://www.biospace.com/business/abbvies-q3-beat-should-keep-train-rolling-as-company-eyes-bolt-on-deals",
-   "https://www.marketbeat.com/articles/abbv-stock-250-may-be-the-new-floor-after-beat-and-raise-quarter/"
+   "https://www.hudson-labs.com/research/abbvie-q3-2026-earnings-preview-abbv-results-and-outlook"
   ]
  },
- "story": "Since July, AbbVie's growth drugs Skyrizi and Rinvoq have kept growing over 20%. July's Apogee deal cost trimmed the profit outlook and the stock fell 2.5%. This quarter's raised outlook and bigger dividend pushed shares to record highs.",
+ "story": "Over the last few reports, AbbVie has grown sales about 10% a year, driven by Skyrizi and Rinvoq. The July report brought a stock drop as the Apogee deal trimmed the outlook. This quarter, guidance rose again and the shares recovered a little.",
  "history": [
   {
    "date": "2026-07-31",

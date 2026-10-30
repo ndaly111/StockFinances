@@ -1,32 +1,33 @@
 {
  "ticker": "CVX",
- "updated": "2026-10-30T13:41Z",
+ "updated": "2026-10-30T21:20Z",
  "last": {
   "date": "2026-10-30",
   "timing": "pre",
-  "move_pct": 1.4,
-  "basis": "intraday",
-  "verdict": "Earnings slipped from last quarter, but a Venezuela growth plan and strong cash kept shares up.",
+  "move_pct": 1.8,
+  "basis": "close",
+  "verdict": "Refining-driven profit beat expectations, lifting shares modestly despite lower production and oil prices.",
   "reasons": [
    {
-    "label": "Venezuela growth plan",
-    "text": "Venture partners plan to invest $7 billion over five years, potentially more than doubling output."
+    "label": "Refining profits surged",
+    "text": "Fuel margins pushed refining earnings to $4.9 billion from $1.1 billion a year earlier."
    },
    {
-    "label": "Profit down from Q2",
-    "text": "Adjusted EPS was $5.28 versus $6.06 last quarter as Brent fell to $97 from $104."
+    "label": "Beat on estimates",
+    "text": "Adjusted EPS of $5.28 topped the roughly $4.89 analyst average."
    },
    {
-    "label": "Cash and debt payoff",
-    "text": "Free cash flow was $12.0 billion; debt fell another $3.5 billion; dividend set at $1.78."
+    "label": "Cash and debt gains",
+    "text": "Free cash flow near $14.2 billion; net debt fell to $20.7 billion from $34.5 billion."
    }
   ],
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/93410/000009341026000196/a09302026ex9918-k.htm",
-   "https://www.tikr.com/blog/chevron-is-deepening-its-venezuela-bet-after-a-record-quarter-the-stock-barely-noticed"
+   "https://invezz.com/news/2026/10/30/chevron-shares-rise-after-third-quarter-profit-jumps-nearly-200/",
+   "https://247wallst.com/investing/2026/10/26/chevron-eyes-150-eps-jump-on-oct-30-but-are-the-risks-already-priced-in/"
   ]
  },
- "story": "Oil prices spiked this year, lifting profits far above 2025 levels. Last quarter's big beat drew only a 2.4% gain because high oil was already expected. This quarter profit eased as Brent cooled, so attention turned to Venezuela growth and debt paydown.",
+ "story": "Chevron has beaten profit forecasts for several quarters, helped first by high oil prices and now by refining. Oil-driven upstream profit is easing: Brent averaged $97, down from $104 last quarter. Shares have risen modestly after each report, as results were largely expected.",
  "history": [
   {
    "date": "2026-07-31",

@@ -1,32 +1,33 @@
 {
  "ticker": "INTC",
- "updated": "2026-10-30T01:05Z",
+ "updated": "2026-10-30T21:24Z",
  "last": {
   "date": "2026-10-29",
   "timing": "post",
-  "move_pct": NaN,
-  "basis": "after hours",
-  "verdict": "Strong quarter, but a weaker fourth-quarter outlook and PC slowdown give investors pause.",
+  "move_pct": -28.6,
+  "basis": "close",
+  "verdict": "Beat on the quarter, but a weak Q4 outlook and PC slump spooked investors.",
   "reasons": [
    {
-    "label": "Weaker year-end outlook",
-    "text": "Q4 revenue guided to $15.0\u201316.0B, below Q3's $16.5B; gross margin falls to 38%."
+    "label": "Weak Q4 outlook",
+    "text": "Q4 revenue guided to $15.0\u201316.0B, below Q3's $16.5B; margin seen falling to 38.0% from 44.1%."
    },
    {
     "label": "PC slowdown continues",
-    "text": "CFO expects the PC slowdown to last at least through the first half of 2027; PC chip sales fell 5%."
+    "text": "PC chip sales fell 5% to $8.1B; CFO sees weakness lasting through first half of 2027."
    },
    {
-    "label": "AI data center boom",
-    "text": "Data center and AI sales jumped 78% to $7.3B; total revenue rose 21% to $16.5B."
+    "label": "Foundry still losing money",
+    "text": "Chip-making unit lost $1.85B on $6.7B revenue, even as spending rose to $4.2B this quarter."
    }
   ],
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/0000050863/000005086326000188/q326earningsrelease.htm",
-   "https://pulse2.com/intel-forecasts-strong-third-quarter-revenue-as-ai-infrastructure-demand-drives-growth/"
+   "https://www.benzinga.com/amp/content/8575233",
+   "https://247wallst.com/investing/2026/10/25/intels-make-or-break-margin-test-is-arriving-on-oct-29/"
   ]
  },
- "story": "Intel's recent reports show data center and AI demand driving growth. July's beat and raised outlook still saw shares fall 7.9% after a huge run. Rising spending and a soft PC market are the recurring worries, now joined by a softer Q4 forecast.",
+ "story": "Intel has been on a big rally this year, helped by strong results and data center growth. July's beat and raised outlook still triggered a 7.9% drop after a huge run. October's soft Q4 guidance and PC weakness led to a far deeper selloff.",
  "history": [
   {
    "date": "2026-07-23",

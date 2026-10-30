@@ -1,32 +1,32 @@
 {
  "ticker": "XOM",
- "updated": "2026-10-30T13:44Z",
+ "updated": "2026-10-30T21:29Z",
  "last": {
   "date": "2026-10-30",
   "timing": "pre",
-  "move_pct": 2.1,
-  "basis": "intraday",
-  "verdict": "Big profit beat and a $20 billion 2027 buyback lifted shares.",
+  "move_pct": 2.2,
+  "basis": "close",
+  "verdict": "Refining windfall and a $20 billion 2027 buyback plan lifted shares.",
   "reasons": [
    {
-    "label": "Earnings beat",
-    "text": "Adjusted profit was $4.23 a share, well above the roughly $3.83 analysts expected."
+    "label": "Big refining rebound",
+    "text": "Fuel-making profit more than doubled to $9.1 billion from $4.1 billion last quarter."
    },
    {
-    "label": "Refining windfall",
-    "text": "Strong refining margins pushed adjusted profit up from $3.52 last quarter; Gulf Coast plants ran at 100%."
+    "label": "Huge 2027 buyback",
+    "text": "Plans $20 billion of share repurchases in 2027, after $5.1 billion bought this quarter."
    },
    {
-    "label": "Bigger buybacks",
-    "text": "Exxon announced $20 billion of 2027 share buybacks and cut net debt to $22.1 billion."
+    "label": "Strong cash, less debt",
+    "text": "Free cash flow was $19.1 billion, and net debt fell by nearly $11 billion this year."
    }
   ],
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/0002115436/000211543626000018/livef8k3q26991.htm",
-   "https://www.itiger.com/news/1165213991"
+   "https://investor.exxonmobil.com/news-events/ir-calendar/detail/20261030-3q-2026-earnings-call"
   ]
  },
- "story": "After July's small miss, Exxon was dinged for flat oil output and one-time charges. This quarter refining profits did the lifting, with cash flow strong and output still flat near 4.5 million barrels a day. Shares have swung from a small drop to a gain.",
+ "story": "Profit stayed high through 2026, but oil output was flat near 4.5 million barrels a day and one-time items muddied results. Shares slipped 1.0% after July's small EPS miss, then rose 2.2% as refining profit jumped and a big buyback arrived.",
  "history": [
   {
    "date": "2026-07-31",
