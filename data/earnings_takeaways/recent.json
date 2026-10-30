@@ -1,6 +1,48 @@
 {
- "updated": "2026-10-30T09:33Z",
+ "updated": "2026-10-30T13:44Z",
  "reports": [
+  {
+   "ticker": "XOM",
+   "date": "2026-10-30",
+   "move_pct": 2.1,
+   "basis": "intraday",
+   "verdict": "Big profit beat and a $20 billion 2027 buyback lifted shares.",
+   "reasons": [
+    {
+     "label": "Earnings beat",
+     "text": "Adjusted profit was $4.23 a share, well above the roughly $3.83 analysts expected."
+    },
+    {
+     "label": "Refining windfall",
+     "text": "Strong refining margins pushed adjusted profit up from $3.52 last quarter; Gulf Coast plants ran at 100%."
+    },
+    {
+     "label": "Bigger buybacks",
+     "text": "Exxon announced $20 billion of 2027 share buybacks and cut net debt to $22.1 billion."
+    }
+   ]
+  },
+  {
+   "ticker": "CVX",
+   "date": "2026-10-30",
+   "move_pct": 1.4,
+   "basis": "intraday",
+   "verdict": "Earnings slipped from last quarter, but a Venezuela growth plan and strong cash kept shares up.",
+   "reasons": [
+    {
+     "label": "Venezuela growth plan",
+     "text": "Venture partners plan to invest $7 billion over five years, potentially more than doubling output."
+    },
+    {
+     "label": "Profit down from Q2",
+     "text": "Adjusted EPS was $5.28 versus $6.06 last quarter as Brent fell to $97 from $104."
+    },
+    {
+     "label": "Cash and debt payoff",
+     "text": "Free cash flow was $12.0 billion; debt fell another $3.5 billion; dividend set at $1.78."
+    }
+   ]
+  },
   {
    "ticker": "INTC",
    "date": "2026-10-29",

@@ -1,34 +1,51 @@
 {
  "ticker": "CVX",
- "updated": "2026-10-29T18:55Z",
+ "updated": "2026-10-30T13:41Z",
  "last": {
-  "date": "2026-07-31",
+  "date": "2026-10-30",
   "timing": "pre",
-  "move_pct": 2.4,
-  "basis": "close",
-  "verdict": "Huge profit beat, but investors expected it; shares gained a modest 2.4%.",
+  "move_pct": 1.4,
+  "basis": "intraday",
+  "verdict": "Earnings slipped from last quarter, but a Venezuela growth plan and strong cash kept shares up.",
   "reasons": [
    {
-    "label": "Oil price windfall",
-    "text": "Brent averaged $104 versus $68 a year ago; earnings jumped to $12.1 billion."
+    "label": "Venezuela growth plan",
+    "text": "Venture partners plan to invest $7 billion over five years, potentially more than doubling output."
    },
    {
-    "label": "Beat, but priced in",
-    "text": "Adjusted EPS of $6.06 topped roughly $5.55\u20135.80 forecasts, but high oil prices were already known."
+    "label": "Profit down from Q2",
+    "text": "Adjusted EPS was $5.28 versus $6.06 last quarter as Brent fell to $97 from $104."
    },
    {
-    "label": "Cash and cost wins",
-    "text": "$3 billion cost savings hit six months early; debt cut a record $8.4 billion."
+    "label": "Cash and debt payoff",
+    "text": "Free cash flow was $12.0 billion; debt fell another $3.5 billion; dividend set at $1.78."
    }
   ],
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/93410/000009341026000162/a06302026ex9918-k.htm",
-   "https://www.marketbeat.com/instant-alerts/chevron-nysecvx-trading-25-higher-on-strong-earnings-2026-07-31/",
-   "https://wtop.com/news/2026/07/chevron-q2-earnings-snapshot/",
-   "https://www.tikr.com/blog/what-chevron-q1-2026-earnings-call-revealed-that-the-market-missed?",
-   "https://www.businesswire.com/news/home/20260130488543/en"
+   "https://www.sec.gov/Archives/edgar/data/93410/000009341026000196/a09302026ex9918-k.htm",
+   "https://www.tikr.com/blog/chevron-is-deepening-its-venezuela-bet-after-a-record-quarter-the-stock-barely-noticed"
   ]
  },
- "story": "Chevron's profit was weak in the first quarter, helped by Hess-driven production gains, then surged in the second as oil prices spiked amid Middle East conflict. Reactions have been muted: the stock rose about 0.9% after the first-quarter beat and 2.4% now.",
- "history": []
+ "story": "Oil prices spiked this year, lifting profits far above 2025 levels. Last quarter's big beat drew only a 2.4% gain because high oil was already expected. This quarter profit eased as Brent cooled, so attention turned to Venezuela growth and debt paydown.",
+ "history": [
+  {
+   "date": "2026-07-31",
+   "move_pct": 2.4,
+   "verdict": "Huge profit beat, but investors expected it; shares gained a modest 2.4%.",
+   "reasons": [
+    {
+     "label": "Oil price windfall",
+     "text": "Brent averaged $104 versus $68 a year ago; earnings jumped to $12.1 billion."
+    },
+    {
+     "label": "Beat, but priced in",
+     "text": "Adjusted EPS of $6.06 topped roughly $5.55\u20135.80 forecasts, but high oil prices were already known."
+    },
+    {
+     "label": "Cash and cost wins",
+     "text": "$3 billion cost savings hit six months early; debt cut a record $8.4 billion."
+    }
+   ]
+  }
+ ]
 }
