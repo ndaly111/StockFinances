@@ -1,34 +1,52 @@
 {
  "ticker": "ABBV",
- "updated": "2026-10-29T05:32Z",
+ "updated": "2026-10-30T16:41Z",
  "last": {
-  "date": "2026-07-31",
+  "date": "2026-10-30",
   "timing": "pre",
-  "move_pct": -2.5,
-  "basis": "close",
-  "verdict": "Sales beat, but profit missed and the Apogee deal trimmed the yearly outlook.",
+  "move_pct": 1.8,
+  "basis": "intraday",
+  "verdict": "Beat on sales and profit, raised the yearly outlook, and lifted the dividend.",
   "reasons": [
    {
-    "label": "Profit missed estimates",
-    "text": "Adjusted EPS of $3.65 fell short of the roughly $3.71 analysts expected."
+    "label": "Profit outlook raised",
+    "text": "2026 EPS guidance lifted to $13.95\u2013$13.99 from $13.76\u2013$13.96, despite Apogee deal costs."
    },
    {
-    "label": "Profit outlook trimmed",
-    "text": "2026 EPS guidance cut to $13.87\u2013$14.07, below the $14.12 consensus, on Apogee deal costs."
+    "label": "Brain drugs beat",
+    "text": "Neuroscience sales rose 19% to $3.4B, the quarter's biggest beat per William Blair."
    },
    {
-    "label": "$10.9B Apogee deal",
-    "text": "AbbVie agreed to buy Apogee for about $10.9 billion, adding $0.14 per share of dilution."
+    "label": "Skyrizi and Rinvoq growth",
+    "text": "Skyrizi rose 23% and Rinvoq 24%, more than offsetting Humira's 31% drop."
    }
   ],
   "sources": [
-   "https://www.fool.com/investing/2026/07/31/why-abbvie-stock-slumped-today/",
-   "https://www.nasdaq.com/articles/abbvie-q2-earnings-call-highlights",
-   "https://www.nasdaq.com/articles/abbvie-beats-q4-earnings-stock-down-despite-upbeat-26-view",
-   "https://finance.yahoo.com/markets/stocks/articles/abbvie-beats-q1-2026-earnings-131120831.html",
-   "https://www.sec.gov/Archives/edgar/data/1551152/000155115226000023/abbv-20260630xexhibit991.htm"
+   "https://www.sec.gov/Archives/edgar/data/1551152/000155115226000033/abbv-20260930xexhibit991.htm",
+   "https://www.biospace.com/business/abbvies-q3-beat-should-keep-train-rolling-as-company-eyes-bolt-on-deals",
+   "https://www.marketbeat.com/articles/abbv-stock-250-may-be-the-new-floor-after-beat-and-raise-quarter/"
   ]
  },
- "story": "Quarterly sales have kept growing about 10%, led by Skyrizi and Rinvoq. Earnings guidance has been trimmed by deal and drug-research charges. The stock rose about 2.5% after the April report, but fell about 6.5% in February and about 3% now.",
- "history": []
+ "story": "Since July, AbbVie's growth drugs Skyrizi and Rinvoq have kept growing over 20%. July's Apogee deal cost trimmed the profit outlook and the stock fell 2.5%. This quarter's raised outlook and bigger dividend pushed shares to record highs.",
+ "history": [
+  {
+   "date": "2026-07-31",
+   "move_pct": -2.5,
+   "verdict": "Sales beat, but profit missed and the Apogee deal trimmed the yearly outlook.",
+   "reasons": [
+    {
+     "label": "Profit missed estimates",
+     "text": "Adjusted EPS of $3.65 fell short of the roughly $3.71 analysts expected."
+    },
+    {
+     "label": "Profit outlook trimmed",
+     "text": "2026 EPS guidance cut to $13.87\u2013$14.07, below the $14.12 consensus, on Apogee deal costs."
+    },
+    {
+     "label": "$10.9B Apogee deal",
+     "text": "AbbVie agreed to buy Apogee for about $10.9 billion, adding $0.14 per share of dilution."
+    }
+   ]
+  }
+ ]
 }

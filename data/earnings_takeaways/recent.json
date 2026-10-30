@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T13:44Z",
+ "updated": "2026-10-30T16:44Z",
  "reports": [
   {
    "ticker": "XOM",
@@ -19,6 +19,27 @@
     {
      "label": "Bigger buybacks",
      "text": "Exxon announced $20 billion of 2027 share buybacks and cut net debt to $22.1 billion."
+    }
+   ]
+  },
+  {
+   "ticker": "ABBV",
+   "date": "2026-10-30",
+   "move_pct": 1.8,
+   "basis": "intraday",
+   "verdict": "Beat on sales and profit, raised the yearly outlook, and lifted the dividend.",
+   "reasons": [
+    {
+     "label": "Profit outlook raised",
+     "text": "2026 EPS guidance lifted to $13.95\u2013$13.99 from $13.76\u2013$13.96, despite Apogee deal costs."
+    },
+    {
+     "label": "Brain drugs beat",
+     "text": "Neuroscience sales rose 19% to $3.4B, the quarter's biggest beat per William Blair."
+    },
+    {
+     "label": "Skyrizi and Rinvoq growth",
+     "text": "Skyrizi rose 23% and Rinvoq 24%, more than offsetting Humira's 31% drop."
     }
    ]
   },
