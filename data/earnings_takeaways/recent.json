@@ -1,6 +1,27 @@
 {
- "updated": "2026-10-29T21:29Z",
+ "updated": "2026-10-30T01:10Z",
  "reports": [
+  {
+   "ticker": "INTC",
+   "date": "2026-10-29",
+   "move_pct": NaN,
+   "basis": "after hours",
+   "verdict": "Strong quarter, but a weaker fourth-quarter outlook and PC slowdown give investors pause.",
+   "reasons": [
+    {
+     "label": "Weaker year-end outlook",
+     "text": "Q4 revenue guided to $15.0\u201316.0B, below Q3's $16.5B; gross margin falls to 38%."
+    },
+    {
+     "label": "PC slowdown continues",
+     "text": "CFO expects the PC slowdown to last at least through the first half of 2027; PC chip sales fell 5%."
+    },
+    {
+     "label": "AI data center boom",
+     "text": "Data center and AI sales jumped 78% to $7.3B; total revenue rose 21% to $16.5B."
+    }
+   ]
+  },
   {
    "ticker": "RDDT",
    "date": "2026-10-29",
@@ -187,6 +208,27 @@
     {
      "label": "Profit and buyback cushion",
      "text": "Earnings rose 25% to $5.30 a share; board approved a $500M share buyback."
+    }
+   ]
+  },
+  {
+   "ticker": "SBUX",
+   "date": "2026-10-29",
+   "move_pct": NaN,
+   "basis": "after hours",
+   "verdict": "Strong turnaround quarter and solid 2027 outlook; stock reaction not yet known.",
+   "reasons": [
+    {
+     "label": "Profit nearly doubled",
+     "text": "Adjusted profit was $0.80 a share, up from $0.52 a year earlier."
+    },
+    {
+     "label": "Fiscal 2027 outlook",
+     "text": "Adjusted profit guided to $3.15\u2013$3.25 a share, helped by an extra week."
+    },
+    {
+     "label": "Sales and margin gains",
+     "text": "Same-store sales rose 7.2% worldwide; operating margin widened to 14.0% from 9.4%."
     }
    ]
   },
