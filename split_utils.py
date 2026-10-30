@@ -14,6 +14,7 @@ import logging
 import math
 import os
 import sqlite3
+import time
 from collections import defaultdict
 from datetime import datetime, date, timezone
 from functools import lru_cache
@@ -111,7 +112,16 @@ def _from_yfinance(ticker: str) -> List[Tuple[date, float, str]]:
     except Exception:
         splits = None
     if splits is None:
-        splits = yf.Ticker(ticker).splits
+        # yfinance keeps a shared SQLite cache; parallel callers (the 8-thread
+        # prefetch in main_remote) can hit "database is locked". Retry briefly.
+        for attempt in range(4):
+            try:
+                splits = yf.Ticker(ticker).splits
+                break
+            except Exception as exc:
+                if "locked" not in str(exc) or attempt == 3:
+                    raise
+                time.sleep(0.5 * (attempt + 1))
     events: List[Tuple[date, float, str]] = []
     if splits is None or splits.empty:
         return events
