@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-31T01:06Z",
+ "updated": "2026-10-31T05:33Z",
  "reports": [
   {
    "ticker": "XOM",
@@ -589,48 +589,6 @@
     {
      "label": "Costs growing faster",
      "text": "Adjusted operating expenses rose 12%, mostly marketing and staff, and 2027 profit growth is guided slightly below revenue growth."
-    }
-   ]
-  },
-  {
-   "ticker": "NUE",
-   "date": "2026-10-26",
-   "move_pct": 5.2,
-   "basis": "close",
-   "verdict": "Earnings beat Nucor's own forecast and the outlook held up, so shares rose.",
-   "reasons": [
-    {
-     "label": "Beat own forecast",
-     "text": "Earnings of $5.80 per share topped the $5.55-$5.65 range Nucor gave in September."
-    },
-    {
-     "label": "Higher steel prices",
-     "text": "Average selling price rose 9% from last quarter to $1,493 per ton, lifting profit."
-    },
-    {
-     "label": "Steady outlook",
-     "text": "Management expects fourth-quarter earnings flat to modestly higher, despite fewer shipping days and planned outages."
-    }
-   ]
-  },
-  {
-   "ticker": "VZ",
-   "date": "2026-10-26",
-   "move_pct": -3.5,
-   "basis": "close",
-   "verdict": "Revenue missed estimates, so the stock fell despite a strong customer quarter and raised guidance.",
-   "reasons": [
-    {
-     "label": "Revenue missed estimates",
-     "text": "Revenue of $34.31B fell short of the ~$34.77B expected; phone upgrade sales dropped 9%."
-    },
-    {
-     "label": "Big customer gains priced in",
-     "text": "406,000 new phone customers beat the ~195,000 expected, but shares still slipped."
-    },
-    {
-     "label": "Raised outlook not enough",
-     "text": "Full-year profit-per-share growth guidance rose to 7\u20137.5%, from 6\u20137%, yet the stock fell."
     }
    ]
   }
