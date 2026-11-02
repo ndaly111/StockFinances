@@ -43,6 +43,7 @@ TICKERS_FILE = "tickers.csv"
 NEW_REPORT_DAYS = 7       # auto mode only writes cards for reports this recent
 RECENT_DAYS = 4           # homepage shows reports from the last N days
 HISTORY_KEEP = 4          # past cards kept per ticker (feed the "story")
+CALL_RETRY_DAYS = 3       # keep retrying a card with no call section this long
 PRESS_RELEASE_CHARS = 30000
 CLAUDE_MODEL = os.environ.get("TAKEAWAYS_MODEL", "sonnet")
 CLAUDE_TIMEOUT_S = 900
@@ -145,42 +146,60 @@ def _press_release(ticker, when):
 
 # ───────── the writer (claude -p on the subscription) ─────────────
 
-PROMPT = """You write a tiny "why did the stock move after earnings" note for a personal stock website.
-The reader wants the real reason a stock jumped or dropped, in plain English, readable in 10 seconds.
+PROMPT = """You write a short earnings digest for a personal stock website.
+The reader wants to skip the earnings call and the coverage and still know, in under 30 seconds,
+what the company reported, what management said on the call, and what the news is making of it.
 
 Company: {name} ({ticker})
 Earnings released: {when} ({timing})
-Stock reaction: {move} ({basis})
 Official press release (SEC 8-K exhibit): {pr_url}
 
 Research first: use WebSearch/WebFetch to read the earnings call transcript (Motley Fool,
-Investing.com, company IR, etc.) and same-day coverage of the stock's reaction. The press
-release text below and the price move above are ground truth; do not contradict them.
+Investing.com, Seeking Alpha, company IR, etc.) and at least three same-day news reports
+(Reuters, CNBC, Bloomberg, WSJ, Barron's, etc.). The press release text below is ground truth
+for the reported numbers; do not contradict it.
 
-TASK 1, the card for this report:
-- "verdict": one sentence, max 12 words, that says what the market made of the report.
-- "reasons": up to 3, ordered by how much they explain the move. Each has a "label"
-  (2-4 words, e.g. "Slower growth ahead") and "text" (max 14 words, one concrete number where it helps).
-  Only things that explain the move or that investors focused on: guidance, growth trend,
-  margins, spending/capex, a key metric vs expectations, one-time items that flattered or
-  hurt results, legal/regulatory news, management change. No filler metrics, no list of
-  segment results, no "what wasn't the story" items.
-- If the stock barely moved, say what investors were weighing.
+TASK 1, the digest of this report:
+- "verdict": one sentence, max 16 words, with the single main takeaway from the report.
+- "numbers": one sentence, max 30 words: revenue and EPS against expectations, plus guidance
+  if the company gave any.
+- "call": 2-4 items, most important first, of what management actually said on the conference
+  call: outlook, demand, costs, spending, product plans, answers to analyst questions. Each has
+  a "label" (2-4 words) and "text" (max 25 words, a concrete number where it helps). Use only the
+  transcript or reporting that quotes the call, never the press release. If the call has not
+  happened yet or neither is available, return an empty list; do not guess.
+- "news": 2-3 items, most important first, of what the news coverage and analysts are focusing
+  on, including worries and disagreements. Same "label" and "text" format. Do not repeat a
+  point already made in "call".
+- Leave out filler metrics and lists of segment results. Do not write about the size of today's
+  stock price move; the site shows that separately.
 
 TASK 2, "story": 2-3 short sentences, max 45 words, on what has been going on across the last
-~4 earnings reports: the trend in growth and guidance, recurring worries or tailwinds,
-how the stock has reacted. {prior}
+~4 earnings reports: the trend in growth and guidance, and recurring worries or tailwinds. {prior}
 
 Plain English, no jargon a casual investor wouldn't know (say "payments to banks to keep
-them on Visa", not "client incentives"). No first person ("I", "we"), no investment advice. Every number must come from
-a source you read.
+them on Visa", not "client incentives"). No first person ("I", "we"), no investment advice. Every
+number must come from a source you read.
 
 Reply with ONLY this JSON object, nothing else:
-{{"verdict": "...", "reasons": [{{"label": "...", "text": "..."}}], "story": "...", "sources": ["url", "..."]}}
+{{"verdict": "...", "numbers": "...", "call": [{{"label": "...", "text": "..."}}], "news": [{{"label": "...", "text": "..."}}], "story": "...", "sources": ["url", "..."]}}
 
 Press release text:
 {pr_text}
 """
+
+
+def _items(card, key, limit):
+    return [r for r in card.get(key) or [] if r.get("label") and r.get("text")][:limit]
+
+
+def _clean_card(card, raw=""):
+    """Keep well-formed items only. An empty "call" is valid: no transcript yet."""
+    card["call"] = _items(card, "call", 4)
+    card["news"] = _items(card, "news", 3)
+    if not card.get("verdict") or not card.get("numbers") or not (card["call"] or card["news"]):
+        raise RuntimeError(f"claude returned an incomplete card: {raw[-400:]}")
+    return card
 
 
 def _write_with_claude(prompt):
@@ -192,12 +211,7 @@ def _write_with_claude(prompt):
     m = re.search(r"\{.*\}", out, re.S)
     if res.returncode != 0 or not m:
         raise RuntimeError(f"claude failed (rc={res.returncode}): {(out or res.stderr)[-400:]}")
-    card = json.loads(m.group(0))
-    reasons = [r for r in card.get("reasons", []) if r.get("label") and r.get("text")][:3]
-    if not card.get("verdict") or not reasons:
-        raise RuntimeError(f"claude returned an incomplete card: {out[-400:]}")
-    card["reasons"] = reasons
-    return card
+    return _clean_card(json.loads(m.group(0)), out)
 
 
 # ───────── per-ticker update ───────────────────────────────────────
@@ -223,12 +237,15 @@ def update_ticker(ticker, force=False, backfill=False):
     last = (doc or {}).get("last") or {}
 
     if last.get("date") == date and not force:
-        # Card exists. If it was written before the reaction session closed,
-        # rewrite it once that close is in (transcript + full-day coverage).
-        if last.get("basis") == "close":
+        # Card exists. Rewrite it while the call section is still empty (the
+        # transcript posts hours later), and once more when the reaction session
+        # has closed (transcript + full-day coverage).
+        age = (dt.datetime.now(when.tzinfo) - when).days
+        call_missing = "call" in last and not last["call"] and age <= CALL_RETRY_DAYS
+        if last.get("basis") == "close" and not call_missing:
             return None
         mv = _price_move(ticker, when, pre)
-        if not mv or mv[1] != "close":
+        if not mv or (mv[1] != "close" and not call_missing):
             return None
     else:
         age = (dt.datetime.now(when.tzinfo) - when).days
@@ -246,12 +263,15 @@ def update_ticker(ticker, force=False, backfill=False):
 
     history = [h for h in (doc or {}).get("history", []) if h.get("date") != date]
     if last and last.get("date") != date:
-        history.insert(0, {k: last[k] for k in ("date", "move_pct", "verdict", "reasons") if k in last})
+        history.insert(0, {k: last[k] for k in ("date", "move_pct", "verdict", "numbers", "call", "news",
+                                                "reasons") if k in last})
     history = history[:HISTORY_KEEP - 1]
     if history:
         prior = "Cards we wrote for the previous reports:\n" + "\n".join(
-            f"- {h['date']} ({h['move_pct']:+.1f}%): {h['verdict']} "
-            + " ".join(f"{r['label']}: {r['text']}" for r in h["reasons"]) for h in history)
+            f"- {h['date']}: {h['verdict']} "
+            + " ".join(f"{r['label']}: {r['text']}" for r in
+                       h.get("call", []) + h.get("news", []) + h.get("reasons", []))
+            for h in history)
     else:
         prior = ("We have no notes on earlier reports; briefly research the previous ~3 "
                  "earnings reports and the stock's reactions to them.")
@@ -260,9 +280,6 @@ def update_ticker(ticker, force=False, backfill=False):
         name=name, ticker=ticker,
         when=when.strftime("%Y-%m-%d %H:%M ET"),
         timing="before the open" if pre else "after the close",
-        move=f"{mv[0]:+.1f}%", basis={"close": "first session's close vs prior close",
-                                      "after hours": "after-hours, session not closed yet",
-                                      "intraday": "intraday, session not closed yet"}[mv[1]],
         pr_url=pr_url or "not found on EDGAR; rely on the transcript and coverage",
         pr_text=pr_text or "(none)", prior=prior)
     card = _write_with_claude(prompt)
@@ -275,7 +292,8 @@ def update_ticker(ticker, force=False, backfill=False):
         "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
         "last": {"date": date, "timing": "pre" if pre else "post",
                  "move_pct": mv[0], "basis": mv[1], "verdict": card["verdict"],
-                 "reasons": card["reasons"], "sources": sources},
+                 "numbers": card["numbers"], "call": card["call"], "news": card["news"],
+                 "sources": sources},
         "story": card.get("story", ""),
         "history": history,
     }
@@ -293,7 +311,8 @@ def write_recent():
         last = d.get("last") or {}
         if last.get("date", "") >= cutoff:
             rows.append({"ticker": d["ticker"], **{k: last[k] for k in
-                         ("date", "move_pct", "basis", "verdict", "reasons")}})
+                         ("date", "move_pct", "basis", "verdict", "numbers", "call", "news",
+                          "reasons") if k in last}})
     rows.sort(key=lambda r: (r["date"], abs(r["move_pct"])), reverse=True)
     (OUT_DIR / "recent.json").write_text(json.dumps(
         {"updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
