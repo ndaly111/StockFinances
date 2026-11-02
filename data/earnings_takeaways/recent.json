@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-01T16:41Z",
+ "updated": "2026-11-02T16:41Z",
  "reports": [
   {
    "ticker": "XOM",
@@ -334,114 +334,6 @@
     {
      "label": "Profit beat, buyback added",
      "text": "Earnings of $5.30 a share topped the roughly $4.67 expected; $500M share buyback announced."
-    }
-   ]
-  },
-  {
-   "ticker": "GOOGL",
-   "date": "2026-10-28",
-   "move_pct": -12.6,
-   "basis": "close",
-   "verdict": "Cloud doubled, but a big profit miss and cash drain sent shares tumbling.",
-   "reasons": [
-    {
-     "label": "Profit missed badly",
-     "text": "EPS $2.12 vs $3.02 expected, hurt by an $8.7 billion paper loss on investments.",
-     "tag": "earnings"
-    },
-    {
-     "label": "Cash burn from spending",
-     "text": "Capex hit $51.4 billion, leaving free cash flow at negative $9.1 billion.",
-     "tag": "capex"
-    },
-    {
-     "label": "More spending coming",
-     "text": "2026 capex held at $195-205 billion; 2027 expected to rise significantly, raising payoff doubts.",
-     "tag": "guidance"
-    }
-   ]
-  },
-  {
-   "ticker": "CMG",
-   "date": "2026-10-28",
-   "move_pct": 8.9,
-   "basis": "close",
-   "verdict": "Investors cheered a third straight quarter of more customer visits and brushed off the margin dip.",
-   "reasons": [
-    {
-     "label": "Customer traffic keeps growing",
-     "text": "Transactions rose 0.8%, a third straight gain, lifting comparable sales 2.1% versus about 1.5% expected."
-    },
-    {
-     "label": "Steady outlook",
-     "text": "2026 sales guidance held at low single digits; management pointed to roughly 2% comparable sales growth in Q4."
-    },
-    {
-     "label": "Lower profit margins",
-     "text": "Restaurant margin fell to 23.3% from 24.5%; EPS of $0.27 missed the $0.29 estimate."
-    }
-   ]
-  },
-  {
-   "ticker": "F",
-   "date": "2026-10-28",
-   "move_pct": 3.4,
-   "basis": "close",
-   "verdict": "Investors liked the earnings beat and the higher profit floor, despite weak sales.",
-   "reasons": [
-    {
-     "label": "Beat expectations",
-     "text": "Adjusted profit of 49 cents a share topped the roughly 40 cents analysts expected."
-    },
-    {
-     "label": "Profit outlook nudged up",
-     "text": "Low end of 2026 profit guidance rose $500 million, to $10.5 billion\u2013$11 billion."
-    },
-    {
-     "label": "Steady 2027 signal",
-     "text": "Management expects 2027 profit about flat versus 2026, despite roughly $2 billion of cost pressure."
-    }
-   ]
-  },
-  {
-   "ticker": "GPI",
-   "date": "2026-10-28",
-   "move_pct": -1.8,
-   "basis": "close",
-   "verdict": "Earnings missed estimates and sales fell, so shares slipped modestly.",
-   "reasons": [
-    {
-     "label": "Profit fell short",
-     "text": "Adjusted earnings were $9.36 a share, down from $10.45 a year ago and below forecasts of about $11."
-    },
-    {
-     "label": "Sales keep shrinking",
-     "text": "Revenue fell 6.7% to $5.4 billion; used-car sales volume dropped 10.5%."
-    },
-    {
-     "label": "Debt load after Hennessy",
-     "text": "Buying 10 Atlanta stores adds debt; about $360 million of store sales should help pay it down."
-    }
-   ]
-  },
-  {
-   "ticker": "MSFT",
-   "date": "2026-10-28",
-   "move_pct": -0.2,
-   "basis": "close",
-   "verdict": "Strong cloud beat, but heavy AI spending left the stock flat.",
-   "reasons": [
-    {
-     "label": "Azure accelerates",
-     "text": "Azure grew 48%, above Microsoft's own 44-45% forecast, with Microsoft Cloud up 30%."
-    },
-    {
-     "label": "Huge AI spending",
-     "text": "Capital spending hit $45.2 billion, up about 30% from a year ago."
-    },
-    {
-     "label": "Backlog jumps",
-     "text": "Contracted future cloud revenue rose 73% to $677 billion, a demand signal."
     }
    ]
   }
