@@ -1,35 +1,54 @@
 {
  "ticker": "TEVA",
- "updated": "2026-10-29T19:43Z",
+ "updated": "2026-11-03T13:44Z",
  "last": {
-  "date": "2026-07-29",
+  "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": 9.6,
-  "basis": "close",
-  "verdict": "Stronger brand-drug sales and raised guidance outweighed a profit miss.",
-  "reasons": [
+  "move_pct": 1.6,
+  "basis": "after hours",
+  "verdict": "Teva's three growth brands drove another raised sales outlook, but profit guidance barely moved and generic lenalidomide sales are shrinking.",
+  "takeaways": [
    {
-    "label": "Austedo outlook raised",
-    "text": "2026 Austedo sales guidance lifted to $2.45\u20132.6 billion; U.S. sales up 33%."
+    "label": "Brands carry growth",
+    "text": "Austedo, Ajovy and Uzedy together brought in about $1.1 billion, up 33%. Austedo hit $751 million (+21%), Ajovy $269 million (+61%), Uzedy $85 million (+96%)."
    },
    {
-    "label": "Revenue guidance raised",
-    "text": "2026 revenue outlook raised to $16.5\u201316.85 billion on Austedo, Ajovy and Uzedy."
+    "label": "Sales outlook raised again",
+    "text": "2026 revenue guidance rose to $16.7\u201317.0 billion from $16.5\u201316.85 billion. Austedo guidance is now $2.55\u20132.65 billion, and Ajovy and Uzedy targets also went up."
    },
    {
-    "label": "Miss blamed on deal",
-    "text": "Adjusted EPS of 2 cents missed; Emalex acquisition cost about 61 cents per share."
+    "label": "Profit outlook barely moves",
+    "text": "Operating profit guidance's top end was trimmed to $3.9 billion from $4.0 billion, and the EPS range stays about $1.92\u20132.11. Higher sales are not yet lifting profit."
+   },
+   {
+    "label": "Generics drag, margins improve",
+    "text": "Total revenue fell 2% to $4.4 billion on lower generic lenalidomide sales. Adjusted gross margin still rose to 58.7%, and adjusted EPS grew 10% to $0.86."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.zacks.com/stock/news/2964912/teva-q2-earnings-lag-estimates,-2026-revenue-view-raised,-stock-rises",
-   "https://www.webull.com/news/15343888733774848",
-   "https://www.thepharmaletter.com/pharma-news/teva-delivers-strong-2nd-qtr-results-and-raises-outlook",
-   "https://www.zacks.com/stock/news/2825449/teva-s-q4-earnings-beat-branded-drugs-drive-revenue-growth",
-   "https://www.zacks.com/stock/news/2787028/teva-q3-earnings-revenues-beat-austedo-sales-view-raised-stock-up",
-   "https://www.fool.com/investing/2025/11/05/why-teva-pharmaceutical-stock-rocked-the-market-to/"
+   "https://www.sec.gov/Archives/edgar/data/0000818686/000117184326007054/exh_991.htm"
   ]
  },
- "story": "Branded drugs like Austedo keep lifting Teva while generics shrink. The November report sent shares up roughly 13% before the open as Austedo guidance rose. February's 2026 revenue outlook came in below analyst estimates.",
- "history": []
+ "history": [
+  {
+   "date": "2026-07-29",
+   "move_pct": 9.6,
+   "verdict": "Stronger brand-drug sales and raised guidance outweighed a profit miss.",
+   "reasons": [
+    {
+     "label": "Austedo outlook raised",
+     "text": "2026 Austedo sales guidance lifted to $2.45\u20132.6 billion; U.S. sales up 33%."
+    },
+    {
+     "label": "Revenue guidance raised",
+     "text": "2026 revenue outlook raised to $16.5\u201316.85 billion on Austedo, Ajovy and Uzedy."
+    },
+    {
+     "label": "Miss blamed on deal",
+     "text": "Adjusted EPS of 2 cents missed; Emalex acquisition cost about 61 cents per share."
+    }
+   ]
+  }
+ ]
 }
