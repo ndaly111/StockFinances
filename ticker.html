@@ -466,14 +466,13 @@
     padding:5px 11px 4px 13px;
   }
   .back-btn::before{ content:"« " }
-  /* Earnings takeaways — results, the call, the news coverage */
+  /* Earnings takeaways — the key takeaway and the points that matter */
   .et-box{ margin:6px; padding:8px 10px; background:#FFFFEE; border:2px inset var(--gray);
     font-family:Verdana,Geneva,sans-serif; font-size:12px; color:#000; line-height:1.45 }
   .et-box .et-head{ font-weight:700 }
   .et-box .et-up{ color:#008000; font-weight:700 } .et-box .et-down{ color:#CC0000; font-weight:700 }
   .et-box ul{ margin:4px 0 6px; padding-left:18px } .et-box li{ margin:2px 0 }
   .et-box .et-story{ margin:6px 0 0; padding-top:6px; border-top:1px dotted #999 }
-  .et-box .et-sec{ font-weight:700; margin-top:6px }
   .et-box .et-move{ font-size:10px; color:#555; margin-top:6px }
   .et-box .et-src{ font-size:10px; color:#555 }
 </style>
@@ -628,24 +627,15 @@
       var pct = (L.move_pct > 0 ? '+' : (L.move_pct < 0 ? '−' : '')) + Math.abs(L.move_pct).toFixed(1) + '%';
       var cls = L.move_pct > 0 ? 'et-up' : (L.move_pct < 0 ? 'et-down' : '');
       var basis = L.basis === 'close' ? '' : ' ' + L.basis;
-      var bullets = function(xs){ var o = '<ul>';
-        (xs || []).forEach(function(x){ o += '<li><b>' + esc(x.label) + ':</b> ' + esc(x.text) + '</li>'; });
-        return o + '</ul>'; };
       var moved = '<span class="' + cls + '">' + pct + '</span>' + esc(basis);
-      var h;
-      if(Array.isArray(L.call)){
-        h = '<div class="et-head">Last report (' + esc(when) + ')</div><div><b>' + esc(L.verdict) + '</b></div>';
-        if(L.numbers) h += '<div>' + esc(L.numbers) + '</div>';
-        if(L.call.length) h += '<div class="et-sec">On the call</div>' + bullets(L.call);
-        if((L.news || []).length) h += '<div class="et-sec">In the news</div>' + bullets(L.news);
-      } else {
-        h = '<div class="et-head">Last report (' + esc(when) + '): ' + moved + '</div><div>' +
-            esc(L.verdict) + '</div>' + bullets(L.reasons);
-      }
+      var h = '<div class="et-head">Last report (' + esc(when) + ')</div><div><b>Key takeaway:</b> ' +
+              esc(L.verdict) + '</div><ul>';
+      (L.takeaways || L.reasons || []).forEach(function(x){ h += '<li><b>' + esc(x.label) + ':</b> ' + esc(x.text) + '</li>'; });
+      h += '</ul>';
       if(d.story) h += '<div class="et-story"><b>The story lately:</b> ' + esc(d.story) + '</div>';
       var src = (L.sources || []).slice(0, 3).map(function(u, i){
         return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + (i + 1) + '</a>'; }).join(' ');
-      if(Array.isArray(L.call)) h += '<div class="et-move">Stock since the report: ' + moved + '</div>';
+      h += '<div class="et-move">Stock since the report: ' + moved + '</div>';
       if(src) h += '<div class="et-src">Sources: ' + src + '</div>';
       $('sect-earnings').innerHTML = h;
       show('sect-earnings-card');
