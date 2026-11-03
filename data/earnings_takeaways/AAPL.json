@@ -1,36 +1,38 @@
 {
  "ticker": "AAPL",
- "updated": "2026-11-03T01:35Z",
+ "updated": "2026-11-03T21:15Z",
  "last": {
   "date": "2026-11-02",
   "timing": "post",
-  "move_pct": -4.6,
-  "basis": "after hours",
-  "verdict": "Apple beat on sales and profit, but guided December-quarter margins down to 45%\u201346% as record memory-chip costs cut into profit.",
+  "move_pct": -1.9,
+  "basis": "close",
+  "verdict": "Record quarter, but Apple guided December gross margin down to 45%\u201346% as memory costs climb, and gave no outlook past that.",
   "takeaways": [
    {
-    "label": "Margin squeeze",
-    "text": "December gross margin is guided to 45%\u201346%, below the 47.9% just reported (about 1 point of which was one-time tariff refunds) and under the 46.3% analysts expected. Memory costs drive most of the drop."
+    "label": "Margins squeezed by memory",
+    "text": "December-quarter gross margin is guided to 45%\u201346%, below the 47.9% just reported (about 1 point of which came from tariff refunds) and below the 46.3% analysts expected. Memory prices are still rising."
    },
    {
-    "label": "Record holiday growth",
-    "text": "Apple guided December-quarter revenue up 7%\u201310%, above the 6.1% analysts expected, and called it the best quarter in company history. It gave no outlook beyond December."
+    "label": "Growth slowing",
+    "text": "December-quarter revenue is guided up 7%\u201310%, down from 12% this quarter. Services is guided up 8%\u20139%. Mac and iPad supply stays limited by memory availability."
    },
    {
-    "label": "Supply limits demand",
-    "text": "The new iPhone Duo is supply-constrained and Apple can't say when supply will meet demand. Mac and iPad supply will also be tight in December because of memory."
+    "label": "AI spending climbing",
+    "text": "Operating expenses are expected to rise 11%\u201313% next quarter on AI investment. R&D already jumped about 32% to $11.7 billion in the September quarter."
    },
    {
-    "label": "Costs and softer spots",
-    "text": "Spending on AI-driven R&D is guided up 11%\u201313%. Services growth slows to 8%\u20139%, Greater China revenue of $17.5 billion missed estimates, and iPad and wearables fell."
+    "label": "Strong quarter and year",
+    "text": "Revenue was $114.5 billion (up 12%) and EPS $2.10, both September-quarter records. iPhone grew 17% to $57.6 billion and Greater China grew 21%. Full-year revenue hit $479 billion."
    }
   ],
   "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/320193/000032019326000024/a8-kex991q4202609262026.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/02/apple-aapl-q4-2026-earnings-call-transcript/",
    "https://www.investing.com/news/transcripts/earnings-call-transcript-apple-tops-q4-2026-estimates-but-shares-fall-after-hours-93CH-4993172",
-   "https://www.cnbc.com/2026/11/02/apple-aapl-q4-2026-earnings-live-updates.html",
-   "https://finance.yahoo.com/markets/stocks/live/apple-earnings-live-apple-beats-q4-estimates-on-strong-iphone-sales-but-misses-on-china-revenue-221806957.html"
+   "https://qz.com/apple-stock-memory-costs-holiday-margin-forecast-110326",
+   "https://seekingalpha.com/news/4663048-apple-anticipates-december-quarter-revenue-growth-of-7-percentminus-10-percent-amid-supply",
+   "https://www.macrumors.com/2026/11/02/apple-memory-costs-increase-december/",
+   "https://www.sec.gov/Archives/edgar/data/320193/000032019326000024/a8-kex991q4202609262026.htm"
   ]
  },
  "history": [

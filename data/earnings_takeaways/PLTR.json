@@ -1,37 +1,33 @@
 {
  "ticker": "PLTR",
- "updated": "2026-11-03T05:36Z",
+ "updated": "2026-11-03T21:19Z",
  "last": {
   "date": "2026-11-02",
   "timing": "post",
-  "move_pct": -3.0,
-  "basis": "after hours",
-  "verdict": "Revenue nearly doubled and U.S. business customers now outspend the U.S. government, but new-deal growth slowed sharply to 6%.",
+  "move_pct": -1.6,
+  "basis": "close",
+  "verdict": "Palantir's growth is still accelerating: revenue nearly doubled, US business customers overtook government for the first time, and full-year guidance rose again.",
   "takeaways": [
    {
+    "label": "Growth keeps accelerating",
+    "text": "Revenue rose 96% to $2.313B, topping $2B for the first time. The full-year forecast rose to about $8.53B from about $8.15B three months ago."
+   },
+   {
     "label": "Commercial overtakes government",
-    "text": "U.S. commercial revenue rose 148% to $984M, passing U.S. government revenue ($953M) for the first time. Total revenue rose 96% to $2.31B versus about $2.18B expected."
+    "text": "US commercial revenue grew 148% to $984M, passing US government revenue of $953M for the first time. Government revenue also grew 96%."
    },
    {
-    "label": "Forecast raised again",
-    "text": "Full-year revenue guidance rose to about $8.53B (91% growth) from about $8.15B, versus roughly $8.2B expected. The Q4 forecast is about $2.65B, and profit margins stay near 62%."
+    "label": "Profits and cash surge",
+    "text": "Adjusted operating margin was 62% and free cash flow was $1.2B, or 53% of revenue. Net income was $1.13B, and cash and Treasuries total $10.4B."
    },
    {
-    "label": "New deals lag revenue",
-    "text": "New contract value signed was up only 6% to $2.9B, and U.S. commercial signings rose 11%. Revenue is growing far faster than new bookings."
-   },
-   {
-    "label": "International commercial stalls",
-    "text": "International commercial revenue grew 21% year over year but only about 1% from the prior quarter. Management gave no figures on Europe, and Germany's military is evaluating 30 AI tools."
+    "label": "New deal value lags revenue",
+    "text": "Total value of newly signed contracts rose only 6% to $2.92B, far slower than revenue. US commercial contract value rose 11%, a possible sign growth will cool."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm",
-   "https://www.fool.com/earnings/call-transcripts/2026/11/02/palantir-pltr-q3-2026-earnings-call-transcript/",
-   "https://www.cnbc.com/2026/11/02/palantir-pltr-earnings-q3-2026.html",
-   "https://thenextweb.com/news/palantir-q3-2026-earnings-us-commercial-revenue-tops-government",
-   "https://www.streetinsider.com/Corporate+News/Palantir+Q3+2026+revenue+rises+96%25+as+U.S.+commercial+tops+%24984M/27273709.html"
+   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm"
   ]
  },
  "history": [

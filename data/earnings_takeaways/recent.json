@@ -1,153 +1,153 @@
 {
- "updated": "2026-11-03T16:47Z",
+ "updated": "2026-11-03T21:22Z",
  "reports": [
   {
    "ticker": "SHOP",
    "date": "2026-11-03",
-   "move_pct": -6.8,
-   "basis": "intraday",
-   "verdict": "Shopify held 32% revenue growth while profits jumped faster, with operating income up 66%, and guided to a similar low-thirties pace next quarter.",
+   "move_pct": -8.7,
+   "basis": "close",
+   "verdict": "Shopify held 32% revenue growth while operating income jumped 66%, and guided to similar growth next quarter.",
    "takeaways": [
     {
      "label": "Profit outgrowing sales",
-     "text": "Operating income rose 66% to $568 million, and free cash flow margin hit 22% versus 18% a year ago. Losses on payments and loans fell to $120 million from $148 million."
+     "text": "Operating income rose 66% to $568 million on 32% revenue growth. Free cash flow margin reached 22%, up from 18% a year earlier."
     },
     {
-     "label": "Growth steady, not accelerating",
-     "text": "Revenue grew 32%, down from 34% last quarter and in line with the low-thirties guide. Sales volume on the platform rose 29% to $119 billion."
+     "label": "Steady growth outlook",
+     "text": "Fourth-quarter revenue is guided to grow at a low-thirties rate, matching this quarter. Free cash flow margin is guided to match last year's fourth quarter."
     },
     {
-     "label": "Q4 outlook: profit-per-sale squeeze",
-     "text": "Q4 revenue is guided to low-thirties growth, but gross profit only high-twenties, so profit per sales dollar thins. Expenses are guided to 29-30% of revenue."
+     "label": "Gross profit lags revenue",
+     "text": "Gross profit grew 28% versus 32% for revenue, and fourth-quarter gross profit is guided to high-twenties growth, so more sales come from lower-margin payments."
     },
     {
-     "label": "Big buyback begins",
-     "text": "Shopify repurchased $562 million of its own stock in the quarter, with none a year earlier. R&D spending rose 33% to $497 million."
+     "label": "Buybacks begin",
+     "text": "Shopify spent $562 million repurchasing stock this quarter, versus nothing a year earlier, while losses on payments and loans fell to $120 million from $148 million."
     }
    ]
   },
   {
    "ticker": "TEVA",
    "date": "2026-11-03",
-   "move_pct": 3.7,
-   "basis": "intraday",
-   "verdict": "Teva raised 2026 sales guidance again as brand drugs grew 33%, but profit guidance barely moved and generics keep shrinking.",
+   "move_pct": 3.0,
+   "basis": "close",
+   "verdict": "Teva's three growth drugs surged 33% and full-year guidance rose again, but generic declines held total revenue down 2% for the quarter.",
    "takeaways": [
     {
-     "label": "Brand drugs accelerate",
-     "text": "Austedo ($751M, +21%), Ajovy ($269M, +61%) and Uzedy ($85M, +96%) together hit about $1.1B, up 33%. Forecasts for all three were raised again."
+     "label": "Growth brands accelerating",
+     "text": "Austedo, Ajovy and Uzedy together reached about $1.1 billion, up 33%. Ajovy grew 61% and Uzedy 96%, while Austedo rose 21% to $751 million."
     },
     {
-     "label": "Sales outlook up, profit flat",
-     "text": "2026 revenue guidance rose to $16.7\u201317.0B from $16.5\u201316.85B. Adjusted EPS guidance stayed essentially unchanged at $1.92\u20132.11, and the top end of operating income and EBITDA ranges was cut."
+     "label": "Guidance raised again",
+     "text": "2026 revenue outlook is now $16.7\u201317.0 billion, up from $16.5\u201316.85 billion. Ajovy guidance jumped to $930\u2013960 million from $850\u2013870 million; Austedo to $2.55\u20132.65 billion."
     },
     {
-     "label": "Generics a drag",
-     "text": "Total revenue fell 2% to $4.4B as generics sales dropped 16%, mainly from lower sales of the cancer drug generic lenalidomide. Profit margins still improved."
+     "label": "Margins improving",
+     "text": "Adjusted gross margin rose to 58.7% from 55.3%. Adjusted EPS was $0.86 versus $0.78 a year earlier."
     },
     {
-     "label": "Balance sheet turns corner",
-     "text": "Moody's and S&P upgraded Teva to investment grade after Fitch. About $4.9B of debt was refinanced; debt is $16.7B, with a goal of reaching 2x leverage by end of 2027."
-    }
-   ]
-  },
-  {
-   "ticker": "MPC",
-   "date": "2026-11-03",
-   "move_pct": -1.4,
-   "basis": "intraday",
-   "verdict": "Marathon Petroleum earned a record $26.93 per share as refining margins soared, then raised its dividend 10% and added a $5 billion buyback.",
-   "takeaways": [
-    {
-     "label": "Record refining profit",
-     "text": "Adjusted profit was $26.93 a share, up from $3.01 a year earlier. Refining margin hit $45.70 a barrel versus $17.60, with refineries running at 100% capacity."
-    },
-    {
-     "label": "Bigger shareholder payouts",
-     "text": "Marathon returned $3.3 billion in the quarter, raised its dividend 10% and added a $5 billion buyback, bringing total buyback room to $8.1 billion."
-    },
-    {
-     "label": "Selling two refineries",
-     "text": "Marathon will sell its St. Paul Park and Mandan refineries and related pipelines for $4.2 billion, with $3.45 billion going to Marathon. Closing is expected at year-end, with proceeds to be reinvested mainly on the Gulf Coast."
-    },
-    {
-     "label": "Pipeline arm growing",
-     "text": "Its pipeline partner MPLX raised its payout 12.5%, which should send Marathon about $3.1 billion a year. Cash stands at $13.6 billion."
+     "label": "Generics still a drag",
+     "text": "Revenue fell 2% to $4.4 billion, mainly because sales of the generic cancer drug lenalidomide dropped in the U.S."
     }
    ]
   },
   {
    "ticker": "PFE",
    "date": "2026-11-03",
-   "move_pct": -0.3,
-   "basis": "intraday",
-   "verdict": "Pfizer raised its 2026 outlook as cancer and heart drugs offset collapsing COVID sales, but Eliquis pricing and falling vaccine sales cloud the picture.",
+   "move_pct": -2.2,
+   "basis": "close",
+   "verdict": "Pfizer raised its 2026 outlook as new and acquired drugs offset sinking COVID sales, though quarterly revenue and profit were flat.",
    "takeaways": [
     {
-     "label": "Guidance raised",
-     "text": "Full-year revenue outlook rises $1.5B at the midpoint to $62-64B. Adjusted EPS outlook rises to $2.95-$3.05 from $2.80-$3.00, despite a one-time $0.10 licensing charge."
+     "label": "Outlook raised",
+     "text": "Full-year revenue guidance rose $1.5B at the midpoint to $62-64B. Adjusted EPS guidance rose to $2.95-$3.05 from $2.80-$3.00, absorbing a roughly $0.10 one-time charge."
     },
     {
-     "label": "Growth drivers vs COVID",
-     "text": "Revenue was flat at $16.6B. Excluding COVID products, sales grew 7%, and recently launched and acquired drugs grew 32%. Padcev rose 55% and Lorbrena 43%. Paxlovid fell 63%."
+     "label": "Growth drivers vs. COVID drag",
+     "text": "Revenue was flat at $16.6B. Excluding COVID products it grew 7%, and newer and acquired drugs grew 32%, led by Padcev up 55%."
     },
     {
-     "label": "Eliquis boost is partly pricing",
-     "text": "Eliquis sales rose 25% to a $513M gain, driven mainly by lower rebates and favorable channel mix in the U.S., a less repeatable source than rising demand."
+     "label": "Eliquis boost is price-driven",
+     "text": "Eliquis rose 25% (+$513M), mainly from lower rebates and channel mix in the U.S. rather than demand alone, so the gain may not repeat."
     },
     {
-     "label": "Vaccines weakening",
-     "text": "Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. Comirnaty fell 29% on narrower U.S. recommendations. Adjusted EPS of $0.87 was flat year over year."
+     "label": "Pressure points",
+     "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. R&D spending rose 18%."
+    }
+   ]
+  },
+  {
+   "ticker": "MPC",
+   "date": "2026-11-03",
+   "move_pct": -0.7,
+   "basis": "close",
+   "verdict": "Refining profits hit another record on war-inflated margins, and management expects them to stay high through mid-2027 while it sells two refineries for cash.",
+   "takeaways": [
+    {
+     "label": "Record margins again",
+     "text": "Profit per barrel refined jumped to $45.70 from $17.60 a year ago. Adjusted earnings were $26.93 a share, above the roughly $24.5 analysts expected."
+    },
+    {
+     "label": "Margins seen lasting",
+     "text": "Management expects elevated margins through at least mid-2027, citing about 10 million barrels a day of global refining capacity offline, and says it has seen no demand destruction."
+    },
+    {
+     "label": "Selling two refineries",
+     "text": "Marathon is selling its St. Paul Park and Mandan refineries to CVR Energy for $4.2 billion, with $3.45 billion going to Marathon. Proceeds go mainly to the Gulf Coast."
+    },
+    {
+     "label": "Heavy cash return",
+     "text": "Marathon returned $3.3 billion in the quarter, raised its dividend 10% and added a $5 billion buyback authorization. It holds $13.6 billion in cash."
     }
    ]
   },
   {
    "ticker": "AAPL",
    "date": "2026-11-02",
-   "move_pct": -4.6,
-   "basis": "after hours",
-   "verdict": "Apple beat on sales and profit, but guided December-quarter margins down to 45%\u201346% as record memory-chip costs cut into profit.",
+   "move_pct": -1.9,
+   "basis": "close",
+   "verdict": "Record quarter, but Apple guided December gross margin down to 45%\u201346% as memory costs climb, and gave no outlook past that.",
    "takeaways": [
     {
-     "label": "Margin squeeze",
-     "text": "December gross margin is guided to 45%\u201346%, below the 47.9% just reported (about 1 point of which was one-time tariff refunds) and under the 46.3% analysts expected. Memory costs drive most of the drop."
+     "label": "Margins squeezed by memory",
+     "text": "December-quarter gross margin is guided to 45%\u201346%, below the 47.9% just reported (about 1 point of which came from tariff refunds) and below the 46.3% analysts expected. Memory prices are still rising."
     },
     {
-     "label": "Record holiday growth",
-     "text": "Apple guided December-quarter revenue up 7%\u201310%, above the 6.1% analysts expected, and called it the best quarter in company history. It gave no outlook beyond December."
+     "label": "Growth slowing",
+     "text": "December-quarter revenue is guided up 7%\u201310%, down from 12% this quarter. Services is guided up 8%\u20139%. Mac and iPad supply stays limited by memory availability."
     },
     {
-     "label": "Supply limits demand",
-     "text": "The new iPhone Duo is supply-constrained and Apple can't say when supply will meet demand. Mac and iPad supply will also be tight in December because of memory."
+     "label": "AI spending climbing",
+     "text": "Operating expenses are expected to rise 11%\u201313% next quarter on AI investment. R&D already jumped about 32% to $11.7 billion in the September quarter."
     },
     {
-     "label": "Costs and softer spots",
-     "text": "Spending on AI-driven R&D is guided up 11%\u201313%. Services growth slows to 8%\u20139%, Greater China revenue of $17.5 billion missed estimates, and iPad and wearables fell."
+     "label": "Strong quarter and year",
+     "text": "Revenue was $114.5 billion (up 12%) and EPS $2.10, both September-quarter records. iPhone grew 17% to $57.6 billion and Greater China grew 21%. Full-year revenue hit $479 billion."
     }
    ]
   },
   {
    "ticker": "PLTR",
    "date": "2026-11-02",
-   "move_pct": -3.0,
-   "basis": "after hours",
-   "verdict": "Revenue nearly doubled and U.S. business customers now outspend the U.S. government, but new-deal growth slowed sharply to 6%.",
+   "move_pct": -1.6,
+   "basis": "close",
+   "verdict": "Palantir's growth is still accelerating: revenue nearly doubled, US business customers overtook government for the first time, and full-year guidance rose again.",
    "takeaways": [
     {
+     "label": "Growth keeps accelerating",
+     "text": "Revenue rose 96% to $2.313B, topping $2B for the first time. The full-year forecast rose to about $8.53B from about $8.15B three months ago."
+    },
+    {
      "label": "Commercial overtakes government",
-     "text": "U.S. commercial revenue rose 148% to $984M, passing U.S. government revenue ($953M) for the first time. Total revenue rose 96% to $2.31B versus about $2.18B expected."
+     "text": "US commercial revenue grew 148% to $984M, passing US government revenue of $953M for the first time. Government revenue also grew 96%."
     },
     {
-     "label": "Forecast raised again",
-     "text": "Full-year revenue guidance rose to about $8.53B (91% growth) from about $8.15B, versus roughly $8.2B expected. The Q4 forecast is about $2.65B, and profit margins stay near 62%."
+     "label": "Profits and cash surge",
+     "text": "Adjusted operating margin was 62% and free cash flow was $1.2B, or 53% of revenue. Net income was $1.13B, and cash and Treasuries total $10.4B."
     },
     {
-     "label": "New deals lag revenue",
-     "text": "New contract value signed was up only 6% to $2.9B, and U.S. commercial signings rose 11%. Revenue is growing far faster than new bookings."
-    },
-    {
-     "label": "International commercial stalls",
-     "text": "International commercial revenue grew 21% year over year but only about 1% from the prior quarter. Management gave no figures on Europe, and Germany's military is evaluating 30 AI tools."
+     "label": "New deal value lags revenue",
+     "text": "Total value of newly signed contracts rose only 6% to $2.92B, far slower than revenue. US commercial contract value rose 11%, a possible sign growth will cool."
     }
    ]
   },
