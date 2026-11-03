@@ -1,34 +1,54 @@
 {
  "ticker": "MPC",
- "updated": "2026-10-29T19:21Z",
+ "updated": "2026-11-03T16:42Z",
  "last": {
-  "date": "2026-08-04",
+  "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": 1.8,
-  "basis": "close",
-  "verdict": "Huge profit beat on record refining margins, but shares rose only modestly.",
-  "reasons": [
+  "move_pct": -1.4,
+  "basis": "intraday",
+  "verdict": "Marathon Petroleum earned a record $26.93 per share as refining margins soared, then raised its dividend 10% and added a $5 billion buyback.",
+  "takeaways": [
    {
-    "label": "Big earnings beat",
-    "text": "Earnings were $17.73 a share, versus about $13\u201314.5 analysts expected."
+    "label": "Record refining profit",
+    "text": "Adjusted profit was $26.93 a share, up from $3.01 a year earlier. Refining margin hit $45.70 a barrel versus $17.60, with refineries running at 100% capacity."
    },
    {
-    "label": "Record refining margins",
-    "text": "Profit per barrel refined hit $36.33, double last year's $17.58."
+    "label": "Bigger shareholder payouts",
+    "text": "Marathon returned $3.3 billion in the quarter, raised its dividend 10% and added a $5 billion buyback, bringing total buyback room to $8.1 billion."
    },
    {
-    "label": "Cash returned, higher output",
-    "text": "$2.5 billion of buybacks; refinery output is guided up to 3.0 million barrels a day."
+    "label": "Selling two refineries",
+    "text": "Marathon will sell its St. Paul Park and Mandan refineries and related pipelines for $4.2 billion, with $3.45 billion going to Marathon. Closing is expected at year-end, with proceeds to be reinvested mainly on the Gulf Coast."
+   },
+   {
+    "label": "Pipeline arm growing",
+    "text": "Its pipeline partner MPLX raised its payout 12.5%, which should send Marathon about $3.1 billion a year. Cash stands at $13.6 billion."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0001510295/000151029526000060/mpcq22026earningsrelease.htm",
-   "https://finviz.com/news/376901/marathon-petroleum-beats-second-quarter-estimates-as-refining-margins-surge",
-   "https://allmind.ai/earnings/event/2935924",
-   "https://oilprice.com/Company-News/Marathon-Petroleum-Profit-Quadruples-on-Higher-Refining-Margins.amp.html",
-   "https://inspenet.com/en/news/marathon-petroleum-exceeds-forecasts-q1/"
+   "https://www.sec.gov/Archives/edgar/data/0001510295/000151029526000069/mpcq32026earningsrelease.htm"
   ]
  },
- "story": "Refining profits have climbed for three straight reports: $18.65 a barrel in Q4 2025, $17.74 in Q1 2026, and $36.33 now. Tight global fuel supply drove this. The stock rose about 7% premarket after Q4 and about 1% after Q1.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-04",
+   "move_pct": 1.8,
+   "verdict": "Huge profit beat on record refining margins, but shares rose only modestly.",
+   "reasons": [
+    {
+     "label": "Big earnings beat",
+     "text": "Earnings were $17.73 a share, versus about $13\u201314.5 analysts expected."
+    },
+    {
+     "label": "Record refining margins",
+     "text": "Profit per barrel refined hit $36.33, double last year's $17.58."
+    },
+    {
+     "label": "Cash returned, higher output",
+     "text": "$2.5 billion of buybacks; refinery output is guided up to 3.0 million barrels a day."
+    }
+   ]
+  }
+ ]
 }

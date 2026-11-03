@@ -1,28 +1,28 @@
 {
  "ticker": "SHOP",
- "updated": "2026-11-03T13:43Z",
+ "updated": "2026-11-03T16:44Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -15.9,
-  "basis": "after hours",
-  "verdict": "Shopify kept revenue growing 32% while profit rose much faster, but gross profit is growing slower than sales.",
+  "move_pct": -6.8,
+  "basis": "intraday",
+  "verdict": "Shopify held 32% revenue growth while profits jumped faster, with operating income up 66%, and guided to a similar low-thirties pace next quarter.",
   "takeaways": [
    {
-    "label": "Profit outpacing sales",
-    "text": "Operating income jumped 66% to $568 million and free cash flow margin reached 22%, up from 18%, as costs grew slower than revenue."
+    "label": "Profit outgrowing sales",
+    "text": "Operating income rose 66% to $568 million, and free cash flow margin hit 22% versus 18% a year ago. Losses on payments and loans fell to $120 million from $148 million."
    },
    {
     "label": "Growth steady, not accelerating",
-    "text": "Revenue grew 32%, in line with the low-thirties outlook, after 34% last quarter. Fourth-quarter revenue is guided to grow at a low-thirties rate again."
+    "text": "Revenue grew 32%, down from 34% last quarter and in line with the low-thirties guide. Sales volume on the platform rose 29% to $119 billion."
    },
    {
-    "label": "Gross profit lags revenue",
-    "text": "Gross profit grew 28% versus 32% for revenue, and fourth-quarter gross profit is guided to a high-twenties rate. Revenue is shifting toward lower-margin payments."
+    "label": "Q4 outlook: profit-per-sale squeeze",
+    "text": "Q4 revenue is guided to low-thirties growth, but gross profit only high-twenties, so profit per sales dollar thins. Expenses are guided to 29-30% of revenue."
    },
    {
-    "label": "Big buyback",
-    "text": "Shopify repurchased $562 million of its own stock in the quarter, after none a year earlier, while still ending with about $4.7 billion in cash and securities."
+    "label": "Big buyback begins",
+    "text": "Shopify repurchased $562 million of its own stock in the quarter, with none a year earlier. R&D spending rose 33% to $497 million."
    }
   ],
   "transcript_read": false,

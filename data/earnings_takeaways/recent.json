@@ -1,53 +1,78 @@
 {
- "updated": "2026-11-03T13:44Z",
+ "updated": "2026-11-03T16:47Z",
  "reports": [
   {
    "ticker": "SHOP",
    "date": "2026-11-03",
-   "move_pct": -15.9,
-   "basis": "after hours",
-   "verdict": "Shopify kept revenue growing 32% while profit rose much faster, but gross profit is growing slower than sales.",
+   "move_pct": -6.8,
+   "basis": "intraday",
+   "verdict": "Shopify held 32% revenue growth while profits jumped faster, with operating income up 66%, and guided to a similar low-thirties pace next quarter.",
    "takeaways": [
     {
-     "label": "Profit outpacing sales",
-     "text": "Operating income jumped 66% to $568 million and free cash flow margin reached 22%, up from 18%, as costs grew slower than revenue."
+     "label": "Profit outgrowing sales",
+     "text": "Operating income rose 66% to $568 million, and free cash flow margin hit 22% versus 18% a year ago. Losses on payments and loans fell to $120 million from $148 million."
     },
     {
      "label": "Growth steady, not accelerating",
-     "text": "Revenue grew 32%, in line with the low-thirties outlook, after 34% last quarter. Fourth-quarter revenue is guided to grow at a low-thirties rate again."
+     "text": "Revenue grew 32%, down from 34% last quarter and in line with the low-thirties guide. Sales volume on the platform rose 29% to $119 billion."
     },
     {
-     "label": "Gross profit lags revenue",
-     "text": "Gross profit grew 28% versus 32% for revenue, and fourth-quarter gross profit is guided to a high-twenties rate. Revenue is shifting toward lower-margin payments."
+     "label": "Q4 outlook: profit-per-sale squeeze",
+     "text": "Q4 revenue is guided to low-thirties growth, but gross profit only high-twenties, so profit per sales dollar thins. Expenses are guided to 29-30% of revenue."
     },
     {
-     "label": "Big buyback",
-     "text": "Shopify repurchased $562 million of its own stock in the quarter, after none a year earlier, while still ending with about $4.7 billion in cash and securities."
+     "label": "Big buyback begins",
+     "text": "Shopify repurchased $562 million of its own stock in the quarter, with none a year earlier. R&D spending rose 33% to $497 million."
     }
    ]
   },
   {
    "ticker": "TEVA",
    "date": "2026-11-03",
-   "move_pct": 1.6,
-   "basis": "after hours",
-   "verdict": "Teva's three growth brands drove another raised sales outlook, but profit guidance barely moved and generic lenalidomide sales are shrinking.",
+   "move_pct": 3.7,
+   "basis": "intraday",
+   "verdict": "Teva raised 2026 sales guidance again as brand drugs grew 33%, but profit guidance barely moved and generics keep shrinking.",
    "takeaways": [
     {
-     "label": "Brands carry growth",
-     "text": "Austedo, Ajovy and Uzedy together brought in about $1.1 billion, up 33%. Austedo hit $751 million (+21%), Ajovy $269 million (+61%), Uzedy $85 million (+96%)."
+     "label": "Brand drugs accelerate",
+     "text": "Austedo ($751M, +21%), Ajovy ($269M, +61%) and Uzedy ($85M, +96%) together hit about $1.1B, up 33%. Forecasts for all three were raised again."
     },
     {
-     "label": "Sales outlook raised again",
-     "text": "2026 revenue guidance rose to $16.7\u201317.0 billion from $16.5\u201316.85 billion. Austedo guidance is now $2.55\u20132.65 billion, and Ajovy and Uzedy targets also went up."
+     "label": "Sales outlook up, profit flat",
+     "text": "2026 revenue guidance rose to $16.7\u201317.0B from $16.5\u201316.85B. Adjusted EPS guidance stayed essentially unchanged at $1.92\u20132.11, and the top end of operating income and EBITDA ranges was cut."
     },
     {
-     "label": "Profit outlook barely moves",
-     "text": "Operating profit guidance's top end was trimmed to $3.9 billion from $4.0 billion, and the EPS range stays about $1.92\u20132.11. Higher sales are not yet lifting profit."
+     "label": "Generics a drag",
+     "text": "Total revenue fell 2% to $4.4B as generics sales dropped 16%, mainly from lower sales of the cancer drug generic lenalidomide. Profit margins still improved."
     },
     {
-     "label": "Generics drag, margins improve",
-     "text": "Total revenue fell 2% to $4.4 billion on lower generic lenalidomide sales. Adjusted gross margin still rose to 58.7%, and adjusted EPS grew 10% to $0.86."
+     "label": "Balance sheet turns corner",
+     "text": "Moody's and S&P upgraded Teva to investment grade after Fitch. About $4.9B of debt was refinanced; debt is $16.7B, with a goal of reaching 2x leverage by end of 2027."
+    }
+   ]
+  },
+  {
+   "ticker": "MPC",
+   "date": "2026-11-03",
+   "move_pct": -1.4,
+   "basis": "intraday",
+   "verdict": "Marathon Petroleum earned a record $26.93 per share as refining margins soared, then raised its dividend 10% and added a $5 billion buyback.",
+   "takeaways": [
+    {
+     "label": "Record refining profit",
+     "text": "Adjusted profit was $26.93 a share, up from $3.01 a year earlier. Refining margin hit $45.70 a barrel versus $17.60, with refineries running at 100% capacity."
+    },
+    {
+     "label": "Bigger shareholder payouts",
+     "text": "Marathon returned $3.3 billion in the quarter, raised its dividend 10% and added a $5 billion buyback, bringing total buyback room to $8.1 billion."
+    },
+    {
+     "label": "Selling two refineries",
+     "text": "Marathon will sell its St. Paul Park and Mandan refineries and related pipelines for $4.2 billion, with $3.45 billion going to Marathon. Closing is expected at year-end, with proceeds to be reinvested mainly on the Gulf Coast."
+    },
+    {
+     "label": "Pipeline arm growing",
+     "text": "Its pipeline partner MPLX raised its payout 12.5%, which should send Marathon about $3.1 billion a year. Cash stands at $13.6 billion."
     }
    ]
   },
@@ -55,24 +80,24 @@
    "ticker": "PFE",
    "date": "2026-11-03",
    "move_pct": -0.3,
-   "basis": "after hours",
-   "verdict": "Pfizer raised 2026 guidance on new-product growth, but flat third-quarter revenue shows COVID declines and weaker Prevnar sales are still a drag.",
+   "basis": "intraday",
+   "verdict": "Pfizer raised its 2026 outlook as cancer and heart drugs offset collapsing COVID sales, but Eliquis pricing and falling vaccine sales cloud the picture.",
    "takeaways": [
     {
      "label": "Guidance raised",
-     "text": "Full-year revenue outlook rose $1.5B at the midpoint to $62-64B. Adjusted EPS outlook rose to $2.95-$3.05 from $2.80-$3.00, even after a roughly $0.10 one-time licensing charge."
+     "text": "Full-year revenue outlook rises $1.5B at the midpoint to $62-64B. Adjusted EPS outlook rises to $2.95-$3.05 from $2.80-$3.00, despite a one-time $0.10 licensing charge."
     },
     {
-     "label": "Newer drugs carry growth",
-     "text": "Launched and acquired products grew 32%, and revenue excluding COVID products grew 7%. Padcev rose 55% and Lorbrena 43%. Total revenue was flat at $16.6B."
+     "label": "Growth drivers vs COVID",
+     "text": "Revenue was flat at $16.6B. Excluding COVID products, sales grew 7%, and recently launched and acquired drugs grew 32%. Padcev rose 55% and Lorbrena 43%. Paxlovid fell 63%."
     },
     {
-     "label": "Eliquis boost is price-driven",
-     "text": "Eliquis sales rose 25%, up $513M. Pfizer credits mostly higher US net price from lower rebates and channel mix, not just demand."
+     "label": "Eliquis boost is partly pricing",
+     "text": "Eliquis sales rose 25% to a $513M gain, driven mainly by lower rebates and favorable channel mix in the U.S., a less repeatable source than rising demand."
     },
     {
-     "label": "COVID and Prevnar shrinking",
-     "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar fell 10% on lower vaccination rates and lost adult market share, offsetting much of the gains elsewhere."
+     "label": "Vaccines weakening",
+     "text": "Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. Comirnaty fell 29% on narrower U.S. recommendations. Adjusted EPS of $0.87 was flat year over year."
     }
    ]
   },
