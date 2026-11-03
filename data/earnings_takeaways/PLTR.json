@@ -1,34 +1,58 @@
 {
  "ticker": "PLTR",
- "updated": "2026-10-29T19:34Z",
+ "updated": "2026-11-03T05:36Z",
  "last": {
-  "date": "2026-08-03",
+  "date": "2026-11-02",
   "timing": "post",
-  "move_pct": 29.5,
-  "basis": "close",
-  "verdict": "Record growth and a huge forecast raise crushed expectations, sending shares soaring.",
-  "reasons": [
+  "move_pct": -3.0,
+  "basis": "after hours",
+  "verdict": "Revenue nearly doubled and U.S. business customers now outspend the U.S. government, but new-deal growth slowed sharply to 6%.",
+  "takeaways": [
    {
-    "label": "Biggest guidance raise ever",
-    "text": "2026 revenue outlook lifted to about $8.15B from $7.65B, well above Wall Street's view."
+    "label": "Commercial overtakes government",
+    "text": "U.S. commercial revenue rose 148% to $984M, passing U.S. government revenue ($953M) for the first time. Total revenue rose 96% to $2.31B versus about $2.18B expected."
    },
    {
-    "label": "Revenue beat by wide margin",
-    "text": "Revenue rose 93% to $1.94B versus roughly $1.81B expected; U.S. business grew 149%."
+    "label": "Forecast raised again",
+    "text": "Full-year revenue guidance rose to about $8.53B (91% growth) from about $8.15B, versus roughly $8.2B expected. The Q4 forecast is about $2.65B, and profit margins stay near 62%."
    },
    {
-    "label": "Record deals, high profits",
-    "text": "U.S. commercial deal bookings hit $2.13B, up 153%, with a 62% adjusted operating margin."
+    "label": "New deals lag revenue",
+    "text": "New contract value signed was up only 6% to $2.9B, and U.S. commercial signings rose 11%. Revenue is growing far faster than new bookings."
+   },
+   {
+    "label": "International commercial stalls",
+    "text": "International commercial revenue grew 21% year over year but only about 1% from the prior quarter. Management gave no figures on Europe, and Germany's military is evaluating 30 AI tools."
    }
   ],
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000039/a2026q2ex991pressrelease.htm",
-   "https://finviz.com/news/376477/palantir-shares-soar-after-record-quarter-and-major-guidance-upgrade",
-   "https://www.tikr.com/blog/palantirs-q2-earnings-call-produced-its-largest-ever-guidance-raise-heres-what-changed",
-   "https://finance.yahoo.com/markets/stocks/articles/palantir-q1-2026-earnings-revenue-205048964.html",
-   "https://trendspider.com/blog/palantir-stock-bounces-on-q4-beat-strong-fy26-guidance/"
+   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/02/palantir-pltr-q3-2026-earnings-call-transcript/",
+   "https://www.cnbc.com/2026/11/02/palantir-pltr-earnings-q3-2026.html",
+   "https://thenextweb.com/news/palantir-q3-2026-earnings-us-commercial-revenue-tops-government",
+   "https://www.streetinsider.com/Corporate+News/Palantir+Q3+2026+revenue+rises+96%25+as+U.S.+commercial+tops+%24984M/27273709.html"
   ]
  },
- "story": "Palantir has beaten forecasts and raised its outlook every quarter. Revenue growth sped up from 70% in late 2025 to 85% in early 2026 and 93% now. The stock was down about 18% this year before this report, on worries about expensive AI shares.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-03",
+   "move_pct": 29.5,
+   "verdict": "Record growth and a huge forecast raise crushed expectations, sending shares soaring.",
+   "reasons": [
+    {
+     "label": "Biggest guidance raise ever",
+     "text": "2026 revenue outlook lifted to about $8.15B from $7.65B, well above Wall Street's view."
+    },
+    {
+     "label": "Revenue beat by wide margin",
+     "text": "Revenue rose 93% to $1.94B versus roughly $1.81B expected; U.S. business grew 149%."
+    },
+    {
+     "label": "Record deals, high profits",
+     "text": "U.S. commercial deal bookings hit $2.13B, up 153%, with a 62% adjusted operating margin."
+    }
+   ]
+  }
+ ]
 }

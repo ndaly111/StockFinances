@@ -1,0 +1,36 @@
+{
+ "ticker": "KODK",
+ "updated": "2026-11-03T05:35Z",
+ "last": {
+  "date": "2026-08-04",
+  "timing": "post",
+  "move_pct": 10.4,
+  "basis": "close",
+  "verdict": "Kodak's fourth straight year-over-year improvement, with gross profit up 61% and net income of $17 million, now has less debt behind it.",
+  "takeaways": [
+   {
+    "label": "Margins jumped",
+    "text": "Gross margin rose to 26% from 19% as higher prices and volume outran pricier silver and aluminum. Operational EBITDA reached $36 million, up from $9 million."
+   },
+   {
+    "label": "Chemicals led growth",
+    "text": "Advanced Materials & Chemicals revenue rose 40% to $105 million and its operational EBITDA nearly tripled to $22 million. Print grew 10% and swung to an $8 million profit."
+   },
+   {
+    "label": "Debt sharply reduced",
+    "text": "Kodak repaid $101 million of term loans and cut interest expense by $9 million. Management said total debt to EBITDA is 1x, versus 23x a year earlier."
+   },
+   {
+    "label": "Cash and pension caveats",
+    "text": "Cash fell $47 million to $290 million as inventory rose $37 million on silver and aluminum. Pension income is expected to stay below last year's level through 2026."
+   }
+  ],
+  "transcript_read": true,
+  "sources": [
+   "https://www.sec.gov/Archives/edgar/data/31235/000119312526332861/kodk-ex99_1.htm",
+   "https://www.marketbeat.com/earnings/reports/2026-8-4-eastman-kodak-stock/",
+   "https://thedeadpixelssociety.com/kodak-posts-stronger-second-quarter-as-print-advanced-materials-drive-growth/"
+  ]
+ },
+ "history": []
+}

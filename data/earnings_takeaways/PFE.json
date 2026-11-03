@@ -1,34 +1,54 @@
 {
  "ticker": "PFE",
- "updated": "2026-10-29T19:32Z",
+ "updated": "2026-11-03T16:43Z",
  "last": {
-  "date": "2026-08-04",
+  "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": 1.5,
-  "basis": "close",
-  "verdict": "Earnings beat and a higher revenue outlook gave shares a modest lift.",
-  "reasons": [
+  "move_pct": -0.3,
+  "basis": "intraday",
+  "verdict": "Pfizer raised its 2026 outlook as cancer and heart drugs offset collapsing COVID sales, but Eliquis pricing and falling vaccine sales cloud the picture.",
+  "takeaways": [
    {
-    "label": "Beat on profit",
-    "text": "Adjusted EPS of $0.77 beat the roughly $0.68 analysts expected; revenue was $15.0B."
+    "label": "Guidance raised",
+    "text": "Full-year revenue outlook rises $1.5B at the midpoint to $62-64B. Adjusted EPS outlook rises to $2.95-$3.05 from $2.80-$3.00, despite a one-time $0.10 licensing charge."
    },
    {
-    "label": "Revenue outlook raised",
-    "text": "Full-year revenue guidance rose $500M at the midpoint, to $60.5-$62.5B."
+    "label": "Growth drivers vs COVID",
+    "text": "Revenue was flat at $16.6B. Excluding COVID products, sales grew 7%, and recently launched and acquired drugs grew 32%. Padcev rose 55% and Lorbrena 43%. Paxlovid fell 63%."
    },
    {
-    "label": "COVID sales shrinking",
-    "text": "COVID product sales forecast cut to about $4B from $5B, capping enthusiasm."
+    "label": "Eliquis boost is partly pricing",
+    "text": "Eliquis sales rose 25% to a $513M gain, driven mainly by lower rebates and favorable channel mix in the U.S., a less repeatable source than rising demand."
+   },
+   {
+    "label": "Vaccines weakening",
+    "text": "Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. Comirnaty fell 29% on narrower U.S. recommendations. Adjusted EPS of $0.87 was flat year over year."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/78003/000007800326000094/pfe-6282026xex99.htm",
-   "https://www.marketbeat.com/instant-alerts/pfizer-nysepfe-shares-up-13-following-earnings-beat-2026-08-04/",
-   "https://www.chartmill.com/news/PFE/Chartmill-52551-Pfizer-NYSEPFE-Beats-Q2-Expectations-and-Raises-2026-Revenue-Guidance",
-   "https://www.nasdaq.com/articles/pfizer-beats-q1-earnings-new-acquired-drugs-drive-sales-growth",
-   "https://www.hl.co.uk/shares/stock-market-news/company--news/archive/pfizer-posts-better-than-expected-q4,-though-shares-slide-on-outlook"
+   "https://www.sec.gov/Archives/edgar/data/78003/000007800326000125/pfe-9272026xex99.htm"
   ]
  },
- "story": "Pfizer has beaten profit estimates for several quarters while holding its 2026 profit outlook at $2.80-$3.00. Shrinking COVID sales are the recurring drag, offset by growth in newer drugs. Reactions have been small: shares rose after Q1 but slipped after Q4.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-04",
+   "move_pct": 1.5,
+   "verdict": "Earnings beat and a higher revenue outlook gave shares a modest lift.",
+   "reasons": [
+    {
+     "label": "Beat on profit",
+     "text": "Adjusted EPS of $0.77 beat the roughly $0.68 analysts expected; revenue was $15.0B."
+    },
+    {
+     "label": "Revenue outlook raised",
+     "text": "Full-year revenue guidance rose $500M at the midpoint, to $60.5-$62.5B."
+    },
+    {
+     "label": "COVID sales shrinking",
+     "text": "COVID product sales forecast cut to about $4B from $5B, capping enthusiasm."
+    }
+   ]
+  }
+ ]
 }

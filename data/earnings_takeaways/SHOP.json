@@ -1,35 +1,54 @@
 {
  "ticker": "SHOP",
- "updated": "2026-10-29T19:39Z",
+ "updated": "2026-11-03T16:44Z",
  "last": {
-  "date": "2026-08-05",
+  "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": 17.0,
-  "basis": "close",
-  "verdict": "Growth sped up and the outlook stayed strong, so a beaten-down stock jumped.",
-  "reasons": [
+  "move_pct": -6.8,
+  "basis": "intraday",
+  "verdict": "Shopify held 32% revenue growth while profits jumped faster, with operating income up 66%, and guided to a similar low-thirties pace next quarter.",
+  "takeaways": [
    {
-    "label": "Growth speeding up",
-    "text": "Revenue rose 34%, ahead of the high-twenties growth Shopify had guided for this quarter."
+    "label": "Profit outgrowing sales",
+    "text": "Operating income rose 66% to $568 million, and free cash flow margin hit 22% versus 18% a year ago. Losses on payments and loans fell to $120 million from $148 million."
    },
    {
-    "label": "Strong profit and cash",
-    "text": "Free cash flow margin reached 18%, up from 16%, and operating income rose 68%."
+    "label": "Growth steady, not accelerating",
+    "text": "Revenue grew 32%, down from 34% last quarter and in line with the low-thirties guide. Sales volume on the platform rose 29% to $119 billion."
    },
    {
-    "label": "Confident next-quarter outlook",
-    "text": "Shopify guided Q3 revenue growth to the low thirties and free cash flow margin to the high-teens to low-twenties."
+    "label": "Q4 outlook: profit-per-sale squeeze",
+    "text": "Q4 revenue is guided to low-thirties growth, but gross profit only high-twenties, so profit per sales dollar thins. Expenses are guided to 29-30% of revenue."
+   },
+   {
+    "label": "Big buyback begins",
+    "text": "Shopify repurchased $562 million of its own stock in the quarter, with none a year earlier. R&D spending rose 33% to $497 million."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1594805/000159480526000046/exhibit991pressreleaseq220.htm",
-   "https://www.schaeffersresearch.com/content/news/2026/08/05/shopify-stock-surges-after-strong-q2-results",
-   "https://www.proactiveinvestors.com/companies/news/1096600/shopify-stock-surges-on-strong-second-quarter-results-upbeat-outlook-1096600.html",
-   "https://www.proactiveinvestors.co.uk/companies/news/1091753/shopify-shares-slide-on-q1-loss-and-cautious-guidance-1091753.html",
-   "https://invezz.com/news/2026/02/11/why-shopify-stock-is-crashing-despite-strong-q4-earnings-beat/",
-   "https://finance.yahoo.com/news/shopify-shares-slide-despite-q4-172200437.html"
+   "https://www.sec.gov/Archives/edgar/data/1594805/000159480526000067/exhibit991pressreleaseq320.htm"
   ]
  },
- "story": "Revenue has grown above 30% for several quarters, but guidance has driven the stock. It fell over 10% in February on a weaker cash outlook and AI worries, then dropped again in May on cautious guidance. August reversed that.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-05",
+   "move_pct": 17.0,
+   "verdict": "Growth sped up and the outlook stayed strong, so a beaten-down stock jumped.",
+   "reasons": [
+    {
+     "label": "Growth speeding up",
+     "text": "Revenue rose 34%, ahead of the high-twenties growth Shopify had guided for this quarter."
+    },
+    {
+     "label": "Strong profit and cash",
+     "text": "Free cash flow margin reached 18%, up from 16%, and operating income rose 68%."
+    },
+    {
+     "label": "Confident next-quarter outlook",
+     "text": "Shopify guided Q3 revenue growth to the low thirties and free cash flow margin to the high-teens to low-twenties."
+    }
+   ]
+  }
+ ]
 }

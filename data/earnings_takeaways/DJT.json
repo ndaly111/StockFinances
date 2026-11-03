@@ -1,0 +1,37 @@
+{
+ "ticker": "DJT",
+ "updated": "2026-11-03T05:33Z",
+ "last": {
+  "date": "2026-08-10",
+  "timing": "post",
+  "move_pct": -5.1,
+  "basis": "close",
+  "verdict": "Trump Media is now mostly a bitcoin holder and a fusion-merger bet, with a tiny $1.7 million-a-quarter media business.",
+  "takeaways": [
+   {
+    "label": "Bitcoin drives the loss",
+    "text": "The $238.1 million quarterly net loss came mostly from $190.4 million of non-cash bitcoin and stock losses. Revenue was only $1.7 million, up 89%."
+   },
+   {
+    "label": "TAE merger is the plan",
+    "text": "Management calls the fusion-company merger the most important driver of value. It targets a Q4 2026 close but would not commit to a date, and the filing is still pending."
+   },
+   {
+    "label": "Crypto.com deal dropped",
+    "text": "The planned Crypto.com/Yorkville combination was terminated, and the Crypto.com tie-up became a marketing deal. The company also paused its in-house bitcoin yield strategy for third-party management."
+   },
+   {
+    "label": "Nearly $1B debt coming due",
+    "text": "Nearly $1 billion of convertible notes come due. Management says the balance sheet can cover them but gave no repayment plan. Liquid cash and short-term investments exceed $400 million."
+   }
+  ],
+  "transcript_read": true,
+  "sources": [
+   "https://www.webull.com/news/15420967227859968",
+   "https://www.sec.gov/Archives/edgar/data/0001849635/000143774926026797/ex_1001984.htm",
+   "https://www.aljazeera.com/news/2026/8/11/trumps-media-company-reports-238m-loss",
+   "https://www.allinvestview.com/earnings/DJT/q2-2026/"
+  ]
+ },
+ "history": []
+}
