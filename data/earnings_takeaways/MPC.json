@@ -1,33 +1,36 @@
 {
  "ticker": "MPC",
- "updated": "2026-11-03T16:42Z",
+ "updated": "2026-11-03T21:18Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -1.4,
-  "basis": "intraday",
-  "verdict": "Marathon Petroleum earned a record $26.93 per share as refining margins soared, then raised its dividend 10% and added a $5 billion buyback.",
+  "move_pct": -0.7,
+  "basis": "close",
+  "verdict": "Refining profits hit another record on war-inflated margins, and management expects them to stay high through mid-2027 while it sells two refineries for cash.",
   "takeaways": [
    {
-    "label": "Record refining profit",
-    "text": "Adjusted profit was $26.93 a share, up from $3.01 a year earlier. Refining margin hit $45.70 a barrel versus $17.60, with refineries running at 100% capacity."
+    "label": "Record margins again",
+    "text": "Profit per barrel refined jumped to $45.70 from $17.60 a year ago. Adjusted earnings were $26.93 a share, above the roughly $24.5 analysts expected."
    },
    {
-    "label": "Bigger shareholder payouts",
-    "text": "Marathon returned $3.3 billion in the quarter, raised its dividend 10% and added a $5 billion buyback, bringing total buyback room to $8.1 billion."
+    "label": "Margins seen lasting",
+    "text": "Management expects elevated margins through at least mid-2027, citing about 10 million barrels a day of global refining capacity offline, and says it has seen no demand destruction."
    },
    {
     "label": "Selling two refineries",
-    "text": "Marathon will sell its St. Paul Park and Mandan refineries and related pipelines for $4.2 billion, with $3.45 billion going to Marathon. Closing is expected at year-end, with proceeds to be reinvested mainly on the Gulf Coast."
+    "text": "Marathon is selling its St. Paul Park and Mandan refineries to CVR Energy for $4.2 billion, with $3.45 billion going to Marathon. Proceeds go mainly to the Gulf Coast."
    },
    {
-    "label": "Pipeline arm growing",
-    "text": "Its pipeline partner MPLX raised its payout 12.5%, which should send Marathon about $3.1 billion a year. Cash stands at $13.6 billion."
+    "label": "Heavy cash return",
+    "text": "Marathon returned $3.3 billion in the quarter, raised its dividend 10% and added a $5 billion buyback authorization. It holds $13.6 billion in cash."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0001510295/000151029526000069/mpcq32026earningsrelease.htm"
+   "https://www.sec.gov/Archives/edgar/data/0001510295/000151029526000069/mpcq32026earningsrelease.htm",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-marathon-petroleum-tops-q3-2026-estimates-93CH-4996104",
+   "https://www.investing.com/news/stock-market-news/marathon-beats-quarterly-estimates-to-sell-two-refineries-to-cvr-energy-4995111",
+   "https://finimize.com/content/marathon-petroleum-sells-refineries-after-a-big-margin-quarter"
   ]
  },
  "history": [

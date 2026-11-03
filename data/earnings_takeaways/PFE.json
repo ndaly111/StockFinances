@@ -1,28 +1,28 @@
 {
  "ticker": "PFE",
- "updated": "2026-11-03T16:43Z",
+ "updated": "2026-11-03T21:19Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -0.3,
-  "basis": "intraday",
-  "verdict": "Pfizer raised its 2026 outlook as cancer and heart drugs offset collapsing COVID sales, but Eliquis pricing and falling vaccine sales cloud the picture.",
+  "move_pct": -2.2,
+  "basis": "close",
+  "verdict": "Pfizer raised its 2026 outlook as new and acquired drugs offset sinking COVID sales, though quarterly revenue and profit were flat.",
   "takeaways": [
    {
-    "label": "Guidance raised",
-    "text": "Full-year revenue outlook rises $1.5B at the midpoint to $62-64B. Adjusted EPS outlook rises to $2.95-$3.05 from $2.80-$3.00, despite a one-time $0.10 licensing charge."
+    "label": "Outlook raised",
+    "text": "Full-year revenue guidance rose $1.5B at the midpoint to $62-64B. Adjusted EPS guidance rose to $2.95-$3.05 from $2.80-$3.00, absorbing a roughly $0.10 one-time charge."
    },
    {
-    "label": "Growth drivers vs COVID",
-    "text": "Revenue was flat at $16.6B. Excluding COVID products, sales grew 7%, and recently launched and acquired drugs grew 32%. Padcev rose 55% and Lorbrena 43%. Paxlovid fell 63%."
+    "label": "Growth drivers vs. COVID drag",
+    "text": "Revenue was flat at $16.6B. Excluding COVID products it grew 7%, and newer and acquired drugs grew 32%, led by Padcev up 55%."
    },
    {
-    "label": "Eliquis boost is partly pricing",
-    "text": "Eliquis sales rose 25% to a $513M gain, driven mainly by lower rebates and favorable channel mix in the U.S., a less repeatable source than rising demand."
+    "label": "Eliquis boost is price-driven",
+    "text": "Eliquis rose 25% (+$513M), mainly from lower rebates and channel mix in the U.S. rather than demand alone, so the gain may not repeat."
    },
    {
-    "label": "Vaccines weakening",
-    "text": "Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. Comirnaty fell 29% on narrower U.S. recommendations. Adjusted EPS of $0.87 was flat year over year."
+    "label": "Pressure points",
+    "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. R&D spending rose 18%."
    }
   ],
   "transcript_read": false,
