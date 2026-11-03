@@ -31,6 +31,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import requests
 import yfinance as yf
@@ -43,10 +44,11 @@ TICKERS_FILE = "tickers.csv"
 NEW_REPORT_DAYS = 7       # auto mode only writes cards for reports this recent
 RECENT_DAYS = 4           # homepage shows reports from the last N days
 HISTORY_KEEP = 4          # past cards kept per ticker (feed the "story")
-CALL_RETRY_DAYS = 3       # keep retrying a card with no call section this long
+CALL_RETRY_DAYS = 3       # keep retrying a card written without the call this long
 PRESS_RELEASE_CHARS = 30000
 CLAUDE_MODEL = os.environ.get("TAKEAWAYS_MODEL", "sonnet")
 CLAUDE_TIMEOUT_S = 900
+ET = ZoneInfo("America/New_York")
 SEC_HEADERS = {"User-Agent": "Nick's Stock Financials ndaly111@gmail.com"}
 
 
@@ -60,16 +62,25 @@ def _reports(ticker):
     results 8-K on EDGAR before a card is written (see update_ticker).
     """
     df = yf.Ticker(ticker).get_earnings_dates(limit=12)
-    if df is None or df.empty:
-        return []
     out = []
-    for ts, row in df.iterrows():
+    for ts, row in (df.iterrows() if df is not None else ()):
         when = ts.to_pydatetime()
         confirmed = row.get("Reported EPS") == row.get("Reported EPS")  # not NaN
         if not confirmed and when > dt.datetime.now(when.tzinfo) - dt.timedelta(minutes=20):
             continue
         out.append((when, when.hour < 12, confirmed))
-    return sorted(out, reverse=True)
+    out.sort(reverse=True)
+    # Yahoo can drop a report from its list for hours right after the release,
+    # so a results 8-K newer than anything Yahoo lists counts as the latest report.
+    try:
+        filed = _latest_results_8k(ticker)
+    except Exception as exc:
+        print(f"[takeaways] {ticker}: EDGAR check failed: {exc}")
+        filed = None
+    if filed and (not out or filed.date() - out[0][0].date() > dt.timedelta(days=1)):
+        print(f"[takeaways] {ticker}: report dated from the {filed.date()} 8-K, not on Yahoo's list")
+        out.insert(0, (filed, filed.hour < 12, True))
+    return out
 
 
 def _price_move(ticker, when, pre_market):
@@ -83,7 +94,7 @@ def _price_move(ticker, when, pre_market):
                                      end=day + dt.timedelta(days=6), auto_adjust=False)
     if hist.empty:
         return None
-    closes = hist["Close"]
+    closes = hist["Close"].dropna()
     dates = [d.date() for d in closes.index]
     before = [i for i, d in enumerate(dates) if (d < day if pre_market else d <= day)]
     if not before:
@@ -95,10 +106,11 @@ def _price_move(ticker, when, pre_market):
         return round((float(closes.iloc[after[0]]) / base - 1) * 100, 1), "close"
     # Reaction session not closed yet: use the latest print (incl. extended hours).
     live = yf.Ticker(ticker).history(period="2d", interval="1m", prepost=True)
-    if live.empty:
+    prints = live["Close"].dropna() if not live.empty else live
+    if prints.empty:
         return None
     basis = "intraday" if after else "after hours"
-    return round((float(live["Close"].iloc[-1]) / base - 1) * 100, 1), basis
+    return round((float(prints.iloc[-1]) / base - 1) * 100, 1), basis
 
 
 _SEC_MAP = None
@@ -112,6 +124,19 @@ def _sec_lookup(ticker):
         _SEC_MAP = {v["ticker"].upper(): (int(v["cik_str"]), v["title"]) for v in raw.values()}
     t = ticker.upper()
     return _SEC_MAP.get(t.replace("-", ".")) or _SEC_MAP.get(t)
+
+
+def _latest_results_8k(ticker):
+    """Time (ET) of the newest results 8-K (item 2.02), or None."""
+    hit = _sec_lookup(ticker)
+    if not hit:
+        return None
+    sub = requests.get(f"https://data.sec.gov/submissions/CIK{hit[0]:010d}.json",
+                       headers=SEC_HEADERS, timeout=20).json()["filings"]["recent"]
+    for form, items, accepted in zip(sub["form"], sub["items"], sub["acceptanceDateTime"]):
+        if form == "8-K" and "2.02" in items:
+            return dt.datetime.fromisoformat(accepted[:19]).replace(tzinfo=dt.timezone.utc).astimezone(ET)
+    return None
 
 
 def _press_release(ticker, when):
@@ -146,9 +171,9 @@ def _press_release(ticker, when):
 
 # ───────── the writer (claude -p on the subscription) ─────────────
 
-PROMPT = """You write a short earnings digest for a personal stock website.
-The reader wants to skip the earnings call and the coverage and still know, in under 30 seconds,
-what the company reported, what management said on the call, and what the news is making of it.
+PROMPT = """You read an earnings report so the reader does not have to.
+Read everything, form your own view, and tell them what they would walk away with: the key
+takeaway and only the points that really matter. It should be readable in 20 seconds.
 
 Company: {name} ({ticker})
 Earnings released: {when} ({timing})
@@ -157,48 +182,40 @@ Official press release (SEC 8-K exhibit): {pr_url}
 Research first: use WebSearch/WebFetch to read the earnings call transcript (Motley Fool,
 Investing.com, Seeking Alpha, company IR, etc.) and at least three same-day news reports
 (Reuters, CNBC, Bloomberg, WSJ, Barron's, etc.). The press release text below is ground truth
-for the reported numbers; do not contradict it.
+for the reported numbers; do not contradict it. {prior}
 
-TASK 1, the digest of this report:
-- "verdict": one sentence, max 16 words, with the single main takeaway from the report.
-- "numbers": one sentence, max 30 words: revenue and EPS against expectations, plus guidance
-  if the company gave any.
-- "call": 2-4 items, most important first, of what management actually said on the conference
-  call: outlook, demand, costs, spending, product plans, answers to analyst questions. Each has
-  a "label" (2-4 words) and "text" (max 25 words, a concrete number where it helps). Use only the
-  transcript or reporting that quotes the call, never the press release. If the call has not
-  happened yet or neither is available, return an empty list; do not guess.
-- "news": 2-3 items, most important first, of what the news coverage and analysts are focusing
-  on, including worries and disagreements. Same "label" and "text" format. Do not repeat a
-  point already made in "call".
-- Leave out filler metrics and lists of segment results. Do not write about the size of today's
-  stock price move; the site shows that separately.
-
-TASK 2, "story": 2-3 short sentences, max 45 words, on what has been going on across the last
-~4 earnings reports: the trend in growth and guidance, and recurring worries or tailwinds. {prior}
+Write:
+- "verdict": the key takeaway. One sentence, max 20 words: the one thing to remember if the
+  reader remembers nothing else.
+- "takeaways": 2-4 points, most important first. Merge the results, the call and the coverage
+  into one view; never organize or label points by where they came from. Include a point only
+  if it changes how an investor should think about the company: a real shift in guidance,
+  demand, margins, spending or strategy, or a result that truly surprised. Fewer is better; do
+  not pad to reach 4, and do not list results just because they were reported. Each has a
+  "label" (2-4 words) and "text" (max 25 words, a concrete number where it helps).
+- "transcript_read": true only if you actually read the call transcript or reporting that
+  quotes the call, false otherwise. Never present something as said on the call otherwise.
+- Do not write about the size of today's stock price move; the site shows that separately.
 
 Plain English, no jargon a casual investor wouldn't know (say "payments to banks to keep
 them on Visa", not "client incentives"). No first person ("I", "we"), no investment advice. Every
 number must come from a source you read.
 
 Reply with ONLY this JSON object, nothing else:
-{{"verdict": "...", "numbers": "...", "call": [{{"label": "...", "text": "..."}}], "news": [{{"label": "...", "text": "..."}}], "story": "...", "sources": ["url", "..."]}}
+{{"verdict": "...", "takeaways": [{{"label": "...", "text": "..."}}], "transcript_read": true, "sources": ["url", "..."]}}
 
 Press release text:
 {pr_text}
 """
 
 
-def _items(card, key, limit):
-    return [r for r in card.get(key) or [] if r.get("label") and r.get("text")][:limit]
-
-
 def _clean_card(card, raw=""):
-    """Keep well-formed items only. An empty "call" is valid: no transcript yet."""
-    card["call"] = _items(card, "call", 4)
-    card["news"] = _items(card, "news", 3)
-    if not card.get("verdict") or not card.get("numbers") or not (card["call"] or card["news"]):
+    """Keep well-formed points only; a card needs a verdict and at least one point."""
+    card["takeaways"] = [r for r in card.get("takeaways") or []
+                         if r.get("label") and r.get("text")][:4]
+    if not card.get("verdict") or not card["takeaways"]:
         raise RuntimeError(f"claude returned an incomplete card: {raw[-400:]}")
+    card["transcript_read"] = card.get("transcript_read") is True
     return card
 
 
@@ -237,11 +254,11 @@ def update_ticker(ticker, force=False, backfill=False):
     last = (doc or {}).get("last") or {}
 
     if last.get("date") == date and not force:
-        # Card exists. Rewrite it while the call section is still empty (the
-        # transcript posts hours later), and once more when the reaction session
-        # has closed (transcript + full-day coverage).
+        # Card exists. Rewrite it until the call has been read (the transcript
+        # posts hours later), and once more when the reaction session has closed
+        # (transcript + full-day coverage).
         age = (dt.datetime.now(when.tzinfo) - when).days
-        call_missing = "call" in last and not last["call"] and age <= CALL_RETRY_DAYS
+        call_missing = last.get("transcript_read") is False and age <= CALL_RETRY_DAYS
         if last.get("basis") == "close" and not call_missing:
             return None
         mv = _price_move(ticker, when, pre)
@@ -263,18 +280,18 @@ def update_ticker(ticker, force=False, backfill=False):
 
     history = [h for h in (doc or {}).get("history", []) if h.get("date") != date]
     if last and last.get("date") != date:
-        history.insert(0, {k: last[k] for k in ("date", "move_pct", "verdict", "numbers", "call", "news",
-                                                "reasons") if k in last})
+        history.insert(0, {k: last[k] for k in ("date", "move_pct", "verdict", "takeaways", "reasons")
+                            if k in last})
     history = history[:HISTORY_KEEP - 1]
     if history:
-        prior = "Cards we wrote for the previous reports:\n" + "\n".join(
+        prior = "For context, notes on the previous reports:\n" + "\n".join(
             f"- {h['date']}: {h['verdict']} "
             + " ".join(f"{r['label']}: {r['text']}" for r in
-                       h.get("call", []) + h.get("news", []) + h.get("reasons", []))
+                       h.get("takeaways", []) + h.get("reasons", []))
             for h in history)
     else:
-        prior = ("We have no notes on earlier reports; briefly research the previous ~3 "
-                 "earnings reports and the stock's reactions to them.")
+        prior = ("Check the previous ~3 earnings reports too, so a real change in trend "
+                 "can count as a point.")
 
     prompt = PROMPT.format(
         name=name, ticker=ticker,
@@ -292,9 +309,8 @@ def update_ticker(ticker, force=False, backfill=False):
         "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
         "last": {"date": date, "timing": "pre" if pre else "post",
                  "move_pct": mv[0], "basis": mv[1], "verdict": card["verdict"],
-                 "numbers": card["numbers"], "call": card["call"], "news": card["news"],
+                 "takeaways": card["takeaways"], "transcript_read": card["transcript_read"],
                  "sources": sources},
-        "story": card.get("story", ""),
         "history": history,
     }
     _save(ticker, doc)
@@ -311,8 +327,7 @@ def write_recent():
         last = d.get("last") or {}
         if last.get("date", "") >= cutoff:
             rows.append({"ticker": d["ticker"], **{k: last[k] for k in
-                         ("date", "move_pct", "basis", "verdict", "numbers", "call", "news",
-                          "reasons") if k in last}})
+                         ("date", "move_pct", "basis", "verdict", "takeaways", "reasons") if k in last}})
     rows.sort(key=lambda r: (r["date"], abs(r["move_pct"])), reverse=True)
     (OUT_DIR / "recent.json").write_text(json.dumps(
         {"updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),

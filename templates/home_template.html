@@ -105,18 +105,10 @@
       rows.forEach(function(r){
         var m=r.move_pct,cls=m>0?'up':(m<0?'down':''),pct=(m>0?'+':(m<0?'−':''))+Math.abs(m).toFixed(1)+'%';
         var dd=new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-        var moved='<span class="'+cls+'">'+pct+'</span>'+(r.basis==='close'?'':' <span class="news-date">'+esc(r.basis)+'</span>');
-        var list=function(xs){var o='<ul class="news-list" style="list-style:disc;padding-left:18px">';(xs||[]).forEach(function(x){o+='<li><b>'+esc(x.label)+':</b> '+esc(x.text)+'</li>';});return o+'</ul>';};
-        var isNew=Array.isArray(r.call);
-        h+='<h3><a href="ticker.html?t='+esc(r.ticker)+'">'+esc(r.ticker)+'</a> '+(isNew?'':moved+' ')+'<span class="news-date">'+dd+'</span></h3>';
-        if(isNew){
-          h+='<div><b>'+esc(r.verdict)+'</b></div>'+(r.numbers?'<div>'+esc(r.numbers)+'</div>':'');
-          if(r.call.length)h+='<div><b>On the call</b></div>'+list(r.call);
-          if((r.news||[]).length)h+='<div><b>In the news</b></div>'+list(r.news);
-          h+='<div class="news-date">Stock since the report: '+moved+'</div>';
-        }else{
-          h+='<div>'+esc(r.verdict)+'</div>'+list(r.reasons);
-        }
+        h+='<h3><a href="ticker.html?t='+esc(r.ticker)+'">'+esc(r.ticker)+'</a> <span class="news-date">'+dd+'</span></h3>'+
+           '<div><b>Key takeaway:</b> '+esc(r.verdict)+'</div><ul class="news-list" style="list-style:disc;padding-left:18px">';
+        (r.takeaways||r.reasons||[]).forEach(function(x){h+='<li><b>'+esc(x.label)+':</b> '+esc(x.text)+'</li>';});
+        h+='</ul><div class="news-date">Stock since the report: <span class="'+cls+'">'+pct+'</span>'+(r.basis==='close'?'':' '+esc(r.basis))+'</div>';
       });
       document.getElementById('et-list').innerHTML=h;
       document.getElementById('et-count').textContent='('+rows.length+' report'+(rows.length>1?'s':'')+', tap to open)';
