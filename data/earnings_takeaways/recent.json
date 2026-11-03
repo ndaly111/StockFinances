@@ -1,6 +1,31 @@
 {
- "updated": "2026-11-03T01:05Z",
+ "updated": "2026-11-03T01:35Z",
  "reports": [
+  {
+   "ticker": "AAPL",
+   "date": "2026-11-02",
+   "move_pct": -4.6,
+   "basis": "after hours",
+   "verdict": "Apple beat on sales and profit, but guided December-quarter margins down to 45%\u201346% as record memory-chip costs cut into profit.",
+   "takeaways": [
+    {
+     "label": "Margin squeeze",
+     "text": "December gross margin is guided to 45%\u201346%, below the 47.9% just reported (about 1 point of which was one-time tariff refunds) and under the 46.3% analysts expected. Memory costs drive most of the drop."
+    },
+    {
+     "label": "Record holiday growth",
+     "text": "Apple guided December-quarter revenue up 7%\u201310%, above the 6.1% analysts expected, and called it the best quarter in company history. It gave no outlook beyond December."
+    },
+    {
+     "label": "Supply limits demand",
+     "text": "The new iPhone Duo is supply-constrained and Apple can't say when supply will meet demand. Mac and iPad supply will also be tight in December because of memory."
+    },
+    {
+     "label": "Costs and softer spots",
+     "text": "Spending on AI-driven R&D is guided up 11%\u201313%. Services growth slows to 8%\u20139%, Greater China revenue of $17.5 billion missed estimates, and iPad and wearables fell."
+    }
+   ]
+  },
   {
    "ticker": "XOM",
    "date": "2026-10-30",
