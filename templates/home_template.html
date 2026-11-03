@@ -54,10 +54,15 @@
   <header><h1>Financial Overview</h1></header>
 
 
-  <details id="earnings-takeaways" class="center-table news-box" style="display:none">
-    <summary><h2 style="display:inline">Earnings: Key Takeaways</h2> <span id="et-count" class="news-date"></span></summary>
-    <div id="et-list"></div>
-  </details>
+  <style>
+    .et-window{max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:6px;padding:8px 10px;background:#FFFFEE;border:2px inset #999;text-align:left}
+    .et-window h3{margin:12px 0 4px;padding-top:10px;border-top:1px dotted #999}
+    .et-window h3:first-child{margin-top:0;padding-top:0;border-top:0}
+  </style>
+  <div id="earnings-takeaways" class="center-table news-box" style="display:none">
+    <h2>Earnings: Key Takeaways <span id="et-count" class="news-date"></span></h2>
+    <div id="et-list" class="et-window" tabindex="0"></div>
+  </div>
   <script>
     fetch('https://raw.githubusercontent.com/ndaly111/StockFinances/main/data/earnings_takeaways/recent.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r;}).catch(function(){return fetch('data/earnings_takeaways/recent.json',{cache:'no-cache'});}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){
       function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
@@ -74,7 +79,7 @@
         h+='</ul><div class="news-date">Stock since the report: <span class="'+cls+'">'+pct+'</span>'+(r.basis==='close'?'':' '+esc(r.basis))+'</div>';
       });
       document.getElementById('et-list').innerHTML=h;
-      document.getElementById('et-count').textContent='('+rows.length+' report'+(rows.length>1?'s':'')+', tap to open)';
+      document.getElementById('et-count').textContent='('+rows.length+' report'+(rows.length>1?'s':'')+(rows.length>1?', newest first':'')+')';
       document.getElementById('earnings-takeaways').style.display='';
     }).catch(function(){});
   </script>
