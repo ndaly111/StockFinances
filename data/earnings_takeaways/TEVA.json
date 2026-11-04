@@ -1,28 +1,28 @@
 {
  "ticker": "TEVA",
- "updated": "2026-11-04T16:48Z",
+ "updated": "2026-11-04T21:22Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
   "move_pct": 3.0,
   "basis": "close",
-  "verdict": "Teva's three growth drugs surged 33% and guidance rose again, more than offsetting falling sales of generic cancer drug lenalidomide.",
+  "verdict": "Teva's brand drugs are growing fast enough to lift 2026 guidance again, even as generic Revlimid competition cuts generics sales sharply.",
   "takeaways": [
    {
-    "label": "Growth drugs accelerate",
-    "text": "Austedo ($751M, +21%), Ajovy ($269M, +61%) and Uzedy ($85M, +96%) together grew 33% to about $1.1 billion, driving the quarter."
-   },
-   {
     "label": "Guidance raised again",
-    "text": "2026 revenue outlook rose to $16.7\u201317.0 billion from $16.5\u201316.85 billion. Austedo's forecast moved to $2.55\u20132.65 billion from $2.45\u20132.60 billion."
+    "text": "2026 revenue outlook rises to $16.7\u201317.0 billion, from $16.5\u201316.85 billion. Austedo is now $2.55\u20132.65 billion, up from $2.45\u20132.6 billion; Ajovy and Uzedy were also raised."
    },
    {
-    "label": "Margins improved",
-    "text": "Adjusted gross margin rose to 58.7% from 55.3%, and adjusted operating margin to 31.7% from 28.9%, even as total revenue fell 2% to $4.4 billion."
+    "label": "Brands offset generics",
+    "text": "Key brand drugs grew 33% to about $1.1 billion. U.S. generic sales fell 39% to $718 million on competition for generic Revlimid, leaving total revenue down 2% at $4.4 billion."
    },
    {
-    "label": "Profit outlook barely moves",
-    "text": "Adjusted EPS guidance is $1.92\u20132.11, versus $1.91\u20132.11 before. Top of the operating income range was cut to $3.9 billion, with $0.71 per share of acquired research charges included."
+    "label": "Profit and margins improved",
+    "text": "Adjusted earnings per share were $0.86, up 10%, and gross margin rose to 55.5% from 51.4%. Free cash flow was $495 million, slightly below last year."
+   },
+   {
+    "label": "New injectable approved",
+    "text": "The FDA approved Weltruza, a once-monthly schizophrenia injection, on Oct. 9. Teva sees $1.5\u20132.0 billion peak sales for it and Uzedy together. A Parkinson's-type disease (MSA) trial was stopped as futile."
    }
   ],
   "transcript_read": false,

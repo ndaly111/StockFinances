@@ -1,36 +1,33 @@
 {
  "ticker": "KHC",
- "updated": "2026-11-04T16:44Z",
+ "updated": "2026-11-04T21:19Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
-  "move_pct": 6.7,
-  "basis": "intraday",
-  "verdict": "Profit is still falling about 15%, and the raised full-year profit forecast comes mostly from a lower tax rate, not better operations.",
+  "move_pct": 3.8,
+  "basis": "close",
+  "verdict": "Profit is still falling about 15% and North America volumes keep shrinking; the raised full-year profit guidance comes from tax and other income, not better operations.",
   "takeaways": [
    {
-    "label": "Profit forecast lift is tax-driven",
-    "text": "Full-year earnings per share outlook rose to $2.07-$2.13 from $2.03-$2.09, but operating profit guidance stayed at down 16-18%. The expected tax rate fell to 23.5% from 24.5%."
+    "label": "Profit still sliding",
+    "text": "Adjusted operating income fell 15.2% to $939M on higher shipping and ingredient costs, bonus pay and advertising. Adjusted EPS of $0.53 compared with $0.61 a year earlier."
    },
    {
-    "label": "Sales trend improving, still negative",
-    "text": "Organic sales fell 1.1%, with North America down 3.2%. The low end of the full-year sales outlook rose to down 1.25%. Management says share and volume trends are improving in every region."
+    "label": "Guidance raise is thin",
+    "text": "Profit outlook stays down 16-18%. The EPS range rose to $2.07-$2.13 from $2.03-$2.09, helped by a lower tax rate and more other income. The sales range's low end improved to down 1.25%."
    },
    {
-    "label": "Costs keep squeezing profit",
-    "text": "Adjusted operating income fell 15.2% to $939M on rising ingredient and shipping costs, more advertising and higher bonus pay. Management expects cost inflation to peak near 6% in Q4."
+    "label": "U.S. still weak",
+    "text": "North America sales fell 3.4%, with volume down 2.4% in meats, sauces and drinks. Segment profit fell 10.5%. Emerging markets organic sales rose 15.6%, but they are the smallest region."
    },
    {
-    "label": "Coffee exit, emerging-market growth",
-    "text": "Kraft Heinz is selling its North American coffee business for $650M, with about $500M in after-tax proceeds going to debt. Emerging markets grew 15.6%, but meats and cream cheese remain weak."
+    "label": "Headwinds in outlook",
+    "text": "Guidance builds in about $700M of extra brand spending, margins at the low end of the prior range, and roughly 100 basis points of sales drag from reduced SNAP food assistance. The planned split into two companies remains paused."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm",
-   "https://www.investing.com/news/transcripts/earnings-call-transcript-kraft-heinz-tops-q3-2026-estimates-shares-rise-31-93CH-4998823",
-   "https://qz.com/kraft-heinz-raises-annual-sales-forecast-earnings-beat-110426",
-   "https://finance.yahoo.com/markets/stocks/articles/kraft-heinz-sell-coffee-unit-125121356.html"
+   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm"
   ]
  },
  "history": [
