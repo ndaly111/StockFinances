@@ -1,28 +1,28 @@
 {
  "ticker": "PFE",
- "updated": "2026-11-03T21:19Z",
+ "updated": "2026-11-04T01:09Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -2.2,
-  "basis": "close",
-  "verdict": "Pfizer raised its 2026 outlook as new and acquired drugs offset sinking COVID sales, though quarterly revenue and profit were flat.",
+  "move_pct": -1.8,
+  "basis": "after hours",
+  "verdict": "Pfizer raised its 2026 revenue and profit outlook as newer cancer and heart drugs grew fast, though COVID products keep shrinking.",
   "takeaways": [
    {
-    "label": "Outlook raised",
-    "text": "Full-year revenue guidance rose $1.5B at the midpoint to $62-64B. Adjusted EPS guidance rose to $2.95-$3.05 from $2.80-$3.00, absorbing a roughly $0.10 one-time charge."
+    "label": "Guidance raised",
+    "text": "Full-year revenue outlook rises $1.5B at the midpoint to $62-64B. Adjusted EPS guidance moves to $2.95-$3.05 from $2.80-$3.00, even after a roughly $0.10 licensing charge."
    },
    {
-    "label": "Growth drivers vs. COVID drag",
-    "text": "Revenue was flat at $16.6B. Excluding COVID products it grew 7%, and newer and acquired drugs grew 32%, led by Padcev up 55%."
+    "label": "Flat quarter, strong core",
+    "text": "Revenue of $16.6B was flat and adjusted EPS held at $0.87, but sales excluding COVID products grew 7%, and newer and acquired products grew 32%."
    },
    {
-    "label": "Eliquis boost is price-driven",
-    "text": "Eliquis rose 25% (+$513M), mainly from lower rebates and channel mix in the U.S. rather than demand alone, so the gain may not repeat."
+    "label": "Eliquis and cancer drive growth",
+    "text": "Eliquis sales rose 25% (lower rebates helped), and the cancer drug Padcev rose 55%. COVID treatment Paxlovid fell 63%, the COVID vaccine fell 29%, and the Prevnar vaccine fell 10%."
    },
    {
-    "label": "Pressure points",
-    "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. R&D spending rose 18%."
+    "label": "Spending on pipeline rises",
+    "text": "R&D spending jumped 18%, mainly for cancer and obesity drugs. R&D guidance rose to $10.8-11.8B. A new CFO, Cecile Guegan, started Nov. 1; no share buybacks are planned this year."
    }
   ],
   "transcript_read": false,
