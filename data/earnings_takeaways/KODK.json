@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-04T09:34Z",
+ "updated": "2026-11-04T16:44Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
-  "move_pct": -5.3,
-  "basis": "after hours",
-  "verdict": "Kodak's chemicals unit is carrying the company while Print weakens, and lower interest costs, not operations, drove the profit gain.",
+  "move_pct": -10.3,
+  "basis": "intraday",
+  "verdict": "Kodak's chemicals unit is growing fast, but print profit nearly vanished, and lower interest costs drove most of the net income gain.",
   "takeaways": [
    {
-    "label": "Print is slipping",
-    "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) collapsed from $8 million to $1 million, while chemicals grew."
+    "label": "Print profit nearly gone",
+    "text": "Print revenue fell 7% to $165 million, and its operating profit (operational EBITDA) dropped to $1 million from $8 million a year earlier."
    },
    {
-    "label": "Chemicals drive growth",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its EBITDA rose from $16 million to $21 million. It is now the most profitable unit."
+    "label": "Chemicals carrying growth",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, with operating profit up to $21 million from $16 million. That growth is slower than last quarter's 40%."
    },
    {
-    "label": "Profit helped by debt cuts",
-    "text": "Net income rose to $21 million from $13 million, but interest expense fell from $18 million to $3 million. Operating income dropped from $19 million to $15 million as overhead rose."
+    "label": "Profit gain is mostly debt savings",
+    "text": "Net income rose to $21 million from $13 million, mainly because interest expense fell to $3 million from $18 million. Operational EBITDA rose only $2 million to $31 million."
    },
    {
-    "label": "Cash up, year still flat",
-    "text": "Cash rose $27 million to $317 million in the quarter. Operating cash flow is only break-even for the year so far, and inventory has grown $44 million."
+    "label": "Cash up, costs rising",
+    "text": "Cash rose $27 million to $317 million on $25 million of operating cash flow. Overhead rose to $50 million from $41 million, mostly stock pay and employee benefit accruals."
    }
   ],
   "transcript_read": false,

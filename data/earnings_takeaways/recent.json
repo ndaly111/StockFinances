@@ -1,6 +1,106 @@
 {
- "updated": "2026-11-04T13:44Z",
+ "updated": "2026-11-04T16:49Z",
  "reports": [
+  {
+   "ticker": "CVS",
+   "date": "2026-11-04",
+   "move_pct": -12.2,
+   "basis": "intraday",
+   "verdict": "CVS beat and raised for 2026, but plans to split off its drugstores by mid-2028, with pharmacy-benefit profit set to bottom out in 2027.",
+   "takeaways": [
+    {
+     "label": "Breakup announced",
+     "text": "CVS plans two public companies by first half of 2028: Aetna, Caremark and care units stay; retail stores, mail order and MinuteClinic spin off as CVS Pharmacy."
+    },
+    {
+     "label": "Aetna recovery drives raise",
+     "text": "Aetna's medical cost ratio improved to 91.3% from 92.8%, lifting insurance profit to $912M from $314M. 2026 profit guidance rose to at least $8.20 a share."
+    },
+    {
+     "label": "2027 is a trough",
+     "text": "Management guides 2027 earnings to at least $8.65 a share, but says pharmacy-benefit profit bottoms at about $7 billion, with 340B drug-discount rules and client member losses weighing."
+    },
+    {
+     "label": "Cash and buybacks",
+     "text": "Nine-month operating cash flow reached $15.3 billion, and full-year guidance jumped to at least $15.5 billion from $11.5 billion. Debt target reached early, so buybacks resume in Q4."
+    }
+   ]
+  },
+  {
+   "ticker": "UBER",
+   "date": "2026-11-04",
+   "move_pct": 8.2,
+   "basis": "intraday",
+   "verdict": "Uber posted its fifth straight quarter of 20% bookings growth with faster profit gains, and guides to the same pace next quarter.",
+   "takeaways": [
+    {
+     "label": "Growth holds at 20%",
+     "text": "Gross bookings (total customer spending) rose 20% to $59.8B, with trips up 16% to 4.1B. Mobility grew 18% and Delivery 22%."
+    },
+    {
+     "label": "Profit outpacing sales",
+     "text": "Adjusted EBITDA rose 31% to $3.0B and adjusted EPS rose 35% to $0.88, the top of Uber's own $0.84\u2013$0.88 guidance."
+    },
+    {
+     "label": "Steady Q4 outlook",
+     "text": "Q4 bookings are guided to $63.25B\u2013$65.25B (up 18%\u201322%) with adjusted EPS of $0.95\u2013$0.99, implying growth continues at roughly the same pace."
+    },
+    {
+     "label": "Robotaxis and buybacks",
+     "text": "Uber expects about 700 driverless vehicles on its platform by year-end and over 2,000 in 2027. Buybacks slowed to $750M from $1.46B a year earlier."
+    }
+   ]
+  },
+  {
+   "ticker": "KHC",
+   "date": "2026-11-04",
+   "move_pct": 6.7,
+   "basis": "intraday",
+   "verdict": "Profit is still falling about 15%, and the raised full-year profit forecast comes mostly from a lower tax rate, not better operations.",
+   "takeaways": [
+    {
+     "label": "Profit forecast lift is tax-driven",
+     "text": "Full-year earnings per share outlook rose to $2.07-$2.13 from $2.03-$2.09, but operating profit guidance stayed at down 16-18%. The expected tax rate fell to 23.5% from 24.5%."
+    },
+    {
+     "label": "Sales trend improving, still negative",
+     "text": "Organic sales fell 1.1%, with North America down 3.2%. The low end of the full-year sales outlook rose to down 1.25%. Management says share and volume trends are improving in every region."
+    },
+    {
+     "label": "Costs keep squeezing profit",
+     "text": "Adjusted operating income fell 15.2% to $939M on rising ingredient and shipping costs, more advertising and higher bonus pay. Management expects cost inflation to peak near 6% in Q4."
+    },
+    {
+     "label": "Coffee exit, emerging-market growth",
+     "text": "Kraft Heinz is selling its North American coffee business for $650M, with about $500M in after-tax proceeds going to debt. Emerging markets grew 15.6%, but meats and cream cheese remain weak."
+    }
+   ]
+  },
+  {
+   "ticker": "KODK",
+   "date": "2026-11-03",
+   "move_pct": -10.3,
+   "basis": "intraday",
+   "verdict": "Kodak's chemicals unit is growing fast, but print profit nearly vanished, and lower interest costs drove most of the net income gain.",
+   "takeaways": [
+    {
+     "label": "Print profit nearly gone",
+     "text": "Print revenue fell 7% to $165 million, and its operating profit (operational EBITDA) dropped to $1 million from $8 million a year earlier."
+    },
+    {
+     "label": "Chemicals carrying growth",
+     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, with operating profit up to $21 million from $16 million. That growth is slower than last quarter's 40%."
+    },
+    {
+     "label": "Profit gain is mostly debt savings",
+     "text": "Net income rose to $21 million from $13 million, mainly because interest expense fell to $3 million from $18 million. Operational EBITDA rose only $2 million to $31 million."
+    },
+    {
+     "label": "Cash up, costs rising",
+     "text": "Cash rose $27 million to $317 million on $25 million of operating cash flow. Overhead rose to $50 million from $41 million, mostly stock pay and employee benefit accruals."
+    }
+   ]
+  },
   {
    "ticker": "SHOP",
    "date": "2026-11-03",
@@ -23,31 +123,6 @@
     {
      "label": "AI shopping still small",
      "text": "Orders from AI-driven traffic rose 3.3x, but management called volume small. Shopify also paid about $100M for Shop.com and is spending more on AI tools."
-    }
-   ]
-  },
-  {
-   "ticker": "KODK",
-   "date": "2026-11-03",
-   "move_pct": -5.3,
-   "basis": "after hours",
-   "verdict": "Kodak's chemicals unit is carrying the company while Print weakens, and lower interest costs, not operations, drove the profit gain.",
-   "takeaways": [
-    {
-     "label": "Print is slipping",
-     "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) collapsed from $8 million to $1 million, while chemicals grew."
-    },
-    {
-     "label": "Chemicals drive growth",
-     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its EBITDA rose from $16 million to $21 million. It is now the most profitable unit."
-    },
-    {
-     "label": "Profit helped by debt cuts",
-     "text": "Net income rose to $21 million from $13 million, but interest expense fell from $18 million to $3 million. Operating income dropped from $19 million to $15 million as overhead rose."
-    },
-    {
-     "label": "Cash up, year still flat",
-     "text": "Cash rose $27 million to $317 million in the quarter. Operating cash flow is only break-even for the year so far, and inventory has grown $44 million."
     }
    ]
   },
@@ -81,23 +156,23 @@
    "date": "2026-11-03",
    "move_pct": 3.0,
    "basis": "close",
-   "verdict": "Teva raised 2026 revenue and brand-drug guidance again as Austedo, Ajovy and Uzedy surged, while shrinking generics and a lowered profit-range ceiling temper the lift.",
+   "verdict": "Teva's three growth drugs surged 33% and guidance rose again, more than offsetting falling sales of generic cancer drug lenalidomide.",
    "takeaways": [
     {
-     "label": "Brands drive growth",
-     "text": "Austedo, Ajovy and Uzedy together reached about $1.1 billion in the quarter, up 33%. Ajovy rose 61% and Uzedy 96%."
+     "label": "Growth drugs accelerate",
+     "text": "Austedo ($751M, +21%), Ajovy ($269M, +61%) and Uzedy ($85M, +96%) together grew 33% to about $1.1 billion, driving the quarter."
     },
     {
-     "label": "Guidance raised, profit capped",
-     "text": "2026 revenue outlook rose to $16.7\u201317.0 billion and Austedo to $2.55\u20132.65 billion. Operating income and EBITDA ceilings were lowered, and the low end of the EPS range barely moved."
+     "label": "Guidance raised again",
+     "text": "2026 revenue outlook rose to $16.7\u201317.0 billion from $16.5\u201316.85 billion. Austedo's forecast moved to $2.55\u20132.65 billion from $2.45\u20132.60 billion."
     },
     {
-     "label": "Generics still shrinking",
-     "text": "Total revenue fell 2% to $4.4 billion, mainly on lower sales of generic lenalidomide (a cancer drug). Global generics revenue fell 16%."
+     "label": "Margins improved",
+     "text": "Adjusted gross margin rose to 58.7% from 55.3%, and adjusted operating margin to 31.7% from 28.9%, even as total revenue fell 2% to $4.4 billion."
     },
     {
-     "label": "Stronger balance sheet",
-     "text": "Moody's and S&P upgraded Teva to investment grade after Fitch. About $4.9 billion of debt was refinanced; net debt is $12.6 billion."
+     "label": "Profit outlook barely moves",
+     "text": "Adjusted EPS guidance is $1.92\u20132.11, versus $1.91\u20132.11 before. Top of the operating income range was cut to $3.9 billion, with $0.71 per share of acquired research charges included."
     }
    ]
   },
@@ -106,23 +181,23 @@
    "date": "2026-11-03",
    "move_pct": -2.2,
    "basis": "close",
-   "verdict": "Pfizer raised 2026 guidance on strong new-product growth, but total sales were flat as COVID products shrank and Prevnar fell.",
+   "verdict": "Pfizer raised its 2026 revenue and profit outlook as newer cancer and heart drugs offset collapsing COVID sales, though overall revenue was flat.",
    "takeaways": [
     {
-     "label": "Guidance raised again",
-     "text": "Full-year revenue guidance rose $1.5B at the midpoint to $62-64B. Adjusted EPS guidance is now $2.95-$3.05, up from $2.80-$3.00, even after a roughly $0.10 licensing charge."
+     "label": "Guidance raised",
+     "text": "Full-year revenue outlook rose $1.5B at the midpoint to $62.0-$64.0B. Adjusted EPS guidance rose to $2.95-$3.05 from $2.80-$3.00, despite a $0.10 hit from the Innovent licensing charge."
     },
     {
-     "label": "Non-COVID business growing",
-     "text": "Excluding COVID products, sales grew 7% operationally. Recently launched and acquired drugs grew 32%, led by Padcev (+55%) and Lorbrena (+43%). Total revenue was flat at $16.6B."
+     "label": "Growth drivers",
+     "text": "Third-quarter revenue of $16.6B was flat, but sales excluding COVID products grew 7%. Newly launched and acquired drugs grew 32%, led by Padcev (+55%) and Lorbrena (+43%)."
     },
     {
-     "label": "Eliquis boost is partly pricing",
-     "text": "Eliquis rose 25% (+$513M), driven mainly by higher U.S. net price from lower rebates and channel mix. That lift may not recur as steady demand growth."
+     "label": "Eliquis surge",
+     "text": "Blood thinner Eliquis sales rose 25% ($513M), mainly from higher U.S. net prices and lower rebates, a gain that depends on pricing rather than new demand."
     },
     {
      "label": "COVID and Prevnar drag",
-     "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar dropped 10% on lower U.S. vaccination rates and lost adult market share, so a core vaccine franchise is weakening."
+     "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar, the pneumonia vaccine, fell 10% on lower U.S. vaccination rates and market share loss. Adjusted EPS of $0.87 was flat."
     }
    ]
   },
@@ -181,23 +256,23 @@
    "date": "2026-11-02",
    "move_pct": -1.6,
    "basis": "close",
-   "verdict": "Palantir's revenue nearly doubled and U.S. commercial sales overtook government sales, but new contract signings grew only 6%.",
+   "verdict": "Palantir's revenue nearly doubled again and U.S. commercial sales passed government for the first time, but new contract signings are growing far slower than sales.",
    "takeaways": [
     {
-     "label": "Growth keeps accelerating",
-     "text": "Revenue rose 96% to $2.313B, topping $2B for the first time. Palantir had guided to about $2.16B. U.S. commercial revenue grew 148% to $984M, passing U.S. government for the first time."
+     "label": "Commercial overtakes government",
+     "text": "U.S. commercial revenue rose 148% to $984M, passing U.S. government revenue ($953M, up 96%) for the first time. Total revenue topped $2B, up 96% to $2.31B."
     },
     {
      "label": "Guidance raised sharply",
-     "text": "Full-year revenue outlook rose to about $8.53B from about $8.15B. Q4 is guided to roughly $2.65B, and free cash flow to $4.8-5.0B."
-    },
-    {
-     "label": "Profits remain exceptional",
-     "text": "Adjusted operating margin was 62% and GAAP net income was $1.13B, a 49% margin. Adjusted free cash flow was $1.22B, and cash and Treasuries total $10.4B."
+     "text": "Full-year revenue outlook rose to about $8.53B, roughly 91% growth, from $8.15B. Q4 is guided to about $2.65B, with adjusted operating margin near 62%."
     },
     {
      "label": "Bookings lag revenue",
-     "text": "Total contract value signed grew just 6% to $2.92B, and U.S. commercial value grew 11%. Remaining U.S. commercial contract value rose only 4% from last quarter, far below revenue growth."
+     "text": "New U.S. commercial contract value grew only 11% to $1.46B, and total contract value grew 6%. Management said several large deals had shorter terms than usual."
+    },
+    {
+     "label": "Land-and-expand accelerating",
+     "text": "Pilots are turning into much larger deals, for example $3M to $29M annual value. Customers who stay spend 65% more each year (net retention 165%)."
     }
    ]
   }

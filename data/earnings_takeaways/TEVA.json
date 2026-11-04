@@ -1,28 +1,28 @@
 {
  "ticker": "TEVA",
- "updated": "2026-11-04T09:39Z",
+ "updated": "2026-11-04T16:48Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
   "move_pct": 3.0,
   "basis": "close",
-  "verdict": "Teva raised 2026 revenue and brand-drug guidance again as Austedo, Ajovy and Uzedy surged, while shrinking generics and a lowered profit-range ceiling temper the lift.",
+  "verdict": "Teva's three growth drugs surged 33% and guidance rose again, more than offsetting falling sales of generic cancer drug lenalidomide.",
   "takeaways": [
    {
-    "label": "Brands drive growth",
-    "text": "Austedo, Ajovy and Uzedy together reached about $1.1 billion in the quarter, up 33%. Ajovy rose 61% and Uzedy 96%."
+    "label": "Growth drugs accelerate",
+    "text": "Austedo ($751M, +21%), Ajovy ($269M, +61%) and Uzedy ($85M, +96%) together grew 33% to about $1.1 billion, driving the quarter."
    },
    {
-    "label": "Guidance raised, profit capped",
-    "text": "2026 revenue outlook rose to $16.7\u201317.0 billion and Austedo to $2.55\u20132.65 billion. Operating income and EBITDA ceilings were lowered, and the low end of the EPS range barely moved."
+    "label": "Guidance raised again",
+    "text": "2026 revenue outlook rose to $16.7\u201317.0 billion from $16.5\u201316.85 billion. Austedo's forecast moved to $2.55\u20132.65 billion from $2.45\u20132.60 billion."
    },
    {
-    "label": "Generics still shrinking",
-    "text": "Total revenue fell 2% to $4.4 billion, mainly on lower sales of generic lenalidomide (a cancer drug). Global generics revenue fell 16%."
+    "label": "Margins improved",
+    "text": "Adjusted gross margin rose to 58.7% from 55.3%, and adjusted operating margin to 31.7% from 28.9%, even as total revenue fell 2% to $4.4 billion."
    },
    {
-    "label": "Stronger balance sheet",
-    "text": "Moody's and S&P upgraded Teva to investment grade after Fitch. About $4.9 billion of debt was refinanced; net debt is $12.6 billion."
+    "label": "Profit outlook barely moves",
+    "text": "Adjusted EPS guidance is $1.92\u20132.11, versus $1.91\u20132.11 before. Top of the operating income range was cut to $3.9 billion, with $0.71 per share of acquired research charges included."
    }
   ],
   "transcript_read": false,

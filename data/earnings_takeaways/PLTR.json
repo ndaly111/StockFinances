@@ -1,34 +1,36 @@
 {
  "ticker": "PLTR",
- "updated": "2026-11-04T09:37Z",
+ "updated": "2026-11-04T16:48Z",
  "last": {
   "date": "2026-11-02",
   "timing": "post",
   "move_pct": -1.6,
   "basis": "close",
-  "verdict": "Palantir's revenue nearly doubled and U.S. commercial sales overtook government sales, but new contract signings grew only 6%.",
+  "verdict": "Palantir's revenue nearly doubled again and U.S. commercial sales passed government for the first time, but new contract signings are growing far slower than sales.",
   "takeaways": [
    {
-    "label": "Growth keeps accelerating",
-    "text": "Revenue rose 96% to $2.313B, topping $2B for the first time. Palantir had guided to about $2.16B. U.S. commercial revenue grew 148% to $984M, passing U.S. government for the first time."
+    "label": "Commercial overtakes government",
+    "text": "U.S. commercial revenue rose 148% to $984M, passing U.S. government revenue ($953M, up 96%) for the first time. Total revenue topped $2B, up 96% to $2.31B."
    },
    {
     "label": "Guidance raised sharply",
-    "text": "Full-year revenue outlook rose to about $8.53B from about $8.15B. Q4 is guided to roughly $2.65B, and free cash flow to $4.8-5.0B."
-   },
-   {
-    "label": "Profits remain exceptional",
-    "text": "Adjusted operating margin was 62% and GAAP net income was $1.13B, a 49% margin. Adjusted free cash flow was $1.22B, and cash and Treasuries total $10.4B."
+    "text": "Full-year revenue outlook rose to about $8.53B, roughly 91% growth, from $8.15B. Q4 is guided to about $2.65B, with adjusted operating margin near 62%."
    },
    {
     "label": "Bookings lag revenue",
-    "text": "Total contract value signed grew just 6% to $2.92B, and U.S. commercial value grew 11%. Remaining U.S. commercial contract value rose only 4% from last quarter, far below revenue growth."
+    "text": "New U.S. commercial contract value grew only 11% to $1.46B, and total contract value grew 6%. Management said several large deals had shorter terms than usual."
+   },
+   {
+    "label": "Land-and-expand accelerating",
+    "text": "Pilots are turning into much larger deals, for example $3M to $29M annual value. Customers who stay spend 65% more each year (net retention 165%)."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
+   "https://www.fool.com/earnings/call-transcripts/2026/11/02/palantir-pltr-q3-2026-earnings-call-transcript/",
+   "https://www.cnbc.com/2026/11/02/palantir-pltr-earnings-q3-2026.html",
    "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm",
-   "https://www.sec.gov/Archives/edgar/data/0001321655/000132165526000039/a2026q2ex991pressrelease.htm"
+   "https://www.benzinga.com/markets/earnings/26/11/62799346/palantir-posts-q3-double-beat-lifts-guidance-extraordinary-is-an-understatement"
   ]
  },
  "history": [

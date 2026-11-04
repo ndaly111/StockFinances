@@ -1,35 +1,33 @@
 {
  "ticker": "PFE",
- "updated": "2026-11-04T09:36Z",
+ "updated": "2026-11-04T16:46Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
   "move_pct": -2.2,
   "basis": "close",
-  "verdict": "Pfizer raised 2026 guidance on strong new-product growth, but total sales were flat as COVID products shrank and Prevnar fell.",
+  "verdict": "Pfizer raised its 2026 revenue and profit outlook as newer cancer and heart drugs offset collapsing COVID sales, though overall revenue was flat.",
   "takeaways": [
    {
-    "label": "Guidance raised again",
-    "text": "Full-year revenue guidance rose $1.5B at the midpoint to $62-64B. Adjusted EPS guidance is now $2.95-$3.05, up from $2.80-$3.00, even after a roughly $0.10 licensing charge."
+    "label": "Guidance raised",
+    "text": "Full-year revenue outlook rose $1.5B at the midpoint to $62.0-$64.0B. Adjusted EPS guidance rose to $2.95-$3.05 from $2.80-$3.00, despite a $0.10 hit from the Innovent licensing charge."
    },
    {
-    "label": "Non-COVID business growing",
-    "text": "Excluding COVID products, sales grew 7% operationally. Recently launched and acquired drugs grew 32%, led by Padcev (+55%) and Lorbrena (+43%). Total revenue was flat at $16.6B."
+    "label": "Growth drivers",
+    "text": "Third-quarter revenue of $16.6B was flat, but sales excluding COVID products grew 7%. Newly launched and acquired drugs grew 32%, led by Padcev (+55%) and Lorbrena (+43%)."
    },
    {
-    "label": "Eliquis boost is partly pricing",
-    "text": "Eliquis rose 25% (+$513M), driven mainly by higher U.S. net price from lower rebates and channel mix. That lift may not recur as steady demand growth."
+    "label": "Eliquis surge",
+    "text": "Blood thinner Eliquis sales rose 25% ($513M), mainly from higher U.S. net prices and lower rebates, a gain that depends on pricing rather than new demand."
    },
    {
     "label": "COVID and Prevnar drag",
-    "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar dropped 10% on lower U.S. vaccination rates and lost adult market share, so a core vaccine franchise is weakening."
+    "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar, the pneumonia vaccine, fell 10% on lower U.S. vaccination rates and market share loss. Adjusted EPS of $0.87 was flat."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/78003/000007800326000125/pfe-9272026xex99.htm",
-   "https://www.investing.com/news/company-news/pfizer-q3-2026-slides-32-growth-in-new-products-guidance-raised-93CH-4996004",
-   "https://www.pfizer.com/news/articles/pfizer_s_third_quarter_results_reflect_confidence_and_momentum"
+   "https://www.sec.gov/Archives/edgar/data/78003/000007800326000125/pfe-9272026xex99.htm"
   ]
  },
  "history": [
