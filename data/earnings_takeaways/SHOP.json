@@ -1,33 +1,37 @@
 {
  "ticker": "SHOP",
- "updated": "2026-11-04T01:10Z",
+ "updated": "2026-11-04T09:38Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -9.6,
-  "basis": "after hours",
-  "verdict": "Shopify held 32% revenue growth while operating profit rose 66%, and guided to a similar low-thirties pace for next quarter.",
+  "move_pct": -8.7,
+  "basis": "close",
+  "verdict": "Shopify held 32% growth and a record 22% cash margin, but the first revenue miss in four years and a flat fourth-quarter outlook cooled enthusiasm.",
   "takeaways": [
    {
-    "label": "Profits growing much faster",
-    "text": "Operating income jumped 66% to $568 million and free cash flow margin reached 22%, up from 18% a year ago, as revenue grew 32% to $3.74 billion."
+    "label": "First revenue miss",
+    "text": "Revenue of $3.74B (up 32%) came in just under analyst estimates of about $3.75B, reportedly the first miss in about four years. Sales volume rose 29% to $119B, also slightly light."
    },
    {
-    "label": "Growth cooled slightly",
-    "text": "Revenue growth slowed from 34% last quarter to 32%. Total sales on the platform grew 29% to $119 billion. Next quarter is guided to low-thirties growth."
+    "label": "Cash margin flattered",
+    "text": "The 22% free cash flow margin included temporary boosts: a marketing test, tax timing and an accounting change. The Q4 guide is merely flat with last year's Q4, and Q4 spending steps up."
    },
    {
-    "label": "Gross profit lags revenue",
-    "text": "Gross profit grew 28%, slower than revenue, and Q4 gross profit is guided to high-twenties growth. Payments-driven merchant revenue (up 35%) is growing faster than the higher-margin subscription revenue (up 20%)."
+    "label": "Steady holiday outlook",
+    "text": "Q4 revenue growth is guided to the low thirties, matching Q3. Gross profit is guided to grow in the high twenties, and operating costs to run 29\u201330% of revenue."
    },
    {
-    "label": "Big buyback, lower loan losses",
-    "text": "Shopify repurchased $562 million of its own stock this quarter, versus none a year ago. Transaction and loan losses fell to $120 million from $148 million."
+    "label": "AI shopping still small",
+    "text": "Orders from AI-driven traffic rose 3.3x, but management called volume small. Shopify also paid about $100M for Shop.com and is spending more on AI tools."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1594805/000159480526000067/exhibit991pressreleaseq320.htm"
+   "https://www.sec.gov/Archives/edgar/data/1594805/000159480526000067/exhibit991pressreleaseq320.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/03/shopify-shop-q3-2026-earnings-call-transcript/",
+   "https://betakit.com/shopify-stock-falls-as-q3-revenue-misses-some-analysts-expectations/",
+   "https://finance.yahoo.com/markets/stocks/articles/shopify-inc-shop-q3-2026-210823609.html",
+   "https://www.tradingkey.com/analysis/stocks/us-stocks/262267621-shopify-plunges-18-premarket-near-two-month-low-q3-revenue-shop-tradingkey"
   ]
  },
  "history": [

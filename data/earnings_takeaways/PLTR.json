@@ -1,36 +1,36 @@
 {
  "ticker": "PLTR",
- "updated": "2026-11-04T01:10Z",
+ "updated": "2026-11-04T16:48Z",
  "last": {
   "date": "2026-11-02",
   "timing": "post",
-  "move_pct": -3.2,
-  "basis": "after hours",
-  "verdict": "Palantir's growth is still accelerating, with US business customers now bigger than the US government, but new business contracts are getting smaller and shorter.",
+  "move_pct": -1.6,
+  "basis": "close",
+  "verdict": "Palantir's revenue nearly doubled again and U.S. commercial sales passed government for the first time, but new contract signings are growing far slower than sales.",
   "takeaways": [
    {
-    "label": "Blowout quarter, raised outlook",
-    "text": "Revenue rose 96% to $2.31B against roughly $2.18B expected. Full-year revenue guidance rose to about $8.53B, with Q4 guided to about $2.65B."
+    "label": "Commercial overtakes government",
+    "text": "U.S. commercial revenue rose 148% to $984M, passing U.S. government revenue ($953M, up 96%) for the first time. Total revenue topped $2B, up 96% to $2.31B."
    },
    {
-    "label": "Business customers overtake government",
-    "text": "US commercial revenue grew 148% to $984M, passing US government revenue ($953M) for the first time. Full-year US commercial guidance is now above $3.56B."
+    "label": "Guidance raised sharply",
+    "text": "Full-year revenue outlook rose to about $8.53B, roughly 91% growth, from $8.15B. Q4 is guided to about $2.65B, with adjusted operating margin near 62%."
    },
    {
-    "label": "Bookings and contract length lag",
-    "text": "US commercial new-contract value was $1.46B, down from a record $2.13B last quarter. Management says deals now start shorter and expand later, with duration and size expected to grow."
+    "label": "Bookings lag revenue",
+    "text": "New U.S. commercial contract value grew only 11% to $1.46B, and total contract value grew 6%. Management said several large deals had shorter terms than usual."
    },
    {
-    "label": "Profits remain extreme",
-    "text": "Adjusted operating margin was 62% and free cash flow was $1.22B. Management says the AI-driven 'Sovereign AI' demand trend is only about a quarter old, so durability is unproven."
+    "label": "Land-and-expand accelerating",
+    "text": "Pilots are turning into much larger deals, for example $3M to $29M annual value. Customers who stay spend 65% more each year (net retention 165%)."
    }
   ],
   "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/02/palantir-pltr-q3-2026-earnings-call-transcript/",
    "https://www.cnbc.com/2026/11/02/palantir-pltr-earnings-q3-2026.html",
-   "https://techcrunch.com/2026/11/03/hiding-inside-palantirs-skyrocketing-quarter-is-a-foreboding-signal/",
-   "https://www.aol.com/articles/palantir-pltr-q3-2026-earnings-042839000.html"
+   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm",
+   "https://www.benzinga.com/markets/earnings/26/11/62799346/palantir-posts-q3-double-beat-lifts-guidance-extraordinary-is-an-understatement"
   ]
  },
  "history": [

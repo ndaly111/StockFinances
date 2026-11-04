@@ -1,28 +1,28 @@
 {
  "ticker": "PFE",
- "updated": "2026-11-04T01:09Z",
+ "updated": "2026-11-04T16:46Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -1.8,
-  "basis": "after hours",
-  "verdict": "Pfizer raised its 2026 revenue and profit outlook as newer cancer and heart drugs grew fast, though COVID products keep shrinking.",
+  "move_pct": -2.2,
+  "basis": "close",
+  "verdict": "Pfizer raised its 2026 revenue and profit outlook as newer cancer and heart drugs offset collapsing COVID sales, though overall revenue was flat.",
   "takeaways": [
    {
     "label": "Guidance raised",
-    "text": "Full-year revenue outlook rises $1.5B at the midpoint to $62-64B. Adjusted EPS guidance moves to $2.95-$3.05 from $2.80-$3.00, even after a roughly $0.10 licensing charge."
+    "text": "Full-year revenue outlook rose $1.5B at the midpoint to $62.0-$64.0B. Adjusted EPS guidance rose to $2.95-$3.05 from $2.80-$3.00, despite a $0.10 hit from the Innovent licensing charge."
    },
    {
-    "label": "Flat quarter, strong core",
-    "text": "Revenue of $16.6B was flat and adjusted EPS held at $0.87, but sales excluding COVID products grew 7%, and newer and acquired products grew 32%."
+    "label": "Growth drivers",
+    "text": "Third-quarter revenue of $16.6B was flat, but sales excluding COVID products grew 7%. Newly launched and acquired drugs grew 32%, led by Padcev (+55%) and Lorbrena (+43%)."
    },
    {
-    "label": "Eliquis and cancer drive growth",
-    "text": "Eliquis sales rose 25% (lower rebates helped), and the cancer drug Padcev rose 55%. COVID treatment Paxlovid fell 63%, the COVID vaccine fell 29%, and the Prevnar vaccine fell 10%."
+    "label": "Eliquis surge",
+    "text": "Blood thinner Eliquis sales rose 25% ($513M), mainly from higher U.S. net prices and lower rebates, a gain that depends on pricing rather than new demand."
    },
    {
-    "label": "Spending on pipeline rises",
-    "text": "R&D spending jumped 18%, mainly for cancer and obesity drugs. R&D guidance rose to $10.8-11.8B. A new CFO, Cecile Guegan, started Nov. 1; no share buybacks are planned this year."
+    "label": "COVID and Prevnar drag",
+    "text": "Paxlovid fell 63% and Comirnaty 29%. Prevnar, the pneumonia vaccine, fell 10% on lower U.S. vaccination rates and market share loss. Adjusted EPS of $0.87 was flat."
    }
   ],
   "transcript_read": false,
