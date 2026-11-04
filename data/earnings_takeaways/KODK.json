@@ -1,36 +1,59 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-03T05:35Z",
+ "updated": "2026-11-04T01:08Z",
  "last": {
-  "date": "2026-08-04",
+  "date": "2026-11-03",
   "timing": "post",
-  "move_pct": 10.4,
-  "basis": "close",
-  "verdict": "Kodak's fourth straight year-over-year improvement, with gross profit up 61% and net income of $17 million, now has less debt behind it.",
+  "move_pct": -6.6,
+  "basis": "after hours",
+  "verdict": "Chemicals growth and lower interest costs lifted profit, but Print, the biggest business, shrank and its profit nearly vanished.",
   "takeaways": [
    {
-    "label": "Margins jumped",
-    "text": "Gross margin rose to 26% from 19% as higher prices and volume outran pricier silver and aluminum. Operational EBITDA reached $36 million, up from $9 million."
+    "label": "Print profit nearly gone",
+    "text": "Print revenue fell 7% to $165 million, and its operating profit dropped to $1 million from $8 million. Higher aluminum costs and lower volumes were the main causes."
    },
    {
-    "label": "Chemicals led growth",
-    "text": "Advanced Materials & Chemicals revenue rose 40% to $105 million and its operational EBITDA nearly tripled to $22 million. Print grew 10% and swung to an $8 million profit."
+    "label": "Chemicals carrying growth",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. It now earns far more than Print."
    },
    {
-    "label": "Debt sharply reduced",
-    "text": "Kodak repaid $101 million of term loans and cut interest expense by $9 million. Management said total debt to EBITDA is 1x, versus 23x a year earlier."
+    "label": "Profit boost is mostly debt",
+    "text": "Net income rose to $21 million from $13 million, largely because interest expense fell to $3 million from $18 million after $101 million of term loans were repaid. Operating EBITDA rose only $2 million."
    },
    {
-    "label": "Cash and pension caveats",
-    "text": "Cash fell $47 million to $290 million as inventory rose $37 million on silver and aluminum. Pension income is expected to stay below last year's level through 2026."
+    "label": "Cash rebuilt",
+    "text": "Cash rose $27 million to $317 million in the quarter, though it is still $20 million below year-end. Year-to-date operating cash flow is break-even, and inventory is up $44 million."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/31235/000119312526332861/kodk-ex99_1.htm",
-   "https://www.marketbeat.com/earnings/reports/2026-8-4-eastman-kodak-stock/",
-   "https://thedeadpixelssociety.com/kodak-posts-stronger-second-quarter-as-print-advanced-materials-drive-growth/"
+   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm",
+   "https://www.sec.gov/Archives/edgar/data/0000031235/000119312526445403/kodk-20260930.htm"
   ]
  },
- "history": []
+ "history": [
+  {
+   "date": "2026-08-04",
+   "move_pct": 10.4,
+   "verdict": "Kodak's fourth straight year-over-year improvement, with gross profit up 61% and net income of $17 million, now has less debt behind it.",
+   "takeaways": [
+    {
+     "label": "Margins jumped",
+     "text": "Gross margin rose to 26% from 19% as higher prices and volume outran pricier silver and aluminum. Operational EBITDA reached $36 million, up from $9 million."
+    },
+    {
+     "label": "Chemicals led growth",
+     "text": "Advanced Materials & Chemicals revenue rose 40% to $105 million and its operational EBITDA nearly tripled to $22 million. Print grew 10% and swung to an $8 million profit."
+    },
+    {
+     "label": "Debt sharply reduced",
+     "text": "Kodak repaid $101 million of term loans and cut interest expense by $9 million. Management said total debt to EBITDA is 1x, versus 23x a year earlier."
+    },
+    {
+     "label": "Cash and pension caveats",
+     "text": "Cash fell $47 million to $290 million as inventory rose $37 million on silver and aluminum. Pension income is expected to stay below last year's level through 2026."
+    }
+   ]
+  }
+ ]
 }

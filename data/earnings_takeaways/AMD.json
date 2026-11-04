@@ -1,33 +1,55 @@
 {
  "ticker": "AMD",
- "updated": "2026-10-29T05:36Z",
+ "updated": "2026-11-04T01:06Z",
  "last": {
-  "date": "2026-08-04",
+  "date": "2026-11-03",
   "timing": "post",
-  "move_pct": -7.0,
-  "basis": "close",
-  "verdict": "Solid beat and strong outlook, but the stock had run too far, too fast.",
-  "reasons": [
+  "move_pct": 8.9,
+  "basis": "after hours",
+  "verdict": "AMD's AI data center business nearly doubled and the fourth-quarter forecast is about $17 billion, but profit margin stays flat near 55%.",
+  "takeaways": [
    {
-    "label": "Sky-high expectations",
-    "text": "Stock jumped 21% in the five days before the report, so a modest beat wasn't enough."
+    "label": "Big fourth-quarter jump",
+    "text": "AMD guided fourth-quarter revenue to about $17 billion, up roughly 66% from a year earlier and far above the $13.4 billion just reported, as Helios AI racks ramp."
    },
    {
-    "label": "Flat profit margin outlook",
-    "text": "Gross margin guided to 56% for next quarter, unchanged from this quarter's 56%."
+    "label": "Data center nearly doubles",
+    "text": "Data center sales rose 97% to $8.5 billion and drove revenue to $13.4 billion, up 45%. Revenue topped the high end of AMD's own guidance."
    },
    {
-    "label": "Cash flow and AI timing",
-    "text": "Free cash flow fell 39% as spending doubled; big Helios AI rack sales come later."
+    "label": "Margins not expanding",
+    "text": "Gross margin was 56% and is guided to about 55%, a slight dip. The revenue surge is not yet bringing richer profitability."
+   },
+   {
+    "label": "Cash flow and gaming weak",
+    "text": "Free cash flow fell to $554M from $1.56B last quarter. Gaming sales dropped 40% to $773M, hurting an otherwise strong quarter."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.indmoney.com/blog/us-stocks/amd-stock-crashes-q2-earnings-analysis",
-   "https://seekingalpha.com/article/4930351-advanced-micro-devices-inc-amd-q2-2026-earnings-call-transcript",
-   "https://old-vers-news.alphastreet.com/?p=247435",
-   "https://fintool.com/app/research/companies/AMD/earnings/Q4 2025"
+   "https://www.sec.gov/Archives/edgar/data/0000002488/000000248826000188/q32026991.htm",
+   "https://qz.com/amd-q3-earnings-data-center-revenue-doubled-110326"
   ]
  },
- "story": "AMD has beaten estimates for several quarters, with data center sales more than doubling this year. Yet reactions have been mixed: shares slipped after February's report on a soft first-quarter outlook, while the May reaction is unclear in sources. Expectations now run very high.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-04",
+   "move_pct": -7.0,
+   "verdict": "Solid beat and strong outlook, but the stock had run too far, too fast.",
+   "reasons": [
+    {
+     "label": "Sky-high expectations",
+     "text": "Stock jumped 21% in the five days before the report, so a modest beat wasn't enough."
+    },
+    {
+     "label": "Flat profit margin outlook",
+     "text": "Gross margin guided to 56% for next quarter, unchanged from this quarter's 56%."
+    },
+    {
+     "label": "Cash flow and AI timing",
+     "text": "Free cash flow fell 39% as spending doubled; big Helios AI rack sales come later."
+    }
+   ]
+  }
+ ]
 }
