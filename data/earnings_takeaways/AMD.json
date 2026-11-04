@@ -1,34 +1,32 @@
 {
  "ticker": "AMD",
- "updated": "2026-11-04T05:34Z",
+ "updated": "2026-11-04T21:17Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
-  "move_pct": 5.0,
-  "basis": "after hours",
-  "verdict": "AMD's AI rack ramp is now showing up in sales, with Q4 revenue guided about $1B above estimates and 2027 growth raised above 80%.",
+  "move_pct": 1.0,
+  "basis": "close",
+  "verdict": "AMD guided fourth-quarter revenue to about $17 billion, up roughly 27% from the third quarter, as its new AI racks begin shipping in volume.",
   "takeaways": [
    {
-    "label": "Q4 guide far above",
-    "text": "Fourth-quarter revenue is guided to about $17 billion, versus a $16.2 billion analyst average. Q3 revenue was $13.38 billion, up 45% and above the roughly $13.1 billion expected."
+    "label": "Data center surge",
+    "text": "Revenue rose 45% to $13.4B. Data center sales jumped 97% to $8.5B, helped by the launch of the MI450 AI chips. PC and gaming sales fell 8%."
    },
    {
-    "label": "2027 growth raised",
-    "text": "CEO Lisa Su now expects total 2027 revenue to grow more than 80%, with server revenue doubling. AI chip growth is projected to be faster than previously forecast."
+    "label": "Huge Q4 guide",
+    "text": "Fourth-quarter revenue is guided to about $17B, plus or minus 3%, with AMD saying growth will speed up as it scales Helios AI racks and 'Venice' server chips."
    },
    {
-    "label": "Helios ramp begins",
-    "text": "Q3 was the first quarter of revenue from MI455 chips and Helios racks. Meta, Microsoft, OpenAI, Anthropic and Oracle are starting to use them, and shipments rise sharply in Q4."
+    "label": "Margin slips",
+    "text": "Adjusted gross margin was 56% in Q3 but is guided to about 55% for Q4, so the margin falls a point even as revenue jumps."
    },
    {
-    "label": "Margins flat, PCs weak",
-    "text": "Gross margin is guided to about 55%, slightly below the 55.3% expected. Gaming fell 40%, and Su expects the 2027 PC market to decline by double digits."
+    "label": "Cash flow thinning",
+    "text": "Free cash flow fell to $554M from $1.56B in Q2. Inventory rose to $11.5B and debt more than doubled to $7.1B from $3.2B."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://uk.investing.com/news/stock-market-news/earnings-call-transcript-amd-tops-q3-2026-estimates-as-stock-jumps-after-hours-93CH-4954263",
-   "https://www.cnbc.com/2026/11/03/amd-amd-q3-earnings-report-2026-.html",
    "https://www.sec.gov/Archives/edgar/data/0000002488/000000248826000188/q32026991.htm"
   ]
  },

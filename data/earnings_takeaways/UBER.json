@@ -1,28 +1,28 @@
 {
  "ticker": "UBER",
- "updated": "2026-11-04T16:49Z",
+ "updated": "2026-11-04T21:24Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
-  "move_pct": 8.2,
-  "basis": "intraday",
-  "verdict": "Uber posted its fifth straight quarter of 20% bookings growth with faster profit gains, and guides to the same pace next quarter.",
+  "move_pct": 4.9,
+  "basis": "close",
+  "verdict": "Uber posted a fifth straight quarter of 20%+ bookings growth with record profit margins, and guided to another strong holiday quarter.",
   "takeaways": [
    {
-    "label": "Growth holds at 20%",
-    "text": "Gross bookings (total customer spending) rose 20% to $59.8B, with trips up 16% to 4.1B. Mobility grew 18% and Delivery 22%."
+    "label": "Profit growing faster",
+    "text": "Gross bookings rose 20% to $59.8B, while adjusted earnings per share jumped 35% to $0.88. Operating profit hit a record 3.9% of bookings, up from 3.4%."
    },
    {
-    "label": "Profit outpacing sales",
-    "text": "Adjusted EBITDA rose 31% to $3.0B and adjusted EPS rose 35% to $0.88, the top of Uber's own $0.84\u2013$0.88 guidance."
+    "label": "Q4 guidance strong",
+    "text": "Uber guided Q4 bookings to $63.25B\u2013$65.25B (18%\u201322% growth in constant currency) and adjusted EPS to $0.95\u2013$0.99, up 34%\u201339%."
    },
    {
-    "label": "Steady Q4 outlook",
-    "text": "Q4 bookings are guided to $63.25B\u2013$65.25B (up 18%\u201322%) with adjusted EPS of $0.95\u2013$0.99, implying growth continues at roughly the same pace."
+    "label": "Driverless rides scaling",
+    "text": "Management expects about 700 fully driverless vehicles on Uber by year-end and over 2,000 in 2027, shifting autonomy from pilots toward commercial rollout."
    },
    {
-    "label": "Robotaxis and buybacks",
-    "text": "Uber expects about 700 driverless vehicles on its platform by year-end and over 2,000 in 2027. Buybacks slowed to $750M from $1.46B a year earlier."
+    "label": "Reporting changed",
+    "text": "Uber dropped adjusted EBITDA as its key profit measure in favor of operating profit and EPS. Reported revenue grew only 10%, with accounting changes to how some revenue is recorded cutting about 8 points."
    }
   ],
   "transcript_read": false,

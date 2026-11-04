@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-04T16:44Z",
+ "updated": "2026-11-04T21:19Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
-  "move_pct": -10.3,
-  "basis": "intraday",
-  "verdict": "Kodak's chemicals unit is growing fast, but print profit nearly vanished, and lower interest costs drove most of the net income gain.",
+  "move_pct": -13.4,
+  "basis": "close",
+  "verdict": "Kodak grew on chemicals and added cash, but Print shrank 7% and profit fell short of last quarter's $36 million.",
   "takeaways": [
    {
-    "label": "Print profit nearly gone",
-    "text": "Print revenue fell 7% to $165 million, and its operating profit (operational EBITDA) dropped to $1 million from $8 million a year earlier."
+    "label": "Chemicals carry growth",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operating profit (EBITDA) grew from $16 million to $21 million. It is now the company's most profitable unit."
    },
    {
-    "label": "Chemicals carrying growth",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, with operating profit up to $21 million from $16 million. That growth is slower than last quarter's 40%."
+    "label": "Print is weakening",
+    "text": "Print revenue fell 7% to $165 million, and its operating profit dropped from $8 million to $1 million. The CEO cited challenging economic conditions."
    },
    {
-    "label": "Profit gain is mostly debt savings",
-    "text": "Net income rose to $21 million from $13 million, mainly because interest expense fell to $3 million from $18 million. Operational EBITDA rose only $2 million to $31 million."
+    "label": "Cash turned positive",
+    "text": "Cash rose $27 million in the quarter to $317 million, after falling last quarter. Operating cash flow is only break-even for the year, and inventory is up $44 million."
    },
    {
-    "label": "Cash up, costs rising",
-    "text": "Cash rose $27 million to $317 million on $25 million of operating cash flow. Overhead rose to $50 million from $41 million, mostly stock pay and employee benefit accruals."
+    "label": "Interest cost nearly gone",
+    "text": "Interest expense fell to $3 million from $18 million after the $101 million term loan repayment, lifting net income to $21 million from $13 million. Stock compensation was $8 million, up from $1 million."
    }
   ],
   "transcript_read": false,
