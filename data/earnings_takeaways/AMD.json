@@ -1,34 +1,35 @@
 {
  "ticker": "AMD",
- "updated": "2026-11-04T01:06Z",
+ "updated": "2026-11-04T05:34Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
-  "move_pct": 8.9,
+  "move_pct": 5.0,
   "basis": "after hours",
-  "verdict": "AMD's AI data center business nearly doubled and the fourth-quarter forecast is about $17 billion, but profit margin stays flat near 55%.",
+  "verdict": "AMD's AI rack ramp is now showing up in sales, with Q4 revenue guided about $1B above estimates and 2027 growth raised above 80%.",
   "takeaways": [
    {
-    "label": "Big fourth-quarter jump",
-    "text": "AMD guided fourth-quarter revenue to about $17 billion, up roughly 66% from a year earlier and far above the $13.4 billion just reported, as Helios AI racks ramp."
+    "label": "Q4 guide far above",
+    "text": "Fourth-quarter revenue is guided to about $17 billion, versus a $16.2 billion analyst average. Q3 revenue was $13.38 billion, up 45% and above the roughly $13.1 billion expected."
    },
    {
-    "label": "Data center nearly doubles",
-    "text": "Data center sales rose 97% to $8.5 billion and drove revenue to $13.4 billion, up 45%. Revenue topped the high end of AMD's own guidance."
+    "label": "2027 growth raised",
+    "text": "CEO Lisa Su now expects total 2027 revenue to grow more than 80%, with server revenue doubling. AI chip growth is projected to be faster than previously forecast."
    },
    {
-    "label": "Margins not expanding",
-    "text": "Gross margin was 56% and is guided to about 55%, a slight dip. The revenue surge is not yet bringing richer profitability."
+    "label": "Helios ramp begins",
+    "text": "Q3 was the first quarter of revenue from MI455 chips and Helios racks. Meta, Microsoft, OpenAI, Anthropic and Oracle are starting to use them, and shipments rise sharply in Q4."
    },
    {
-    "label": "Cash flow and gaming weak",
-    "text": "Free cash flow fell to $554M from $1.56B last quarter. Gaming sales dropped 40% to $773M, hurting an otherwise strong quarter."
+    "label": "Margins flat, PCs weak",
+    "text": "Gross margin is guided to about 55%, slightly below the 55.3% expected. Gaming fell 40%, and Su expects the 2027 PC market to decline by double digits."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0000002488/000000248826000188/q32026991.htm",
-   "https://qz.com/amd-q3-earnings-data-center-revenue-doubled-110326"
+   "https://uk.investing.com/news/stock-market-news/earnings-call-transcript-amd-tops-q3-2026-estimates-as-stock-jumps-after-hours-93CH-4954263",
+   "https://www.cnbc.com/2026/11/03/amd-amd-q3-earnings-report-2026-.html",
+   "https://www.sec.gov/Archives/edgar/data/0000002488/000000248826000188/q32026991.htm"
   ]
  },
  "history": [

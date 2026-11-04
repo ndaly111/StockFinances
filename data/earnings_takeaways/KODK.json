@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-04T01:08Z",
+ "updated": "2026-11-04T05:35Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
-  "move_pct": -6.6,
+  "move_pct": -5.3,
   "basis": "after hours",
-  "verdict": "Chemicals growth and lower interest costs lifted profit, but Print, the biggest business, shrank and its profit nearly vanished.",
+  "verdict": "Chemicals growth and lower interest costs lifted profit, but the print business weakened sharply and now earns almost nothing.",
   "takeaways": [
    {
     "label": "Print profit nearly gone",
-    "text": "Print revenue fell 7% to $165 million, and its operating profit dropped to $1 million from $8 million. Higher aluminum costs and lower volumes were the main causes."
+    "text": "Print revenue fell 7% to $165 million and its operating profit dropped from $8 million to $1 million, mainly on higher aluminum costs and lower volumes."
    },
    {
-    "label": "Chemicals carrying growth",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. It now earns far more than Print."
+    "label": "Chemicals carry the company",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and profit rose to $21 million, but growth slowed from 40% last quarter."
    },
    {
-    "label": "Profit boost is mostly debt",
-    "text": "Net income rose to $21 million from $13 million, largely because interest expense fell to $3 million from $18 million after $101 million of term loans were repaid. Operating EBITDA rose only $2 million."
+    "label": "Profit helped by less debt",
+    "text": "Net income rose to $21 million from $13 million mainly because interest expense fell from $18 million to $3 million. Operating profit (EBITDA) edged up just $2 million to $31 million."
    },
    {
     "label": "Cash rebuilt",
-    "text": "Cash rose $27 million to $317 million in the quarter, though it is still $20 million below year-end. Year-to-date operating cash flow is break-even, and inventory is up $44 million."
+    "text": "Cash rose $27 million to $317 million after last quarter's inventory-driven drop. Operations were only break-even for the year so far, and stock compensation jumped."
    }
   ],
   "transcript_read": false,

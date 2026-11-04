@@ -1,32 +1,28 @@
 {
  "ticker": "TEVA",
- "updated": "2026-11-04T01:11Z",
+ "updated": "2026-11-04T05:38Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": 3.6,
-  "basis": "after hours",
-  "verdict": "Teva raised 2026 revenue and brand-drug targets again on fast growth in Austedo, Ajovy and Uzedy, though total sales fell 2%.",
+  "move_pct": 3.0,
+  "basis": "close",
+  "verdict": "Teva raised 2026 guidance again as Austedo, Ajovy and Uzedy grew fast, but total revenue still fell 2% on weaker generics.",
   "takeaways": [
    {
-    "label": "Brands carry the raise",
-    "text": "Austedo sales rose 21% to $751M, Ajovy 61% to $269M and Uzedy 96% to $85M. The 2026 Austedo outlook went up to $2.55\u20132.65B from $2.45\u20132.60B.",
-    "bullet": null
+    "label": "Guidance raised again",
+    "text": "2026 revenue outlook rose to $16.7\u201317.0 billion from $16.5\u201316.85 billion. Austedo, Ajovy and Uzedy forecasts were all lifted. Profit guidance was left almost unchanged at $1.92\u20132.11 per share."
    },
    {
-    "label": "Guidance lifted, profit target flat",
-    "text": "2026 revenue outlook rose to $16.7\u201317.0B from $16.5\u201316.85B. Adjusted EPS stays $1.92\u20132.11, and the operating income range's top end was trimmed to $3.9B from $4.0B.",
-    "bullet": null
+    "label": "Brand drugs drive growth",
+    "text": "Austedo sales were $751 million, up 21%. Ajovy reached $269 million, up 61%, and Uzedy $85 million, up 96%. Austedo's full-year target now sits at $2.55\u20132.65 billion."
    },
    {
-    "label": "Generics still shrinking",
-    "text": "Total revenue was $4.4B, down 2%, mainly from lower generic sales led by lenalidomide (a cancer drug). Gross margin improved to 55.5% from 51.4%.",
-    "bullet": null
+    "label": "Margins widened",
+    "text": "Adjusted gross margin rose to 58.7% from 55.3%, and adjusted operating margin to 31.7% from 28.9%. Adjusted EPS was $0.86 versus $0.78 a year ago."
    },
    {
-    "label": "Heavy debt remains",
-    "text": "Debt was $16.7B at quarter-end, with about $4.9B refinanced in the quarter. Free cash flow was $495M and the full-year target edged up to $2.1\u20132.4B.",
-    "bullet": null
+    "label": "Generics drag, deals weigh",
+    "text": "Revenue of $4.4 billion fell 2%, mainly on lower U.S. sales of generic lenalidomide. Reported EPS dropped to $0.20 from $0.37. New schizophrenia injection Weltruza is cleared for launch, and BXCL-501 is under FDA review."
    }
   ],
   "transcript_read": false,

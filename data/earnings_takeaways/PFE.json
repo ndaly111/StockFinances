@@ -1,28 +1,28 @@
 {
  "ticker": "PFE",
- "updated": "2026-11-04T01:09Z",
+ "updated": "2026-11-04T05:36Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -1.8,
-  "basis": "after hours",
-  "verdict": "Pfizer raised its 2026 revenue and profit outlook as newer cancer and heart drugs grew fast, though COVID products keep shrinking.",
+  "move_pct": -2.2,
+  "basis": "close",
+  "verdict": "Pfizer raised its 2026 outlook, but a COVID collapse left quarterly sales flat, with the rest of the business growing 7%.",
   "takeaways": [
    {
     "label": "Guidance raised",
-    "text": "Full-year revenue outlook rises $1.5B at the midpoint to $62-64B. Adjusted EPS guidance moves to $2.95-$3.05 from $2.80-$3.00, even after a roughly $0.10 licensing charge."
+    "text": "Full-year revenue outlook rose $1.5B at the midpoint to $62-64B, and adjusted EPS to $2.95-3.05 from $2.80-3.00, even after a roughly $0.10 licensing charge."
    },
    {
-    "label": "Flat quarter, strong core",
-    "text": "Revenue of $16.6B was flat and adjusted EPS held at $0.87, but sales excluding COVID products grew 7%, and newer and acquired products grew 32%."
+    "label": "COVID drag, core growth",
+    "text": "Third-quarter revenue of $16.6B was flat. Paxlovid fell 63% and Comirnaty 29%, while sales excluding both grew 7% and newer or acquired products grew 32%."
    },
    {
-    "label": "Eliquis and cancer drive growth",
-    "text": "Eliquis sales rose 25% (lower rebates helped), and the cancer drug Padcev rose 55%. COVID treatment Paxlovid fell 63%, the COVID vaccine fell 29%, and the Prevnar vaccine fell 10%."
+    "label": "Eliquis boosted by pricing",
+    "text": "Eliquis rose 25% (+$513M), driven mainly by higher U.S. net price from lower rebates and favorable channel mix, so part of the growth may not recur."
    },
    {
-    "label": "Spending on pipeline rises",
-    "text": "R&D spending jumped 18%, mainly for cancer and obesity drugs. R&D guidance rose to $10.8-11.8B. A new CFO, Cecile Guegan, started Nov. 1; no share buybacks are planned this year."
+    "label": "Vaccine and spending pressure",
+    "text": "Prevnar fell 10% on lower U.S. vaccination rates and lost adult market share. R&D spending rose 18%, so adjusted EPS stayed flat at $0.87."
    }
   ],
   "transcript_read": false,

@@ -1,36 +1,33 @@
 {
  "ticker": "PLTR",
- "updated": "2026-11-04T01:10Z",
+ "updated": "2026-11-04T05:37Z",
  "last": {
   "date": "2026-11-02",
   "timing": "post",
-  "move_pct": -3.2,
-  "basis": "after hours",
-  "verdict": "Palantir's growth is still accelerating, with US business customers now bigger than the US government, but new business contracts are getting smaller and shorter.",
+  "move_pct": -1.6,
+  "basis": "close",
+  "verdict": "Palantir's growth is still accelerating: revenue nearly doubled, U.S. commercial passed U.S. government for the first time, and full-year guidance was raised again.",
   "takeaways": [
    {
-    "label": "Blowout quarter, raised outlook",
-    "text": "Revenue rose 96% to $2.31B against roughly $2.18B expected. Full-year revenue guidance rose to about $8.53B, with Q4 guided to about $2.65B."
+    "label": "Growth keeps accelerating",
+    "text": "Revenue rose 96% to $2.313B, the first quarter above $2B, with a 62% adjusted operating margin. Full-year revenue guidance rises to about $8.53B from about $8.15B."
    },
    {
-    "label": "Business customers overtake government",
-    "text": "US commercial revenue grew 148% to $984M, passing US government revenue ($953M) for the first time. Full-year US commercial guidance is now above $3.56B."
+    "label": "Commercial overtakes government",
+    "text": "U.S. commercial revenue hit $984M, up 148% year over year and 29% from last quarter, passing U.S. government revenue ($953M) for the first time."
    },
    {
-    "label": "Bookings and contract length lag",
-    "text": "US commercial new-contract value was $1.46B, down from a record $2.13B last quarter. Management says deals now start shorter and expand later, with duration and size expected to grow."
+    "label": "Cash machine",
+    "text": "Adjusted free cash flow was $1.216B, a 53% margin. The company holds $10.4B in cash and Treasuries. Full-year free cash flow guidance is $4.8\u20135.0B."
    },
    {
-    "label": "Profits remain extreme",
-    "text": "Adjusted operating margin was 62% and free cash flow was $1.22B. Management says the AI-driven 'Sovereign AI' demand trend is only about a quarter old, so durability is unproven."
+    "label": "New deals lag revenue",
+    "text": "New contracts signed (total contract value) rose only 6% to $2.92B, and U.S. commercial remaining deal value grew just 4% from last quarter. Revenue growth is far outpacing new bookings."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm",
-   "https://www.cnbc.com/2026/11/02/palantir-pltr-earnings-q3-2026.html",
-   "https://techcrunch.com/2026/11/03/hiding-inside-palantirs-skyrocketing-quarter-is-a-foreboding-signal/",
-   "https://www.aol.com/articles/palantir-pltr-q3-2026-earnings-042839000.html"
+   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm"
   ]
  },
  "history": [

@@ -1,28 +1,28 @@
 {
  "ticker": "SHOP",
- "updated": "2026-11-04T01:10Z",
+ "updated": "2026-11-04T05:37Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
-  "move_pct": -9.6,
-  "basis": "after hours",
-  "verdict": "Shopify held 32% revenue growth while operating profit rose 66%, and guided to a similar low-thirties pace for next quarter.",
+  "move_pct": -8.7,
+  "basis": "close",
+  "verdict": "Shopify grew revenue 32% and lifted its cash margin to 22%, meeting its own forecast, with growth cooling from last quarter's 34%.",
   "takeaways": [
    {
-    "label": "Profits growing much faster",
-    "text": "Operating income jumped 66% to $568 million and free cash flow margin reached 22%, up from 18% a year ago, as revenue grew 32% to $3.74 billion."
+    "label": "Growth steady, not accelerating",
+    "text": "Revenue rose 32% to $3.74 billion, in line with the low-thirties forecast and down from 34% last quarter. Sales volume on the platform rose 29% to $119 billion. The Q4 forecast is again low-thirties."
    },
    {
-    "label": "Growth cooled slightly",
-    "text": "Revenue growth slowed from 34% last quarter to 32%. Total sales on the platform grew 29% to $119 billion. Next quarter is guided to low-thirties growth."
+    "label": "Profit growing much faster",
+    "text": "Operating income rose 66% to $568 million, and free cash flow margin reached 22% versus 18% a year ago. Losses from payments and loans fell to $120 million from $148 million."
    },
    {
     "label": "Gross profit lags revenue",
-    "text": "Gross profit grew 28%, slower than revenue, and Q4 gross profit is guided to high-twenties growth. Payments-driven merchant revenue (up 35%) is growing faster than the higher-margin subscription revenue (up 20%)."
+    "text": "Gross profit grew 28%, slower than the 32% revenue growth, as lower-margin payments drove growth. Q4 gross profit is guided to the high-twenties."
    },
    {
-    "label": "Big buyback, lower loan losses",
-    "text": "Shopify repurchased $562 million of its own stock this quarter, versus none a year ago. Transaction and loan losses fell to $120 million from $148 million."
+    "label": "Large buyback begins",
+    "text": "Shopify spent $562 million repurchasing its own stock in the quarter, versus nothing a year ago. Cash and investments of about $4.7 billion remain."
    }
   ],
   "transcript_read": false,
