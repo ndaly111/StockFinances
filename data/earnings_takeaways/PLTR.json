@@ -1,33 +1,34 @@
 {
  "ticker": "PLTR",
- "updated": "2026-11-04T05:37Z",
+ "updated": "2026-11-04T09:37Z",
  "last": {
   "date": "2026-11-02",
   "timing": "post",
   "move_pct": -1.6,
   "basis": "close",
-  "verdict": "Palantir's growth is still accelerating: revenue nearly doubled, U.S. commercial passed U.S. government for the first time, and full-year guidance was raised again.",
+  "verdict": "Palantir's revenue nearly doubled and U.S. commercial sales overtook government sales, but new contract signings grew only 6%.",
   "takeaways": [
    {
     "label": "Growth keeps accelerating",
-    "text": "Revenue rose 96% to $2.313B, the first quarter above $2B, with a 62% adjusted operating margin. Full-year revenue guidance rises to about $8.53B from about $8.15B."
+    "text": "Revenue rose 96% to $2.313B, topping $2B for the first time. Palantir had guided to about $2.16B. U.S. commercial revenue grew 148% to $984M, passing U.S. government for the first time."
    },
    {
-    "label": "Commercial overtakes government",
-    "text": "U.S. commercial revenue hit $984M, up 148% year over year and 29% from last quarter, passing U.S. government revenue ($953M) for the first time."
+    "label": "Guidance raised sharply",
+    "text": "Full-year revenue outlook rose to about $8.53B from about $8.15B. Q4 is guided to roughly $2.65B, and free cash flow to $4.8-5.0B."
    },
    {
-    "label": "Cash machine",
-    "text": "Adjusted free cash flow was $1.216B, a 53% margin. The company holds $10.4B in cash and Treasuries. Full-year free cash flow guidance is $4.8\u20135.0B."
+    "label": "Profits remain exceptional",
+    "text": "Adjusted operating margin was 62% and GAAP net income was $1.13B, a 49% margin. Adjusted free cash flow was $1.22B, and cash and Treasuries total $10.4B."
    },
    {
-    "label": "New deals lag revenue",
-    "text": "New contracts signed (total contract value) rose only 6% to $2.92B, and U.S. commercial remaining deal value grew just 4% from last quarter. Revenue growth is far outpacing new bookings."
+    "label": "Bookings lag revenue",
+    "text": "Total contract value signed grew just 6% to $2.92B, and U.S. commercial value grew 11%. Remaining U.S. commercial contract value rose only 4% from last quarter, far below revenue growth."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm"
+   "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000045/a2026q3ex991pressrelease.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001321655/000132165526000039/a2026q2ex991pressrelease.htm"
   ]
  },
  "history": [

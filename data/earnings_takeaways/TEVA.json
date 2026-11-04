@@ -1,28 +1,28 @@
 {
  "ticker": "TEVA",
- "updated": "2026-11-04T05:38Z",
+ "updated": "2026-11-04T09:39Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
   "move_pct": 3.0,
   "basis": "close",
-  "verdict": "Teva raised 2026 guidance again as Austedo, Ajovy and Uzedy grew fast, but total revenue still fell 2% on weaker generics.",
+  "verdict": "Teva raised 2026 revenue and brand-drug guidance again as Austedo, Ajovy and Uzedy surged, while shrinking generics and a lowered profit-range ceiling temper the lift.",
   "takeaways": [
    {
-    "label": "Guidance raised again",
-    "text": "2026 revenue outlook rose to $16.7\u201317.0 billion from $16.5\u201316.85 billion. Austedo, Ajovy and Uzedy forecasts were all lifted. Profit guidance was left almost unchanged at $1.92\u20132.11 per share."
+    "label": "Brands drive growth",
+    "text": "Austedo, Ajovy and Uzedy together reached about $1.1 billion in the quarter, up 33%. Ajovy rose 61% and Uzedy 96%."
    },
    {
-    "label": "Brand drugs drive growth",
-    "text": "Austedo sales were $751 million, up 21%. Ajovy reached $269 million, up 61%, and Uzedy $85 million, up 96%. Austedo's full-year target now sits at $2.55\u20132.65 billion."
+    "label": "Guidance raised, profit capped",
+    "text": "2026 revenue outlook rose to $16.7\u201317.0 billion and Austedo to $2.55\u20132.65 billion. Operating income and EBITDA ceilings were lowered, and the low end of the EPS range barely moved."
    },
    {
-    "label": "Margins widened",
-    "text": "Adjusted gross margin rose to 58.7% from 55.3%, and adjusted operating margin to 31.7% from 28.9%. Adjusted EPS was $0.86 versus $0.78 a year ago."
+    "label": "Generics still shrinking",
+    "text": "Total revenue fell 2% to $4.4 billion, mainly on lower sales of generic lenalidomide (a cancer drug). Global generics revenue fell 16%."
    },
    {
-    "label": "Generics drag, deals weigh",
-    "text": "Revenue of $4.4 billion fell 2%, mainly on lower U.S. sales of generic lenalidomide. Reported EPS dropped to $0.20 from $0.37. New schizophrenia injection Weltruza is cleared for launch, and BXCL-501 is under FDA review."
+    "label": "Stronger balance sheet",
+    "text": "Moody's and S&P upgraded Teva to investment grade after Fitch. About $4.9 billion of debt was refinanced; net debt is $12.6 billion."
    }
   ],
   "transcript_read": false,
