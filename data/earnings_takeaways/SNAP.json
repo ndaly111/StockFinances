@@ -1,29 +1,35 @@
 {
  "ticker": "SNAP",
- "updated": "2026-11-05T05:39Z",
+ "updated": "2026-11-05T09:42Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
-  "move_pct": -11.5,
+  "move_pct": -10.0,
   "basis": "after hours",
-  "verdict": "Snap's revenue and user numbers missed as big brands cut ad spending, but a strong profit beat and a higher Q4 forecast limited the damage.",
+  "verdict": "Snap's profit jumped on cost discipline and subscription growth, but advertising, still most of its revenue, grew only 4%.",
   "takeaways": [
    {
-    "label": "Ad weakness",
-    "text": "Revenue rose 14% to $1.72B, just under the $1.73B expected. Management blamed consumer-goods advertisers pulling back, citing U.S. and Middle East pressures, and pointed to growth in financial services ads."
+    "label": "Ads still weak",
+    "text": "Advertising revenue grew just 4%, which Snap itself said is below its ambitions. Brand advertising declined, while performance-focused ads grew strongly."
    },
    {
-    "label": "Profit beat, Q4 outlook",
-    "text": "Adjusted earnings hit $383M versus $337M expected, and net income was $56M versus a $104M loss a year ago. Q4 revenue guidance of $1.95\u20131.99B tops the Street's $1.95B."
+    "label": "Subscriptions carry growth",
+    "text": "Subscription-type 'Other' revenue grew 84%, and paid subscribers passed 30 million. That is why total revenue rose 14% to $1.72B despite slow ads."
    },
    {
-    "label": "User growth slipping",
-    "text": "Daily users reached 495M, below the 499M expected. Snap will make monthly users (977M) its main audience measure from Q1 2027, saying it won't optimize around daily use."
+    "label": "Profit well above forecast",
+    "text": "Adjusted EBITDA (core profit) was $383M, above the $300\u2013350M forecast, and net income was $56M versus a $104M loss a year earlier. Staff is down 13%."
+   },
+   {
+    "label": "Bigger Q4 outlook",
+    "text": "Snap guided Q4 revenue to $1.95\u20131.985B and Adjusted EBITDA to $490\u2013525M, including Specs glasses spending, and trimmed full-year computing costs."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.cnbc.com/2026/11/04/snap-q3-earnings-report-2026.html"
+   "https://www.sec.gov/Archives/edgar/data/0001564408/000156440826000063/snap-20261104xexx991pressr.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001564408/000156440826000063/snapincq32026preparedrem.htm",
+   "https://www.gurufocus.com/news/9172109/snap-snap-lowers-2026-infrastructure-expense-outlook-projects-q4-adjusted-ebitda-range"
   ]
  },
  "history": [

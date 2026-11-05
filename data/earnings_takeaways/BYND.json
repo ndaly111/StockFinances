@@ -1,33 +1,34 @@
 {
  "ticker": "BYND",
- "updated": "2026-11-05T05:32Z",
+ "updated": "2026-11-05T09:34Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
-  "move_pct": -2.1,
+  "move_pct": -4.9,
   "basis": "after hours",
-  "verdict": "Margins improved to a five-year high, but U.S. sales keep shrinking and fourth-quarter revenue is guided lower, to $54\u201359 million.",
+  "verdict": "Beyond Meat's margins and cash burn improved, but revenue is still shrinking and the fourth-quarter outlook points to a sharper drop.",
   "takeaways": [
    {
     "label": "Sales slide continues",
-    "text": "Revenue fell 8.1% to $64.5 million. U.S. sales fell 12.3%, with U.S. retail volume down 20.8% on lost shelf space and weak category demand."
+    "text": "Revenue fell 8.1% to $64.5 million, at the high end of guidance. Fourth-quarter revenue is guided to $54-59 million, below this quarter's level."
    },
    {
-    "label": "Lower Q4 outlook",
-    "text": "Fourth-quarter revenue is guided to $54\u201359 million, below Q3's $64.5 million. The company cited elevated uncertainty and gave no profit outlook."
+    "label": "U.S. keeps shrinking",
+    "text": "U.S. retail sales fell 13.2% and U.S. foodservice 9.7% on lost shelf space and weak category demand. Europe-led international retail grew 13.3%, a third straight quarter of growth."
    },
    {
-    "label": "Margins and cash burn improve",
-    "text": "Gross margin hit 19.3% versus 7.4% a year ago, on cost per pound down 10.1%. Adjusted EBITDA loss narrowed to $24.6 million from $33.5 million."
+    "label": "Margins and burn improving",
+    "text": "Gross margin hit 19.3% (7.4% a year ago), the best in five years. Cash used in operations over nine months was $37.3 million versus $101.2 million."
    },
    {
-    "label": "Heavy debt remains",
-    "text": "Cash was $169.3 million against $313.9 million of debt. $14.5 million of 2027 notes come due in March, and the company can't use its at-the-market stock-sale program."
+    "label": "Heavy debt, ongoing dilution",
+    "text": "Cash is $169.3 million against $313.9 million of debt. Another $15 million of 2027 notes was swapped into shares, leaving $14.5 million due March 2027."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm"
+   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm",
+   "https://www.marketbeat.com/instant-alerts/transcript-what-beyond-meat-bynd-said-on-its-q3-earnings-call-2026-11-04/"
   ]
  },
  "history": [

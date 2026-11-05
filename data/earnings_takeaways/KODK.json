@@ -1,34 +1,33 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-05T05:35Z",
+ "updated": "2026-11-05T09:38Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Chemicals growth and far lower interest costs lifted profit, but Print is shrinking and its profit has nearly vanished.",
+  "verdict": "Chemicals growth is now carrying Kodak: its printing business shrank and nearly stopped earning, while a much lower interest bill drove the profit gain.",
   "takeaways": [
    {
-    "label": "Chemicals carry the company",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, with operating profit (EBITDA) up to $21 million from $16 million. Growth slowed from last quarter's 40%."
+    "label": "Print turned down",
+    "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) dropped to $1 million from $8 million. Last quarter Print had grown 10%."
    },
    {
-    "label": "Print profit nearly gone",
-    "text": "Print revenue fell 7% to $165 million on lower prepress and press volumes. Its operating profit (EBITDA) dropped to $1 million from $8 million a year ago."
+    "label": "Chemicals carry growth",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. It now produces most of Kodak's profit."
    },
    {
-    "label": "Net income helped by debt paydown",
-    "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million. Operating profit (EBITDA) rose only $2 million, to $31 million."
+    "label": "Profit gain is mostly debt relief",
+    "text": "Net income rose to $21 million from $13 million, mainly because interest expense fell to $3 million from $18 million. Operating profit (EBITDA) rose only $2 million, to $31 million, and was down from $36 million last quarter."
    },
    {
-    "label": "Cash up, costs rising",
-    "text": "Cash rose $27 million to $317 million, but year-to-date operating cash flow is only break-even. Overhead rose to $50 million from $41 million, driven by stock pay and benefit accruals."
+    "label": "Cash up, but thin",
+    "text": "Cash rose $27 million to $317 million in the quarter. Year to date, operating cash flow is only break-even, and SG&A costs rose to $50 million from $41 million."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm",
-   "https://www.sec.gov/Archives/edgar/data/0000031235/000119312526445403/kodk-20260930.htm"
+   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm"
   ]
  },
  "history": [

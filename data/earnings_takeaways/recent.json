@@ -1,49 +1,78 @@
 {
- "updated": "2026-11-05T05:41Z",
+ "updated": "2026-11-05T09:45Z",
  "reports": [
   {
    "ticker": "CVS",
    "date": "2026-11-04",
    "move_pct": -12.5,
    "basis": "close",
-   "verdict": "CVS beat forecasts and raised its 2026 outlook, then announced a plan to split into two public companies by the first half of 2028.",
+   "verdict": "CVS raised 2026 profit guidance again and lifted its 2027 floor to $8.65, as Aetna's Medicare repair drives the recovery.",
    "takeaways": [
     {
-     "label": "Plan to split up",
-     "text": "CVS intends to separate into two companies: Aetna, Caremark and care delivery under Joyner, and a retail pharmacy business led by Prem Shah. Completion is targeted for the first half of 2028, subject to board and regulatory approval."
+     "label": "Aetna margin recovery",
+     "text": "Health insurance profit jumped to $912M from $314M a year ago. The share of premiums spent on care fell to 91.3% from 92.8%, mainly on Medicare."
     },
     {
-     "label": "Big beat, higher outlook",
-     "text": "Adjusted EPS of $2.09 beat the roughly $1.65 expected. Full-year guidance rose to at least $8.20 from $7.90-$8.10, and cash flow guidance to at least $15.5 billion."
+     "label": "Higher 2026 outlook",
+     "text": "2026 adjusted earnings guidance rose to at least $8.20 per share from $7.90\u2013$8.10. Expected operating cash flow rose to at least $15.5 billion from $11.5 billion."
     },
     {
-     "label": "Insurance recovery continues",
-     "text": "Insurance (Aetna) profit nearly tripled to $912 million as the share of premiums spent on medical care fell to 91.3% from 92.8%, helped by the government business."
+     "label": "2027 floor raised",
+     "text": "Management now expects at least $8.65 per share in 2027, up from about $8.44. The pharmacy-benefit unit is seen at a trough of at least $7B profit."
     },
     {
-     "label": "Pharmacy and PBM steady",
-     "text": "Retail pharmacy profit rose 10.6% on prescription growth and Rite Aid files. Pharmacy benefit manager profit grew only 2.7% as price cuts to clients offset higher drug costs."
+     "label": "Company split planned",
+     "text": "Management is pursuing a separation of the company. Analysts pressed on the costs, and management called them manageable and already in guidance without giving numbers."
     }
    ]
   },
   {
    "ticker": "SNAP",
    "date": "2026-11-04",
-   "move_pct": -11.5,
+   "move_pct": -10.0,
    "basis": "after hours",
-   "verdict": "Snap's revenue and user numbers missed as big brands cut ad spending, but a strong profit beat and a higher Q4 forecast limited the damage.",
+   "verdict": "Snap's profit jumped on cost discipline and subscription growth, but advertising, still most of its revenue, grew only 4%.",
    "takeaways": [
     {
-     "label": "Ad weakness",
-     "text": "Revenue rose 14% to $1.72B, just under the $1.73B expected. Management blamed consumer-goods advertisers pulling back, citing U.S. and Middle East pressures, and pointed to growth in financial services ads."
+     "label": "Ads still weak",
+     "text": "Advertising revenue grew just 4%, which Snap itself said is below its ambitions. Brand advertising declined, while performance-focused ads grew strongly."
     },
     {
-     "label": "Profit beat, Q4 outlook",
-     "text": "Adjusted earnings hit $383M versus $337M expected, and net income was $56M versus a $104M loss a year ago. Q4 revenue guidance of $1.95\u20131.99B tops the Street's $1.95B."
+     "label": "Subscriptions carry growth",
+     "text": "Subscription-type 'Other' revenue grew 84%, and paid subscribers passed 30 million. That is why total revenue rose 14% to $1.72B despite slow ads."
     },
     {
-     "label": "User growth slipping",
-     "text": "Daily users reached 495M, below the 499M expected. Snap will make monthly users (977M) its main audience measure from Q1 2027, saying it won't optimize around daily use."
+     "label": "Profit well above forecast",
+     "text": "Adjusted EBITDA (core profit) was $383M, above the $300\u2013350M forecast, and net income was $56M versus a $104M loss a year earlier. Staff is down 13%."
+    },
+    {
+     "label": "Bigger Q4 outlook",
+     "text": "Snap guided Q4 revenue to $1.95\u20131.985B and Adjusted EBITDA to $490\u2013525M, including Specs glasses spending, and trimmed full-year computing costs."
+    }
+   ]
+  },
+  {
+   "ticker": "BYND",
+   "date": "2026-11-04",
+   "move_pct": -4.9,
+   "basis": "after hours",
+   "verdict": "Beyond Meat's margins and cash burn improved, but revenue is still shrinking and the fourth-quarter outlook points to a sharper drop.",
+   "takeaways": [
+    {
+     "label": "Sales slide continues",
+     "text": "Revenue fell 8.1% to $64.5 million, at the high end of guidance. Fourth-quarter revenue is guided to $54-59 million, below this quarter's level."
+    },
+    {
+     "label": "U.S. keeps shrinking",
+     "text": "U.S. retail sales fell 13.2% and U.S. foodservice 9.7% on lost shelf space and weak category demand. Europe-led international retail grew 13.3%, a third straight quarter of growth."
+    },
+    {
+     "label": "Margins and burn improving",
+     "text": "Gross margin hit 19.3% (7.4% a year ago), the best in five years. Cash used in operations over nine months was $37.3 million versus $101.2 million."
+    },
+    {
+     "label": "Heavy debt, ongoing dilution",
+     "text": "Cash is $169.3 million against $313.9 million of debt. Another $15 million of 2027 notes was swapped into shares, leaving $14.5 million due March 2027."
     }
    ]
   },
@@ -52,23 +81,23 @@
    "date": "2026-11-04",
    "move_pct": 4.9,
    "basis": "close",
-   "verdict": "Uber keeps growing bookings about 20% while profit grows faster, and it is now pushing into self-driving cars.",
+   "verdict": "Uber beat its own bookings and profit guidance, with 20% growth intact, while shifting its focus to rolling out driverless cars.",
    "takeaways": [
     {
-     "label": "Growth and profit",
-     "text": "Gross bookings rose 20% to $59.8B, a fifth straight quarter of 20%+ growth. Operating profit margin hit a record 3.9% of bookings, and adjusted EPS rose 35% to $0.88."
+     "label": "Beat own guidance",
+     "text": "Gross bookings rose 20% to $59.8B, above the ~$59.25B guidance midpoint. Adjusted EPS of $0.88 hit the top of guidance. Trailing free cash flow hit a record $10.4B."
     },
     {
-     "label": "Q4 outlook",
-     "text": "Uber guides Q4 bookings of $63.25B\u2013$65.25B (18%\u201322% growth) and adjusted EPS of $0.95\u2013$0.99, up 34%\u201339%, so growth is expected to hold steady."
+     "label": "Steady Q4 outlook",
+     "text": "Q4 bookings guidance is $63.25\u201365.25B (18\u201322% growth), and adjusted EPS is $0.95\u20130.99. Management called growth 'steady' rather than accelerating."
     },
     {
-     "label": "Self-driving push",
-     "text": "Uber expects about 700 fully driverless vehicles on its platform by year-end and over 2,000 in 2027. Debt has risen to $15.7B from $10.5B at the end of 2025."
+     "label": "Driverless cars go commercial",
+     "text": "Uber expects about 700 fully driverless vehicles by year-end and 2,000+ by end of 2027, citing a 30% utilization edge. It wants outside capital to fund the fleets."
     },
     {
-     "label": "Reported numbers look weaker",
-     "text": "Revenue grew only 10% to $14.8B because of accounting changes in how some business is recorded. Reported net income fell 92% to $512M against a year-ago tax benefit."
+     "label": "Overseas driver shortage",
+     "text": "Driver supply lagged rider demand in several international markets, including Brazil, India and Canada. The CFO blamed higher fuel costs from the Middle East war. Management said October supply hours accelerated."
     }
    ]
   },
@@ -77,48 +106,23 @@
    "date": "2026-11-04",
    "move_pct": 3.8,
    "basis": "close",
-   "verdict": "Sales guidance narrowed and EPS target lifted, but profit still fell 15% as costs and brand spending outpaced a still-shrinking U.S. business.",
+   "verdict": "Kraft Heinz nudged its sales and EPS guidance up, but profit is still falling about 15% and shoppers are buying fewer of its products.",
    "takeaways": [
     {
-     "label": "Profit still sliding",
-     "text": "Adjusted operating income fell 15.2% to $939M and adjusted EPS fell to $0.53 from $0.61, on rising supply and shipping costs, higher bonuses and more advertising."
+     "label": "Profit still shrinking",
+     "text": "Adjusted operating income fell 15.2% to $939M and adjusted EPS fell to $0.53 from $0.61. Costs for ingredients, shipping and bonuses, plus more advertising, outweighed savings."
     },
     {
-     "label": "Guidance: sales up, profit flat",
-     "text": "The low end of the sales forecast improved to down 1.25% from down 2%. Operating profit guidance is unchanged at down 16-18%, with gross margin now at the weak end."
+     "label": "Guidance raise is thin",
+     "text": "The sales range narrowed to down 0.5% to 1.25% from down 0.5% to 2%, and EPS rose to $2.07-$2.13. Profit guidance is unchanged, and the EPS lift is helped by a lower tax rate and more other income."
     },
     {
-     "label": "EPS raise is partly tax-driven",
-     "text": "Full-year EPS guidance rose to $2.07-$2.13 from $2.03-$2.09, helped by a lower expected tax rate (23.5% vs 24.5%) and higher other income, not stronger operations."
+     "label": "US shoppers buying less",
+     "text": "North America sales fell 3.4% on weaker meats, sauces and drinks, and volume fell 2.4%. Management says share and volume trends are improving versus last year, but the quarter still shows declines."
     },
     {
-     "label": "U.S. weak, emerging markets strong",
-     "text": "North America organic sales fell 3.2%, with volume down 2.4% in meats, sauces and drinks. Emerging Markets grew 15.6%. Management says trends are improving versus last year."
-    }
-   ]
-  },
-  {
-   "ticker": "BYND",
-   "date": "2026-11-04",
-   "move_pct": -2.1,
-   "basis": "after hours",
-   "verdict": "Margins improved to a five-year high, but U.S. sales keep shrinking and fourth-quarter revenue is guided lower, to $54\u201359 million.",
-   "takeaways": [
-    {
-     "label": "Sales slide continues",
-     "text": "Revenue fell 8.1% to $64.5 million. U.S. sales fell 12.3%, with U.S. retail volume down 20.8% on lost shelf space and weak category demand."
-    },
-    {
-     "label": "Lower Q4 outlook",
-     "text": "Fourth-quarter revenue is guided to $54\u201359 million, below Q3's $64.5 million. The company cited elevated uncertainty and gave no profit outlook."
-    },
-    {
-     "label": "Margins and cash burn improve",
-     "text": "Gross margin hit 19.3% versus 7.4% a year ago, on cost per pound down 10.1%. Adjusted EBITDA loss narrowed to $24.6 million from $33.5 million."
-    },
-    {
-     "label": "Heavy debt remains",
-     "text": "Cash was $169.3 million against $313.9 million of debt. $14.5 million of 2027 notes come due in March, and the company can't use its at-the-market stock-sale program."
+     "label": "Emerging markets the bright spot",
+     "text": "Emerging Markets organic sales rose 15.6%, while Europe and other developed markets saw adjusted operating income fall 32.8%. Growth abroad is not yet offsetting weakness at home."
     }
    ]
   },
@@ -127,23 +131,23 @@
    "date": "2026-11-04",
    "move_pct": -1.8,
    "basis": "after hours",
-   "verdict": "MetLife posted its best-ever quarterly profit per share, but a big part came from volatile investment gains rather than steadier insurance growth.",
+   "verdict": "MetLife posted its best-ever quarterly profit per share, but a 49% jump in volatile investment income did much of the work.",
    "takeaways": [
     {
      "label": "Record, but investment-aided",
-     "text": "Adjusted EPS excluding one-time items hit a record $2.85, up 22%. Gains from private-equity-type investments jumped 49% to $720 million, a swingy source."
+     "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items, a company record. Variable investment income, which swings with markets, jumped 49% to $720 million."
     },
     {
      "label": "Broad underlying growth",
-     "text": "Core revenue excluding pension risk transfers rose 8% to $13.5 billion, growing in all six segments. Group Benefits earnings rose 15% on favorable claims."
+     "text": "Premiums and fees excluding pension deals grew 8% to $13.5 billion, with growth in all six segments. Group Benefits earnings rose 15% on favorable claims. Return on equity was 19.6%."
     },
     {
-     "label": "Latin America and Asia softer",
-     "text": "Latin America earnings excluding one-time items fell 5% at constant currency on lower investment returns. Asia sales fell 6% against a strong prior year."
+     "label": "Patchy spots",
+     "text": "Asia sales fell 6% against a strong year-ago quarter. Latin America earnings excluding one-time items fell 5% on a constant-currency basis, as lower investment returns offset growth."
     },
     {
-     "label": "Annual review dented headline",
-     "text": "The yearly review of insurance assumptions cut adjusted earnings by $46 million, pulling retirement-unit earnings down 6%. Excluding it, that unit rose 12%."
+     "label": "Book value split",
+     "text": "Book value per share fell 22% to $30.73, while the adjusted measure, which strips out market swings, rose 5% to $59.41. About $1 billion went back to shareholders."
     }
    ]
   },
@@ -152,23 +156,23 @@
    "date": "2026-11-03",
    "move_pct": -13.4,
    "basis": "close",
-   "verdict": "Chemicals growth and far lower interest costs lifted profit, but Print is shrinking and its profit has nearly vanished.",
+   "verdict": "Chemicals growth is now carrying Kodak: its printing business shrank and nearly stopped earning, while a much lower interest bill drove the profit gain.",
    "takeaways": [
     {
-     "label": "Chemicals carry the company",
-     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, with operating profit (EBITDA) up to $21 million from $16 million. Growth slowed from last quarter's 40%."
+     "label": "Print turned down",
+     "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) dropped to $1 million from $8 million. Last quarter Print had grown 10%."
     },
     {
-     "label": "Print profit nearly gone",
-     "text": "Print revenue fell 7% to $165 million on lower prepress and press volumes. Its operating profit (EBITDA) dropped to $1 million from $8 million a year ago."
+     "label": "Chemicals carry growth",
+     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. It now produces most of Kodak's profit."
     },
     {
-     "label": "Net income helped by debt paydown",
-     "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million. Operating profit (EBITDA) rose only $2 million, to $31 million."
+     "label": "Profit gain is mostly debt relief",
+     "text": "Net income rose to $21 million from $13 million, mainly because interest expense fell to $3 million from $18 million. Operating profit (EBITDA) rose only $2 million, to $31 million, and was down from $36 million last quarter."
     },
     {
-     "label": "Cash up, costs rising",
-     "text": "Cash rose $27 million to $317 million, but year-to-date operating cash flow is only break-even. Overhead rose to $50 million from $41 million, driven by stock pay and benefit accruals."
+     "label": "Cash up, but thin",
+     "text": "Cash rose $27 million to $317 million in the quarter. Year to date, operating cash flow is only break-even, and SG&A costs rose to $50 million from $41 million."
     }
    ]
   },
@@ -202,23 +206,23 @@
    "date": "2026-11-03",
    "move_pct": 3.0,
    "basis": "close",
-   "verdict": "Teva raised 2026 sales guidance again as its three newer brand drugs grew 33%, even as generics shrank and revenue slipped 2%.",
+   "verdict": "Teva's three newer brand drugs grew 33% to about $1.1 billion, offsetting falling generics and prompting another full-year sales guidance increase.",
    "takeaways": [
     {
-     "label": "Brand drugs carry growth",
-     "text": "Austedo ($751M, +21%), Ajovy ($269M, +61%) and Uzedy ($85M, +96%) together reached about $1.1B, up 33%, and all three got higher 2026 sales targets."
+     "label": "Brand drugs outrunning guidance",
+     "text": "Austedo sales rose 21% to $751M, Ajovy 61% and Uzedy 96%. Austedo's 2026 outlook rose to $2.55\u20132.65B from $2.45\u20132.6B."
     },
     {
-     "label": "Guidance raised again",
-     "text": "2026 revenue outlook rose to $16.7\u201317.0B from $16.5\u201316.85B. Austedo is now $2.55\u20132.65B (was $2.45\u20132.60B). Profit per share outlook is little changed at $1.92\u20132.11."
+     "label": "Generics drag, margins improve",
+     "text": "Total revenue fell 2% to $4.4B as generics dropped 16% on lower generic Revlimid sales. Adjusted gross margin still rose to 58.7% from 55.3%."
     },
     {
-     "label": "Margins improving",
-     "text": "Adjusted profit per share rose 10% to $0.86 despite 2% lower revenue, as adjusted gross margin hit 58.7% from 55.3%. Reported (GAAP) EPS fell 47% to $0.20 on one-time charges."
+     "label": "Full-year outlook nudged up",
+     "text": "2026 revenue guidance is now $16.7\u201317.0B, up from $16.5\u201316.85B. Adjusted EPS is $0.86 for the quarter, up 10%."
     },
     {
-     "label": "Generics drag, new launches",
-     "text": "U.S. generics fell 39%, mainly generic Revlimid. Teva regained an investment-grade credit rating, and the FDA approved Weltruza, a monthly schizophrenia injection, on Oct 9."
+     "label": "Debt load easing",
+     "text": "Teva refinanced about $4.9B of debt this quarter and earned investment-grade ratings from Moody's and S&P. Total debt is still $16.7B."
     }
    ]
   },
@@ -252,23 +256,23 @@
    "date": "2026-11-03",
    "move_pct": 1.0,
    "basis": "close",
-   "verdict": "AMD's Q4 revenue forecast of about $17 billion, up roughly 27% from Q3, shows its new AI server racks are finally ramping.",
+   "verdict": "AMD's AI data center business nearly doubled and the fourth-quarter forecast is far above Wall Street's, though margins and cash flow lag the growth.",
    "takeaways": [
     {
+     "label": "Data center surge",
+     "text": "Revenue rose 45% to $13.4B, above AMD's own guidance. Data center sales jumped 97% to $8.5B, now about 64% of the total."
+    },
+    {
      "label": "Big Q4 guide",
-     "text": "AMD expects about $17 billion in Q4 revenue, plus or minus 3%, up about 66% from last year. Coverage put analyst expectations near $16.3 billion."
+     "text": "AMD guided fourth-quarter revenue to about $17B, against analyst estimates near $16.2B. Management says growth accelerates as Helios AI racks and Venice server chips ramp."
     },
     {
-     "label": "AI data center surge",
-     "text": "Data center sales nearly doubled to a record $8.5 billion, up 97%. Q3 was the first quarter AMD shipped MI455 chips and Helios AI racks for revenue."
+     "label": "2027 ambition",
+     "text": "Lisa Su now expects revenue to grow more than 80% in 2027, a sharp step up in the long-term growth story."
     },
     {
-     "label": "Margins stall",
-     "text": "Gross margin was 56%, flat with Q2, and is guided to about 55% for Q4. Coverage says the new MI450 AI chips are slightly lower-margin than AMD's average."
-    },
-    {
-     "label": "Other businesses lag",
-     "text": "Gaming sales fell 40% and Client and Gaming combined fell 8%. Embedded grew 29%, so growth rests on data center."
+     "label": "Margins and cash lag",
+     "text": "Gross margin is guided to about 55%, down from 56%. Free cash flow fell to $554M from $1.5B a year ago. Gaming sales dropped 40%."
     }
    ]
   },

@@ -1,35 +1,36 @@
 {
  "ticker": "CVS",
- "updated": "2026-11-05T05:34Z",
+ "updated": "2026-11-05T09:36Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": -12.5,
   "basis": "close",
-  "verdict": "CVS beat forecasts and raised its 2026 outlook, then announced a plan to split into two public companies by the first half of 2028.",
+  "verdict": "CVS raised 2026 profit guidance again and lifted its 2027 floor to $8.65, as Aetna's Medicare repair drives the recovery.",
   "takeaways": [
    {
-    "label": "Plan to split up",
-    "text": "CVS intends to separate into two companies: Aetna, Caremark and care delivery under Joyner, and a retail pharmacy business led by Prem Shah. Completion is targeted for the first half of 2028, subject to board and regulatory approval."
+    "label": "Aetna margin recovery",
+    "text": "Health insurance profit jumped to $912M from $314M a year ago. The share of premiums spent on care fell to 91.3% from 92.8%, mainly on Medicare."
    },
    {
-    "label": "Big beat, higher outlook",
-    "text": "Adjusted EPS of $2.09 beat the roughly $1.65 expected. Full-year guidance rose to at least $8.20 from $7.90-$8.10, and cash flow guidance to at least $15.5 billion."
+    "label": "Higher 2026 outlook",
+    "text": "2026 adjusted earnings guidance rose to at least $8.20 per share from $7.90\u2013$8.10. Expected operating cash flow rose to at least $15.5 billion from $11.5 billion."
    },
    {
-    "label": "Insurance recovery continues",
-    "text": "Insurance (Aetna) profit nearly tripled to $912 million as the share of premiums spent on medical care fell to 91.3% from 92.8%, helped by the government business."
+    "label": "2027 floor raised",
+    "text": "Management now expects at least $8.65 per share in 2027, up from about $8.44. The pharmacy-benefit unit is seen at a trough of at least $7B profit."
    },
    {
-    "label": "Pharmacy and PBM steady",
-    "text": "Retail pharmacy profit rose 10.6% on prescription growth and Rite Aid files. Pharmacy benefit manager profit grew only 2.7% as price cuts to clients offset higher drug costs."
+    "label": "Company split planned",
+    "text": "Management is pursuing a separation of the company. Analysts pressed on the costs, and management called them manageable and already in guidance without giving numbers."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/64803/000006480326000107/cvs_ex99x1q3-26.htm",
-   "https://chaindrugreview.com/cvs-blows-past-q3-earnings-estimates/",
-   "https://chaindrugreview.com/cvs-health-plans-to-split-into-two-public-companies/"
+   "https://www.fool.com/earnings/call-transcripts/2026/11/04/cvs-health-cvs-q3-2026-earnings-call-transcript/",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-cvs-health-beats-q3-2026-estimates-shares-fall-premarket-93CH-4999860",
+   "https://finance.yahoo.com/healthcare/articles/cvs-health-corp-cvs-q3-070622447.html"
   ]
  },
  "history": [

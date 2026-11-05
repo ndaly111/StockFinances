@@ -1,33 +1,35 @@
 {
  "ticker": "KHC",
- "updated": "2026-11-05T05:35Z",
+ "updated": "2026-11-05T09:37Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": 3.8,
   "basis": "close",
-  "verdict": "Sales guidance narrowed and EPS target lifted, but profit still fell 15% as costs and brand spending outpaced a still-shrinking U.S. business.",
+  "verdict": "Kraft Heinz nudged its sales and EPS guidance up, but profit is still falling about 15% and shoppers are buying fewer of its products.",
   "takeaways": [
    {
-    "label": "Profit still sliding",
-    "text": "Adjusted operating income fell 15.2% to $939M and adjusted EPS fell to $0.53 from $0.61, on rising supply and shipping costs, higher bonuses and more advertising."
+    "label": "Profit still shrinking",
+    "text": "Adjusted operating income fell 15.2% to $939M and adjusted EPS fell to $0.53 from $0.61. Costs for ingredients, shipping and bonuses, plus more advertising, outweighed savings."
    },
    {
-    "label": "Guidance: sales up, profit flat",
-    "text": "The low end of the sales forecast improved to down 1.25% from down 2%. Operating profit guidance is unchanged at down 16-18%, with gross margin now at the weak end."
+    "label": "Guidance raise is thin",
+    "text": "The sales range narrowed to down 0.5% to 1.25% from down 0.5% to 2%, and EPS rose to $2.07-$2.13. Profit guidance is unchanged, and the EPS lift is helped by a lower tax rate and more other income."
    },
    {
-    "label": "EPS raise is partly tax-driven",
-    "text": "Full-year EPS guidance rose to $2.07-$2.13 from $2.03-$2.09, helped by a lower expected tax rate (23.5% vs 24.5%) and higher other income, not stronger operations."
+    "label": "US shoppers buying less",
+    "text": "North America sales fell 3.4% on weaker meats, sauces and drinks, and volume fell 2.4%. Management says share and volume trends are improving versus last year, but the quarter still shows declines."
    },
    {
-    "label": "U.S. weak, emerging markets strong",
-    "text": "North America organic sales fell 3.2%, with volume down 2.4% in meats, sauces and drinks. Emerging Markets grew 15.6%. Management says trends are improving versus last year."
+    "label": "Emerging markets the bright spot",
+    "text": "Emerging Markets organic sales rose 15.6%, while Europe and other developed markets saw adjusted operating income fall 32.8%. Growth abroad is not yet offsetting weakness at home."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm"
+   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm",
+   "https://www.marketbeat.com/earnings/reports/2026-11-4-the-kraft-heinz-company-stock/",
+   "https://www.sec.gov/Archives/edgar/data/0001637459/000163745926000081/khc-20260926.htm"
   ]
  },
  "history": [

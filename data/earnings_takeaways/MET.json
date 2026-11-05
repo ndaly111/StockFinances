@@ -1,28 +1,28 @@
 {
  "ticker": "MET",
- "updated": "2026-11-05T05:36Z",
+ "updated": "2026-11-05T09:38Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -1.8,
   "basis": "after hours",
-  "verdict": "MetLife posted its best-ever quarterly profit per share, but a big part came from volatile investment gains rather than steadier insurance growth.",
+  "verdict": "MetLife posted its best-ever quarterly profit per share, but a 49% jump in volatile investment income did much of the work.",
   "takeaways": [
    {
     "label": "Record, but investment-aided",
-    "text": "Adjusted EPS excluding one-time items hit a record $2.85, up 22%. Gains from private-equity-type investments jumped 49% to $720 million, a swingy source."
+    "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items, a company record. Variable investment income, which swings with markets, jumped 49% to $720 million."
    },
    {
     "label": "Broad underlying growth",
-    "text": "Core revenue excluding pension risk transfers rose 8% to $13.5 billion, growing in all six segments. Group Benefits earnings rose 15% on favorable claims."
+    "text": "Premiums and fees excluding pension deals grew 8% to $13.5 billion, with growth in all six segments. Group Benefits earnings rose 15% on favorable claims. Return on equity was 19.6%."
    },
    {
-    "label": "Latin America and Asia softer",
-    "text": "Latin America earnings excluding one-time items fell 5% at constant currency on lower investment returns. Asia sales fell 6% against a strong prior year."
+    "label": "Patchy spots",
+    "text": "Asia sales fell 6% against a strong year-ago quarter. Latin America earnings excluding one-time items fell 5% on a constant-currency basis, as lower investment returns offset growth."
    },
    {
-    "label": "Annual review dented headline",
-    "text": "The yearly review of insurance assumptions cut adjusted earnings by $46 million, pulling retirement-unit earnings down 6%. Excluding it, that unit rose 12%."
+    "label": "Book value split",
+    "text": "Book value per share fell 22% to $30.73, while the adjusted measure, which strips out market swings, rose 5% to $59.41. About $1 billion went back to shareholders."
    }
   ],
   "transcript_read": false,
