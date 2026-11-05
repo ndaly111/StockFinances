@@ -1,28 +1,28 @@
 {
  "ticker": "TEVA",
- "updated": "2026-11-05T09:43Z",
+ "updated": "2026-11-05T13:48Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
   "move_pct": 3.0,
   "basis": "close",
-  "verdict": "Teva's three newer brand drugs grew 33% to about $1.1 billion, offsetting falling generics and prompting another full-year sales guidance increase.",
+  "verdict": "Teva's branded drugs are growing fast enough to offset falling generics, and it raised its 2026 sales outlook again.",
   "takeaways": [
    {
-    "label": "Brand drugs outrunning guidance",
-    "text": "Austedo sales rose 21% to $751M, Ajovy 61% and Uzedy 96%. Austedo's 2026 outlook rose to $2.55\u20132.65B from $2.45\u20132.6B."
+    "label": "Brands carry the quarter",
+    "text": "Austedo, Ajovy and Uzedy together sold about $1.1 billion, up 33%. Total revenue still fell 2% to $4.4 billion on lower generic sales, mainly generic Revlimid."
    },
    {
-    "label": "Generics drag, margins improve",
-    "text": "Total revenue fell 2% to $4.4B as generics dropped 16% on lower generic Revlimid sales. Adjusted gross margin still rose to 58.7% from 55.3%."
+    "label": "Guidance raised again",
+    "text": "2026 revenue outlook is now $16.7\u201317.0 billion, up from $16.5\u201316.85 billion. Austedo guidance rose to $2.55\u20132.65 billion from $2.45\u20132.60 billion."
    },
    {
-    "label": "Full-year outlook nudged up",
-    "text": "2026 revenue guidance is now $16.7\u201317.0B, up from $16.5\u201316.85B. Adjusted EPS is $0.86 for the quarter, up 10%."
+    "label": "Margins and profit improving",
+    "text": "Adjusted gross margin rose to 58.7% from 55.3%. Adjusted EPS was $0.86 versus $0.78 a year ago. Free cash flow dipped 4% to $495 million."
    },
    {
-    "label": "Debt load easing",
-    "text": "Teva refinanced about $4.9B of debt this quarter and earned investment-grade ratings from Moody's and S&P. Total debt is still $16.7B."
+    "label": "New long-acting schizophrenia drug",
+    "text": "The FDA approved Teva's monthly olanzapine injection on October 9. Teva targets $1.5\u20132.0 billion in peak sales for it and Uzedy combined."
    }
   ],
   "transcript_read": false,

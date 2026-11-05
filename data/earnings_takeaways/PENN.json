@@ -1,33 +1,54 @@
 {
  "ticker": "PENN",
- "updated": "2026-10-29T19:29Z",
+ "updated": "2026-11-05T13:44Z",
  "last": {
-  "date": "2026-08-06",
+  "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": 2.6,
-  "basis": "close",
-  "verdict": "Record casino results and a smaller digital loss won modest approval.",
-  "reasons": [
-   {
-    "label": "Record casino quarter",
-    "text": "Retail revenue hit a record $1.5 billion; nine properties set Q2 records, and July trends stayed strong."
-   },
+  "move_pct": -2.5,
+  "basis": "after hours",
+  "verdict": "PENN's online betting loss shrank to $18.3 million from $76.6 million, lifting profit and cutting debt, while casinos kept growing.",
+  "takeaways": [
    {
     "label": "Digital losses shrinking",
-    "text": "Interactive lost $9.5 million versus $62.0 million a year ago; iCasino revenue hit a record."
+    "text": "The Interactive (online betting and casino) segment lost $18.3 million before interest, taxes and similar items, versus $76.6 million a year earlier. Management says it is on track for its full-year target."
    },
    {
-    "label": "Profit jump, debt falling",
-    "text": "Adjusted EBITDA rose to $312.6 million from $236.1 million; net debt fell to $1.9 billion."
+    "label": "Casinos still growing",
+    "text": "Casino revenue hit a third-quarter record of about $1.5 billion. Profit margin rose to 33.7%, the third straight quarter of year-over-year margin gains, and management says trends held through October."
+   },
+   {
+    "label": "Profit and debt improving",
+    "text": "Adjusted EBITDA (core operating profit) rose to $284.0 million from $194.9 million. Net debt, excluding lease obligations, fell to $1.8 billion from $2.2 billion at year-end."
+   },
+   {
+    "label": "Spending pulled back",
+    "text": "Capital spending fell to $59.2 million from $172.7 million a year ago as big development projects wrapped up, helping cash build to $1.0 billion."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000019/pennex991-q22026.htm",
-   "https://www.benzinga.com/node/62265462",
-   "https://finance.yahoo.com/markets/stocks/articles/why-penn-entertainment-penn-shares-114123664.html",
-   "https://www.barchart.com/story/news/448269/why-penn-entertainment-penn-stock-is-up-today"
+   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm"
   ]
  },
- "story": "PENN has been shrinking its online betting losses after ending the ESPN Bet tie-up and relaunching as theScore Bet. Casino guidance was raised in April, while online revenue guidance was trimmed. Shares jumped on the last two reports, but August's gain was modest.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-06",
+   "move_pct": 2.6,
+   "verdict": "Record casino results and a smaller digital loss won modest approval.",
+   "reasons": [
+    {
+     "label": "Record casino quarter",
+     "text": "Retail revenue hit a record $1.5 billion; nine properties set Q2 records, and July trends stayed strong."
+    },
+    {
+     "label": "Digital losses shrinking",
+     "text": "Interactive lost $9.5 million versus $62.0 million a year ago; iCasino revenue hit a record."
+    },
+    {
+     "label": "Profit jump, debt falling",
+     "text": "Adjusted EBITDA rose to $312.6 million from $236.1 million; net debt fell to $1.9 billion."
+    }
+   ]
+  }
+ ]
 }

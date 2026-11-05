@@ -1,33 +1,55 @@
 {
  "ticker": "CELH",
- "updated": "2026-10-29T18:49Z",
+ "updated": "2026-11-05T13:41Z",
  "last": {
-  "date": "2026-08-06",
+  "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": -18.5,
-  "basis": "close",
-  "verdict": "Big revenue and profit miss, with the flagship CELSIUS brand shrinking again.",
-  "reasons": [
+  "move_pct": 5.5,
+  "basis": "after hours",
+  "verdict": "Celsius beat expectations on sales and profit, but Alani Nu is carrying growth while the flagship brand shrinks and margins keep falling.",
+  "takeaways": [
    {
-    "label": "Flagship brand shrinking",
-    "text": "CELSIUS brand sales fell about 12%; management admitted cutting too many products."
+    "label": "Beat, but with low bar",
+    "text": "Revenue of $847M and adjusted EPS of $0.41 topped analyst estimates of roughly $816M and $0.36, after last quarter's miss. Adjusted EPS was still below last year's $0.42."
    },
    {
-    "label": "Missed estimates",
-    "text": "Revenue of $818M trailed the roughly $870M expected; adjusted EPS $0.36 vs $0.42."
+    "label": "Alani Nu does the work",
+    "text": "Alani Nu sales rose 24% to $410M, while the flagship CELSIUS brand fell about 6% to $357M on product cuts, shipment timing and weak club-store sales."
    },
    {
-    "label": "Margins stay squeezed",
-    "text": "Gross margin was 48.1% vs 51.5% a year ago; aluminum costs and promotions weighed."
+    "label": "Margins keep shrinking",
+    "text": "Gross margin fell to 46.8% from 51.3% a year ago on aluminum and fuel costs and more sales through PepsiCo's distribution. Adjusted EBITDA slipped 3% despite 17% revenue growth."
+   },
+   {
+    "label": "Management shake-up",
+    "text": "Celsius named new presidents for the CELSIUS brand and for Rockstar plus emerging brands, a move to fix the flagship's slide. International sales grew 78% to $41M."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000047/ex9912q2026.htm",
-   "https://www.tikr.com/blog/celsius-stock-sank-18-after-a-broad-q2-earnings-miss-the-damage-was-self-inflicted",
-   "https://finance.yahoo.com/news/celsius-shares-jump-strong-fourth-164700360.html",
-   "https://www.marketbeat.com/instant-alerts/celsius-q1-earnings-call-highlights-2026-05-07/"
+   "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000059/ex9913q2026.htm",
+   "https://www.chartmill.com/stock/quote/CELH/estimates"
   ]
  },
- "story": "Celsius has leaned on Alani Nu and the Rockstar deal for growth while its namesake brand weakens. Q4 2025 beat estimates and the stock rose nearly 9%; Q1 2026 beat on profit. This miss came with CELSIUS sales expected to stay flat next quarter.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-06",
+   "move_pct": -18.5,
+   "verdict": "Big revenue and profit miss, with the flagship CELSIUS brand shrinking again.",
+   "reasons": [
+    {
+     "label": "Flagship brand shrinking",
+     "text": "CELSIUS brand sales fell about 12%; management admitted cutting too many products."
+    },
+    {
+     "label": "Missed estimates",
+     "text": "Revenue of $818M trailed the roughly $870M expected; adjusted EPS $0.36 vs $0.42."
+    },
+    {
+     "label": "Margins stay squeezed",
+     "text": "Gross margin was 48.1% vs 51.5% a year ago; aluminum costs and promotions weighed."
+    }
+   ]
+  }
+ ]
 }
