@@ -1,28 +1,28 @@
 {
  "ticker": "KHC",
- "updated": "2026-11-04T21:19Z",
+ "updated": "2026-11-05T05:35Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": 3.8,
   "basis": "close",
-  "verdict": "Profit is still falling about 15% and North America volumes keep shrinking; the raised full-year profit guidance comes from tax and other income, not better operations.",
+  "verdict": "Sales guidance narrowed and EPS target lifted, but profit still fell 15% as costs and brand spending outpaced a still-shrinking U.S. business.",
   "takeaways": [
    {
     "label": "Profit still sliding",
-    "text": "Adjusted operating income fell 15.2% to $939M on higher shipping and ingredient costs, bonus pay and advertising. Adjusted EPS of $0.53 compared with $0.61 a year earlier."
+    "text": "Adjusted operating income fell 15.2% to $939M and adjusted EPS fell to $0.53 from $0.61, on rising supply and shipping costs, higher bonuses and more advertising."
    },
    {
-    "label": "Guidance raise is thin",
-    "text": "Profit outlook stays down 16-18%. The EPS range rose to $2.07-$2.13 from $2.03-$2.09, helped by a lower tax rate and more other income. The sales range's low end improved to down 1.25%."
+    "label": "Guidance: sales up, profit flat",
+    "text": "The low end of the sales forecast improved to down 1.25% from down 2%. Operating profit guidance is unchanged at down 16-18%, with gross margin now at the weak end."
    },
    {
-    "label": "U.S. still weak",
-    "text": "North America sales fell 3.4%, with volume down 2.4% in meats, sauces and drinks. Segment profit fell 10.5%. Emerging markets organic sales rose 15.6%, but they are the smallest region."
+    "label": "EPS raise is partly tax-driven",
+    "text": "Full-year EPS guidance rose to $2.07-$2.13 from $2.03-$2.09, helped by a lower expected tax rate (23.5% vs 24.5%) and higher other income, not stronger operations."
    },
    {
-    "label": "Headwinds in outlook",
-    "text": "Guidance builds in about $700M of extra brand spending, margins at the low end of the prior range, and roughly 100 basis points of sales drag from reduced SNAP food assistance. The planned split into two companies remains paused."
+    "label": "U.S. weak, emerging markets strong",
+    "text": "North America organic sales fell 3.2%, with volume down 2.4% in meats, sauces and drinks. Emerging Markets grew 15.6%. Management says trends are improving versus last year."
    }
   ],
   "transcript_read": false,

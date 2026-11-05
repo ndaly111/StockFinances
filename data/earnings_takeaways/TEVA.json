@@ -1,28 +1,28 @@
 {
  "ticker": "TEVA",
- "updated": "2026-11-04T21:22Z",
+ "updated": "2026-11-05T05:40Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
   "move_pct": 3.0,
   "basis": "close",
-  "verdict": "Teva's brand drugs are growing fast enough to lift 2026 guidance again, even as generic Revlimid competition cuts generics sales sharply.",
+  "verdict": "Teva raised 2026 sales guidance again as its three newer brand drugs grew 33%, even as generics shrank and revenue slipped 2%.",
   "takeaways": [
    {
+    "label": "Brand drugs carry growth",
+    "text": "Austedo ($751M, +21%), Ajovy ($269M, +61%) and Uzedy ($85M, +96%) together reached about $1.1B, up 33%, and all three got higher 2026 sales targets."
+   },
+   {
     "label": "Guidance raised again",
-    "text": "2026 revenue outlook rises to $16.7\u201317.0 billion, from $16.5\u201316.85 billion. Austedo is now $2.55\u20132.65 billion, up from $2.45\u20132.6 billion; Ajovy and Uzedy were also raised."
+    "text": "2026 revenue outlook rose to $16.7\u201317.0B from $16.5\u201316.85B. Austedo is now $2.55\u20132.65B (was $2.45\u20132.60B). Profit per share outlook is little changed at $1.92\u20132.11."
    },
    {
-    "label": "Brands offset generics",
-    "text": "Key brand drugs grew 33% to about $1.1 billion. U.S. generic sales fell 39% to $718 million on competition for generic Revlimid, leaving total revenue down 2% at $4.4 billion."
+    "label": "Margins improving",
+    "text": "Adjusted profit per share rose 10% to $0.86 despite 2% lower revenue, as adjusted gross margin hit 58.7% from 55.3%. Reported (GAAP) EPS fell 47% to $0.20 on one-time charges."
    },
    {
-    "label": "Profit and margins improved",
-    "text": "Adjusted earnings per share were $0.86, up 10%, and gross margin rose to 55.5% from 51.4%. Free cash flow was $495 million, slightly below last year."
-   },
-   {
-    "label": "New injectable approved",
-    "text": "The FDA approved Weltruza, a once-monthly schizophrenia injection, on Oct. 9. Teva sees $1.5\u20132.0 billion peak sales for it and Uzedy together. A Parkinson's-type disease (MSA) trial was stopped as futile."
+    "label": "Generics drag, new launches",
+    "text": "U.S. generics fell 39%, mainly generic Revlimid. Teva regained an investment-grade credit rating, and the FDA approved Weltruza, a monthly schizophrenia injection, on Oct 9."
    }
   ],
   "transcript_read": false,

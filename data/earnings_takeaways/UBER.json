@@ -1,33 +1,36 @@
 {
  "ticker": "UBER",
- "updated": "2026-11-04T21:24Z",
+ "updated": "2026-11-05T05:41Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": 4.9,
   "basis": "close",
-  "verdict": "Uber posted a fifth straight quarter of 20%+ bookings growth with record profit margins, and guided to another strong holiday quarter.",
+  "verdict": "Uber keeps growing bookings about 20% while profit grows faster, and it is now pushing into self-driving cars.",
   "takeaways": [
    {
-    "label": "Profit growing faster",
-    "text": "Gross bookings rose 20% to $59.8B, while adjusted earnings per share jumped 35% to $0.88. Operating profit hit a record 3.9% of bookings, up from 3.4%."
+    "label": "Growth and profit",
+    "text": "Gross bookings rose 20% to $59.8B, a fifth straight quarter of 20%+ growth. Operating profit margin hit a record 3.9% of bookings, and adjusted EPS rose 35% to $0.88."
    },
    {
-    "label": "Q4 guidance strong",
-    "text": "Uber guided Q4 bookings to $63.25B\u2013$65.25B (18%\u201322% growth in constant currency) and adjusted EPS to $0.95\u2013$0.99, up 34%\u201339%."
+    "label": "Q4 outlook",
+    "text": "Uber guides Q4 bookings of $63.25B\u2013$65.25B (18%\u201322% growth) and adjusted EPS of $0.95\u2013$0.99, up 34%\u201339%, so growth is expected to hold steady."
    },
    {
-    "label": "Driverless rides scaling",
-    "text": "Management expects about 700 fully driverless vehicles on Uber by year-end and over 2,000 in 2027, shifting autonomy from pilots toward commercial rollout."
+    "label": "Self-driving push",
+    "text": "Uber expects about 700 fully driverless vehicles on its platform by year-end and over 2,000 in 2027. Debt has risen to $15.7B from $10.5B at the end of 2025."
    },
    {
-    "label": "Reporting changed",
-    "text": "Uber dropped adjusted EBITDA as its key profit measure in favor of operating profit and EPS. Reported revenue grew only 10%, with accounting changes to how some revenue is recorded cutting about 8 points."
+    "label": "Reported numbers look weaker",
+    "text": "Revenue grew only 10% to $14.8B because of accounting changes in how some business is recorded. Reported net income fell 92% to $512M against a year-ago tax benefit."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0001543151/000154315126000039/uberq326earningspressrelea.htm"
+   "https://www.sec.gov/Archives/edgar/data/0001543151/000154315126000039/uberq326earningspressrelea.htm",
+   "https://investor.uber.com/news-events/news/press-release-details/2026/Uber-Announces-Results-for-Third-Quarter-2026/default.aspx",
+   "https://247wallst.com/companies/uber/earnings/",
+   "https://www.tokenpost.com/news/business/48941"
   ]
  },
  "history": [

@@ -1,35 +1,54 @@
 {
  "ticker": "BYND",
- "updated": "2026-10-29T05:44Z",
+ "updated": "2026-11-05T05:32Z",
  "last": {
-  "date": "2026-08-05",
+  "date": "2026-11-04",
   "timing": "post",
-  "move_pct": -13.4,
-  "basis": "close",
-  "verdict": "Revenue beat, but a weak Q3 outlook and wider core losses sent shares down.",
-  "reasons": [
+  "move_pct": -2.1,
+  "basis": "after hours",
+  "verdict": "Margins improved to a five-year high, but U.S. sales keep shrinking and fourth-quarter revenue is guided lower, to $54\u201359 million.",
+  "takeaways": [
    {
-    "label": "Weak Q3 outlook",
-    "text": "Q3 revenue guided to $60-65 million, below Wall Street's roughly $65.6 million estimate."
+    "label": "Sales slide continues",
+    "text": "Revenue fell 8.1% to $64.5 million. U.S. sales fell 12.3%, with U.S. retail volume down 20.8% on lost shelf space and weak category demand."
    },
    {
-    "label": "Wider core loss",
-    "text": "Adjusted EBITDA loss widened to $27.7 million from $24.7 million a year ago."
+    "label": "Lower Q4 outlook",
+    "text": "Fourth-quarter revenue is guided to $54\u201359 million, below Q3's $64.5 million. The company cited elevated uncertainty and gave no profit outlook."
    },
    {
-    "label": "Falling U.S. sales",
-    "text": "U.S. revenue fell 14.4% on weak category demand and fewer stores carrying products."
+    "label": "Margins and cash burn improve",
+    "text": "Gross margin hit 19.3% versus 7.4% a year ago, on cost per pound down 10.1%. Adjusted EBITDA loss narrowed to $24.6 million from $33.5 million."
+   },
+   {
+    "label": "Heavy debt remains",
+    "text": "Cash was $169.3 million against $313.9 million of debt. $14.5 million of 2027 notes come due in March, and the company can't use its at-the-market stock-sale program."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000053/ex991pressrelease-q22026ea.htm",
-   "https://wtop.com/news/2026/08/beyond-meat-q2-earnings-snapshot/",
-   "https://stockhub.kr/en/news/news_9b34c7e46fcb",
-   "https://www.barchart.com/story/news/1075319/beyond-meat-nasdaqbynd-misses-q4-cy2025-sales-expectations-stock-drops",
-   "https://finance.yahoo.com/markets/stocks/articles/beyond-meat-shares-slide-quarterly-155500774.html",
-   "https://seekingalpha.com/pr/20504246"
+   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm"
   ]
  },
- "story": "Revenue has kept shrinking: down 19.7% in Q4 2025, 15.3% in Q1 2026, 8.2% now. Each report has been followed by a drop (about 13%, 16%, now 13%). Losses have narrowed, but demand stays weak and the company has lots of debt.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-05",
+   "move_pct": -13.4,
+   "verdict": "Revenue beat, but a weak Q3 outlook and wider core losses sent shares down.",
+   "reasons": [
+    {
+     "label": "Weak Q3 outlook",
+     "text": "Q3 revenue guided to $60-65 million, below Wall Street's roughly $65.6 million estimate."
+    },
+    {
+     "label": "Wider core loss",
+     "text": "Adjusted EBITDA loss widened to $27.7 million from $24.7 million a year ago."
+    },
+    {
+     "label": "Falling U.S. sales",
+     "text": "U.S. revenue fell 14.4% on weak category demand and fewer stores carrying products."
+    }
+   ]
+  }
+ ]
 }

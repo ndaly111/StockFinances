@@ -1,33 +1,36 @@
 {
  "ticker": "AMD",
- "updated": "2026-11-04T21:17Z",
+ "updated": "2026-11-05T05:32Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": 1.0,
   "basis": "close",
-  "verdict": "AMD guided fourth-quarter revenue to about $17 billion, up roughly 27% from the third quarter, as its new AI racks begin shipping in volume.",
+  "verdict": "AMD's Q4 revenue forecast of about $17 billion, up roughly 27% from Q3, shows its new AI server racks are finally ramping.",
   "takeaways": [
    {
-    "label": "Data center surge",
-    "text": "Revenue rose 45% to $13.4B. Data center sales jumped 97% to $8.5B, helped by the launch of the MI450 AI chips. PC and gaming sales fell 8%."
+    "label": "Big Q4 guide",
+    "text": "AMD expects about $17 billion in Q4 revenue, plus or minus 3%, up about 66% from last year. Coverage put analyst expectations near $16.3 billion."
    },
    {
-    "label": "Huge Q4 guide",
-    "text": "Fourth-quarter revenue is guided to about $17B, plus or minus 3%, with AMD saying growth will speed up as it scales Helios AI racks and 'Venice' server chips."
+    "label": "AI data center surge",
+    "text": "Data center sales nearly doubled to a record $8.5 billion, up 97%. Q3 was the first quarter AMD shipped MI455 chips and Helios AI racks for revenue."
    },
    {
-    "label": "Margin slips",
-    "text": "Adjusted gross margin was 56% in Q3 but is guided to about 55% for Q4, so the margin falls a point even as revenue jumps."
+    "label": "Margins stall",
+    "text": "Gross margin was 56%, flat with Q2, and is guided to about 55% for Q4. Coverage says the new MI450 AI chips are slightly lower-margin than AMD's average."
    },
    {
-    "label": "Cash flow thinning",
-    "text": "Free cash flow fell to $554M from $1.56B in Q2. Inventory rose to $11.5B and debt more than doubled to $7.1B from $3.2B."
+    "label": "Other businesses lag",
+    "text": "Gaming sales fell 40% and Client and Gaming combined fell 8%. Embedded grew 29%, so growth rests on data center."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0000002488/000000248826000188/q32026991.htm"
+   "https://www.sec.gov/Archives/edgar/data/0000002488/000000248826000188/q32026991.htm",
+   "https://investinglive.com/stocks/amd-shares-rise-after-hours-as-q4-revenue-outlook-of-17bn-tops-forecasts-on-ai-ramp/",
+   "https://cloudnews.tech/amd-posts-13-377-billion-in-q3-revenue-guides-to-17-billion-for-q4/",
+   "https://finance.yahoo.com/markets/stocks/articles/amd-stock-pops-17b-q4-224233057.html"
   ]
  },
  "history": [

@@ -1,33 +1,35 @@
 {
  "ticker": "CVS",
- "updated": "2026-11-04T21:18Z",
+ "updated": "2026-11-05T05:34Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": -12.5,
   "basis": "close",
-  "verdict": "CVS raised 2026 profit guidance again, with Aetna's insurance margins recovering fastest, but management stays cautious about rising medical costs.",
+  "verdict": "CVS beat forecasts and raised its 2026 outlook, then announced a plan to split into two public companies by the first half of 2028.",
   "takeaways": [
    {
-    "label": "Guidance raised again",
-    "text": "Full-year adjusted EPS is now at least $8.20, up from $7.90-$8.10. Expected cash from operations jumps to at least $15.5 billion from $11.5 billion."
+    "label": "Plan to split up",
+    "text": "CVS intends to separate into two companies: Aetna, Caremark and care delivery under Joyner, and a retail pharmacy business led by Prem Shah. Completion is targeted for the first half of 2028, subject to board and regulatory approval."
    },
    {
-    "label": "Aetna margin recovery",
-    "text": "Insurance profit rose to $912 million from $314 million. Medical costs fell to 91.3% of premiums from 92.8%, while membership shrank to 26.1 million from 26.7 million."
+    "label": "Big beat, higher outlook",
+    "text": "Adjusted EPS of $2.09 beat the roughly $1.65 expected. Full-year guidance rose to at least $8.20 from $7.90-$8.10, and cash flow guidance to at least $15.5 billion."
    },
    {
-    "label": "Pharmacy outpaces benefits manager",
-    "text": "Retail pharmacy profit grew 10.6%, helped by Rite Aid prescription purchases. The drug-benefit unit's profit rose only 2.7% on 9.5% higher revenue, as client price cuts offset gains."
+    "label": "Insurance recovery continues",
+    "text": "Insurance (Aetna) profit nearly tripled to $912 million as the share of premiums spent on medical care fell to 91.3% from 92.8%, helped by the government business."
    },
    {
-    "label": "Caution remains",
-    "text": "The raise still assumes elevated medical cost trends and possible economic headwinds, so management is not extrapolating the quarter's improvement into the rest of the year."
+    "label": "Pharmacy and PBM steady",
+    "text": "Retail pharmacy profit rose 10.6% on prescription growth and Rite Aid files. Pharmacy benefit manager profit grew only 2.7% as price cuts to clients offset higher drug costs."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/64803/000006480326000107/cvs_ex99x1q3-26.htm"
+   "https://www.sec.gov/Archives/edgar/data/64803/000006480326000107/cvs_ex99x1q3-26.htm",
+   "https://chaindrugreview.com/cvs-blows-past-q3-earnings-estimates/",
+   "https://chaindrugreview.com/cvs-health-plans-to-split-into-two-public-companies/"
   ]
  },
  "history": [
