@@ -1,34 +1,33 @@
 {
  "ticker": "PENN",
- "updated": "2026-11-05T16:45Z",
+ "updated": "2026-11-05T21:21Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": -2.8,
-  "basis": "intraday",
-  "verdict": "Casinos beat and lifted their outlook, while the online loss shrank mostly through spending cuts: paying users fell about 20% and digital revenue was flat.",
+  "move_pct": -0.6,
+  "basis": "close",
+  "verdict": "PENN's casinos kept growing and its online losses shrank sharply to $18.3 million, with management reaffirming its full-year Interactive profit target.",
   "takeaways": [
    {
-    "label": "Casinos carry the quarter",
-    "text": "Retail earnings were $501.8 million on a record $1.5 billion of revenue, with margin up to 33.7%. Full-year Retail earnings guidance rose $10 million to $1.973 billion."
+    "label": "Online losses shrinking",
+    "text": "The Interactive (online betting and casino) segment lost $18.3 million, versus $76.6 million a year earlier. Management cited growth in Hollywood iCasino and Canada, and reaffirmed its full-year Interactive target."
    },
    {
-    "label": "Online loss narrows, users fall",
-    "text": "Interactive's loss shrank to $18.3 million from $76.6 million. Excluding tax gross-ups, revenue was flat at about $157 million and paying users dropped to 407,000 from 510,000."
+    "label": "Casinos still growing",
+    "text": "Retail revenue hit a record $1.5 billion with a 33.7% profit margin. Margins have now improved year over year for three quarters in a row. Management said October trends stayed healthy."
    },
    {
-    "label": "Q4 must turn profitable",
-    "text": "The full-year Interactive loss target stayed at $20 million. After a $38.7 million loss through nine months, Q4 needs roughly $18.7 million of profit to hit it."
+    "label": "Earnings up, debt down",
+    "text": "Adjusted EBITDA (core operating profit) rose to $284.0 million from $194.9 million. Net debt fell to $1.8 billion, from $2.2 billion at the end of 2025."
    },
    {
-    "label": "Debt keeps falling",
-    "text": "Net debt fell to $1.76 billion from $2.22 billion at year-end, helped by capex dropping to $59 million from $173 million. Leverage including rent is still above the 5.3x year-end target."
+    "label": "Spending and share count fall",
+    "text": "Capital spending dropped to $59.2 million from $172.7 million as big building projects finished. The average share count fell to 133.9 million from 143.5 million."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm",
-   "https://igamingexpress.com/penn-q3-2026-the-hold/"
+   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm"
   ]
  },
  "history": [

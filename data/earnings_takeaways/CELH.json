@@ -1,35 +1,33 @@
 {
  "ticker": "CELH",
- "updated": "2026-11-05T16:41Z",
+ "updated": "2026-11-05T21:17Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": -3.5,
-  "basis": "intraday",
-  "verdict": "Celsius beat Wall Street's expectations on sales and profit, but costs are squeezing margins and its namesake brand is still shrinking.",
+  "move_pct": -2.3,
+  "basis": "close",
+  "verdict": "Record sales came from Alani Nu, but the flagship CELSIUS brand shrank again and margins fell sharply, so profit is not keeping pace.",
   "takeaways": [
    {
-    "label": "Beat on sales and profit",
-    "text": "Revenue of $847M and adjusted EPS of $0.41 beat consensus of roughly $816M and $0.35-0.36, though adjusted EPS slipped from $0.42 a year ago."
+    "label": "Margins keep sliding",
+    "text": "Gross margin fell to 46.8% from 51.3% a year ago, on higher aluminum and fuel costs and more sales through PepsiCo's delivery system. Adjusted EBITDA slipped 3% despite 17% revenue growth."
+   },
+   {
+    "label": "Flagship still shrinking",
+    "text": "CELSIUS brand revenue fell about 6% to $356.8M, and its retail sales fell 7%. The company blamed fewer products, inventory timing and weak club-store sales."
    },
    {
     "label": "Alani Nu carries growth",
-    "text": "Alani Nu sales rose 24% to $410M and now exceed the flagship CELSIUS brand, which fell 6% to $357M after a 12% drop last quarter."
-   },
-   {
-    "label": "Margins keep sliding",
-    "text": "Gross margin fell to 46.8% from 51.3% a year ago and 48.1% last quarter, on aluminum and fuel costs and more sales through PepsiCo's delivery network."
+    "text": "Alani Nu revenue rose 24% to $410.1M and its retail sales jumped 58%. It now holds a 9.8% U.S. energy drink share, slightly above CELSIUS at 9.1%."
    },
    {
     "label": "Leadership reshuffle",
-    "text": "Celsius named new brand presidents for CELSIUS and for Rockstar, a new brand-led structure aimed at fixing the flagship and margins. International sales grew 78% to $41M."
+    "text": "Celsius created brand-led management, naming Alex Zigliara to run CELSIUS and Rishi Daing to run Rockstar and emerging brands. International sales rose 78% to $41.0M."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000059/ex9913q2026.htm",
-   "https://www.fxempire.com/stocks/celh/earnings",
-   "https://www.chartmill.com/stock/quote/CELH/estimates"
+   "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000059/ex9913q2026.htm"
   ]
  },
  "history": [

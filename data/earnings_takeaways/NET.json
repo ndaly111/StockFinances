@@ -1,34 +1,55 @@
 {
  "ticker": "NET",
- "updated": "2026-10-29T19:24Z",
+ "updated": "2026-11-05T21:20Z",
  "last": {
-  "date": "2026-08-06",
+  "date": "2026-11-05",
   "timing": "post",
-  "move_pct": 5.6,
-  "basis": "close",
-  "verdict": "Accelerating growth and a raised full-year outlook won buyers, though much of the after-hours pop faded.",
-  "reasons": [
+  "move_pct": 19.4,
+  "basis": "after hours",
+  "verdict": "Cloudflare's growth sped up to 39% and it lifted its full-year forecast by about $95 million, but gross margin shrank.",
+  "takeaways": [
    {
-    "label": "Growth sped up",
-    "text": "Revenue rose 36% from a year earlier, up from 34% last quarter, beating expectations."
+    "label": "Growth accelerating",
+    "text": "Revenue was $782.5M, up 39%, its fastest in nearly four years. That beat the company's own $736-737M forecast by roughly $46M. Future contracted revenue grew 37%."
    },
    {
-    "label": "Raised full-year outlook",
-    "text": "2026 revenue guidance now $2.864\u20132.870B, versus $2.805\u20132.813B before."
+    "label": "Big guidance raise",
+    "text": "Full-year 2026 revenue is now forecast at $2.963-2.964B, up from $2.864-2.870B. Fourth-quarter revenue is guided to $845-846M."
    },
    {
-    "label": "Margins and one-time costs",
-    "text": "Gross margin fell to 73.1% from 76.3%; a $150.7M restructuring charge weighed on results."
+    "label": "Gross margin squeeze",
+    "text": "Adjusted gross margin fell to 72.4% from 75.3% a year ago, and to 73.1% last quarter. Costs of serving customers are growing faster than revenue."
+   },
+   {
+    "label": "Profit up, cash flat",
+    "text": "Adjusted operating margin rose to 17.5% from 15.3%. Free cash flow was $82.1M, only 10% of revenue versus 13% a year ago, as spending on equipment rose."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000053/q226exhibit991.htm",
-   "https://www.investing.com/news/transcripts/earnings-call-transcript-cloudflare-tops-estimates-in-q2-2026-shares-jump-17-93CH-4844728",
-   "https://www.alphaspread.com/market-news/earnings/cloudflare-stock-jumps-after-q2-revenue-beat-and-raised-forecast",
-   "https://siliconangle.com/2026/05/07/cloudflare-beats-q1-20-ai-driven-layoffs-weak-guidance-send-shares/",
-   "https://seekingalpha.com/news/4405118-cloudflare-rises-after-impressive-q4-as-analysts-keep-bullish-view"
+   "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000060/q326exhibit991.htm",
+   "https://www.marketbeat.com/instant-alerts/cloudflare-nysenet-issues-q3-2026-earnings-guidance-2026-08-06/"
   ]
  },
- "story": "Growth has sped up from 34% in early 2026 to 36%. February's report sent shares sharply higher; May's drew a 16% after-hours drop on soft guidance and 1,100 layoffs. August's raised outlook revived buying, though profit margins are thinner.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-06",
+   "move_pct": 5.6,
+   "verdict": "Accelerating growth and a raised full-year outlook won buyers, though much of the after-hours pop faded.",
+   "reasons": [
+    {
+     "label": "Growth sped up",
+     "text": "Revenue rose 36% from a year earlier, up from 34% last quarter, beating expectations."
+    },
+    {
+     "label": "Raised full-year outlook",
+     "text": "2026 revenue guidance now $2.864\u20132.870B, versus $2.805\u20132.813B before."
+    },
+    {
+     "label": "Margins and one-time costs",
+     "text": "Gross margin fell to 73.1% from 76.3%; a $150.7M restructuring charge weighed on results."
+    }
+   ]
+  }
+ ]
 }

@@ -1,33 +1,34 @@
 {
  "ticker": "MET",
- "updated": "2026-11-05T16:44Z",
+ "updated": "2026-11-05T21:19Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
-  "move_pct": -0.3,
-  "basis": "intraday",
-  "verdict": "MetLife posted its best quarter ever, with adjusted EPS up 22% to $2.85, but a 49% jump in volatile investment income did much of the work.",
+  "move_pct": -3.1,
+  "basis": "close",
+  "verdict": "MetLife posted its best quarter ever, with adjusted earnings of $2.85 a share, up 22%, helped by a jump in investment gains and growth in every segment.",
   "takeaways": [
    {
-    "label": "Record, but investment-aided",
-    "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items. Variable investment income, which swings from quarter to quarter, jumped 49% to $720 million and drove much of the gain."
+    "label": "Record, investment-aided profit",
+    "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items. Profit from volatile investments (private equity and similar) jumped 49% to $720 million, so part of the strength may not repeat."
    },
    {
-    "label": "Growth in every segment",
-    "text": "Premiums and fees excluding pension deals rose 8% to $13.5 billion, with growth in all six segments. Group Benefits earnings rose 15% on favorable claims, and adjusted return on equity was 19.6%."
+    "label": "Growth everywhere",
+    "text": "Premiums, fees and other revenue rose 12% to $14.1 billion, or 8% excluding large pension deals. All six business segments grew, and Europe, Middle East and Africa earnings rose 24%."
    },
    {
-    "label": "Latin America underlying weak",
-    "text": "Latin America's 45% headline gain came from a prior-year tax charge. Excluding one-time items, earnings fell 5% at constant exchange rates because lower investment returns offset volume growth."
+    "label": "Returns and cash flow",
+    "text": "Adjusted return on equity was 19.6% excluding one-time items, up from 16.7% a year earlier. MetLife returned about $1 billion to shareholders and says it is on track for its full-year cash-flow and expense targets."
    },
    {
-    "label": "Asia sales slowed",
-    "text": "Asia sales fell 6% at constant exchange rates against a strong year-earlier quarter, though sales are still up 10% year to date. Asia earnings excluding one-time items rose 21%."
+    "label": "Soft spots",
+    "text": "Asia sales fell 6% against a strong year-earlier quarter. Retirement and Income Solutions earnings fell 6% after an annual insurance-assumptions review, though they rose 12% excluding that charge."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000058/ex991earningsreleasetables.htm"
+   "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000058/ex991earningsreleasetables.htm",
+   "https://www.rttnews.com/3591448/metlife-inc-q3-profit-decreases-but-beats-estimates.aspx"
   ]
  },
  "history": [
