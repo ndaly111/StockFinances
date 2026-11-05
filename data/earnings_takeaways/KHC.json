@@ -1,33 +1,36 @@
 {
  "ticker": "KHC",
- "updated": "2026-11-05T13:42Z",
+ "updated": "2026-11-05T16:43Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": 3.8,
   "basis": "close",
-  "verdict": "Operating profit fell 15% again; the raised earnings forecast comes mostly from lower taxes and other income, not a better underlying business.",
+  "verdict": "Profit is still falling about 15%; the higher full-year earnings forecast comes from a lower tax rate, not from better operations.",
   "takeaways": [
    {
-    "label": "Profit still sliding",
-    "text": "Adjusted operating income fell 15.2% to $939M on higher freight and ingredient costs, bigger bonuses and more advertising. The full-year profit forecast is unchanged at down 16% to 18%."
+    "label": "Raise is tax-driven",
+    "text": "Full-year earnings forecast rose to $2.07-$2.13 a share from $2.03-$2.09, which management attributed mainly to a lower tax rate. Operating profit is still guided down 16-18%."
    },
    {
-    "label": "Earnings raise is thin",
-    "text": "Adjusted EPS guidance rose to $2.07-$2.13 from $2.03-$2.09. The release cites a lower tax rate (23.5% vs 24.5%) and higher other income. The operating profit outlook did not move."
+    "label": "US still shrinking",
+    "text": "North America sales fell 3.2% on lower volumes, pulling total organic sales down 1.1%. Emerging Markets grew 15.6%. The sales outlook's low end improved to down 1.25%, despite a roughly 1-point hit from SNAP cuts."
    },
    {
-    "label": "North America still weak",
-    "text": "U.S.-heavy North America sales fell 3.4%, with volumes down 2.4% and prices cut 0.8%. Meats, sauces and drinks lagged. Part of the volume drop reflects shipments pulled forward into Q2."
+    "label": "2027 looks costly",
+    "text": "Management expects inflation slightly above 5% in 2027, brand spending to stay near this year's $700 million extra level, and price increases to be 'likely' needed."
    },
    {
-    "label": "Sales outlook nudged",
-    "text": "The low end of the 2026 organic sales forecast improved to down 1.25% from down 2%. That range includes about 1 point of drag from cuts to SNAP food aid. Emerging markets grew 15.6%."
+    "label": "Share losses easing",
+    "text": "The portion of sales gaining or holding market share rose to 28% from roughly 25% in the first half. The CEO said share has 'leveled out', but recovery is not yet visible."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm"
+   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/04/kraft-heinz-khc-q3-2026-earnings-call-transcript/",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-kraft-heinz-tops-q3-2026-estimates-shares-rise-31-93CH-4998823",
+   "https://uk.finance.yahoo.com/news/kraft-heinz-earnings-analysis-questions-181154534.html"
   ]
  },
  "history": [

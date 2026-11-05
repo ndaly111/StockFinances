@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-05T13:42Z",
+ "updated": "2026-11-05T16:43Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Chemicals growth and lower interest costs lifted Kodak's profit, but its core Print business weakened sharply, with profit down from $8M to $1M.",
+  "verdict": "Chemicals growth and far lower interest costs lifted profit, but the print business, once Kodak's core, nearly stopped earning anything.",
   "takeaways": [
    {
-    "label": "Print is slipping",
-    "text": "Print revenue fell 7% to $165M, and its operating profit (EBITDA) dropped to $1M from $8M. Last quarter Print had grown 10%."
+    "label": "Print profit nearly vanished",
+    "text": "Print revenue fell 7% to $165 million and its operating EBITDA (a core-profit measure) dropped to $1 million from $8 million, despite management saying print held up well."
    },
    {
-    "label": "Chemicals carry the quarter",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99M and its operating profit rose to $21M from $16M. Growth slowed from 40% last quarter."
+    "label": "Chemicals carrying the company",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating EBITDA rose to $21 million from $16 million, now far outearning print."
    },
    {
-    "label": "Profit helped by debt paydown",
-    "text": "Net income rose to $21M from $13M. Interest expense fell to $3M from $18M, while operating profit (EBITDA) edged up only $2M to $31M, below last quarter's $36M."
+    "label": "Profit gain is mostly lower interest",
+    "text": "Net income rose to $21 million from $13 million, but interest expense fell to $3 million from $18 million. Operating income slipped to $15 million from $19 million as overhead rose."
    },
    {
-    "label": "Cash rebuilt",
-    "text": "Cash rose $27M to $317M, helped by $25M from operations this quarter. Operating cash flow for the year to date is only break-even."
+    "label": "Cash up, but thin",
+    "text": "Cash rose $27 million in the quarter to $317 million. Year-to-date operating cash flow is only break-even, with inventory up $44 million and $101 million of term loans repaid."
    }
   ],
   "transcript_read": false,

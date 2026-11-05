@@ -1,33 +1,34 @@
 {
  "ticker": "PENN",
- "updated": "2026-11-05T13:44Z",
+ "updated": "2026-11-05T16:45Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": -2.5,
-  "basis": "after hours",
-  "verdict": "PENN's online betting loss shrank to $18.3 million from $76.6 million, lifting profit and cutting debt, while casinos kept growing.",
+  "move_pct": -2.8,
+  "basis": "intraday",
+  "verdict": "Casinos beat and lifted their outlook, while the online loss shrank mostly through spending cuts: paying users fell about 20% and digital revenue was flat.",
   "takeaways": [
    {
-    "label": "Digital losses shrinking",
-    "text": "The Interactive (online betting and casino) segment lost $18.3 million before interest, taxes and similar items, versus $76.6 million a year earlier. Management says it is on track for its full-year target."
+    "label": "Casinos carry the quarter",
+    "text": "Retail earnings were $501.8 million on a record $1.5 billion of revenue, with margin up to 33.7%. Full-year Retail earnings guidance rose $10 million to $1.973 billion."
    },
    {
-    "label": "Casinos still growing",
-    "text": "Casino revenue hit a third-quarter record of about $1.5 billion. Profit margin rose to 33.7%, the third straight quarter of year-over-year margin gains, and management says trends held through October."
+    "label": "Online loss narrows, users fall",
+    "text": "Interactive's loss shrank to $18.3 million from $76.6 million. Excluding tax gross-ups, revenue was flat at about $157 million and paying users dropped to 407,000 from 510,000."
    },
    {
-    "label": "Profit and debt improving",
-    "text": "Adjusted EBITDA (core operating profit) rose to $284.0 million from $194.9 million. Net debt, excluding lease obligations, fell to $1.8 billion from $2.2 billion at year-end."
+    "label": "Q4 must turn profitable",
+    "text": "The full-year Interactive loss target stayed at $20 million. After a $38.7 million loss through nine months, Q4 needs roughly $18.7 million of profit to hit it."
    },
    {
-    "label": "Spending pulled back",
-    "text": "Capital spending fell to $59.2 million from $172.7 million a year ago as big development projects wrapped up, helping cash build to $1.0 billion."
+    "label": "Debt keeps falling",
+    "text": "Net debt fell to $1.76 billion from $2.22 billion at year-end, helped by capex dropping to $59 million from $173 million. Leverage including rent is still above the 5.3x year-end target."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm"
+   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm",
+   "https://igamingexpress.com/penn-q3-2026-the-hold/"
   ]
  },
  "history": [

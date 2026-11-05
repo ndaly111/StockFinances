@@ -1,37 +1,35 @@
 {
  "ticker": "SNAP",
- "updated": "2026-11-05T13:47Z",
+ "updated": "2026-11-05T16:47Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
-  "move_pct": -11.0,
-  "basis": "after hours",
-  "verdict": "Snap turned a profit and its margins jumped, but advertising revenue grew only 4% and daily users fell short, so growth leans on subscriptions.",
+  "move_pct": -14.9,
+  "basis": "intraday",
+  "verdict": "Snap's profits are growing fast, but only because of subscriptions and cost cuts, while advertising grew just 4%.",
   "takeaways": [
    {
-    "label": "Ads slow, subscriptions carry growth",
-    "text": "Revenue rose 14% to $1.72B, just under estimates. Advertising grew only about 4%, while other revenue, mainly subscriptions, grew 84%. Paid subscribers reportedly topped 30 million."
+    "label": "Ads barely growing",
+    "text": "Advertising rose only 4%, with brand ad spending down on weaker packaged-goods budgets. Total revenue still grew 14% to $1.72B because subscriptions and other revenue jumped 84%."
    },
    {
-    "label": "Profit inflection",
-    "text": "Net income was $56M versus a $104M loss a year ago. Adjusted EBITDA (core profit) hit $383M, well above the ~$337M expected. Free cash flow was $164M."
+    "label": "Profit jump",
+    "text": "Adjusted EBITDA (core profit) hit $383M, a 22% margin, against about $337M expected. Net income was $56M versus a $104M loss a year earlier."
    },
    {
-    "label": "User growth disappoints",
-    "text": "Daily users reached 495M versus ~499M expected. North America fell 6% to 92M. Snap will make monthly users (977M) its main metric from 2027, dropping daily and regional counts."
+    "label": "Dropping daily users",
+    "text": "Daily users grew 4% to 495M, short of the roughly 499M expected, and fell 6% in North America. Snap will switch to monthly users (977M) as its main measure from 2027."
    },
    {
-    "label": "Strong Q4 outlook",
-    "text": "Snap guided Q4 revenue to $1.95\u20131.985B, around or above estimates, and adjusted EBITDA to $490\u2013525M, as Specs glasses launch."
+    "label": "Stronger Q4 outlook",
+    "text": "Q4 revenue is guided to $1.95\u20131.985B, with the midpoint slightly above the roughly $1.95B analysts expected. Paid subscribers passed 30M, and Specs AR glasses are due to ship this fall."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/0001564408/000156440826000063/snap-20261104xexx991pressr.htm",
-   "https://www.benzinga.com/news/26/11/62899348/snap-q3-2026-earnings-call-transcript",
-   "https://www.gurufocus.com/news/9173823/snap-inc-snap-q3-2026-earnings-call-highlights-revenue-up-14-to-172-billion-as-paid-subscribers-top-30-million",
-   "https://moneycheck.com/snap-stock-drops-11-after-hours-as-profit-returns-but-daily-users-fall-short",
-   "https://coincentral.com/snap-stock-falls-11-as-daily-users-miss-and-monthly-users-take-center-stage"
+   "https://finance.yahoo.com/markets/stocks/articles/snap-inc-snap-q3-2026-071158943.html",
+   "https://www.tipranks.com/news/snap-stock-drops-as-revenue-and-user-growth-miss-expectations"
   ]
  },
  "history": [

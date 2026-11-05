@@ -1,28 +1,28 @@
 {
  "ticker": "MET",
- "updated": "2026-11-05T13:43Z",
+ "updated": "2026-11-05T16:44Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
-  "move_pct": 1.1,
-  "basis": "after hours",
-  "verdict": "MetLife posted its best quarter ever, but a 49% jump in volatile investment income did much of the work.",
+  "move_pct": -0.3,
+  "basis": "intraday",
+  "verdict": "MetLife posted its best quarter ever, with adjusted EPS up 22% to $2.85, but a 49% jump in volatile investment income did much of the work.",
   "takeaways": [
    {
     "label": "Record, but investment-aided",
-    "text": "Adjusted earnings per share excluding one-time items rose 22% to $2.85. Variable investment income, which swings with markets, jumped 49% to $720 million and drove much of the gain."
+    "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items. Variable investment income, which swings from quarter to quarter, jumped 49% to $720 million and drove much of the gain."
    },
    {
-    "label": "Growth across segments",
-    "text": "Premiums and fees, excluding large pension deals, rose 8% to $13.5 billion, with growth in all six segments. Group Benefits earnings rose 15% on favorable claims."
+    "label": "Growth in every segment",
+    "text": "Premiums and fees excluding pension deals rose 8% to $13.5 billion, with growth in all six segments. Group Benefits earnings rose 15% on favorable claims, and adjusted return on equity was 19.6%."
    },
    {
-    "label": "Weak spots",
-    "text": "Asia sales fell 6% against a strong year-earlier quarter. The annual actuarial review cut adjusted earnings by $46 million. The direct expense ratio edged up to 11.9% from 11.6%."
+    "label": "Latin America underlying weak",
+    "text": "Latin America's 45% headline gain came from a prior-year tax charge. Excluding one-time items, earnings fell 5% at constant exchange rates because lower investment returns offset volume growth."
    },
    {
-    "label": "Book value diverges",
-    "text": "Book value per share fell 22% to $30.73, while adjusted book value per share, which strips out market swings, rose 5% to $59.41. Adjusted return on equity was 19.2%."
+    "label": "Asia sales slowed",
+    "text": "Asia sales fell 6% at constant exchange rates against a strong year-earlier quarter, though sales are still up 10% year to date. Asia earnings excluding one-time items rose 21%."
    }
   ],
   "transcript_read": false,
