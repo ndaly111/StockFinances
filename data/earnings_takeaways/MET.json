@@ -1,28 +1,28 @@
 {
  "ticker": "MET",
- "updated": "2026-11-06T01:08Z",
+ "updated": "2026-11-06T05:34Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
-  "move_pct": -2.8,
-  "basis": "after hours",
-  "verdict": "MetLife posted its best quarter ever, but about half of the earnings jump came from volatile investment gains.",
+  "move_pct": -3.1,
+  "basis": "close",
+  "verdict": "MetLife posted its best quarter ever, but much of the profit jump came from volatile investment returns rather than steadier insurance operations.",
   "takeaways": [
    {
-    "label": "Record, investment-aided profit",
-    "text": "Adjusted EPS excluding one-time items rose 22% to a record $2.85. Variable investment income, which swings with markets, jumped 49% to $720 million."
+    "label": "Record, but investment-boosted",
+    "text": "Adjusted earnings per share rose 22% to a record $2.85, excluding one-time items. Variable investment income, which swings with markets, jumped 49% to $720 million."
    },
    {
-    "label": "Broad growth",
-    "text": "Core revenue excluding big pension deals rose 8% to $13.5 billion, with growth in all six segments. Europe/Middle East/Africa earnings rose 30% excluding one-time items. Group Benefits rose 14%."
+    "label": "Broad sales growth",
+    "text": "Revenue excluding large pension deals rose 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% excluding one-time items. Group Benefits rose 14% on better claims."
    },
    {
-    "label": "Weak spots",
-    "text": "Latin America earnings excluding one-time items fell 5% on a currency-neutral basis. Asia sales dropped 6%, and the expense ratio edged up to 11.9% from 11.6%."
+    "label": "Weak spots underneath",
+    "text": "Latin America earnings excluding one-time items fell 5% after currency effects, on lower investment returns. Asia sales dropped 6%. The share of revenue spent on direct costs rose to 11.9% from 11.6%."
    },
    {
-    "label": "Book value split",
-    "text": "Reported book value per share fell 22% to $30.73, while adjusted book value rose 5% to $59.41. Adjusted return on equity was 19.6% excluding one-time items."
+    "label": "Net income flattered",
+    "text": "Net income of $3.67 per share, up 201%, was lifted by $698 million of derivative gains from higher interest rates, so adjusted earnings are the better gauge."
    }
   ],
   "transcript_read": false,

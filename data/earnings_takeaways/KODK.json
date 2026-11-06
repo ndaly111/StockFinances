@@ -1,33 +1,34 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-06T01:08Z",
+ "updated": "2026-11-06T05:33Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Kodak's chemicals unit kept growing and generated cash, but a 7% drop in Print cut that unit's profit from $8M to $1M.",
+  "verdict": "Kodak's chemicals unit is carrying the company while Print shrinks, and cash recovered to $317 million.",
   "takeaways": [
    {
-    "label": "Chemicals carries the company",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99M and its operating profit rose to $21M from $16M. Management calls it Kodak's fastest-growing, most profitable unit."
+    "label": "Chemicals carry growth",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. It is the company's most profitable unit."
    },
    {
     "label": "Print is weakening",
-    "text": "Print revenue fell 7% to $165M. Print operating profit dropped to $1M from $8M. Management blamed challenging economic conditions, and the quarter's total profit growth came from chemicals."
+    "text": "Print revenue fell 7% to $165 million. Its operating profit dropped to $1 million from $8 million, mainly because aluminum cost $15 million more, per the quarterly filing."
    },
    {
-    "label": "Growth slowed",
-    "text": "Total revenue rose only 3%. Operational EBITDA (Kodak's adjusted operating profit) was $31M, versus $36M last quarter and $29M a year ago. Higher silver and aluminum costs and higher SG&A weighed on it."
+    "label": "Profit gain is mostly interest",
+    "text": "Net income rose to $21 million from $13 million, largely because interest expense fell to $3 million from $18 million. Operating profit rose only $2 million, to $31 million."
    },
    {
-    "label": "Cash and debt",
-    "text": "Cash rose $27M in the quarter to $317M, and year-to-date operating cash flow is about break-even. Interest expense fell to $3M from $18M, lifting net income to $21M."
+    "label": "Cash rebuilt",
+    "text": "Cash rose $27 million in the quarter to $317 million. Year-to-date operating cash flow was break-even, and inventory build of $44 million remains a drag."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm"
+   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm",
+   "https://www.sec.gov/Archives/edgar/data/0000031235/000119312526445403/kodk-20260930.htm"
   ]
  },
  "history": [

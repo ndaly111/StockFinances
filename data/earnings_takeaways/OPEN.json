@@ -1,28 +1,28 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-06T01:11Z",
+ "updated": "2026-11-06T05:36Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": -10.2,
+  "move_pct": -0.7,
   "basis": "after hours",
-  "verdict": "Opendoor is buying homes far faster than it sells them, and profit per sale is shrinking, so losses are set to widen.",
+  "verdict": "Opendoor's inventory ballooned while margins shrank, and guidance points to a much bigger fourth-quarter loss in a weak housing market.",
   "takeaways": [
    {
-    "label": "Margins missed, losses widen",
-    "text": "Revenue rose 12% to $1.02B, but contribution margin fell to 3.3% from 5.8% last quarter. That is below the 4%\u20134.5% guided in August. Net loss was $218M."
+    "label": "Bigger loss ahead",
+    "text": "Opendoor guides to an adjusted EBITDA loss of $70M\u2013$85M in Q4, versus $31M in Q3, and says profit on homes sold will fall again."
    },
    {
-    "label": "Q4 guide is worse",
-    "text": "Management expects profit on homes sold to fall again in Q4 and an adjusted EBITDA loss of $70M\u2013$85M, versus $31M this quarter. Revenue is guided up at least 40%."
+    "label": "Thinner margins",
+    "text": "Profit after direct costs fell to 3.3% of revenue from 5.8% last quarter. Gross margin dropped to 3.7% from 9.7%, and profit per home sold fell to $12K from $22K."
    },
    {
-    "label": "Inventory and debt pile up",
-    "text": "Opendoor bought 4,865 homes but sold 2,728, lifting inventory to $2.57B (7,596 homes). Bank debt secured by those homes is $2.4B, mostly due within a year; cash is $910M."
+    "label": "Inventory and debt build",
+    "text": "Homes held rose to 7,596 from 5,459, worth $2.6B. Operating cash outflow was $1.8B in nine months, funded by $1.8B of new property-backed debt and $650M of convertible notes."
    },
    {
     "label": "Profit goal slipping",
-    "text": "The company says it is \"behind\" on its goal to reach positive adjusted net income by end of 2026, blaming a slower housing market, and intends to \"catch up\"."
+    "text": "Opendoor admits it is behind its goal of positive adjusted net income by the end of 2026, blaming a slower market. Q3 adjusted net loss was $66M."
    }
   ],
   "transcript_read": false,

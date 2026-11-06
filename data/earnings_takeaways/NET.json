@@ -1,36 +1,35 @@
 {
  "ticker": "NET",
- "updated": "2026-11-06T01:09Z",
+ "updated": "2026-11-06T05:35Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": 5.1,
+  "move_pct": 14.6,
   "basis": "after hours",
-  "verdict": "Cloudflare's growth sped up to 39%, its fastest in nearly four years, and its Q4 forecast came in far above expectations.",
+  "verdict": "Cloudflare's growth sped up to 39% and its Q4 revenue forecast landed far above analyst expectations, though gross margin keeps shrinking.",
   "takeaways": [
    {
     "label": "Growth accelerating",
-    "text": "Revenue rose 39% to $782.5M, up from 36% last quarter. Contracted future revenue due within a year (current RPO) grew 37%, so the pace looks durable."
+    "text": "Revenue rose 39% to $782.5M, up from 36% last quarter and the fastest in nearly four years, beating the roughly $740M analysts expected. Annualized revenue passed $3B."
    },
    {
-    "label": "Big guidance jump",
-    "text": "Q4 revenue is guided to $845\u2013846M versus about $798M expected. Full-year revenue guidance rose to $2.963\u20132.964B from $2.864\u20132.870B in August."
+    "label": "Forecast well above estimates",
+    "text": "Q4 revenue is guided to $845\u2013846M versus about $798M expected. Full-year guidance rose to about $2.963B from $2.864\u20132.870B in August."
    },
    {
-    "label": "Profit up, margins mixed",
-    "text": "Operating margin (excluding stock pay) rose to 17.5% from 15.3%, but gross margin slipped to 72.4% from 75.3%. Heavier spending on its network likely contributes."
+    "label": "Margin squeeze",
+    "text": "Gross margin (non-GAAP) fell to 72.4% from 75.3% a year ago, and 73.1% last quarter. Operating margin still rose to 17.5% from 15.3%."
    },
    {
-    "label": "Cash conversion slipped",
-    "text": "Free cash flow was 10% of revenue versus 13% a year ago as equipment spending rose. A GAAP loss of $34.1M persists, driven by $174M of stock-based pay."
+    "label": "Cash flow lags",
+    "text": "Free cash flow was $82M, or 10% of revenue, versus 13% a year ago. Capital spending jumped to 16% of revenue from 15%."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000060/q326exhibit991.htm",
    "https://siliconangle.com/2026/11/05/cloudflare-shares-surge-as-revenue-growth-accelerates-to-39-and-outlook-rises/",
-   "https://www.benzinga.com/markets/earnings/26/11/62957362/cloudflare-stock-rises-after-q3-results-ceo-says-best-quarter-ever",
-   "https://www.investing.com/news/earnings/cloudflare-shares-soar-afterhours-on-blowout-q3-results-strong-forecast-5005697"
+   "https://www.gurufocus.com/news/9176997/cloudflare-net-shares-surge-17-following-strong-q3-results"
   ]
  },
  "history": [

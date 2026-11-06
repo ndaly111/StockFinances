@@ -1,34 +1,32 @@
 {
  "ticker": "CELH",
- "updated": "2026-11-06T01:07Z",
+ "updated": "2026-11-06T05:32Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": -3.2,
-  "basis": "after hours",
-  "verdict": "Alani Nu's boom drove a revenue beat, but flagship CELSIUS keeps shrinking, margins slipped further, and Q4 growth is guided lower.",
+  "move_pct": -2.3,
+  "basis": "close",
+  "verdict": "Record revenue came from Alani Nu's surge, but the flagship CELSIUS brand shrank again and falling margins left adjusted profit per share slightly down.",
   "takeaways": [
    {
     "label": "Alani Nu carries growth",
-    "text": "Alani Nu revenue rose 24% to $410M and its retail sales jumped 58%, while flagship CELSIUS fell 6% to $357M. Total revenue of $847M beat the roughly $800M expected."
+    "text": "Revenue rose 17% to $847M. Alani Nu grew 24% to $410M, while the flagship CELSIUS brand fell about 6% to $357M."
    },
    {
-    "label": "Margins still shrinking",
-    "text": "Gross margin was 46.8% versus 51.3% a year ago, hurt by aluminum, diesel and a shift to PepsiCo distribution. Management guides the full year to the high 40s; the low 50s will take longer."
+    "label": "Margins keep sliding",
+    "text": "Gross margin was 46.8% against 51.3% a year earlier, as aluminum and fuel costs and more sales through PepsiCo's delivery network weighed. Adjusted EPS slipped to $0.41 from $0.42."
    },
    {
-    "label": "Q4 growth slows",
-    "text": "The CFO said Q4 revenue growth will be below the first three quarters. About $20-25M of Q4 shipments were pulled into Q3, and last year's inventory benefit won't repeat."
+    "label": "CELSIUS brand still weak",
+    "text": "CELSIUS retail sales fell 7% and its U.S. share was 9.1%. The company blames fewer products and weak club-store sales, and named a new brand president."
    },
    {
-    "label": "CELSIUS fix pushed to 2027",
-    "text": "New brand-led structure with a new CELSIUS president. Management admits the brand isn't 'where we want it to be'; new products were delayed, with innovation returning in 2027."
+    "label": "International momentum",
+    "text": "International sales jumped 78% to $41M, but that is only about 5% of total revenue."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://www.fool.com/earnings/call-transcripts/2026/11/05/celsius-celh-q3-2026-earnings-call-transcript/",
-   "https://www.investing.com/news/earnings/celsius-holdings-stock-jumps-on-q3-beat-as-alani-nu-growth-offsets-weakness-5003151",
    "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000059/ex9913q2026.htm"
   ]
  },

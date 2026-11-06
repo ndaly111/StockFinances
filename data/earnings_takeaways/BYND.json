@@ -1,36 +1,33 @@
 {
  "ticker": "BYND",
- "updated": "2026-11-06T01:05Z",
+ "updated": "2026-11-06T05:32Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -15.2,
-  "basis": "after hours",
-  "verdict": "Beyond Meat's margins hit a five-year high, but U.S. sales keep shrinking and the Q4 revenue guide of $54-59 million points lower still.",
+  "basis": "close",
+  "verdict": "Beyond Meat's gross margin hit a five-year high, but revenue keeps shrinking, Q4 is guided lower, and large losses and heavy debt remain.",
   "takeaways": [
    {
-    "label": "Q4 sales guided lower",
-    "text": "Q4 revenue is guided to $54-59 million, down from $64.5 million in Q3. Management gave no cause beyond an uncertain operating environment, and no margin or cash outlook."
+    "label": "Revenue still shrinking",
+    "text": "Revenue fell 8.1% to $64.5 million as volume dropped 10.9%. U.S. retail volume fell 20.8%, and international foodservice revenue fell 19.4%. Only international retail grew, up 13.3%."
    },
    {
-    "label": "Margins at five-year high",
-    "text": "Gross margin hit 19.3%, up from 7.4%, on cost per pound down 10.1%. Management targets 30%+ long term but says low volumes still hold back the gains."
+    "label": "Q4 guided lower",
+    "text": "Fourth-quarter revenue is guided to $54-59 million, well below Q3's $64.5 million. The company cites elevated uncertainty and gave no profit outlook."
    },
    {
-    "label": "U.S. still shrinking",
-    "text": "U.S. retail revenue fell 13.2% on volume down 20.8%, mainly lost club-store distribution. International retail grew 13.3%, a third straight rise, but international foodservice fell 19.4%."
+    "label": "Margins improved, losses stay huge",
+    "text": "Gross margin was 19.3%, up from 7.4% a year ago, and the adjusted EBITDA loss narrowed to $24.6 million. The operating loss was still $93.0 million, including $57.1 million of asset write-downs."
    },
    {
-    "label": "Cash burn slowed, debt remains",
-    "text": "Cash was $169.3 million, with nine-month operating cash use of $37.3 million versus $101.2 million. Debt is $313.9 million, and $14.5 million of notes mature March 2027 with no repayment plan found."
+    "label": "Debt and cash burden",
+    "text": "Cash was $169.3 million against $313.9 million of debt. $14.5 million of notes come due March 2027, and more debt-for-stock swaps keep diluting shareholders."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm",
-   "https://www.fool.com/earnings/call-transcripts/2026/11/05/beyond-meat-bynd-q3-2026-earnings-call-transcript/",
-   "https://finance.yahoo.com/markets/stocks/articles/beyond-meat-inc-bynd-q3-051415873.html",
-   "https://www.thepigsite.com/news/2026/11/beyond-meats-q3-revenue-falls-8-1"
+   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm"
   ]
  },
  "history": [
