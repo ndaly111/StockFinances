@@ -1,34 +1,54 @@
 {
  "ticker": "MRNA",
- "updated": "2026-10-29T19:22Z",
+ "updated": "2026-11-06T13:46Z",
  "last": {
-  "date": "2026-07-31",
+  "date": "2026-11-06",
   "timing": "pre",
-  "move_pct": -5.4,
-  "basis": "close",
-  "verdict": "Norovirus vaccine setback outweighed a smaller-than-expected loss and lower costs.",
-  "reasons": [
+  "move_pct": -0.9,
+  "basis": "after hours",
+  "verdict": "Moderna swung to a profit on international COVID vaccine sales and raised its revenue outlook, but the cash jump comes mostly from borrowing.",
+  "takeaways": [
    {
-    "label": "Norovirus vaccine setback",
-    "text": "Phase 3 norovirus vaccine missed early-success bar; more patients must be enrolled, delaying it."
+    "label": "Profit and higher outlook",
+    "text": "Revenue rose 29% to $1.3B, with net income of $162M versus a $200M loss a year earlier. Full-year growth is now guided to 15\u201325%, up from up to 10%."
    },
    {
-    "label": "Pipeline over numbers",
-    "text": "Revenue is only $145M, so the stock trades on upcoming flu and melanoma news."
+    "label": "Cash boosted by debt",
+    "text": "Year-end cash is now forecast at $8.1\u20138.3B, up from $4.7\u20135.2B. The quarter included $2.6B net from convertible notes, and $1.4B of receivables were still uncollected."
    },
    {
-    "label": "Cost cuts, cash runway",
-    "text": "Spending outlook trimmed about $0.2B; year-end cash now seen at $4.7\u20135.2B."
+    "label": "Melanoma shot is the big upside",
+    "text": "Phase 3 data showed the cancer vaccine intismeran plus Keytruda cut recurrence or death risk 42% versus Keytruda alone. Regulatory filings with Merck are being prepared."
+   },
+   {
+    "label": "Costs lower, flu launch limited",
+    "text": "2026 R&D spending is now about $2.7B, down from $2.9B. The newly approved flu shot launches only in limited form this season. The norovirus vaccine has no clear path."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.tikr.com/blog/moderna-mrna-stock-falls-premarket-q2-2026-earnings",
-   "https://www.tradingpedia.com/2026/07/31/moderna-drops-as-vaccine-setback-overshadows-beat/",
-   "https://www.fool.com/earnings/call-transcripts/2026/05/01/moderna-mrna-q1-2026-earnings-transcript/",
-   "https://www.hl.co.uk/shares/stock-market-news/company--news/moderna-impresses-with-smaller-q4-loss,-2026-growth-targets",
-   "https://www.sec.gov/Archives/edgar/data/1682852/000168285226000147/exhibit9912026q2pressrelea.htm"
+   "https://www.sec.gov/Archives/edgar/data/1682852/000168285226000194/exhibit9912026q3pressrelea.htm"
   ]
  },
- "story": "Moderna has repeated 'up to 10% revenue growth' for 2026 since February. Q4 beat estimates but the stock was flat amid an FDA flu-filing refusal. Q1 carried a $950M settlement charge and a muted reaction. Pipeline news now drives the shares.",
- "history": []
+ "history": [
+  {
+   "date": "2026-07-31",
+   "move_pct": -5.4,
+   "verdict": "Norovirus vaccine setback outweighed a smaller-than-expected loss and lower costs.",
+   "reasons": [
+    {
+     "label": "Norovirus vaccine setback",
+     "text": "Phase 3 norovirus vaccine missed early-success bar; more patients must be enrolled, delaying it."
+    },
+    {
+     "label": "Pipeline over numbers",
+     "text": "Revenue is only $145M, so the stock trades on upcoming flu and melanoma news."
+    },
+    {
+     "label": "Cost cuts, cash runway",
+     "text": "Spending outlook trimmed about $0.2B; year-end cash now seen at $4.7\u20135.2B."
+    }
+   ]
+  }
+ ]
 }

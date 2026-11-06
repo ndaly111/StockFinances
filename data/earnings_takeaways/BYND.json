@@ -1,33 +1,36 @@
 {
  "ticker": "BYND",
- "updated": "2026-11-06T09:33Z",
+ "updated": "2026-11-06T13:42Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -15.2,
   "basis": "close",
-  "verdict": "Margins and cash burn improved sharply, but sales keep shrinking and the fourth-quarter outlook points to a further drop.",
+  "verdict": "Margins hit a five-year high, but sales keep shrinking and Q4 revenue is guided lower, to $54-59 million.",
   "takeaways": [
    {
-    "label": "Weaker sales ahead",
-    "text": "Fourth-quarter revenue is guided to $54-59 million, below the $64.5 million just reported, which was down 8.1% from a year ago."
+    "label": "Q4 outlook falls",
+    "text": "Q4 revenue is guided to $54-59 million, below Q3's $64.5 million (down 8.1% from a year earlier). The company cites 'ongoing uncertainty and volatility' and gives no profit guidance."
    },
    {
-    "label": "Margins at five-year high",
-    "text": "Gross margin hit 19.3% versus 7.4% a year ago, as cost per pound fell 10.1% and average prices rose 3.2%."
+    "label": "Margins improve, sales don't",
+    "text": "Gross margin hit 19.3% versus 7.4% a year ago, the highest in five years, from cheaper production. Volume still fell 10.9%, and the CFO said low volume muted the gains."
    },
    {
-    "label": "U.S. demand still falling",
-    "text": "U.S. retail volume fell 20.8% on lost shelf space and weak category demand. Europe-led international retail grew 13.3%, but international restaurant sales fell 19.4%."
+    "label": "U.S. keeps shrinking",
+    "text": "U.S. retail fell 13.2% on a 20.8% volume drop, mainly lost club-store distribution. Europe-led international retail grew 13.3%, but international foodservice fell 19.4%."
    },
    {
-    "label": "Cash burn slows, debt remains",
-    "text": "Nine-month cash use was $37.3 million versus $101.2 million a year ago. Cash is $169.3 million against $313.9 million of debt, with $14.5 million of notes due March 2027."
+    "label": "Cash burn slows, debt stays",
+    "text": "Nine-month operating cash use fell to $37.3 million from $101.2 million. Cash is $169.3 million against $313.9 million of debt, and $14.5 million of notes come due March 2027."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm"
+   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/05/beyond-meat-bynd-q3-2026-earnings-call-transcript/",
+   "https://www.marketbeat.com/instant-alerts/transcript-what-beyond-meat-bynd-said-on-its-q3-earnings-call-2026-11-04/",
+   "https://www.stocktitan.net/news/BYND/beyond-meat-reports-third-quarter-2026-financial-bgi62tj638xs.html"
   ]
  },
  "history": [

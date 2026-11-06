@@ -1,30 +1,36 @@
 {
  "ticker": "PENN",
- "updated": "2026-11-06T09:39Z",
+ "updated": "2026-11-06T13:51Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
   "move_pct": -0.6,
   "basis": "close",
-  "verdict": "PENN's online losses shrank sharply and casinos grew, lifting profit to $284 million and cutting debt; the full-year online target stands.",
+  "verdict": "PENN's casinos beat expectations and its online business guided to a first profitable quarter, but a $20 million full-year Interactive loss still stands.",
   "takeaways": [
    {
-    "label": "Online losses shrink",
-    "text": "The online segment lost $18.3 million before interest, taxes and similar items, versus $76.6 million a year ago. Revenue rose to $348.4 million, and management reiterated its full-year profit target for it.",
-    "_": ""
+    "label": "Online losses nearly gone",
+    "text": "Interactive lost $18.3 million versus $76.6 million a year ago. Management guides to an $18.7 million profit in Q4, a $20 million full-year loss, and profit in 2027."
    },
    {
-    "label": "Casinos keep growing",
-    "text": "Casino revenue hit a third-quarter record near $1.5 billion. Profit before rent was $501.8 million at a 33.7% margin, the third straight quarter of improving margins. October stayed healthy."
+    "label": "Casinos beat, outlook raised",
+    "text": "Casino revenue hit $1.5 billion with profit margin up for a third straight quarter. Full-year casino profit guidance rose $10 million to $1.973 billion."
    },
    {
-    "label": "Profit and debt",
-    "text": "Company-wide adjusted profit rose to $284.0 million from $194.9 million. Net debt fell to $1.8 billion from $2.2 billion at year-end, with $1.0 billion in cash."
+    "label": "Debt falling, buybacks eyed",
+    "text": "Net debt fell to $1.8 billion from $2.2 billion at year-end. Management says share buybacks are 'front of mind' for 2027, after paying down debt."
+   },
+   {
+    "label": "Alberta launch gaining fast",
+    "text": "Online sports betting in Alberta is nearing its Ontario market share after three months. The launch cost $20 million, which explains why 2026 Interactive is no longer breakeven."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm"
+   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/05/penn-entertainment-penn-q3-2026-earnings-call-transcript/",
+   "https://www.benzinga.com/news/26/11/62927452/penn-entertainment-q3-2026-earnings-call-transcript",
+   "https://seekingalpha.com/news/4668024-penn-raises-2026-retail-guidance-to-5_89b-revenue-and-1_973b-adjusted-ebitda-while-targeting"
   ]
  },
  "history": [

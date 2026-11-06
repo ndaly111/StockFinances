@@ -1,33 +1,35 @@
 {
  "ticker": "CELH",
- "updated": "2026-11-06T09:34Z",
+ "updated": "2026-11-06T13:43Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
   "move_pct": -2.3,
   "basis": "close",
-  "verdict": "Alani Nu drove record sales, but the flagship CELSIUS brand shrank again and rising costs kept profit flat.",
+  "verdict": "Record sales came from Alani Nu, but costs keep squeezing margins, the flagship CELSIUS brand is still shrinking, and fourth-quarter growth will slow.",
   "takeaways": [
    {
-    "label": "Flagship still shrinking",
-    "text": "CELSIUS brand revenue fell about 6% to $356.8M and its retail sales fell 7%. The company blamed fewer products, inventory timing and weak club-store sales. Alani Nu rose 24% to $410.1M."
-   },
-   {
     "label": "Margins keep sliding",
-    "text": "Gross margin was 46.8% versus 51.3% a year ago, hurt by aluminum and fuel costs and more sales through PepsiCo. Adjusted EBITDA fell 3% despite 17% higher revenue."
+    "text": "Gross margin fell to 46.8% from 51.3% a year ago and 48.1% last quarter. Aluminum and diesel costs rose further, and management expects only high-40s for the full year."
    },
    {
-    "label": "Growth isn't reaching profit",
-    "text": "Adjusted EPS was $0.41 versus $0.42 a year ago. Revenue grew 17% to $847.2M, helped by the Rockstar acquisition ($80.3M this quarter)."
+    "label": "Alani Nu carries growth",
+    "text": "Alani Nu sales rose 24% to $410M, with a record seasonal flavor. CELSIUS brand sales fell 6% to $357M, and management said it is 'not yet where we want it to be.'"
    },
    {
-    "label": "Leadership reshuffle",
-    "text": "A new brand-led structure puts Alex Zigliara in charge of CELSIUS and Rishi Daing over Rockstar and emerging brands, aimed at fixing the flagship and margins."
+    "label": "Growth slows next",
+    "text": "Fourth-quarter growth is guided below the first three quarters. About $20-25M of shipments were pulled into Q3, and last year's quarter had a one-time inventory benefit. No numeric targets were given."
+   },
+   {
+    "label": "Reorganization and fixes",
+    "text": "Brand-led leadership is now in place, with new presidents for CELSIUS and Rockstar. Management says 2027 'will look very different' for CELSIUS, with new flavors and a second North Carolina production line."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000059/ex9913q2026.htm"
+   "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000059/ex9913q2026.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/05/celsius-celh-q3-2026-earnings-call-transcript/",
+   "https://www.marketbeat.com/instant-alerts/transcript-celsius-q3-earnings-call-highlights-2026-11-05/"
   ]
  },
  "history": [

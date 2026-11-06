@@ -1,6 +1,56 @@
 {
- "updated": "2026-11-06T09:40Z",
+ "updated": "2026-11-06T13:51Z",
  "reports": [
+  {
+   "ticker": "MRNA",
+   "date": "2026-11-06",
+   "move_pct": -0.9,
+   "basis": "after hours",
+   "verdict": "Moderna swung to a profit on international COVID vaccine sales and raised its revenue outlook, but the cash jump comes mostly from borrowing.",
+   "takeaways": [
+    {
+     "label": "Profit and higher outlook",
+     "text": "Revenue rose 29% to $1.3B, with net income of $162M versus a $200M loss a year earlier. Full-year growth is now guided to 15\u201325%, up from up to 10%."
+    },
+    {
+     "label": "Cash boosted by debt",
+     "text": "Year-end cash is now forecast at $8.1\u20138.3B, up from $4.7\u20135.2B. The quarter included $2.6B net from convertible notes, and $1.4B of receivables were still uncollected."
+    },
+    {
+     "label": "Melanoma shot is the big upside",
+     "text": "Phase 3 data showed the cancer vaccine intismeran plus Keytruda cut recurrence or death risk 42% versus Keytruda alone. Regulatory filings with Merck are being prepared."
+    },
+    {
+     "label": "Costs lower, flu launch limited",
+     "text": "2026 R&D spending is now about $2.7B, down from $2.9B. The newly approved flu shot launches only in limited form this season. The norovirus vaccine has no clear path."
+    }
+   ]
+  },
+  {
+   "ticker": "DKNG",
+   "date": "2026-11-05",
+   "move_pct": -26.0,
+   "basis": "after hours",
+   "verdict": "DraftKings cut 2026 profit guidance to $175-275 million from $700-900 million, as spending on its new Predictions product swamped a healthy core business.",
+   "takeaways": [
+    {
+     "label": "Profit outlook slashed",
+     "text": "2026 adjusted EBITDA (operating profit before some costs) guidance fell to $175-275 million from $700-900 million. Revenue guidance was lowered to $6.35-6.55 billion from $6.5-6.9 billion."
+    },
+    {
+     "label": "Predictions spending",
+     "text": "Predictions (prediction markets) will absorb $650-700 million of 2026 profit, with 1.6 million customers so far. Promotions to win new users leave 2026 Predictions revenue immaterial."
+    },
+    {
+     "label": "Core business still earns",
+     "text": "Excluding Predictions, 2026 adjusted EBITDA is guided to $875-925 million. Q3 revenue rose 16% to $1.33 billion, and monthly paying users rose 13% to 4.1 million."
+    },
+    {
+     "label": "2027 is the payoff bet",
+     "text": "2027 guidance: revenue $7.35-7.75 billion and adjusted EBITDA $800 million-$1 billion, including $650-750 million of Predictions revenue and about $300 million of investment in it."
+    }
+   ]
+  },
   {
    "ticker": "NET",
    "date": "2026-11-05",
@@ -31,48 +81,48 @@
    "date": "2026-11-05",
    "move_pct": -2.3,
    "basis": "close",
-   "verdict": "Alani Nu drove record sales, but the flagship CELSIUS brand shrank again and rising costs kept profit flat.",
+   "verdict": "Record sales came from Alani Nu, but costs keep squeezing margins, the flagship CELSIUS brand is still shrinking, and fourth-quarter growth will slow.",
    "takeaways": [
     {
-     "label": "Flagship still shrinking",
-     "text": "CELSIUS brand revenue fell about 6% to $356.8M and its retail sales fell 7%. The company blamed fewer products, inventory timing and weak club-store sales. Alani Nu rose 24% to $410.1M."
-    },
-    {
      "label": "Margins keep sliding",
-     "text": "Gross margin was 46.8% versus 51.3% a year ago, hurt by aluminum and fuel costs and more sales through PepsiCo. Adjusted EBITDA fell 3% despite 17% higher revenue."
+     "text": "Gross margin fell to 46.8% from 51.3% a year ago and 48.1% last quarter. Aluminum and diesel costs rose further, and management expects only high-40s for the full year."
     },
     {
-     "label": "Growth isn't reaching profit",
-     "text": "Adjusted EPS was $0.41 versus $0.42 a year ago. Revenue grew 17% to $847.2M, helped by the Rockstar acquisition ($80.3M this quarter)."
+     "label": "Alani Nu carries growth",
+     "text": "Alani Nu sales rose 24% to $410M, with a record seasonal flavor. CELSIUS brand sales fell 6% to $357M, and management said it is 'not yet where we want it to be.'"
     },
     {
-     "label": "Leadership reshuffle",
-     "text": "A new brand-led structure puts Alex Zigliara in charge of CELSIUS and Rishi Daing over Rockstar and emerging brands, aimed at fixing the flagship and margins."
+     "label": "Growth slows next",
+     "text": "Fourth-quarter growth is guided below the first three quarters. About $20-25M of shipments were pulled into Q3, and last year's quarter had a one-time inventory benefit. No numeric targets were given."
+    },
+    {
+     "label": "Reorganization and fixes",
+     "text": "Brand-led leadership is now in place, with new presidents for CELSIUS and Rockstar. Management says 2027 'will look very different' for CELSIUS, with new flavors and a second North Carolina production line."
     }
    ]
   },
   {
    "ticker": "OPEN",
    "date": "2026-11-05",
-   "move_pct": 1.7,
+   "move_pct": 0.6,
    "basis": "after hours",
-   "verdict": "Opendoor is buying homes far faster than it can sell them at a profit, so losses and debt are growing and the 2026 profit goal is slipping.",
+   "verdict": "Opendoor quadrupled its home buying into a collapsing housing market, so margins are shrinking, losses are widening, and its profit goal is slipping.",
    "takeaways": [
     {
-     "label": "Profit outlook worsens",
-     "text": "Q4 adjusted EBITDA loss is guided to $70\u201385M, versus a $31M loss in Q3. Profit per home is also expected to fall. The company says it is 'behind' its year-end profitability goal."
+     "label": "Margins shrinking further",
+     "text": "Contribution margin fell to 3.3% from 5.8% last quarter. Management expects it to fall again in Q4, with adjusted EBITDA loss guided to $70M\u2013$85M versus $31M in Q3."
     },
     {
-     "label": "Margins missed guidance",
-     "text": "Revenue rose 12% to $1.02B, but contribution margin was 3.3%, below the 4\u20134.5% guided and down from 5.8% last quarter. Net loss widened to $218M from $90M."
+     "label": "Housing market weakened",
+     "text": "The CEO said home sales 'started to collapse' in Q3 with mortgage rates above 7%. Opendoor chose to cut prices and clear homes rather than protect margin."
     },
     {
-     "label": "Inventory and debt pile up",
-     "text": "Homes in inventory rose to 7,596 ($2.57B) from 5,459 last quarter. Debt tied to those homes that is due within a year jumped to $2.0B, against $910M in cash."
+     "label": "Balance sheet getting heavier",
+     "text": "Inventory hit $2.57B (7,596 homes) versus $1.05B a year ago. Homes listed over 120 days doubled to 18% from 9% last quarter. $2.0B of asset-backed debt is now due within a year."
     },
     {
-     "label": "Older homes piling up",
-     "text": "Homes listed more than 120 days rose to 18% of listed inventory from 9% last quarter. Management cites a slow market and says its focus is 'moving homes'."
+     "label": "Profit goal behind schedule",
+     "text": "Management admits it is behind its aim of positive adjusted net income by end-2026, even as it guides Q4 revenue up at least 40% on 4,865 homes bought."
     }
    ]
   },
@@ -81,20 +131,23 @@
    "date": "2026-11-05",
    "move_pct": -0.6,
    "basis": "close",
-   "verdict": "PENN's online losses shrank sharply and casinos grew, lifting profit to $284 million and cutting debt; the full-year online target stands.",
+   "verdict": "PENN's casinos beat expectations and its online business guided to a first profitable quarter, but a $20 million full-year Interactive loss still stands.",
    "takeaways": [
     {
-     "label": "Online losses shrink",
-     "text": "The online segment lost $18.3 million before interest, taxes and similar items, versus $76.6 million a year ago. Revenue rose to $348.4 million, and management reiterated its full-year profit target for it.",
-     "_": ""
+     "label": "Online losses nearly gone",
+     "text": "Interactive lost $18.3 million versus $76.6 million a year ago. Management guides to an $18.7 million profit in Q4, a $20 million full-year loss, and profit in 2027."
     },
     {
-     "label": "Casinos keep growing",
-     "text": "Casino revenue hit a third-quarter record near $1.5 billion. Profit before rent was $501.8 million at a 33.7% margin, the third straight quarter of improving margins. October stayed healthy."
+     "label": "Casinos beat, outlook raised",
+     "text": "Casino revenue hit $1.5 billion with profit margin up for a third straight quarter. Full-year casino profit guidance rose $10 million to $1.973 billion."
     },
     {
-     "label": "Profit and debt",
-     "text": "Company-wide adjusted profit rose to $284.0 million from $194.9 million. Net debt fell to $1.8 billion from $2.2 billion at year-end, with $1.0 billion in cash."
+     "label": "Debt falling, buybacks eyed",
+     "text": "Net debt fell to $1.8 billion from $2.2 billion at year-end. Management says share buybacks are 'front of mind' for 2027, after paying down debt."
+    },
+    {
+     "label": "Alberta launch gaining fast",
+     "text": "Online sports betting in Alberta is nearing its Ontario market share after three months. The launch cost $20 million, which explains why 2026 Interactive is no longer breakeven."
     }
    ]
   },
@@ -103,23 +156,23 @@
    "date": "2026-11-04",
    "move_pct": -15.2,
    "basis": "close",
-   "verdict": "Margins and cash burn improved sharply, but sales keep shrinking and the fourth-quarter outlook points to a further drop.",
+   "verdict": "Margins hit a five-year high, but sales keep shrinking and Q4 revenue is guided lower, to $54-59 million.",
    "takeaways": [
     {
-     "label": "Weaker sales ahead",
-     "text": "Fourth-quarter revenue is guided to $54-59 million, below the $64.5 million just reported, which was down 8.1% from a year ago."
+     "label": "Q4 outlook falls",
+     "text": "Q4 revenue is guided to $54-59 million, below Q3's $64.5 million (down 8.1% from a year earlier). The company cites 'ongoing uncertainty and volatility' and gives no profit guidance."
     },
     {
-     "label": "Margins at five-year high",
-     "text": "Gross margin hit 19.3% versus 7.4% a year ago, as cost per pound fell 10.1% and average prices rose 3.2%."
+     "label": "Margins improve, sales don't",
+     "text": "Gross margin hit 19.3% versus 7.4% a year ago, the highest in five years, from cheaper production. Volume still fell 10.9%, and the CFO said low volume muted the gains."
     },
     {
-     "label": "U.S. demand still falling",
-     "text": "U.S. retail volume fell 20.8% on lost shelf space and weak category demand. Europe-led international retail grew 13.3%, but international restaurant sales fell 19.4%."
+     "label": "U.S. keeps shrinking",
+     "text": "U.S. retail fell 13.2% on a 20.8% volume drop, mainly lost club-store distribution. Europe-led international retail grew 13.3%, but international foodservice fell 19.4%."
     },
     {
-     "label": "Cash burn slows, debt remains",
-     "text": "Nine-month cash use was $37.3 million versus $101.2 million a year ago. Cash is $169.3 million against $313.9 million of debt, with $14.5 million of notes due March 2027."
+     "label": "Cash burn slows, debt stays",
+     "text": "Nine-month operating cash use fell to $37.3 million from $101.2 million. Cash is $169.3 million against $313.9 million of debt, and $14.5 million of notes come due March 2027."
     }
    ]
   },
@@ -228,23 +281,23 @@
    "date": "2026-11-04",
    "move_pct": -3.1,
    "basis": "close",
-   "verdict": "MetLife posted a record quarter, but a 49% jump in volatile investment income did much of the work.",
+   "verdict": "MetLife posted its best quarterly adjusted earnings per share ever, helped by a jump in investment returns, with revenue growing in every segment.",
    "takeaways": [
     {
-     "label": "Record earnings",
-     "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items ($2.78 including them), the highest in MetLife's history. Return on equity was 19.6%."
+     "label": "Record profit, partly investment-driven",
+     "text": "Adjusted earnings per share rose 22% to $2.85, excluding one-time items. Returns from variable investments such as private equity jumped 49% to $720 million, a swing-prone source of earnings."
     },
     {
-     "label": "Investment income boost",
-     "text": "Variable investment income, which swings with markets and is less repeatable, rose 49% to $720 million. It was the main driver of the 12% earnings gain."
+     "label": "Growth across the business",
+     "text": "Revenue excluding large pension deals grew 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% excluding one-time items."
     },
     {
-     "label": "Broad growth, uneven profit",
-     "text": "Revenue rose in all six segments, up 8% to $13.5 billion excluding pension deals. Europe, the Middle East and Africa rose 30% on volume, but Latin America fell 5% at constant exchange rates."
+     "label": "Retirement unit held back",
+     "text": "Retirement and Income Solutions earnings fell 6% after a $65 million hit from the annual review of insurance assumptions. Excluding it, earnings rose 12%."
     },
     {
-     "label": "Asia sales slipped",
-     "text": "Asia sales fell 6% at constant exchange rates against a strong prior-year quarter. They are still up 10% year to date."
+     "label": "Returns and cash",
+     "text": "Return on equity was 19.6% excluding one-time items. About $1 billion went back to shareholders, and MetLife says it is on track for its yearly free cash flow and expense targets."
     }
    ]
   },
@@ -253,23 +306,23 @@
    "date": "2026-11-03",
    "move_pct": -13.4,
    "basis": "close",
-   "verdict": "Kodak's chemicals business keeps growing and the balance sheet is cleaner, but print profit nearly vanished, so total profit barely rose.",
+   "verdict": "Chemicals growth and far lower interest costs lifted profit, but the core Print business nearly stopped earning.",
    "takeaways": [
     {
-     "label": "Print profit collapsed",
-     "text": "Print revenue fell 7% to $165 million and its operational EBITDA (a core profit measure) dropped to $1 million from $8 million. The prior quarter's $8 million print profit did not hold."
+     "label": "Print profit collapsing",
+     "text": "Print revenue fell 7% to $165 million and its operating profit (EBITDA) dropped to $1 million from $8 million. It was an $8 million profit last quarter."
     },
     {
-     "label": "Chemicals carry the company",
-     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, with $21 million of operational EBITDA. Growth is slower than last quarter's 40%, but it now earns most of the profit."
+     "label": "Chemicals carrying the company",
+     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. Management calls it the fastest-growing, most profitable unit."
     },
     {
      "label": "Net income flattered by debt paydown",
-     "text": "Net income rose to $21 million from $13 million mainly because interest expense fell to $3 million from $18 million. Profit from operations fell to $15 million from $19 million."
+     "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million. Company-wide operating profit rose only $2 million, to $31 million."
     },
     {
-     "label": "Cash rebuilt",
-     "text": "Cash rose $27 million to $317 million in the quarter, with $25 million from operations. Operational EBITDA was $31 million, below last quarter's $36 million. Stock pay jumped to $8 million from $1 million."
+     "label": "Cash up, but costs rising",
+     "text": "Cash rose $27 million to $317 million this quarter, yet operating cash flow is only break-even for the year. Stock-based pay lifted overhead costs to $50 million from $41 million."
     }
    ]
   },

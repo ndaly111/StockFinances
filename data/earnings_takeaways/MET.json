@@ -1,28 +1,28 @@
 {
  "ticker": "MET",
- "updated": "2026-11-06T09:36Z",
+ "updated": "2026-11-06T13:46Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -3.1,
   "basis": "close",
-  "verdict": "MetLife posted a record quarter, but a 49% jump in volatile investment income did much of the work.",
+  "verdict": "MetLife posted its best quarterly adjusted earnings per share ever, helped by a jump in investment returns, with revenue growing in every segment.",
   "takeaways": [
    {
-    "label": "Record earnings",
-    "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items ($2.78 including them), the highest in MetLife's history. Return on equity was 19.6%."
+    "label": "Record profit, partly investment-driven",
+    "text": "Adjusted earnings per share rose 22% to $2.85, excluding one-time items. Returns from variable investments such as private equity jumped 49% to $720 million, a swing-prone source of earnings."
    },
    {
-    "label": "Investment income boost",
-    "text": "Variable investment income, which swings with markets and is less repeatable, rose 49% to $720 million. It was the main driver of the 12% earnings gain."
+    "label": "Growth across the business",
+    "text": "Revenue excluding large pension deals grew 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% excluding one-time items."
    },
    {
-    "label": "Broad growth, uneven profit",
-    "text": "Revenue rose in all six segments, up 8% to $13.5 billion excluding pension deals. Europe, the Middle East and Africa rose 30% on volume, but Latin America fell 5% at constant exchange rates."
+    "label": "Retirement unit held back",
+    "text": "Retirement and Income Solutions earnings fell 6% after a $65 million hit from the annual review of insurance assumptions. Excluding it, earnings rose 12%."
    },
    {
-    "label": "Asia sales slipped",
-    "text": "Asia sales fell 6% at constant exchange rates against a strong prior-year quarter. They are still up 10% year to date."
+    "label": "Returns and cash",
+    "text": "Return on equity was 19.6% excluding one-time items. About $1 billion went back to shareholders, and MetLife says it is on track for its yearly free cash flow and expense targets."
    }
   ],
   "transcript_read": false,

@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-06T09:35Z",
+ "updated": "2026-11-06T13:45Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Kodak's chemicals business keeps growing and the balance sheet is cleaner, but print profit nearly vanished, so total profit barely rose.",
+  "verdict": "Chemicals growth and far lower interest costs lifted profit, but the core Print business nearly stopped earning.",
   "takeaways": [
    {
-    "label": "Print profit collapsed",
-    "text": "Print revenue fell 7% to $165 million and its operational EBITDA (a core profit measure) dropped to $1 million from $8 million. The prior quarter's $8 million print profit did not hold."
+    "label": "Print profit collapsing",
+    "text": "Print revenue fell 7% to $165 million and its operating profit (EBITDA) dropped to $1 million from $8 million. It was an $8 million profit last quarter."
    },
    {
-    "label": "Chemicals carry the company",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, with $21 million of operational EBITDA. Growth is slower than last quarter's 40%, but it now earns most of the profit."
+    "label": "Chemicals carrying the company",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. Management calls it the fastest-growing, most profitable unit."
    },
    {
     "label": "Net income flattered by debt paydown",
-    "text": "Net income rose to $21 million from $13 million mainly because interest expense fell to $3 million from $18 million. Profit from operations fell to $15 million from $19 million."
+    "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million. Company-wide operating profit rose only $2 million, to $31 million."
    },
    {
-    "label": "Cash rebuilt",
-    "text": "Cash rose $27 million to $317 million in the quarter, with $25 million from operations. Operational EBITDA was $31 million, below last quarter's $36 million. Stock pay jumped to $8 million from $1 million."
+    "label": "Cash up, but costs rising",
+    "text": "Cash rose $27 million to $317 million this quarter, yet operating cash flow is only break-even for the year. Stock-based pay lifted overhead costs to $50 million from $41 million."
    }
   ],
   "transcript_read": false,
