@@ -1,33 +1,57 @@
 {
  "ticker": "PENN",
- "updated": "2026-10-29T19:29Z",
+ "updated": "2026-11-06T13:51Z",
  "last": {
-  "date": "2026-08-06",
+  "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": 2.6,
+  "move_pct": -0.6,
   "basis": "close",
-  "verdict": "Record casino results and a smaller digital loss won modest approval.",
-  "reasons": [
+  "verdict": "PENN's casinos beat expectations and its online business guided to a first profitable quarter, but a $20 million full-year Interactive loss still stands.",
+  "takeaways": [
    {
-    "label": "Record casino quarter",
-    "text": "Retail revenue hit a record $1.5 billion; nine properties set Q2 records, and July trends stayed strong."
+    "label": "Online losses nearly gone",
+    "text": "Interactive lost $18.3 million versus $76.6 million a year ago. Management guides to an $18.7 million profit in Q4, a $20 million full-year loss, and profit in 2027."
    },
    {
-    "label": "Digital losses shrinking",
-    "text": "Interactive lost $9.5 million versus $62.0 million a year ago; iCasino revenue hit a record."
+    "label": "Casinos beat, outlook raised",
+    "text": "Casino revenue hit $1.5 billion with profit margin up for a third straight quarter. Full-year casino profit guidance rose $10 million to $1.973 billion."
    },
    {
-    "label": "Profit jump, debt falling",
-    "text": "Adjusted EBITDA rose to $312.6 million from $236.1 million; net debt fell to $1.9 billion."
+    "label": "Debt falling, buybacks eyed",
+    "text": "Net debt fell to $1.8 billion from $2.2 billion at year-end. Management says share buybacks are 'front of mind' for 2027, after paying down debt."
+   },
+   {
+    "label": "Alberta launch gaining fast",
+    "text": "Online sports betting in Alberta is nearing its Ontario market share after three months. The launch cost $20 million, which explains why 2026 Interactive is no longer breakeven."
    }
   ],
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000019/pennex991-q22026.htm",
-   "https://www.benzinga.com/node/62265462",
-   "https://finance.yahoo.com/markets/stocks/articles/why-penn-entertainment-penn-shares-114123664.html",
-   "https://www.barchart.com/story/news/448269/why-penn-entertainment-penn-stock-is-up-today"
+   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/05/penn-entertainment-penn-q3-2026-earnings-call-transcript/",
+   "https://www.benzinga.com/news/26/11/62927452/penn-entertainment-q3-2026-earnings-call-transcript",
+   "https://seekingalpha.com/news/4668024-penn-raises-2026-retail-guidance-to-5_89b-revenue-and-1_973b-adjusted-ebitda-while-targeting"
   ]
  },
- "story": "PENN has been shrinking its online betting losses after ending the ESPN Bet tie-up and relaunching as theScore Bet. Casino guidance was raised in April, while online revenue guidance was trimmed. Shares jumped on the last two reports, but August's gain was modest.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-06",
+   "move_pct": 2.6,
+   "verdict": "Record casino results and a smaller digital loss won modest approval.",
+   "reasons": [
+    {
+     "label": "Record casino quarter",
+     "text": "Retail revenue hit a record $1.5 billion; nine properties set Q2 records, and July trends stayed strong."
+    },
+    {
+     "label": "Digital losses shrinking",
+     "text": "Interactive lost $9.5 million versus $62.0 million a year ago; iCasino revenue hit a record."
+    },
+    {
+     "label": "Profit jump, debt falling",
+     "text": "Adjusted EBITDA rose to $312.6 million from $236.1 million; net debt fell to $1.9 billion."
+    }
+   ]
+  }
+ ]
 }

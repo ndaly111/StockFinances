@@ -1,34 +1,55 @@
 {
  "ticker": "DKNG",
- "updated": "2026-10-29T18:57Z",
+ "updated": "2026-11-06T16:42Z",
  "last": {
-  "date": "2026-08-06",
+  "date": "2026-11-05",
   "timing": "post",
-  "move_pct": 8.4,
-  "basis": "close",
-  "verdict": "Investors looked past a revenue miss to strong user growth and unchanged full-year profit targets.",
-  "reasons": [
+  "move_pct": -26.6,
+  "basis": "intraday",
+  "verdict": "DraftKings slashed 2026 profit guidance to fund a $650-700 million bet on prediction markets, promising a bigger 2027 revenue rise.",
+  "takeaways": [
    {
-    "label": "Surging customer growth",
-    "text": "Monthly paying users rose 9% to 3.6 million, about 16% above expectations."
+    "label": "Profit outlook slashed",
+    "text": "Full-year 2026 adjusted EBITDA (a profit measure) is now $175-275 million, down from $700-900 million. Revenue guidance also fell, to $6.35-6.55 billion from $6.5-6.9 billion."
    },
    {
-    "label": "Guidance held",
-    "text": "Full-year profit outlook stayed at $700-900 million; core business should earn about $1 billion."
+    "label": "Predictions spending ramps up",
+    "text": "DraftKings now plans $650-700 million of Predictions investment in 2026, with revenue from it immaterial. Without it, the core business would earn $875-925 million."
    },
    {
-    "label": "Prediction markets momentum",
-    "text": "New Predictions product has over 600,000 users and is growing faster than management expected."
+    "label": "2027 growth promise",
+    "text": "First 2027 outlook: revenue $7.35-7.75 billion, about 17% growth at the midpoint, with profit of $800 million-$1 billion after about $300 million of Predictions spending."
+   },
+   {
+    "label": "Growth, but bigger losses",
+    "text": "Revenue rose 16% to $1.33 billion and paying users 13% to 4.1 million. Marketing jumped to $606 million, and the quarterly loss widened to $469 million."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://stockti.com/draftkings-rebounds-8-as-analysts-see-margin-upside",
-   "https://www.allinvestview.com/earnings/DKNG/q2-2026/",
-   "https://seekingalpha.com/pr/20611148-draftkings-reports-second-quarter-results",
-   "https://www.benzinga.com/quote/DKNG/earnings-forecasts",
-   "https://247wallst.com/companies/dkng/earnings/2026/Q1"
+   "https://www.sec.gov/Archives/edgar/data/0001883685/000188368526000039/q326-prx8kexx991.htm",
+   "https://stocktwits.com/news-articles/markets/equity/draftkings-q3-loss-revenue-missed-expectations/cJ4EFSiRaK"
   ]
  },
- "story": "Revenue was $1.99B in the Q4 2025 report and about $1.65B in Q1, then slid to $1.44B in Q2. Profit targets stayed in place while heavy marketing and Predictions spending weighed. The stock was still down about 30% for 2026 despite this bounce.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-06",
+   "move_pct": 8.4,
+   "verdict": "Investors looked past a revenue miss to strong user growth and unchanged full-year profit targets.",
+   "reasons": [
+    {
+     "label": "Surging customer growth",
+     "text": "Monthly paying users rose 9% to 3.6 million, about 16% above expectations."
+    },
+    {
+     "label": "Guidance held",
+     "text": "Full-year profit outlook stayed at $700-900 million; core business should earn about $1 billion."
+    },
+    {
+     "label": "Prediction markets momentum",
+     "text": "New Predictions product has over 600,000 users and is growing faster than management expected."
+    }
+   ]
+  }
+ ]
 }

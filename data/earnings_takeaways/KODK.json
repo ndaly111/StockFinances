@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-04T21:19Z",
+ "updated": "2026-11-06T16:43Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Kodak grew on chemicals and added cash, but Print shrank 7% and profit fell short of last quarter's $36 million.",
+  "verdict": "Kodak's chemicals business is growing 21% while print shrinks 7%, leaving profit up only slightly and print earnings nearly gone.",
   "takeaways": [
    {
-    "label": "Chemicals carry growth",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operating profit (EBITDA) grew from $16 million to $21 million. It is now the company's most profitable unit."
+    "label": "Chemicals carry the quarter",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operating profit (EBITDA) rose to $21 million from $16 million. It is now Kodak's most profitable unit."
    },
    {
     "label": "Print is weakening",
-    "text": "Print revenue fell 7% to $165 million, and its operating profit dropped from $8 million to $1 million. The CEO cited challenging economic conditions."
+    "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) dropped to $1 million from $8 million. That is a sharp slide from the $8 million profit it earned last quarter."
    },
    {
-    "label": "Cash turned positive",
-    "text": "Cash rose $27 million in the quarter to $317 million, after falling last quarter. Operating cash flow is only break-even for the year, and inventory is up $44 million."
+    "label": "Profit growth is modest",
+    "text": "Operating profit (EBITDA) rose just $2 million to $31 million, below last quarter's $36 million. Net income of $21 million was helped by interest expense falling to $3 million from $18 million."
    },
    {
-    "label": "Interest cost nearly gone",
-    "text": "Interest expense fell to $3 million from $18 million after the $101 million term loan repayment, lifting net income to $21 million from $13 million. Stock compensation was $8 million, up from $1 million."
+    "label": "Cash rebuilt",
+    "text": "Cash rose $27 million to $317 million after falling last quarter. Year-to-date cash from operations is break-even, and inventories are up $44 million for the year."
    }
   ],
   "transcript_read": false,

@@ -1,33 +1,54 @@
 {
  "ticker": "MET",
- "updated": "2026-10-29T19:21Z",
+ "updated": "2026-11-06T16:43Z",
  "last": {
-  "date": "2026-08-05",
+  "date": "2026-11-04",
   "timing": "post",
-  "move_pct": 3.8,
+  "move_pct": -3.1,
   "basis": "close",
-  "verdict": "Investors cheered a clear profit beat driven by better insurance claims results.",
-  "reasons": [
+  "verdict": "MetLife posted its highest-ever quarterly adjusted profit per share, but much of the jump came from volatile investment gains rather than core growth.",
+  "takeaways": [
    {
-    "label": "Earnings beat",
-    "text": "Adjusted earnings of $2.43 per share topped analyst estimates of about $2.29."
+    "label": "Record profit",
+    "text": "Adjusted earnings per share excluding one-time items rose 22% to $2.85, MetLife's best quarter ever. Adjusted return on equity reached 19.6%."
    },
    {
-    "label": "Better claims results",
-    "text": "Group Benefits profit jumped 25% to $503 million on favorable underwriting and volume growth."
+    "label": "Investment gains boost",
+    "text": "Variable investment income, which swings with markets, jumped 49% to $720 million and was a main driver of the profit increase, so it may not repeat."
    },
    {
-    "label": "Broad growth, high returns",
-    "text": "Every segment grew; return on equity hit 17% for a second straight quarter."
+    "label": "Growth in every segment",
+    "text": "Premiums and fees excluding large pension deals grew 8% to $13.5 billion, rising in all six segments. Europe, the Middle East and Africa led at 17% constant-currency growth, up from a year ago."
+   },
+   {
+    "label": "Mixed spots",
+    "text": "Retirement and Income Solutions earnings fell 6% after an annual assumptions review. Latin America profit excluding one-time items fell 5% in constant currency on lower investment returns. Asia sales fell 6%."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000048/ex991earningsreleasetables.htm",
-   "https://www.barchart.com/story/news/3700694/met-q2-deep-dive-broad-based-growth-international-momentum-and-productivity-initiatives",
-   "https://www.barchart.com/story/news/3717747/metlife-stock-analyst-estimates-ratings",
-   "https://www.investing.com/news/transcripts/earnings-call-transcript-metlife-q4-2025-earnings-beat-eps-forecasts-93CH-4488308"
+   "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000058/ex991earningsreleasetables.htm"
   ]
  },
- "story": "MetLife has beaten profit estimates in recent quarters, including $2.58 per share in Q4 2025 and $2.42 in Q1 2026. Its New Frontier strategy keeps returns near 17%. Past reactions were mixed or small, so this +3.8% jump stands out.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-05",
+   "move_pct": 3.8,
+   "verdict": "Investors cheered a clear profit beat driven by better insurance claims results.",
+   "reasons": [
+    {
+     "label": "Earnings beat",
+     "text": "Adjusted earnings of $2.43 per share topped analyst estimates of about $2.29."
+    },
+    {
+     "label": "Better claims results",
+     "text": "Group Benefits profit jumped 25% to $503 million on favorable underwriting and volume growth."
+    },
+    {
+     "label": "Broad growth, high returns",
+     "text": "Every segment grew; return on equity hit 17% for a second straight quarter."
+    }
+   ]
+  }
+ ]
 }

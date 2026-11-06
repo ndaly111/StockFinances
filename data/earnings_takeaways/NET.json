@@ -1,34 +1,57 @@
 {
  "ticker": "NET",
- "updated": "2026-10-29T19:24Z",
+ "updated": "2026-11-06T09:37Z",
  "last": {
-  "date": "2026-08-06",
+  "date": "2026-11-05",
   "timing": "post",
-  "move_pct": 5.6,
-  "basis": "close",
-  "verdict": "Accelerating growth and a raised full-year outlook won buyers, though much of the after-hours pop faded.",
-  "reasons": [
+  "move_pct": 14.1,
+  "basis": "after hours",
+  "verdict": "Growth sped up to 39% and Cloudflare guided far above expectations, but gross margin keeps slipping and GAAP profit has not arrived yet.",
+  "takeaways": [
    {
-    "label": "Growth sped up",
-    "text": "Revenue rose 36% from a year earlier, up from 34% last quarter, beating expectations."
+    "label": "Big guidance jump",
+    "text": "Q4 revenue is guided to $845\u2013846M versus about $798M expected. Full-year revenue is guided to $2.963B, up from $2.864\u20132.870B in August."
    },
    {
-    "label": "Raised full-year outlook",
-    "text": "2026 revenue guidance now $2.864\u20132.870B, versus $2.805\u20132.813B before."
+    "label": "GAAP profit pulled forward",
+    "text": "The CFO said GAAP profitability should arrive in Q4 2026, versus an earlier end-2028 target. Q3 still showed a $67.9M operating loss."
    },
    {
-    "label": "Margins and one-time costs",
-    "text": "Gross margin fell to 73.1% from 76.3%; a $150.7M restructuring charge weighed on results."
+    "label": "Margin slippage",
+    "text": "Gross margin fell to 72.4% (non-GAAP) from 75.3% a year ago. Management pointed to the lower-margin Workers developer platform and said it still improves operating margins."
+   },
+   {
+    "label": "AI demand broadening",
+    "text": "Pay-per-crawl, which charges AI firms for site access, produced its first revenue, with OpenAI paying. An AI company also signed an $11M Workers deal."
    }
   ],
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000053/q226exhibit991.htm",
-   "https://www.investing.com/news/transcripts/earnings-call-transcript-cloudflare-tops-estimates-in-q2-2026-shares-jump-17-93CH-4844728",
-   "https://www.alphaspread.com/market-news/earnings/cloudflare-stock-jumps-after-q2-revenue-beat-and-raised-forecast",
-   "https://siliconangle.com/2026/05/07/cloudflare-beats-q1-20-ai-driven-layoffs-weak-guidance-send-shares/",
-   "https://seekingalpha.com/news/4405118-cloudflare-rises-after-impressive-q4-as-analysts-keep-bullish-view"
+   "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000060/q326exhibit991.htm",
+   "https://www.kucoin.com/news/flash/cloudflare-q3-revenue-surpasses-782m-gaap-profitability-expected-in-q4-2026",
+   "https://www.investing.com/news/earnings/cloudflare-shares-soar-afterhours-on-blowout-q3-results-strong-forecast-5005697",
+   "https://www.benzinga.com/markets/earnings/26/11/62957362/cloudflare-stock-rises-after-q3-results-ceo-says-best-quarter-ever"
   ]
  },
- "story": "Growth has sped up from 34% in early 2026 to 36%. February's report sent shares sharply higher; May's drew a 16% after-hours drop on soft guidance and 1,100 layoffs. August's raised outlook revived buying, though profit margins are thinner.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-06",
+   "move_pct": 5.6,
+   "verdict": "Accelerating growth and a raised full-year outlook won buyers, though much of the after-hours pop faded.",
+   "reasons": [
+    {
+     "label": "Growth sped up",
+     "text": "Revenue rose 36% from a year earlier, up from 34% last quarter, beating expectations."
+    },
+    {
+     "label": "Raised full-year outlook",
+     "text": "2026 revenue guidance now $2.864\u20132.870B, versus $2.805\u20132.813B before."
+    },
+    {
+     "label": "Margins and one-time costs",
+     "text": "Gross margin fell to 73.1% from 76.3%; a $150.7M restructuring charge weighed on results."
+    }
+   ]
+  }
+ ]
 }

@@ -1,35 +1,56 @@
 {
  "ticker": "SNAP",
- "updated": "2026-10-29T19:40Z",
+ "updated": "2026-11-05T21:24Z",
  "last": {
-  "date": "2026-08-03",
+  "date": "2026-11-04",
   "timing": "post",
-  "move_pct": 14.9,
+  "move_pct": -14.0,
   "basis": "close",
-  "verdict": "Revenue beat and a stronger Q3 forecast sent the stock sharply higher.",
-  "reasons": [
+  "verdict": "Snap's profits surged on cost discipline, but 4% ad growth and shrinking North American users keep the growth story unproven.",
+  "takeaways": [
    {
-    "label": "Big revenue beat",
-    "text": "Revenue rose 19% to about $1.6B, above the roughly $1.53B analysts expected."
+    "label": "Profit jumped",
+    "text": "Adjusted EBITDA (core profit) hit $383M versus $182M a year earlier, and net income was $56M versus a loss. Costs barely rose while revenue grew 14% to $1.72B."
    },
    {
-    "label": "Upbeat Q3 forecast",
-    "text": "Snap guided Q3 revenue to $1.70\u20131.74B and Adjusted EBITDA (core profit) to $300\u2013350M."
+    "label": "Ad growth is weak",
+    "text": "Ad revenue grew only 4%, which Spiegel called below ambitions. Brand advertising fell on weaker packaged-goods spending, while performance-focused ads grew."
    },
    {
-    "label": "Cost cuts, cash, Specs",
-    "text": "Post-layoff cost cuts drove $121M free cash flow; Specs AR glasses got a launch date."
+    "label": "North America users falling",
+    "text": "North American daily users fell 6% to 92M, and total daily users of 495M missed expectations. From 2027 Snap will report monthly users instead, with no regional breakdown."
+   },
+   {
+    "label": "Q4 outlook",
+    "text": "Snap guided Q4 revenue to $1.95B-$1.985B and adjusted EBITDA to $490M-$525M. The revenue midpoint is slightly above the roughly $1.95B analysts expected."
    }
   ],
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/0001564408/000156440826000047/snap-20260803xexx991pressr.htm",
-   "https://www.kucoin.com/blog/en-snap-q2-earnings-beat-expectations-with-1-6b-revenue-stock-surges-13-after-hours-as-specs-glasses-launch-nears",
-   "https://quartr.com/events/snap-inc-snap-q2-2026_3YobnL4d",
-   "https://www.tikr.com/blog/snap-beat-q1-2026-earnings-and-the-stock-still-fell-heres-what-a-32-target-means-for-investors",
-   "https://www.sec.gov/Archives/edgar/data/1564408/000156440826000011/snap-20260204xexx991pressr.htm",
-   "https://fintool.com/app/research/companies/SNAP/earnings/Q4 2025"
+   "https://www.sec.gov/Archives/edgar/data/0001564408/000156440826000063/snap-20261104xexx991pressr.htm",
+   "https://finance.biggo.com/news/US_SNAP_2026-11-04",
+   "https://finance.yahoo.com/markets/stocks/articles/snap-tumbles-revenue-user-growth-224739328.html"
   ]
  },
- "story": "Growth has been choppy. Q4 2025 revenue grew 10% with soft Q1 guidance. After the Q1 2026 report, shares fell on weak Q2 guidance and a lost Perplexity deal. April layoffs cut about 1,000 jobs. This report reversed the gloom.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-03",
+   "move_pct": 14.9,
+   "verdict": "Revenue beat and a stronger Q3 forecast sent the stock sharply higher.",
+   "reasons": [
+    {
+     "label": "Big revenue beat",
+     "text": "Revenue rose 19% to about $1.6B, above the roughly $1.53B analysts expected."
+    },
+    {
+     "label": "Upbeat Q3 forecast",
+     "text": "Snap guided Q3 revenue to $1.70\u20131.74B and Adjusted EBITDA (core profit) to $300\u2013350M."
+    },
+    {
+     "label": "Cost cuts, cash, Specs",
+     "text": "Post-layoff cost cuts drove $121M free cash flow; Specs AR glasses got a launch date."
+    }
+   ]
+  }
+ ]
 }

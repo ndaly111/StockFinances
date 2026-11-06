@@ -1,32 +1,34 @@
 {
  "ticker": "UBER",
- "updated": "2026-11-04T21:24Z",
+ "updated": "2026-11-05T09:45Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": 4.9,
   "basis": "close",
-  "verdict": "Uber posted a fifth straight quarter of 20%+ bookings growth with record profit margins, and guided to another strong holiday quarter.",
+  "verdict": "Uber beat its own bookings and profit guidance, with 20% growth intact, while shifting its focus to rolling out driverless cars.",
   "takeaways": [
    {
-    "label": "Profit growing faster",
-    "text": "Gross bookings rose 20% to $59.8B, while adjusted earnings per share jumped 35% to $0.88. Operating profit hit a record 3.9% of bookings, up from 3.4%."
+    "label": "Beat own guidance",
+    "text": "Gross bookings rose 20% to $59.8B, above the ~$59.25B guidance midpoint. Adjusted EPS of $0.88 hit the top of guidance. Trailing free cash flow hit a record $10.4B."
    },
    {
-    "label": "Q4 guidance strong",
-    "text": "Uber guided Q4 bookings to $63.25B\u2013$65.25B (18%\u201322% growth in constant currency) and adjusted EPS to $0.95\u2013$0.99, up 34%\u201339%."
+    "label": "Steady Q4 outlook",
+    "text": "Q4 bookings guidance is $63.25\u201365.25B (18\u201322% growth), and adjusted EPS is $0.95\u20130.99. Management called growth 'steady' rather than accelerating."
    },
    {
-    "label": "Driverless rides scaling",
-    "text": "Management expects about 700 fully driverless vehicles on Uber by year-end and over 2,000 in 2027, shifting autonomy from pilots toward commercial rollout."
+    "label": "Driverless cars go commercial",
+    "text": "Uber expects about 700 fully driverless vehicles by year-end and 2,000+ by end of 2027, citing a 30% utilization edge. It wants outside capital to fund the fleets."
    },
    {
-    "label": "Reporting changed",
-    "text": "Uber dropped adjusted EBITDA as its key profit measure in favor of operating profit and EPS. Reported revenue grew only 10%, with accounting changes to how some revenue is recorded cutting about 8 points."
+    "label": "Overseas driver shortage",
+    "text": "Driver supply lagged rider demand in several international markets, including Brazil, India and Canada. The CFO blamed higher fuel costs from the Middle East war. Management said October supply hours accelerated."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
+   "https://www.fool.com/earnings/call-transcripts/2026/11/04/uber-uber-q3-2026-earnings-call-transcript/",
+   "https://investor.uber.com/news-events/news/press-release-details/2026/Uber-Announces-Results-for-Third-Quarter-2026/default.aspx",
    "https://www.sec.gov/Archives/edgar/data/0001543151/000154315126000039/uberq326earningspressrelea.htm"
   ]
  },

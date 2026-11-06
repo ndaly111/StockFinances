@@ -1,34 +1,36 @@
 {
  "ticker": "TEVA",
- "updated": "2026-11-04T21:22Z",
+ "updated": "2026-11-05T16:49Z",
  "last": {
   "date": "2026-11-03",
   "timing": "pre",
   "move_pct": 3.0,
   "basis": "close",
-  "verdict": "Teva's brand drugs are growing fast enough to lift 2026 guidance again, even as generic Revlimid competition cuts generics sales sharply.",
+  "verdict": "Teva beat profit forecasts and raised its brand-drug outlook, but the Austedo boom faces a Medicare pricing hit from January.",
   "takeaways": [
    {
-    "label": "Guidance raised again",
-    "text": "2026 revenue outlook rises to $16.7\u201317.0 billion, from $16.5\u201316.85 billion. Austedo is now $2.55\u20132.65 billion, up from $2.45\u20132.6 billion; Ajovy and Uzedy were also raised."
+    "label": "Brand drugs driving growth",
+    "text": "Austedo, Ajovy and Uzedy together grew 33% to about $1.1 billion. 2026 Austedo guidance rose to $2.55\u20132.65 billion and total revenue guidance to $16.7\u201317.0 billion."
    },
    {
-    "label": "Brands offset generics",
-    "text": "Key brand drugs grew 33% to about $1.1 billion. U.S. generic sales fell 39% to $718 million on competition for generic Revlimid, leaving total revenue down 2% at $4.4 billion."
+    "label": "Austedo pricing headwind",
+    "text": "Management expects Austedo sales to fall year over year in Q4 and flagged Medicare price changes in January. The CEO still sees peak sales above $3 billion."
    },
    {
-    "label": "Profit and margins improved",
-    "text": "Adjusted earnings per share were $0.86, up 10%, and gross margin rose to 55.5% from 51.4%. Free cash flow was $495 million, slightly below last year."
+    "label": "Profit beat, sales slipped",
+    "text": "Adjusted EPS was $0.86 versus $0.78 a year ago, and margins widened. Revenue still fell 2% to $4.4 billion because generic Revlimid sales dropped."
    },
    {
-    "label": "New injectable approved",
-    "text": "The FDA approved Weltruza, a once-monthly schizophrenia injection, on Oct. 9. Teva sees $1.5\u20132.0 billion peak sales for it and Uzedy together. A Parkinson's-type disease (MSA) trial was stopped as futile."
+    "label": "Stronger balance sheet",
+    "text": "Teva refinanced about $4.7 billion of notes, and Moody's and S&P upgraded it to investment grade. Total debt is still $16.7 billion."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-teva-beats-q3-2026-estimates-as-shares-rise-4-93CH-4995594",
+   "https://www.benzinga.com/markets/earnings/26/11/62834963/teva-ceo-sees-strong-austedo-demand-cushioning-medicare-pricing-blow-in-2027",
    "https://www.sec.gov/Archives/edgar/data/0000818686/000117184326007054/exh_991.htm",
-   "https://www.sec.gov/Archives/edgar/data/0000818686/000081868626000006/teva-20260930.htm"
+   "https://www.kucoin.com/news/flash/teva-pharmaceutical-stock-rises-on-strong-q3-earnings-and-raised-outlook"
   ]
  },
  "history": [

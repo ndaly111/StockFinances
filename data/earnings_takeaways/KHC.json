@@ -1,33 +1,36 @@
 {
  "ticker": "KHC",
- "updated": "2026-11-04T21:19Z",
+ "updated": "2026-11-05T16:43Z",
  "last": {
   "date": "2026-11-04",
   "timing": "pre",
   "move_pct": 3.8,
   "basis": "close",
-  "verdict": "Profit is still falling about 15% and North America volumes keep shrinking; the raised full-year profit guidance comes from tax and other income, not better operations.",
+  "verdict": "Profit is still falling about 15%; the higher full-year earnings forecast comes from a lower tax rate, not from better operations.",
   "takeaways": [
    {
-    "label": "Profit still sliding",
-    "text": "Adjusted operating income fell 15.2% to $939M on higher shipping and ingredient costs, bonus pay and advertising. Adjusted EPS of $0.53 compared with $0.61 a year earlier."
+    "label": "Raise is tax-driven",
+    "text": "Full-year earnings forecast rose to $2.07-$2.13 a share from $2.03-$2.09, which management attributed mainly to a lower tax rate. Operating profit is still guided down 16-18%."
    },
    {
-    "label": "Guidance raise is thin",
-    "text": "Profit outlook stays down 16-18%. The EPS range rose to $2.07-$2.13 from $2.03-$2.09, helped by a lower tax rate and more other income. The sales range's low end improved to down 1.25%."
+    "label": "US still shrinking",
+    "text": "North America sales fell 3.2% on lower volumes, pulling total organic sales down 1.1%. Emerging Markets grew 15.6%. The sales outlook's low end improved to down 1.25%, despite a roughly 1-point hit from SNAP cuts."
    },
    {
-    "label": "U.S. still weak",
-    "text": "North America sales fell 3.4%, with volume down 2.4% in meats, sauces and drinks. Segment profit fell 10.5%. Emerging markets organic sales rose 15.6%, but they are the smallest region."
+    "label": "2027 looks costly",
+    "text": "Management expects inflation slightly above 5% in 2027, brand spending to stay near this year's $700 million extra level, and price increases to be 'likely' needed."
    },
    {
-    "label": "Headwinds in outlook",
-    "text": "Guidance builds in about $700M of extra brand spending, margins at the low end of the prior range, and roughly 100 basis points of sales drag from reduced SNAP food assistance. The planned split into two companies remains paused."
+    "label": "Share losses easing",
+    "text": "The portion of sales gaining or holding market share rose to 28% from roughly 25% in the first half. The CEO said share has 'leveled out', but recovery is not yet visible."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm"
+   "https://www.sec.gov/Archives/edgar/data/1637459/000163745926000078/ex991-erq32026.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/04/kraft-heinz-khc-q3-2026-earnings-call-transcript/",
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-kraft-heinz-tops-q3-2026-estimates-shares-rise-31-93CH-4998823",
+   "https://uk.finance.yahoo.com/news/kraft-heinz-earnings-analysis-questions-181154534.html"
   ]
  },
  "history": [
