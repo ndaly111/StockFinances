@@ -1,28 +1,28 @@
 {
  "ticker": "MET",
- "updated": "2026-11-06T05:34Z",
+ "updated": "2026-11-06T09:36Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -3.1,
   "basis": "close",
-  "verdict": "MetLife posted its best quarter ever, but much of the profit jump came from volatile investment returns rather than steadier insurance operations.",
+  "verdict": "MetLife posted a record quarter, but a 49% jump in volatile investment income did much of the work.",
   "takeaways": [
    {
-    "label": "Record, but investment-boosted",
-    "text": "Adjusted earnings per share rose 22% to a record $2.85, excluding one-time items. Variable investment income, which swings with markets, jumped 49% to $720 million."
+    "label": "Record earnings",
+    "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items ($2.78 including them), the highest in MetLife's history. Return on equity was 19.6%."
    },
    {
-    "label": "Broad sales growth",
-    "text": "Revenue excluding large pension deals rose 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% excluding one-time items. Group Benefits rose 14% on better claims."
+    "label": "Investment income boost",
+    "text": "Variable investment income, which swings with markets and is less repeatable, rose 49% to $720 million. It was the main driver of the 12% earnings gain."
    },
    {
-    "label": "Weak spots underneath",
-    "text": "Latin America earnings excluding one-time items fell 5% after currency effects, on lower investment returns. Asia sales dropped 6%. The share of revenue spent on direct costs rose to 11.9% from 11.6%."
+    "label": "Broad growth, uneven profit",
+    "text": "Revenue rose in all six segments, up 8% to $13.5 billion excluding pension deals. Europe, the Middle East and Africa rose 30% on volume, but Latin America fell 5% at constant exchange rates."
    },
    {
-    "label": "Net income flattered",
-    "text": "Net income of $3.67 per share, up 201%, was lifted by $698 million of derivative gains from higher interest rates, so adjusted earnings are the better gauge."
+    "label": "Asia sales slipped",
+    "text": "Asia sales fell 6% at constant exchange rates against a strong prior-year quarter. They are still up 10% year to date."
    }
   ],
   "transcript_read": false,

@@ -1,28 +1,25 @@
 {
  "ticker": "PENN",
- "updated": "2026-11-06T05:36Z",
+ "updated": "2026-11-06T09:39Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
   "move_pct": -0.6,
   "basis": "close",
-  "verdict": "PENN's casinos set a third-quarter revenue record and its online losses shrank sharply, pushing profit up and debt down.",
+  "verdict": "PENN's online losses shrank sharply and casinos grew, lifting profit to $284 million and cutting debt; the full-year online target stands.",
   "takeaways": [
    {
-    "label": "Online losses shrinking",
-    "text": "Interactive (online betting and casino) lost $18.3 million, versus $76.6 million a year earlier. Management says it is on track for its full-year Interactive profit target, helped by Hollywood iCasino and Canada."
+    "label": "Online losses shrink",
+    "text": "The online segment lost $18.3 million before interest, taxes and similar items, versus $76.6 million a year ago. Revenue rose to $348.4 million, and management reiterated its full-year profit target for it.",
+    "_": ""
    },
    {
-    "label": "Casinos still growing",
-    "text": "Retail revenue hit a record $1.5 billion for a third quarter, and its profit margin rose to 33.7%, the third straight quarter of year-over-year gains. Management said October trends stayed healthy."
+    "label": "Casinos keep growing",
+    "text": "Casino revenue hit a third-quarter record near $1.5 billion. Profit before rent was $501.8 million at a 33.7% margin, the third straight quarter of improving margins. October stayed healthy."
    },
    {
-    "label": "Profit jump",
-    "text": "Company-wide adjusted EBITDA rose to $284.0 million from $194.9 million. Net income was $32.6 million, against a year-ago loss of $865.1 million caused by a large write-down."
-   },
-   {
-    "label": "Debt keeps falling",
-    "text": "Net debt (excluding lease obligations) fell to $1.76 billion from $2.22 billion at year-end, with $1.0 billion of cash. Net debt is now 2.3 times annual EBITDA, down from 4.5 times."
+    "label": "Profit and debt",
+    "text": "Company-wide adjusted profit rose to $284.0 million from $194.9 million. Net debt fell to $1.8 billion from $2.2 billion at year-end, with $1.0 billion in cash."
    }
   ],
   "transcript_read": false,

@@ -1,28 +1,28 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-06T05:36Z",
+ "updated": "2026-11-06T09:38Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": -0.7,
+  "move_pct": 1.7,
   "basis": "after hours",
-  "verdict": "Opendoor's inventory ballooned while margins shrank, and guidance points to a much bigger fourth-quarter loss in a weak housing market.",
+  "verdict": "Opendoor is buying homes far faster than it can sell them at a profit, so losses and debt are growing and the 2026 profit goal is slipping.",
   "takeaways": [
    {
-    "label": "Bigger loss ahead",
-    "text": "Opendoor guides to an adjusted EBITDA loss of $70M\u2013$85M in Q4, versus $31M in Q3, and says profit on homes sold will fall again."
+    "label": "Profit outlook worsens",
+    "text": "Q4 adjusted EBITDA loss is guided to $70\u201385M, versus a $31M loss in Q3. Profit per home is also expected to fall. The company says it is 'behind' its year-end profitability goal."
    },
    {
-    "label": "Thinner margins",
-    "text": "Profit after direct costs fell to 3.3% of revenue from 5.8% last quarter. Gross margin dropped to 3.7% from 9.7%, and profit per home sold fell to $12K from $22K."
+    "label": "Margins missed guidance",
+    "text": "Revenue rose 12% to $1.02B, but contribution margin was 3.3%, below the 4\u20134.5% guided and down from 5.8% last quarter. Net loss widened to $218M from $90M."
    },
    {
-    "label": "Inventory and debt build",
-    "text": "Homes held rose to 7,596 from 5,459, worth $2.6B. Operating cash outflow was $1.8B in nine months, funded by $1.8B of new property-backed debt and $650M of convertible notes."
+    "label": "Inventory and debt pile up",
+    "text": "Homes in inventory rose to 7,596 ($2.57B) from 5,459 last quarter. Debt tied to those homes that is due within a year jumped to $2.0B, against $910M in cash."
    },
    {
-    "label": "Profit goal slipping",
-    "text": "Opendoor admits it is behind its goal of positive adjusted net income by the end of 2026, blaming a slower market. Q3 adjusted net loss was $66M."
+    "label": "Older homes piling up",
+    "text": "Homes listed more than 120 days rose to 18% of listed inventory from 9% last quarter. Management cites a slow market and says its focus is 'moving homes'."
    }
   ],
   "transcript_read": false,

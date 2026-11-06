@@ -1,28 +1,28 @@
 {
  "ticker": "BYND",
- "updated": "2026-11-06T05:32Z",
+ "updated": "2026-11-06T09:33Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -15.2,
   "basis": "close",
-  "verdict": "Beyond Meat's gross margin hit a five-year high, but revenue keeps shrinking, Q4 is guided lower, and large losses and heavy debt remain.",
+  "verdict": "Margins and cash burn improved sharply, but sales keep shrinking and the fourth-quarter outlook points to a further drop.",
   "takeaways": [
    {
-    "label": "Revenue still shrinking",
-    "text": "Revenue fell 8.1% to $64.5 million as volume dropped 10.9%. U.S. retail volume fell 20.8%, and international foodservice revenue fell 19.4%. Only international retail grew, up 13.3%."
+    "label": "Weaker sales ahead",
+    "text": "Fourth-quarter revenue is guided to $54-59 million, below the $64.5 million just reported, which was down 8.1% from a year ago."
    },
    {
-    "label": "Q4 guided lower",
-    "text": "Fourth-quarter revenue is guided to $54-59 million, well below Q3's $64.5 million. The company cites elevated uncertainty and gave no profit outlook."
+    "label": "Margins at five-year high",
+    "text": "Gross margin hit 19.3% versus 7.4% a year ago, as cost per pound fell 10.1% and average prices rose 3.2%."
    },
    {
-    "label": "Margins improved, losses stay huge",
-    "text": "Gross margin was 19.3%, up from 7.4% a year ago, and the adjusted EBITDA loss narrowed to $24.6 million. The operating loss was still $93.0 million, including $57.1 million of asset write-downs."
+    "label": "U.S. demand still falling",
+    "text": "U.S. retail volume fell 20.8% on lost shelf space and weak category demand. Europe-led international retail grew 13.3%, but international restaurant sales fell 19.4%."
    },
    {
-    "label": "Debt and cash burden",
-    "text": "Cash was $169.3 million against $313.9 million of debt. $14.5 million of notes come due March 2027, and more debt-for-stock swaps keep diluting shareholders."
+    "label": "Cash burn slows, debt remains",
+    "text": "Nine-month cash use was $37.3 million versus $101.2 million a year ago. Cash is $169.3 million against $313.9 million of debt, with $14.5 million of notes due March 2027."
    }
   ],
   "transcript_read": false,
