@@ -1,28 +1,32 @@
 {
  "ticker": "MET",
- "updated": "2026-11-06T16:43Z",
+ "updated": "2026-11-06T21:19Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -3.1,
   "basis": "close",
-  "verdict": "MetLife posted its highest-ever quarterly adjusted profit per share, but much of the jump came from volatile investment gains rather than core growth.",
+  "verdict": "MetLife posted its best quarter ever, but a 49% jump in volatile investment income did much of the work.",
   "takeaways": [
    {
-    "label": "Record profit",
-    "text": "Adjusted earnings per share excluding one-time items rose 22% to $2.85, MetLife's best quarter ever. Adjusted return on equity reached 19.6%."
+    "label": "Record, helped by investments",
+    "text": "Adjusted earnings per share excluding one-offs rose 22% to $2.85, a company record. Variable investment income, which swings with markets, rose 49% to $720 million and was a key driver.",
+    "verified": true
    },
    {
-    "label": "Investment gains boost",
-    "text": "Variable investment income, which swings with markets, jumped 49% to $720 million and was a main driver of the profit increase, so it may not repeat."
+    "label": "Broad underlying growth",
+    "text": "Revenue excluding large pension deals rose 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% (before one-offs) and the investment arm's assets grew 14%.",
+    "verified": true
    },
    {
-    "label": "Growth in every segment",
-    "text": "Premiums and fees excluding large pension deals grew 8% to $13.5 billion, rising in all six segments. Europe, the Middle East and Africa led at 17% constant-currency growth, up from a year ago."
+    "label": "Weaker spots",
+    "text": "Latin America earnings excluding one-offs fell 5% at constant currency on lower investment returns. Asia sales dropped 6% against a strong year-earlier quarter.",
+    "verified": true
    },
    {
-    "label": "Mixed spots",
-    "text": "Retirement and Income Solutions earnings fell 6% after an annual assumptions review. Latin America profit excluding one-time items fell 5% in constant currency on lower investment returns. Asia sales fell 6%."
+    "label": "Book value fell",
+    "text": "Reported book value per share fell 22% to $30.73, though the adjusted measure rose 5% to $59.41. Return on equity was 19.6% excluding one-offs, up from 16.7%.",
+    "verified": true
    }
   ],
   "transcript_read": false,

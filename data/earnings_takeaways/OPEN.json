@@ -1,38 +1,34 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-06T13:49Z",
+ "updated": "2026-11-06T21:23Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": 0.6,
-  "basis": "after hours",
-  "verdict": "Opendoor quadrupled its home buying into a collapsing housing market, so margins are shrinking, losses are widening, and its profit goal is slipping.",
+  "move_pct": -21.8,
+  "basis": "close",
+  "verdict": "Opendoor is buying homes far faster than it can sell them, and profit per home sold is shrinking while losses and debt grow.",
   "takeaways": [
    {
-    "label": "Margins shrinking further",
-    "text": "Contribution margin fell to 3.3% from 5.8% last quarter. Management expects it to fall again in Q4, with adjusted EBITDA loss guided to $70M\u2013$85M versus $31M in Q3."
+    "label": "Margins fell short",
+    "text": "Profit per home sold fell to 3.3% of revenue from 5.8% last quarter, below the 4%\u20134.5% guided in August. Gross margin dropped to 3.7% from 9.7%."
    },
    {
-    "label": "Housing market weakened",
-    "text": "The CEO said home sales 'started to collapse' in Q3 with mortgage rates above 7%. Opendoor chose to cut prices and clear homes rather than protect margin."
+    "label": "Inventory and debt balloon",
+    "text": "Homes in inventory rose to 7,596 from 5,459, worth $2.6B. Asset-backed debt due within a year jumped to $2.0B from $52M at year-end."
    },
    {
-    "label": "Balance sheet getting heavier",
-    "text": "Inventory hit $2.57B (7,596 homes) versus $1.05B a year ago. Homes listed over 120 days doubled to 18% from 9% last quarter. $2.0B of asset-backed debt is now due within a year."
+    "label": "Older homes piling up",
+    "text": "Homes listed over 120 days doubled to 18% of listings from 9% last quarter. Write-downs on unsold homes rose to $53M from $14M."
    },
    {
-    "label": "Profit goal behind schedule",
-    "text": "Management admits it is behind its aim of positive adjusted net income by end-2026, even as it guides Q4 revenue up at least 40% on 4,865 homes bought."
+    "label": "Bigger losses ahead",
+    "text": "Opendoor guides Q4 revenue up at least 40% but profit per home sold down, with an adjusted EBITDA loss of $70M\u2013$85M versus $31M now. It admits it is behind on its goal of adjusted net profit by end of 2026."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm",
    "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/q32026formxex991earningsre.htm",
-   "https://www.fool.com/earnings/call-transcripts/2026/11/06/opendoor-open-q3-2026-earnings-call-transcript/",
-   "https://www.inman.com/2026/11/06/opendoor-earnings/",
-   "https://247wallst.com/cards/opendoor-technologies-q3-2026-earnings-open-01m6pscwmabgwmpfgfrw8jb6vm",
-   "https://www.panabee.com/news/opendoor-earnings-q3-2026"
+   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm"
   ]
  },
  "history": [

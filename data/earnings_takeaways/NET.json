@@ -1,36 +1,36 @@
 {
  "ticker": "NET",
- "updated": "2026-11-06T09:37Z",
+ "updated": "2026-11-06T21:21Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": 14.1,
-  "basis": "after hours",
-  "verdict": "Growth sped up to 39% and Cloudflare guided far above expectations, but gross margin keeps slipping and GAAP profit has not arrived yet.",
+  "move_pct": 9.9,
+  "basis": "close",
+  "verdict": "Cloudflare's growth sped up to 39%, its fastest in nearly four years, and it raised its year-end forecast by about $100 million.",
   "takeaways": [
    {
-    "label": "Big guidance jump",
-    "text": "Q4 revenue is guided to $845\u2013846M versus about $798M expected. Full-year revenue is guided to $2.963B, up from $2.864\u20132.870B in August."
+    "label": "Growth accelerating",
+    "text": "Revenue rose 39% to $782.5M, up from 36% last quarter and above the roughly $737M analysts expected. Annualized revenue passed $3 billion."
    },
    {
-    "label": "GAAP profit pulled forward",
-    "text": "The CFO said GAAP profitability should arrive in Q4 2026, versus an earlier end-2028 target. Q3 still showed a $67.9M operating loss."
+    "label": "Big guidance raise",
+    "text": "Full-year revenue is now guided to about $2.963\u20132.964B, up from $2.864\u20132.870B. Q4 is guided to $845\u2013846M, well above the roughly $796M analysts expected."
    },
    {
-    "label": "Margin slippage",
-    "text": "Gross margin fell to 72.4% (non-GAAP) from 75.3% a year ago. Management pointed to the lower-margin Workers developer platform and said it still improves operating margins."
+    "label": "Profit up, margins mixed",
+    "text": "Adjusted operating margin rose to 17.5% from 15.3%. Gross margin slipped to 72.4% from 75.3% a year ago, and GAAP net loss widened to $34.1M."
    },
    {
-    "label": "AI demand broadening",
-    "text": "Pay-per-crawl, which charges AI firms for site access, produced its first revenue, with OpenAI paying. An AI company also signed an $11M Workers deal."
+    "label": "Cash flow lags",
+    "text": "Free cash flow was $82.1M, 10% of revenue, down from 13% a year ago, as spending on equipment rose to $121.8M from $84.6M."
    }
   ],
-  "transcript_read": true,
+  "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000060/q326exhibit991.htm",
-   "https://www.kucoin.com/news/flash/cloudflare-q3-revenue-surpasses-782m-gaap-profitability-expected-in-q4-2026",
-   "https://www.investing.com/news/earnings/cloudflare-shares-soar-afterhours-on-blowout-q3-results-strong-forecast-5005697",
-   "https://www.benzinga.com/markets/earnings/26/11/62957362/cloudflare-stock-rises-after-q3-results-ceo-says-best-quarter-ever"
+   "https://www.cnbc.com/2026/11/05/stocks-making-the-biggest-moves-after-hours-dkng-net-abnb-team.html",
+   "https://thenextweb.com/news/cloudflare-q3-2026-earnings-39-percent-growth-raises-outlook",
+   "https://www.tipranks.com/news/why-cloudflare-stock-surged-after-hours-and-what-wall-street-sees-next"
   ]
  },
  "history": [

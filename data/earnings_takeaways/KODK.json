@@ -1,33 +1,34 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-06T16:43Z",
+ "updated": "2026-11-06T21:19Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Kodak's chemicals business is growing 21% while print shrinks 7%, leaving profit up only slightly and print earnings nearly gone.",
+  "verdict": "Kodak's chemicals business is carrying the company: Print profit nearly vanished, so growth slowed to 3% and earnings gains came mostly from lower interest costs.",
   "takeaways": [
    {
-    "label": "Chemicals carry the quarter",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operating profit (EBITDA) rose to $21 million from $16 million. It is now Kodak's most profitable unit."
+    "label": "Print profit nearly gone",
+    "text": "Print revenue fell 7% to $165 million, and its operational EBITDA (a core profit measure) dropped to $1 million from $8 million a year earlier."
    },
    {
-    "label": "Print is weakening",
-    "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) dropped to $1 million from $8 million. That is a sharp slide from the $8 million profit it earned last quarter."
+    "label": "Chemicals carry growth",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operational EBITDA rose to $21 million from $16 million, now the company's most profitable unit."
    },
    {
-    "label": "Profit growth is modest",
-    "text": "Operating profit (EBITDA) rose just $2 million to $31 million, below last quarter's $36 million. Net income of $21 million was helped by interest expense falling to $3 million from $18 million."
+    "label": "Profit gain is mostly interest",
+    "text": "Net income rose to $21 million from $13 million, but interest expense fell to $3 million from $18 million. Operational EBITDA rose only $2 million, to $31 million."
    },
    {
-    "label": "Cash rebuilt",
-    "text": "Cash rose $27 million to $317 million after falling last quarter. Year-to-date cash from operations is break-even, and inventories are up $44 million for the year."
+    "label": "Momentum slowed, cash rebuilt",
+    "text": "Revenue grew 3% after 18% last quarter, and operational EBITDA fell from $36 million. Cash rose $27 million to $317 million, though nine-month operating cash flow was only break-even."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm"
+   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm",
+   "https://www.sec.gov/Archives/edgar/data/0000031235/000119312526445403/kodk-20260930.htm"
   ]
  },
  "history": [
