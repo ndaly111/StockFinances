@@ -1,28 +1,28 @@
 {
  "ticker": "MRNA",
- "updated": "2026-11-06T13:46Z",
+ "updated": "2026-11-06T16:44Z",
  "last": {
   "date": "2026-11-06",
   "timing": "pre",
-  "move_pct": -0.9,
-  "basis": "after hours",
-  "verdict": "Moderna swung to a profit on international COVID vaccine sales and raised its revenue outlook, but the cash jump comes mostly from borrowing.",
+  "move_pct": 9.1,
+  "basis": "intraday",
+  "verdict": "Moderna swung to a profit on 29% revenue growth and raised its sales outlook, but much of its higher cash comes from new debt.",
   "takeaways": [
    {
-    "label": "Profit and higher outlook",
-    "text": "Revenue rose 29% to $1.3B, with net income of $162M versus a $200M loss a year earlier. Full-year growth is now guided to 15\u201325%, up from up to 10%."
+    "label": "Revenue outlook raised",
+    "text": "Third-quarter revenue rose 29% to $1.3B, driven by international COVID vaccine deliveries. Full-year growth is now seen at 15\u201325%, up from 'up to 10%'."
    },
    {
-    "label": "Cash boosted by debt",
-    "text": "Year-end cash is now forecast at $8.1\u20138.3B, up from $4.7\u20135.2B. The quarter included $2.6B net from convertible notes, and $1.4B of receivables were still uncollected."
+    "label": "Cash jump is mostly debt",
+    "text": "Year-end cash is now seen at $8.1\u20138.3B versus $4.7\u20135.2B before. This reflects $2.6B net from convertible notes, not just better operations."
    },
    {
-    "label": "Melanoma shot is the big upside",
-    "text": "Phase 3 data showed the cancer vaccine intismeran plus Keytruda cut recurrence or death risk 42% versus Keytruda alone. Regulatory filings with Merck are being prepared."
+    "label": "Melanoma shot is the real prize",
+    "text": "Phase 3 data with Merck showed the cancer vaccine cut recurrence or death risk by 42%. Regulatory filings are being prepared."
    },
    {
-    "label": "Costs lower, flu launch limited",
-    "text": "2026 R&D spending is now about $2.7B, down from $2.9B. The newly approved flu shot launches only in limited form this season. The norovirus vaccine has no clear path."
+    "label": "Flu launch limited, norovirus stalled",
+    "text": "The flu vaccine was approved in August but launches only in a limited way this season. The norovirus vaccine's path forward is unclear, with no added cohort this season."
    }
   ],
   "transcript_read": false,

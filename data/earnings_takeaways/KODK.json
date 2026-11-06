@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-06T13:45Z",
+ "updated": "2026-11-06T16:43Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Chemicals growth and far lower interest costs lifted profit, but the core Print business nearly stopped earning.",
+  "verdict": "Kodak's chemicals business is growing 21% while print shrinks 7%, leaving profit up only slightly and print earnings nearly gone.",
   "takeaways": [
    {
-    "label": "Print profit collapsing",
-    "text": "Print revenue fell 7% to $165 million and its operating profit (EBITDA) dropped to $1 million from $8 million. It was an $8 million profit last quarter."
+    "label": "Chemicals carry the quarter",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operating profit (EBITDA) rose to $21 million from $16 million. It is now Kodak's most profitable unit."
    },
    {
-    "label": "Chemicals carrying the company",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. Management calls it the fastest-growing, most profitable unit."
+    "label": "Print is weakening",
+    "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) dropped to $1 million from $8 million. That is a sharp slide from the $8 million profit it earned last quarter."
    },
    {
-    "label": "Net income flattered by debt paydown",
-    "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million. Company-wide operating profit rose only $2 million, to $31 million."
+    "label": "Profit growth is modest",
+    "text": "Operating profit (EBITDA) rose just $2 million to $31 million, below last quarter's $36 million. Net income of $21 million was helped by interest expense falling to $3 million from $18 million."
    },
    {
-    "label": "Cash up, but costs rising",
-    "text": "Cash rose $27 million to $317 million this quarter, yet operating cash flow is only break-even for the year. Stock-based pay lifted overhead costs to $50 million from $41 million."
+    "label": "Cash rebuilt",
+    "text": "Cash rose $27 million to $317 million after falling last quarter. Year-to-date cash from operations is break-even, and inventories are up $44 million for the year."
    }
   ],
   "transcript_read": false,

@@ -1,28 +1,28 @@
 {
  "ticker": "MET",
- "updated": "2026-11-06T13:46Z",
+ "updated": "2026-11-06T16:43Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -3.1,
   "basis": "close",
-  "verdict": "MetLife posted its best quarterly adjusted earnings per share ever, helped by a jump in investment returns, with revenue growing in every segment.",
+  "verdict": "MetLife posted its highest-ever quarterly adjusted profit per share, but much of the jump came from volatile investment gains rather than core growth.",
   "takeaways": [
    {
-    "label": "Record profit, partly investment-driven",
-    "text": "Adjusted earnings per share rose 22% to $2.85, excluding one-time items. Returns from variable investments such as private equity jumped 49% to $720 million, a swing-prone source of earnings."
+    "label": "Record profit",
+    "text": "Adjusted earnings per share excluding one-time items rose 22% to $2.85, MetLife's best quarter ever. Adjusted return on equity reached 19.6%."
    },
    {
-    "label": "Growth across the business",
-    "text": "Revenue excluding large pension deals grew 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% excluding one-time items."
+    "label": "Investment gains boost",
+    "text": "Variable investment income, which swings with markets, jumped 49% to $720 million and was a main driver of the profit increase, so it may not repeat."
    },
    {
-    "label": "Retirement unit held back",
-    "text": "Retirement and Income Solutions earnings fell 6% after a $65 million hit from the annual review of insurance assumptions. Excluding it, earnings rose 12%."
+    "label": "Growth in every segment",
+    "text": "Premiums and fees excluding large pension deals grew 8% to $13.5 billion, rising in all six segments. Europe, the Middle East and Africa led at 17% constant-currency growth, up from a year ago."
    },
    {
-    "label": "Returns and cash",
-    "text": "Return on equity was 19.6% excluding one-time items. About $1 billion went back to shareholders, and MetLife says it is on track for its yearly free cash flow and expense targets."
+    "label": "Mixed spots",
+    "text": "Retirement and Income Solutions earnings fell 6% after an annual assumptions review. Latin America profit excluding one-time items fell 5% in constant currency on lower investment returns. Asia sales fell 6%."
    }
   ],
   "transcript_read": false,

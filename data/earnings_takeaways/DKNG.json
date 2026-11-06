@@ -1,35 +1,34 @@
 {
  "ticker": "DKNG",
- "updated": "2026-11-06T13:44Z",
+ "updated": "2026-11-06T16:42Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": -26.0,
-  "basis": "after hours",
-  "verdict": "DraftKings cut 2026 profit guidance to $175-275 million from $700-900 million, as spending on its new Predictions product swamped a healthy core business.",
+  "move_pct": -26.6,
+  "basis": "intraday",
+  "verdict": "DraftKings slashed 2026 profit guidance to fund a $650-700 million bet on prediction markets, promising a bigger 2027 revenue rise.",
   "takeaways": [
    {
     "label": "Profit outlook slashed",
-    "text": "2026 adjusted EBITDA (operating profit before some costs) guidance fell to $175-275 million from $700-900 million. Revenue guidance was lowered to $6.35-6.55 billion from $6.5-6.9 billion."
+    "text": "Full-year 2026 adjusted EBITDA (a profit measure) is now $175-275 million, down from $700-900 million. Revenue guidance also fell, to $6.35-6.55 billion from $6.5-6.9 billion."
    },
    {
-    "label": "Predictions spending",
-    "text": "Predictions (prediction markets) will absorb $650-700 million of 2026 profit, with 1.6 million customers so far. Promotions to win new users leave 2026 Predictions revenue immaterial."
+    "label": "Predictions spending ramps up",
+    "text": "DraftKings now plans $650-700 million of Predictions investment in 2026, with revenue from it immaterial. Without it, the core business would earn $875-925 million."
    },
    {
-    "label": "Core business still earns",
-    "text": "Excluding Predictions, 2026 adjusted EBITDA is guided to $875-925 million. Q3 revenue rose 16% to $1.33 billion, and monthly paying users rose 13% to 4.1 million."
+    "label": "2027 growth promise",
+    "text": "First 2027 outlook: revenue $7.35-7.75 billion, about 17% growth at the midpoint, with profit of $800 million-$1 billion after about $300 million of Predictions spending."
    },
    {
-    "label": "2027 is the payoff bet",
-    "text": "2027 guidance: revenue $7.35-7.75 billion and adjusted EBITDA $800 million-$1 billion, including $650-750 million of Predictions revenue and about $300 million of investment in it."
+    "label": "Growth, but bigger losses",
+    "text": "Revenue rose 16% to $1.33 billion and paying users 13% to 4.1 million. Marketing jumped to $606 million, and the quarterly loss widened to $469 million."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://ir.aboutdraftkings.com/news/news-details/2026/DraftKings-Reports-Third-Quarter-Revenue-Growth-of-16/default.aspx",
-   "https://igamingexpress.com/draftkings-q3-2026-the-hold/",
-   "https://rg.org/news/gambling-industry/draftkings-q3-2026-results-predictions-guidance-shares-fall"
+   "https://www.sec.gov/Archives/edgar/data/0001883685/000188368526000039/q326-prx8kexx991.htm",
+   "https://stocktwits.com/news-articles/markets/equity/draftkings-q3-loss-revenue-missed-expectations/cJ4EFSiRaK"
   ]
  },
  "history": [

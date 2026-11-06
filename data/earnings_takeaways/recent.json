@@ -1,53 +1,53 @@
 {
- "updated": "2026-11-06T13:51Z",
+ "updated": "2026-11-06T16:44Z",
  "reports": [
   {
    "ticker": "MRNA",
    "date": "2026-11-06",
-   "move_pct": -0.9,
-   "basis": "after hours",
-   "verdict": "Moderna swung to a profit on international COVID vaccine sales and raised its revenue outlook, but the cash jump comes mostly from borrowing.",
+   "move_pct": 9.1,
+   "basis": "intraday",
+   "verdict": "Moderna swung to a profit on 29% revenue growth and raised its sales outlook, but much of its higher cash comes from new debt.",
    "takeaways": [
     {
-     "label": "Profit and higher outlook",
-     "text": "Revenue rose 29% to $1.3B, with net income of $162M versus a $200M loss a year earlier. Full-year growth is now guided to 15\u201325%, up from up to 10%."
+     "label": "Revenue outlook raised",
+     "text": "Third-quarter revenue rose 29% to $1.3B, driven by international COVID vaccine deliveries. Full-year growth is now seen at 15\u201325%, up from 'up to 10%'."
     },
     {
-     "label": "Cash boosted by debt",
-     "text": "Year-end cash is now forecast at $8.1\u20138.3B, up from $4.7\u20135.2B. The quarter included $2.6B net from convertible notes, and $1.4B of receivables were still uncollected."
+     "label": "Cash jump is mostly debt",
+     "text": "Year-end cash is now seen at $8.1\u20138.3B versus $4.7\u20135.2B before. This reflects $2.6B net from convertible notes, not just better operations."
     },
     {
-     "label": "Melanoma shot is the big upside",
-     "text": "Phase 3 data showed the cancer vaccine intismeran plus Keytruda cut recurrence or death risk 42% versus Keytruda alone. Regulatory filings with Merck are being prepared."
+     "label": "Melanoma shot is the real prize",
+     "text": "Phase 3 data with Merck showed the cancer vaccine cut recurrence or death risk by 42%. Regulatory filings are being prepared."
     },
     {
-     "label": "Costs lower, flu launch limited",
-     "text": "2026 R&D spending is now about $2.7B, down from $2.9B. The newly approved flu shot launches only in limited form this season. The norovirus vaccine has no clear path."
+     "label": "Flu launch limited, norovirus stalled",
+     "text": "The flu vaccine was approved in August but launches only in a limited way this season. The norovirus vaccine's path forward is unclear, with no added cohort this season."
     }
    ]
   },
   {
    "ticker": "DKNG",
    "date": "2026-11-05",
-   "move_pct": -26.0,
-   "basis": "after hours",
-   "verdict": "DraftKings cut 2026 profit guidance to $175-275 million from $700-900 million, as spending on its new Predictions product swamped a healthy core business.",
+   "move_pct": -26.6,
+   "basis": "intraday",
+   "verdict": "DraftKings slashed 2026 profit guidance to fund a $650-700 million bet on prediction markets, promising a bigger 2027 revenue rise.",
    "takeaways": [
     {
      "label": "Profit outlook slashed",
-     "text": "2026 adjusted EBITDA (operating profit before some costs) guidance fell to $175-275 million from $700-900 million. Revenue guidance was lowered to $6.35-6.55 billion from $6.5-6.9 billion."
+     "text": "Full-year 2026 adjusted EBITDA (a profit measure) is now $175-275 million, down from $700-900 million. Revenue guidance also fell, to $6.35-6.55 billion from $6.5-6.9 billion."
     },
     {
-     "label": "Predictions spending",
-     "text": "Predictions (prediction markets) will absorb $650-700 million of 2026 profit, with 1.6 million customers so far. Promotions to win new users leave 2026 Predictions revenue immaterial."
+     "label": "Predictions spending ramps up",
+     "text": "DraftKings now plans $650-700 million of Predictions investment in 2026, with revenue from it immaterial. Without it, the core business would earn $875-925 million."
     },
     {
-     "label": "Core business still earns",
-     "text": "Excluding Predictions, 2026 adjusted EBITDA is guided to $875-925 million. Q3 revenue rose 16% to $1.33 billion, and monthly paying users rose 13% to 4.1 million."
+     "label": "2027 growth promise",
+     "text": "First 2027 outlook: revenue $7.35-7.75 billion, about 17% growth at the midpoint, with profit of $800 million-$1 billion after about $300 million of Predictions spending."
     },
     {
-     "label": "2027 is the payoff bet",
-     "text": "2027 guidance: revenue $7.35-7.75 billion and adjusted EBITDA $800 million-$1 billion, including $650-750 million of Predictions revenue and about $300 million of investment in it."
+     "label": "Growth, but bigger losses",
+     "text": "Revenue rose 16% to $1.33 billion and paying users 13% to 4.1 million. Marketing jumped to $606 million, and the quarterly loss widened to $469 million."
     }
    ]
   },
@@ -281,23 +281,23 @@
    "date": "2026-11-04",
    "move_pct": -3.1,
    "basis": "close",
-   "verdict": "MetLife posted its best quarterly adjusted earnings per share ever, helped by a jump in investment returns, with revenue growing in every segment.",
+   "verdict": "MetLife posted its highest-ever quarterly adjusted profit per share, but much of the jump came from volatile investment gains rather than core growth.",
    "takeaways": [
     {
-     "label": "Record profit, partly investment-driven",
-     "text": "Adjusted earnings per share rose 22% to $2.85, excluding one-time items. Returns from variable investments such as private equity jumped 49% to $720 million, a swing-prone source of earnings."
+     "label": "Record profit",
+     "text": "Adjusted earnings per share excluding one-time items rose 22% to $2.85, MetLife's best quarter ever. Adjusted return on equity reached 19.6%."
     },
     {
-     "label": "Growth across the business",
-     "text": "Revenue excluding large pension deals grew 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% excluding one-time items."
+     "label": "Investment gains boost",
+     "text": "Variable investment income, which swings with markets, jumped 49% to $720 million and was a main driver of the profit increase, so it may not repeat."
     },
     {
-     "label": "Retirement unit held back",
-     "text": "Retirement and Income Solutions earnings fell 6% after a $65 million hit from the annual review of insurance assumptions. Excluding it, earnings rose 12%."
+     "label": "Growth in every segment",
+     "text": "Premiums and fees excluding large pension deals grew 8% to $13.5 billion, rising in all six segments. Europe, the Middle East and Africa led at 17% constant-currency growth, up from a year ago."
     },
     {
-     "label": "Returns and cash",
-     "text": "Return on equity was 19.6% excluding one-time items. About $1 billion went back to shareholders, and MetLife says it is on track for its yearly free cash flow and expense targets."
+     "label": "Mixed spots",
+     "text": "Retirement and Income Solutions earnings fell 6% after an annual assumptions review. Latin America profit excluding one-time items fell 5% in constant currency on lower investment returns. Asia sales fell 6%."
     }
    ]
   },
@@ -306,23 +306,23 @@
    "date": "2026-11-03",
    "move_pct": -13.4,
    "basis": "close",
-   "verdict": "Chemicals growth and far lower interest costs lifted profit, but the core Print business nearly stopped earning.",
+   "verdict": "Kodak's chemicals business is growing 21% while print shrinks 7%, leaving profit up only slightly and print earnings nearly gone.",
    "takeaways": [
     {
-     "label": "Print profit collapsing",
-     "text": "Print revenue fell 7% to $165 million and its operating profit (EBITDA) dropped to $1 million from $8 million. It was an $8 million profit last quarter."
+     "label": "Chemicals carry the quarter",
+     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operating profit (EBITDA) rose to $21 million from $16 million. It is now Kodak's most profitable unit."
     },
     {
-     "label": "Chemicals carrying the company",
-     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operating profit rose to $21 million from $16 million. Management calls it the fastest-growing, most profitable unit."
+     "label": "Print is weakening",
+     "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) dropped to $1 million from $8 million. That is a sharp slide from the $8 million profit it earned last quarter."
     },
     {
-     "label": "Net income flattered by debt paydown",
-     "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million. Company-wide operating profit rose only $2 million, to $31 million."
+     "label": "Profit growth is modest",
+     "text": "Operating profit (EBITDA) rose just $2 million to $31 million, below last quarter's $36 million. Net income of $21 million was helped by interest expense falling to $3 million from $18 million."
     },
     {
-     "label": "Cash up, but costs rising",
-     "text": "Cash rose $27 million to $317 million this quarter, yet operating cash flow is only break-even for the year. Stock-based pay lifted overhead costs to $50 million from $41 million."
+     "label": "Cash rebuilt",
+     "text": "Cash rose $27 million to $317 million after falling last quarter. Year-to-date cash from operations is break-even, and inventories are up $44 million for the year."
     }
    ]
   },
