@@ -54,6 +54,7 @@ jobs:
           echo "Hydrated Stock Data.db from data branch ($(stat -c%s 'Stock Data.db') bytes)"
 
       - name: Set up Python
+        id: setup-py
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -68,10 +69,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-py3.11-${{ hashFiles('requirements.txt') }}-${{ steps.venv-key.outputs.week }}
+          key: venv-${{ runner.os }}-py${{ steps.setup-py.outputs.python-version }}-${{ hashFiles('requirements.txt') }}-${{ steps.venv-key.outputs.week }}
 
       - name: Install deps
         run: |
+          # A venv restored from cache dangles if the runner's Python patch
+          # version changed (exit 127 on .venv/bin/pip) - rebuild it then.
+          if [ -d .venv ] && ! .venv/bin/python -c "import sys" 2>/dev/null; then
+            echo "Cached venv is broken; rebuilding"; rm -rf .venv
+          fi
           [ -d .venv ] || python -m venv .venv
           . .venv/bin/activate
           python -m pip install --upgrade pip
