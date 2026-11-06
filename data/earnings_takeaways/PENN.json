@@ -1,33 +1,36 @@
 {
  "ticker": "PENN",
- "updated": "2026-11-05T21:21Z",
+ "updated": "2026-11-06T01:13Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": -0.6,
-  "basis": "close",
-  "verdict": "PENN's casinos kept growing and its online losses shrank sharply to $18.3 million, with management reaffirming its full-year Interactive profit target.",
+  "move_pct": -1.1,
+  "basis": "after hours",
+  "verdict": "Casinos beat plan and raised guidance; online loss shrank to $18.3 million, with a Q4 profit forecast.",
   "takeaways": [
    {
-    "label": "Online losses shrinking",
-    "text": "The Interactive (online betting and casino) segment lost $18.3 million, versus $76.6 million a year earlier. Management cited growth in Hollywood iCasino and Canada, and reaffirmed its full-year Interactive target."
+    "label": "Casinos lead",
+    "text": "Casino revenue hit $1.5 billion with profit margin up for a third straight quarter to 33.7%. Full-year casino profit guidance rose $10 million to $1.973 billion."
    },
    {
-    "label": "Casinos still growing",
-    "text": "Retail revenue hit a record $1.5 billion with a 33.7% profit margin. Margins have now improved year over year for three quarters in a row. Management said October trends stayed healthy."
+    "label": "Online nears breakeven",
+    "text": "Online adjusted loss narrowed to $18.3 million from $76.6 million. Management guides to a $18.7 million profit in Q4, leaving a full-year loss of about $20 million."
    },
    {
-    "label": "Earnings up, debt down",
-    "text": "Adjusted EBITDA (core operating profit) rose to $284.0 million from $194.9 million. Net debt fell to $1.8 billion, from $2.2 billion at the end of 2025."
+    "label": "Alberta launch promising",
+    "text": "Alberta's online sports betting share is already near Ontario's levels. Online casino there is about halfway to Ontario, in a market larger than management expected."
    },
    {
-    "label": "Spending and share count fall",
-    "text": "Capital spending dropped to $59.2 million from $172.7 million as big building projects finished. The average share count fell to 133.9 million from 143.5 million."
+    "label": "Debt keeps falling",
+    "text": "Net debt fell to $1.76 billion from $2.22 billion at the end of 2025. Net leverage dropped to 2.3x EBITDA from 4.5x, with no big maturities until 2029 after $400 million due January."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm"
+   "https://www.sec.gov/Archives/edgar/data/921738/000092173826000026/pennex991-q32026.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/05/penn-entertainment-penn-q3-2026-earnings-call-transcript/",
+   "https://www.wfmz.com/business/u-s-icasino-canada-drive-growth-of-wyomissing-based-penn-entertainment/article_a96d963b-4bd3-48fb-88f4-34efd116a42b.html",
+   "https://www.covers.com/industry/penn-entertainment-improves-revenue-adjusted-ebitda-during-q3-nov-5-2026"
   ]
  },
  "history": [

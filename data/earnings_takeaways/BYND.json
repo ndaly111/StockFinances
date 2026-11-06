@@ -1,33 +1,36 @@
 {
  "ticker": "BYND",
- "updated": "2026-11-05T21:16Z",
+ "updated": "2026-11-06T01:05Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -15.2,
-  "basis": "close",
-  "verdict": "Beyond Meat's sales keep shrinking and Q4 is guided lower, but its gross margin hit a five-year high and cash burn eased.",
+  "basis": "after hours",
+  "verdict": "Beyond Meat's margins hit a five-year high, but U.S. sales keep shrinking and the Q4 revenue guide of $54-59 million points lower still.",
   "takeaways": [
    {
-    "label": "Sales still shrinking",
-    "text": "Revenue fell 8.1% to $64.5 million, and Q4 is guided to $54-59 million. U.S. retail volume dropped 20.8% on lost shelf space and weak category demand."
+    "label": "Q4 sales guided lower",
+    "text": "Q4 revenue is guided to $54-59 million, down from $64.5 million in Q3. Management gave no cause beyond an uncertain operating environment, and no margin or cash outlook."
    },
    {
-    "label": "Margins improved sharply",
-    "text": "Gross margin rose to 19.3% from 7.4% a year earlier, as cost per pound fell 10.1%. Adjusted EBITDA loss narrowed to $24.6 million from $33.5 million."
+    "label": "Margins at five-year high",
+    "text": "Gross margin hit 19.3%, up from 7.4%, on cost per pound down 10.1%. Management targets 30%+ long term but says low volumes still hold back the gains."
    },
    {
-    "label": "Europe is the bright spot",
-    "text": "International retail sales rose 13.3% on strong European burger demand. International foodservice fell 19.4% as some fast-food burger customers cut orders."
+    "label": "U.S. still shrinking",
+    "text": "U.S. retail revenue fell 13.2% on volume down 20.8%, mainly lost club-store distribution. International retail grew 13.3%, a third straight rise, but international foodservice fell 19.4%."
    },
    {
-    "label": "Balance sheet still strained",
-    "text": "Cash is $169.3 million against $313.9 million of debt, and $14.5 million of notes mature in March 2027. The $93.0 million operating loss included $57.1 million of write-downs."
+    "label": "Cash burn slowed, debt remains",
+    "text": "Cash was $169.3 million, with nine-month operating cash use of $37.3 million versus $101.2 million. Debt is $313.9 million, and $14.5 million of notes mature March 2027 with no repayment plan found."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm"
+   "https://www.sec.gov/Archives/edgar/data/1655210/000165521026000071/ex991pressrelease-q32026ea.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/05/beyond-meat-bynd-q3-2026-earnings-call-transcript/",
+   "https://finance.yahoo.com/markets/stocks/articles/beyond-meat-inc-bynd-q3-051415873.html",
+   "https://www.thepigsite.com/news/2026/11/beyond-meats-q3-revenue-falls-8-1"
   ]
  },
  "history": [

@@ -1,32 +1,34 @@
 {
  "ticker": "CELH",
- "updated": "2026-11-05T21:17Z",
+ "updated": "2026-11-06T01:07Z",
  "last": {
   "date": "2026-11-05",
   "timing": "pre",
-  "move_pct": -2.3,
-  "basis": "close",
-  "verdict": "Record sales came from Alani Nu, but the flagship CELSIUS brand shrank again and margins fell sharply, so profit is not keeping pace.",
+  "move_pct": -3.2,
+  "basis": "after hours",
+  "verdict": "Alani Nu's boom drove a revenue beat, but flagship CELSIUS keeps shrinking, margins slipped further, and Q4 growth is guided lower.",
   "takeaways": [
    {
-    "label": "Margins keep sliding",
-    "text": "Gross margin fell to 46.8% from 51.3% a year ago, on higher aluminum and fuel costs and more sales through PepsiCo's delivery system. Adjusted EBITDA slipped 3% despite 17% revenue growth."
-   },
-   {
-    "label": "Flagship still shrinking",
-    "text": "CELSIUS brand revenue fell about 6% to $356.8M, and its retail sales fell 7%. The company blamed fewer products, inventory timing and weak club-store sales."
-   },
-   {
     "label": "Alani Nu carries growth",
-    "text": "Alani Nu revenue rose 24% to $410.1M and its retail sales jumped 58%. It now holds a 9.8% U.S. energy drink share, slightly above CELSIUS at 9.1%."
+    "text": "Alani Nu revenue rose 24% to $410M and its retail sales jumped 58%, while flagship CELSIUS fell 6% to $357M. Total revenue of $847M beat the roughly $800M expected."
    },
    {
-    "label": "Leadership reshuffle",
-    "text": "Celsius created brand-led management, naming Alex Zigliara to run CELSIUS and Rishi Daing to run Rockstar and emerging brands. International sales rose 78% to $41.0M."
+    "label": "Margins still shrinking",
+    "text": "Gross margin was 46.8% versus 51.3% a year ago, hurt by aluminum, diesel and a shift to PepsiCo distribution. Management guides the full year to the high 40s; the low 50s will take longer."
+   },
+   {
+    "label": "Q4 growth slows",
+    "text": "The CFO said Q4 revenue growth will be below the first three quarters. About $20-25M of Q4 shipments were pulled into Q3, and last year's inventory benefit won't repeat."
+   },
+   {
+    "label": "CELSIUS fix pushed to 2027",
+    "text": "New brand-led structure with a new CELSIUS president. Management admits the brand isn't 'where we want it to be'; new products were delayed, with innovation returning in 2027."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
+   "https://www.fool.com/earnings/call-transcripts/2026/11/05/celsius-celh-q3-2026-earnings-call-transcript/",
+   "https://www.investing.com/news/earnings/celsius-holdings-stock-jumps-on-q3-beat-as-alani-nu-growth-offsets-weakness-5003151",
    "https://www.sec.gov/Archives/edgar/data/1341766/000134176626000059/ex9913q2026.htm"
   ]
  },

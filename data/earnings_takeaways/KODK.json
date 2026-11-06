@@ -1,28 +1,28 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-05T21:18Z",
+ "updated": "2026-11-06T01:08Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Kodak's chemicals business is growing fast while its print business is fading: print profit fell to $1 million from $8 million.",
+  "verdict": "Kodak's chemicals unit kept growing and generated cash, but a 7% drop in Print cut that unit's profit from $8M to $1M.",
   "takeaways": [
    {
-    "label": "Print profit collapsed",
-    "text": "Print revenue fell 7% to $165 million, and its operating profit (EBITDA) dropped to $1 million from $8 million a year earlier. Print is still the larger business."
+    "label": "Chemicals carries the company",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99M and its operating profit rose to $21M from $16M. Management calls it Kodak's fastest-growing, most profitable unit."
    },
    {
-    "label": "Chemicals carry growth",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operating profit rose to $21 million from $16 million. It now supplies most of Kodak's profit."
+    "label": "Print is weakening",
+    "text": "Print revenue fell 7% to $165M. Print operating profit dropped to $1M from $8M. Management blamed challenging economic conditions, and the quarter's total profit growth came from chemicals."
    },
    {
-    "label": "Profit nearly flat",
-    "text": "Total operating profit (EBITDA) rose only to $31 million from $29 million. That is below the prior quarter's $36 million. Higher silver and aluminum costs and higher stock pay held it back."
+    "label": "Growth slowed",
+    "text": "Total revenue rose only 3%. Operational EBITDA (Kodak's adjusted operating profit) was $31M, versus $36M last quarter and $29M a year ago. Higher silver and aluminum costs and higher SG&A weighed on it."
    },
    {
-    "label": "Cash and debt improved",
-    "text": "Cash rose $27 million to $317 million. Interest expense fell to $3 million from $18 million after the company repaid $101 million of term loans this year."
+    "label": "Cash and debt",
+    "text": "Cash rose $27M in the quarter to $317M, and year-to-date operating cash flow is about break-even. Interest expense fell to $3M from $18M, lifting net income to $21M."
    }
   ],
   "transcript_read": false,

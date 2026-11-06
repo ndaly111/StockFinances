@@ -1,34 +1,33 @@
 {
  "ticker": "MET",
- "updated": "2026-11-05T21:19Z",
+ "updated": "2026-11-06T01:08Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
-  "move_pct": -3.1,
-  "basis": "close",
-  "verdict": "MetLife posted its best quarter ever, with adjusted earnings of $2.85 a share, up 22%, helped by a jump in investment gains and growth in every segment.",
+  "move_pct": -2.8,
+  "basis": "after hours",
+  "verdict": "MetLife posted its best quarter ever, but about half of the earnings jump came from volatile investment gains.",
   "takeaways": [
    {
     "label": "Record, investment-aided profit",
-    "text": "Adjusted earnings per share rose 22% to $2.85 excluding one-time items. Profit from volatile investments (private equity and similar) jumped 49% to $720 million, so part of the strength may not repeat."
+    "text": "Adjusted EPS excluding one-time items rose 22% to a record $2.85. Variable investment income, which swings with markets, jumped 49% to $720 million."
    },
    {
-    "label": "Growth everywhere",
-    "text": "Premiums, fees and other revenue rose 12% to $14.1 billion, or 8% excluding large pension deals. All six business segments grew, and Europe, Middle East and Africa earnings rose 24%."
+    "label": "Broad growth",
+    "text": "Core revenue excluding big pension deals rose 8% to $13.5 billion, with growth in all six segments. Europe/Middle East/Africa earnings rose 30% excluding one-time items. Group Benefits rose 14%."
    },
    {
-    "label": "Returns and cash flow",
-    "text": "Adjusted return on equity was 19.6% excluding one-time items, up from 16.7% a year earlier. MetLife returned about $1 billion to shareholders and says it is on track for its full-year cash-flow and expense targets."
+    "label": "Weak spots",
+    "text": "Latin America earnings excluding one-time items fell 5% on a currency-neutral basis. Asia sales dropped 6%, and the expense ratio edged up to 11.9% from 11.6%."
    },
    {
-    "label": "Soft spots",
-    "text": "Asia sales fell 6% against a strong year-earlier quarter. Retirement and Income Solutions earnings fell 6% after an annual insurance-assumptions review, though they rose 12% excluding that charge."
+    "label": "Book value split",
+    "text": "Reported book value per share fell 22% to $30.73, while adjusted book value rose 5% to $59.41. Adjusted return on equity was 19.6% excluding one-time items."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000058/ex991earningsreleasetables.htm",
-   "https://www.rttnews.com/3591448/metlife-inc-q3-profit-decreases-but-beats-estimates.aspx"
+   "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000058/ex991earningsreleasetables.htm"
   ]
  },
  "history": [

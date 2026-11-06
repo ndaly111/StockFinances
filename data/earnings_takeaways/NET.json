@@ -1,34 +1,36 @@
 {
  "ticker": "NET",
- "updated": "2026-11-05T21:20Z",
+ "updated": "2026-11-06T01:09Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": 19.4,
+  "move_pct": 5.1,
   "basis": "after hours",
-  "verdict": "Cloudflare's growth sped up to 39% and it lifted its full-year forecast by about $95 million, but gross margin shrank.",
+  "verdict": "Cloudflare's growth sped up to 39%, its fastest in nearly four years, and its Q4 forecast came in far above expectations.",
   "takeaways": [
    {
     "label": "Growth accelerating",
-    "text": "Revenue was $782.5M, up 39%, its fastest in nearly four years. That beat the company's own $736-737M forecast by roughly $46M. Future contracted revenue grew 37%."
+    "text": "Revenue rose 39% to $782.5M, up from 36% last quarter. Contracted future revenue due within a year (current RPO) grew 37%, so the pace looks durable."
    },
    {
-    "label": "Big guidance raise",
-    "text": "Full-year 2026 revenue is now forecast at $2.963-2.964B, up from $2.864-2.870B. Fourth-quarter revenue is guided to $845-846M."
+    "label": "Big guidance jump",
+    "text": "Q4 revenue is guided to $845\u2013846M versus about $798M expected. Full-year revenue guidance rose to $2.963\u20132.964B from $2.864\u20132.870B in August."
    },
    {
-    "label": "Gross margin squeeze",
-    "text": "Adjusted gross margin fell to 72.4% from 75.3% a year ago, and to 73.1% last quarter. Costs of serving customers are growing faster than revenue."
+    "label": "Profit up, margins mixed",
+    "text": "Operating margin (excluding stock pay) rose to 17.5% from 15.3%, but gross margin slipped to 72.4% from 75.3%. Heavier spending on its network likely contributes."
    },
    {
-    "label": "Profit up, cash flat",
-    "text": "Adjusted operating margin rose to 17.5% from 15.3%. Free cash flow was $82.1M, only 10% of revenue versus 13% a year ago, as spending on equipment rose."
+    "label": "Cash conversion slipped",
+    "text": "Free cash flow was 10% of revenue versus 13% a year ago as equipment spending rose. A GAAP loss of $34.1M persists, driven by $174M of stock-based pay."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000060/q326exhibit991.htm",
-   "https://www.marketbeat.com/instant-alerts/cloudflare-nysenet-issues-q3-2026-earnings-guidance-2026-08-06/"
+   "https://siliconangle.com/2026/11/05/cloudflare-shares-surge-as-revenue-growth-accelerates-to-39-and-outlook-rises/",
+   "https://www.benzinga.com/markets/earnings/26/11/62957362/cloudflare-stock-rises-after-q3-results-ceo-says-best-quarter-ever",
+   "https://www.investing.com/news/earnings/cloudflare-shares-soar-afterhours-on-blowout-q3-results-strong-forecast-5005697"
   ]
  },
  "history": [
