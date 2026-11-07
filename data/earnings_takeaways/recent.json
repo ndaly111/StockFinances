@@ -1,28 +1,28 @@
 {
- "updated": "2026-11-07T09:39Z",
+ "updated": "2026-11-07T13:45Z",
  "reports": [
   {
    "ticker": "MRNA",
    "date": "2026-11-06",
    "move_pct": 5.3,
    "basis": "close",
-   "verdict": "Moderna swung to a profit on strong international COVID vaccine sales and raised its revenue outlook, but the profit rests on one seasonal quarter.",
+   "verdict": "Moderna posted a rare quarterly profit on international COVID vaccine deliveries and raised its sales outlook, but the cash jump mostly reflects new debt.",
    "takeaways": [
     {
-     "label": "Outlook raised",
-     "text": "Full-year 2026 revenue growth is now expected at 15%\u201325%, up from 'up to 10%'. Third-quarter revenue rose 29% to $1.3 billion, driven by international COVID vaccine deals."
+     "label": "Profit and higher guidance",
+     "text": "Revenue rose 29% to $1.3B, mostly from international COVID vaccine deliveries, giving $162M net income versus a $200M loss. Full-year revenue growth is now seen at 15\u201325%, up from up to 10%."
     },
     {
-     "label": "One-quarter profit",
-     "text": "Net income was $162 million versus a $200 million loss a year ago, helped by R&D spending down 27%. Nine-month net loss is still $1.96 billion."
+     "label": "Cash boost is borrowed",
+     "text": "Year-end cash is now seen at $8.1\u20138.3B, up from $4.7\u20135.2B. Most of the gain comes from about $2.6B net raised through convertible notes. Customers still owe $1.4B for quarter sales."
     },
     {
-     "label": "Cash jump is borrowed",
-     "text": "Year-end cash is now seen at $8.1\u2013$8.3 billion, up from $4.7\u2013$5.2 billion, partly because of $2.6 billion in convertible note proceeds. Most third-quarter sales were still uncollected."
+     "label": "Melanoma shot is the big prize",
+     "text": "Phase 3 data showed the cancer therapy intismeran plus Keytruda cut recurrence or death risk by 42%. Moderna and Merck are preparing filings. Its flu vaccine won FDA approval but only a limited launch this season."
     },
     {
-     "label": "Cancer drug win",
-     "text": "Phase 3 melanoma data for intismeran (with Merck) cut the risk of recurrence or death by 42%. Regulatory filings are being prepared. The norovirus vaccine's path is unclear."
+     "label": "Lower spending, setbacks remain",
+     "text": "2026 research spending is now seen at about $2.7B, down from $2.9B. The norovirus vaccine's path is unclear, and the US flu/COVID combo vaccine awaits FDA guidance on refiling."
     }
    ]
   },
@@ -31,23 +31,23 @@
    "date": "2026-11-05",
    "move_pct": -21.8,
    "basis": "close",
-   "verdict": "Opendoor missed its own margin target and guided to a wider loss next quarter, while inventory and debt ballooned to chase growth.",
+   "verdict": "Opendoor is buying homes far faster than it can sell them, and profit per home fell, leaving it deeper in debt.",
    "takeaways": [
     {
-     "label": "Margins and outlook worsen",
-     "text": "Contribution margin fell to 3.3%, below the 4%\u20134.5% guided and 5.8% last quarter. Q4 profit per home is guided lower, with an Adjusted EBITDA loss of $70\u201385M versus $31M now."
+     "label": "Margins missed",
+     "text": "Contribution margin, the profit on homes sold after direct costs, was 3.3%, below the 4%\u20134.5% guided and 5.8% last quarter. Profit per home fell to $12K from $22K."
     },
     {
-     "label": "Growth bought with inventory",
-     "text": "Revenue rose 12% to $1.02B, short of the 20% guided. Homes bought quadrupled to 4,865, pushing inventory to $2.57B and 7,596 homes. Q4 revenue is guided up at least 40%."
+     "label": "Inventory and debt balloon",
+     "text": "Homes held rose to 7,596 from 5,459, and inventory value reached $2.6B from $925M at year-end. Most of it is funded by $2.4B of asset-backed debt. Cash is $910M."
     },
     {
-     "label": "Debt and losses rising",
-     "text": "Net loss widened to $218M from $90M. About $2.0B of property-backed debt now falls due within a year, against $910M of cash."
+     "label": "Weaker Q4 profit outlook",
+     "text": "Opendoor expects revenue up at least 40% year over year, but lower contribution profit and an adjusted EBITDA loss of $70\u201385M, versus a $31M loss in Q3."
     },
     {
      "label": "Profit goal slipping",
-     "text": "The target of positive adjusted net income by end of 2026, on a trailing-twelve-month basis, stands, but the company says it is currently behind."
+     "text": "Management admits it is \"behind\" its target of positive adjusted net income by the end of 2026. Adjusted net loss was $66M, and the net loss was $218M."
     }
    ]
   },
@@ -306,23 +306,23 @@
    "date": "2026-11-03",
    "move_pct": -13.4,
    "basis": "close",
-   "verdict": "Chemicals growth and lower interest costs lifted profit, but Print, still over half of sales, nearly stopped earning and the quarter slowed from Q2.",
+   "verdict": "Chemicals growth and far lower interest costs lifted profit, but Print's earnings nearly vanished, leaving Kodak's profit up on a shrinking core business.",
    "takeaways": [
     {
-     "label": "Chemicals carry growth",
-     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and earned $21 million of operating profit, versus $1 million from Print. It is now the main profit source."
+     "label": "Print profit nearly gone",
+     "text": "Print revenue fell 7% to $165 million, and its operational EBITDA (a core-earnings measure) dropped to $1 million from $8 million a year earlier."
     },
     {
-     "label": "Print is weakening",
-     "text": "Print revenue fell 7% to $165 million. Its operating profit (operational EBITDA) dropped to $1 million from $8 million a year ago and from $8 million last quarter."
+     "label": "Chemicals carrying growth",
+     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operational EBITDA rose to $21 million from $16 million, the company's most profitable unit."
     },
     {
-     "label": "Profit gain is mostly lower debt cost",
-     "text": "Net income rose to $21 million from $13 million. Interest expense fell to $3 million from $18 million, while operational EBITDA rose only $2 million, to $31 million."
+     "label": "Profit boosted by debt paydown",
+     "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million; operational EBITDA rose only $2 million, to $31 million."
     },
     {
-     "label": "Cash rebuilt, costs creeping",
-     "text": "Cash rose $27 million to $317 million after the Q2 dip. Overhead rose to $50 million from $41 million, mainly stock compensation, which went to $8 million from $1 million."
+     "label": "Costs and cash",
+     "text": "Overhead rose to $50 million from $41 million, mainly stock-based pay. Cash rose $27 million to $317 million, but year-to-date operating cash flow is only break-even."
     }
    ]
   },
