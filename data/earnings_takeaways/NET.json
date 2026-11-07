@@ -1,35 +1,37 @@
 {
  "ticker": "NET",
- "updated": "2026-11-07T05:38Z",
+ "updated": "2026-11-07T09:37Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
   "move_pct": 9.9,
   "basis": "close",
-  "verdict": "Cloudflare's growth sped up to 39% and the year's outlook jumped, but costs of delivering service and heavier spending are squeezing margins.",
+  "verdict": "Cloudflare's growth sped up to 39%, its fastest in nearly four years, and it raised its full-year revenue outlook by about $100 million.",
   "takeaways": [
    {
     "label": "Growth accelerating, outlook raised",
-    "text": "Revenue rose 39% to $782.5M, up from 36% last quarter and the fastest in nearly four years. Full-year revenue guidance rose to about $2.963B from $2.864\u20132.870B."
+    "text": "Revenue hit $782.5M, up 39% (36% last quarter). Full-year guidance rose to $2.963B from $2.864\u20132.870B, and Q4 is guided to $845\u2013846M."
    },
    {
-    "label": "Bigger customers spending more",
-    "text": "Existing customers grew spending 22% year over year (net retention 122%, up from 120% last quarter). Customers paying over $100K a year rose 25% to 5,006."
+    "label": "Broad customer demand",
+    "text": "Cloudflare added over 158,000 paying customers, nearly double the prior record. Existing customers also spent more: net retention reached 122%, and large deals included an $11M AI-company contract."
    },
    {
-    "label": "Gross margin keeps sliding",
-    "text": "Adjusted gross margin fell to 72.4% from 75.3% a year ago. Profit margin still rose to 17.5% from 15.3% because other costs grew slower than revenue."
+    "label": "Margins squeezed, profits improving",
+    "text": "Gross margin fell to 72.4% (non-GAAP) from 75.3% a year ago, but operating margin rose to 17.5%. Free cash flow slipped to 10% of revenue from 13%."
    },
    {
-    "label": "Heavier spending, thinner cash",
-    "text": "Equipment and infrastructure spending hit $121.8M, so free cash flow margin slipped to 10% from 13%. Management guides network spending at about 14\u201315% of annual revenue."
+    "label": "Still losing money on GAAP",
+    "text": "The GAAP operating loss was $67.9M, mostly from stock pay. Management reportedly expects GAAP profitability in Q4, well ahead of its 2028 target."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1477333/000147733326000060/q326exhibit991.htm",
-   "https://finance.yahoo.com/markets/stocks/articles/cloudflare-q3-earnings-beat-estimates-141500428.html",
-   "https://www.kucoin.com/news/flash/cloudflare-q3-revenue-surpasses-expectations-third-earnings-guidance-hike-in-2026"
+   "https://finance.yahoo.com/markets/stocks/articles/cloudflare-net-q3-2026-earnings-074900653.html",
+   "https://thenextweb.com/news/cloudflare-q3-2026-earnings-39-percent-growth-raises-outlook",
+   "https://ppc.land/cloudflare-revenue-gains-39-to-782-5m-fastest-growth-in-nearly-four-years/",
+   "https://invezz.com/ie/news/2026/11/06/cloudflare-stock-surges-20percent-after-strong-q3-earnings-heres-what-analysts-say/"
   ]
  },
  "history": [
