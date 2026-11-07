@@ -1,32 +1,28 @@
 {
  "ticker": "MET",
- "updated": "2026-11-06T21:19Z",
+ "updated": "2026-11-07T01:07Z",
  "last": {
   "date": "2026-11-04",
   "timing": "post",
   "move_pct": -3.1,
   "basis": "close",
-  "verdict": "MetLife posted its best quarter ever, but a 49% jump in volatile investment income did much of the work.",
+  "verdict": "MetLife posted its best quarterly profit per share ever, but a 49% jump in volatile investment income did much of the lifting.",
   "takeaways": [
    {
-    "label": "Record, helped by investments",
-    "text": "Adjusted earnings per share excluding one-offs rose 22% to $2.85, a company record. Variable investment income, which swings with markets, rose 49% to $720 million and was a key driver.",
-    "verified": true
+    "label": "Record earnings",
+    "text": "Adjusted earnings per share excluding one-time items rose 22% to $2.85, a company record. Return on equity was 19.6%, up from 16.7% a year earlier."
    },
    {
-    "label": "Broad underlying growth",
-    "text": "Revenue excluding large pension deals rose 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% (before one-offs) and the investment arm's assets grew 14%.",
-    "verified": true
+    "label": "Investment income boost",
+    "text": "Variable investment income, the lumpy returns from private-equity-type holdings, rose 49% to $720 million. It drove much of the profit growth, so the pace may not repeat."
    },
    {
-    "label": "Weaker spots",
-    "text": "Latin America earnings excluding one-offs fell 5% at constant currency on lower investment returns. Asia sales dropped 6% against a strong year-earlier quarter.",
-    "verified": true
+    "label": "Growth everywhere",
+    "text": "Premiums and fees excluding large pension deals rose 8% to $13.5 billion, with growth in all six segments. Group Benefits profit rose 14% on better claims results."
    },
    {
-    "label": "Book value fell",
-    "text": "Reported book value per share fell 22% to $30.73, though the adjusted measure rose 5% to $59.41. Return on equity was 19.6% excluding one-offs, up from 16.7%.",
-    "verified": true
+    "label": "Soft spots",
+    "text": "Latin America profit excluding one-time items fell 5% at constant exchange rates. Asia sales dropped 6% against a strong prior-year quarter."
    }
   ],
   "transcript_read": false,

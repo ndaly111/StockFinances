@@ -1,28 +1,28 @@
 {
  "ticker": "MRNA",
- "updated": "2026-11-06T21:20Z",
+ "updated": "2026-11-07T01:07Z",
  "last": {
   "date": "2026-11-06",
   "timing": "pre",
-  "move_pct": 5.3,
-  "basis": "close",
-  "verdict": "Moderna swung to a profit on international COVID vaccine sales and raised its revenue outlook, but much of the new cash comes from borrowing.",
+  "move_pct": 6.4,
+  "basis": "after hours",
+  "verdict": "Moderna swung to a profit on strong overseas COVID sales and lower R&D spending, but its jump in cash is mostly borrowed money.",
   "takeaways": [
    {
-    "label": "Profit on COVID deliveries",
-    "text": "Revenue rose 29% to $1.3B, driven by international COVID vaccine deliveries, and net income was $162M versus a $200M loss a year ago. R&D spending fell 27%."
-   },
-   {
-    "label": "Outlook raised",
-    "text": "2026 revenue growth is now expected at 15%\u201325%, up from up to 10%. Full-year R&D spending is now about $2.7B, down from $2.9B."
+    "label": "Profit and higher outlook",
+    "text": "Third-quarter revenue rose 29% to $1.3 billion, mainly from international COVID deliveries, and net income was $162 million versus a $200 million loss. Full-year revenue growth is now seen at 15%\u201325%, up from up to 10%."
    },
    {
     "label": "Cash boosted by debt",
-    "text": "Year-end cash is now seen at $8.1\u20138.3B, up from $4.7\u20135.2B. About $2.6B of that is net proceeds from new convertible notes. Most quarterly sales were still uncollected."
+    "text": "Year-end cash is now seen at $8.1\u2013$8.3 billion, up from $4.7\u2013$5.2 billion, largely thanks to about $2.6 billion net from convertible notes. Most Q3 sales were still uncollected."
    },
    {
-    "label": "Melanoma shot, flu launch",
-    "text": "The melanoma vaccine with Merck cut recurrence or death risk 42% in Phase 3. The new flu vaccine got FDA approval but launches only in limited form this season."
+    "label": "Melanoma drug shows promise",
+    "text": "With Merck, Moderna's intismeran cut the risk of melanoma recurrence or death by 42% when added to Keytruda in a Phase 3 trial. Regulatory filings are being prepared."
+   },
+   {
+    "label": "Flu launch limited",
+    "text": "The U.S. approved mFLUSIVA for adults 50 and older, but approval came after contracting season ended, so this year's launch is limited. The norovirus vaccine's path forward is unclear."
    }
   ],
   "transcript_read": false,

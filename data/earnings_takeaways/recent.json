@@ -1,103 +1,103 @@
 {
- "updated": "2026-11-06T21:23Z",
+ "updated": "2026-11-07T01:10Z",
  "reports": [
   {
    "ticker": "MRNA",
    "date": "2026-11-06",
-   "move_pct": 5.3,
-   "basis": "close",
-   "verdict": "Moderna swung to a profit on international COVID vaccine sales and raised its revenue outlook, but much of the new cash comes from borrowing.",
+   "move_pct": 6.4,
+   "basis": "after hours",
+   "verdict": "Moderna swung to a profit on strong overseas COVID sales and lower R&D spending, but its jump in cash is mostly borrowed money.",
    "takeaways": [
     {
-     "label": "Profit on COVID deliveries",
-     "text": "Revenue rose 29% to $1.3B, driven by international COVID vaccine deliveries, and net income was $162M versus a $200M loss a year ago. R&D spending fell 27%."
-    },
-    {
-     "label": "Outlook raised",
-     "text": "2026 revenue growth is now expected at 15%\u201325%, up from up to 10%. Full-year R&D spending is now about $2.7B, down from $2.9B."
+     "label": "Profit and higher outlook",
+     "text": "Third-quarter revenue rose 29% to $1.3 billion, mainly from international COVID deliveries, and net income was $162 million versus a $200 million loss. Full-year revenue growth is now seen at 15%\u201325%, up from up to 10%."
     },
     {
      "label": "Cash boosted by debt",
-     "text": "Year-end cash is now seen at $8.1\u20138.3B, up from $4.7\u20135.2B. About $2.6B of that is net proceeds from new convertible notes. Most quarterly sales were still uncollected."
+     "text": "Year-end cash is now seen at $8.1\u2013$8.3 billion, up from $4.7\u2013$5.2 billion, largely thanks to about $2.6 billion net from convertible notes. Most Q3 sales were still uncollected."
     },
     {
-     "label": "Melanoma shot, flu launch",
-     "text": "The melanoma vaccine with Merck cut recurrence or death risk 42% in Phase 3. The new flu vaccine got FDA approval but launches only in limited form this season."
-    }
-   ]
-  },
-  {
-   "ticker": "OPEN",
-   "date": "2026-11-05",
-   "move_pct": -21.8,
-   "basis": "close",
-   "verdict": "Opendoor is buying homes far faster than it can sell them, and profit per home sold is shrinking while losses and debt grow.",
-   "takeaways": [
-    {
-     "label": "Margins fell short",
-     "text": "Profit per home sold fell to 3.3% of revenue from 5.8% last quarter, below the 4%\u20134.5% guided in August. Gross margin dropped to 3.7% from 9.7%."
+     "label": "Melanoma drug shows promise",
+     "text": "With Merck, Moderna's intismeran cut the risk of melanoma recurrence or death by 42% when added to Keytruda in a Phase 3 trial. Regulatory filings are being prepared."
     },
     {
-     "label": "Inventory and debt balloon",
-     "text": "Homes in inventory rose to 7,596 from 5,459, worth $2.6B. Asset-backed debt due within a year jumped to $2.0B from $52M at year-end."
-    },
-    {
-     "label": "Older homes piling up",
-     "text": "Homes listed over 120 days doubled to 18% of listings from 9% last quarter. Write-downs on unsold homes rose to $53M from $14M."
-    },
-    {
-     "label": "Bigger losses ahead",
-     "text": "Opendoor guides Q4 revenue up at least 40% but profit per home sold down, with an adjusted EBITDA loss of $70M\u2013$85M versus $31M now. It admits it is behind on its goal of adjusted net profit by end of 2026."
+     "label": "Flu launch limited",
+     "text": "The U.S. approved mFLUSIVA for adults 50 and older, but approval came after contracting season ended, so this year's launch is limited. The norovirus vaccine's path forward is unclear."
     }
    ]
   },
   {
    "ticker": "DKNG",
    "date": "2026-11-05",
-   "move_pct": -21.3,
-   "basis": "close",
-   "verdict": "DraftKings slashed 2026 profit guidance to $175-275 million from $700-900 million to fund prediction markets, betting 2027 pays off.",
+   "move_pct": -21.4,
+   "basis": "after hours",
+   "verdict": "DraftKings cut its 2026 profit outlook from $700-900 million to $175-275 million to fund Predictions, and its 2027 profit guidance trails expectations.",
    "takeaways": [
     {
-     "label": "Profit outlook gutted",
-     "text": "2026 adjusted EBITDA (operating profit before some costs) guidance fell to $175-275 million from $700-900 million. Predictions spending of $650-700 million is the main cause. Revenue guidance fell to $6.35-6.55 billion."
+     "label": "Profit forecast slashed",
+     "text": "2026 adjusted profit is now $175-275 million, down from $700-900 million. Predictions spending of $650-700 million this year explains it. The core betting business is still guided to $875-925 million."
     },
     {
-     "label": "Core business also softer",
-     "text": "Excluding Predictions, 2026 adjusted EBITDA is now guided at $875-925 million, below the roughly $1 billion expected in August. Management cited extra iGaming investment and customer-friendly sports results."
+     "label": "2027 below hopes",
+     "text": "2027 profit is guided at $800 million to $1 billion, short of the roughly $1.12 billion analysts expected. Revenue is guided to $7.35-7.75 billion, up 17% at the midpoint."
     },
     {
-     "label": "Rebound promised for 2027",
-     "text": "2027 guidance is revenue of $7.35-7.75 billion and adjusted EBITDA of $800 million-$1 billion. That includes $650-750 million of Predictions revenue and about $300 million of Predictions spending."
+     "label": "Predictions still a drag",
+     "text": "Predictions is expected to bring in $650-750 million of revenue in 2027, but it will cost $250-350 million more than it earns. It earned an immaterial amount in 2026."
     },
     {
-     "label": "Growth bought with losses",
-     "text": "Revenue rose 16% to $1.33 billion and monthly paying users rose 13% to 4.1 million. Net loss reached $469 million, versus $257 million a year earlier."
+     "label": "Core growth solid, losses widen",
+     "text": "Revenue rose 16% to $1.33 billion and monthly paying users rose 13% to 4.1 million. The adjusted loss still widened to $317 million from $127 million."
+    }
+   ]
+  },
+  {
+   "ticker": "OPEN",
+   "date": "2026-11-05",
+   "move_pct": -21.2,
+   "basis": "after hours",
+   "verdict": "Opendoor bought far more homes but earned less on each sale, and it expects profit dollars to shrink again next quarter.",
+   "takeaways": [
+    {
+     "label": "Margins missed",
+     "text": "Contribution margin, the profit left after direct selling and holding costs, fell to 3.3% from 5.8% last quarter, below the 4%\u20134.5% outlook. Profit dropped to $34M from $51M."
+    },
+    {
+     "label": "Weaker profit outlook",
+     "text": "Fourth-quarter revenue is guided up at least 40% year over year, but profit dollars are expected to fall again. Adjusted EBITDA loss is guided to $70M\u2013$85M, versus $31M this quarter."
+    },
+    {
+     "label": "Inventory and debt swelling",
+     "text": "Inventory reached $2.57B (7,596 homes) from $925M at year-start. Short-term bank debt rose to $2.0B, and nine-month operating cash outflow hit $1.8B."
+    },
+    {
+     "label": "Aging homes",
+     "text": "Homes listed over 120 days rose to 18% of listed inventory from 9% last quarter. Management admits it is behind on its goal of positive adjusted net income by year-end."
     }
    ]
   },
   {
    "ticker": "NET",
    "date": "2026-11-05",
-   "move_pct": 9.9,
-   "basis": "close",
-   "verdict": "Cloudflare's growth sped up to 39%, its fastest in nearly four years, and it raised its year-end forecast by about $100 million.",
+   "move_pct": 10.1,
+   "basis": "after hours",
+   "verdict": "Cloudflare's growth sped up to 39%, its fastest in nearly four years, and it raised the 2026 outlook sharply, with margins slipping on the way.",
    "takeaways": [
     {
-     "label": "Growth accelerating",
-     "text": "Revenue rose 39% to $782.5M, up from 36% last quarter and above the roughly $737M analysts expected. Annualized revenue passed $3 billion."
+     "label": "Growth keeps speeding up",
+     "text": "Revenue hit $782.5M, up 39% from a year ago, and annualized revenue passed $3B. Customers staying and spending more rose to 122%, from 120% last quarter."
     },
     {
-     "label": "Big guidance raise",
-     "text": "Full-year revenue is now guided to about $2.963\u20132.964B, up from $2.864\u20132.870B. Q4 is guided to $845\u2013846M, well above the roughly $796M analysts expected."
+     "label": "Outlook raised sharply",
+     "text": "2026 revenue is now guided to $2.963\u20132.964B, up from $2.864\u20132.870B in August. Q4 guidance of $845\u2013846M implies roughly 38% growth, a slight slowdown."
     },
     {
-     "label": "Profit up, margins mixed",
-     "text": "Adjusted operating margin rose to 17.5% from 15.3%. Gross margin slipped to 72.4% from 75.3% a year ago, and GAAP net loss widened to $34.1M."
+     "label": "Gross margin keeps falling",
+     "text": "Adjusted gross margin fell to 72.4% from 75.3% a year ago. Management blames the fast-growing developer platform, Workers, which earns less per dollar of sales."
     },
     {
-     "label": "Cash flow lags",
-     "text": "Free cash flow was $82.1M, 10% of revenue, down from 13% a year ago, as spending on equipment rose to $121.8M from $84.6M."
+     "label": "Profit up, cash flow lags",
+     "text": "Adjusted operating margin reached a record 17.5%, but free cash flow was 10% of revenue versus 13% a year ago, as spending on network equipment rose."
     }
    ]
   },
@@ -281,27 +281,23 @@
    "date": "2026-11-04",
    "move_pct": -3.1,
    "basis": "close",
-   "verdict": "MetLife posted its best quarter ever, but a 49% jump in volatile investment income did much of the work.",
+   "verdict": "MetLife posted its best quarterly profit per share ever, but a 49% jump in volatile investment income did much of the lifting.",
    "takeaways": [
     {
-     "label": "Record, helped by investments",
-     "text": "Adjusted earnings per share excluding one-offs rose 22% to $2.85, a company record. Variable investment income, which swings with markets, rose 49% to $720 million and was a key driver.",
-     "verified": true
+     "label": "Record earnings",
+     "text": "Adjusted earnings per share excluding one-time items rose 22% to $2.85, a company record. Return on equity was 19.6%, up from 16.7% a year earlier."
     },
     {
-     "label": "Broad underlying growth",
-     "text": "Revenue excluding large pension deals rose 8% to $13.5 billion, with growth in all six segments. Europe, Middle East and Africa earnings rose 30% (before one-offs) and the investment arm's assets grew 14%.",
-     "verified": true
+     "label": "Investment income boost",
+     "text": "Variable investment income, the lumpy returns from private-equity-type holdings, rose 49% to $720 million. It drove much of the profit growth, so the pace may not repeat."
     },
     {
-     "label": "Weaker spots",
-     "text": "Latin America earnings excluding one-offs fell 5% at constant currency on lower investment returns. Asia sales dropped 6% against a strong year-earlier quarter.",
-     "verified": true
+     "label": "Growth everywhere",
+     "text": "Premiums and fees excluding large pension deals rose 8% to $13.5 billion, with growth in all six segments. Group Benefits profit rose 14% on better claims results."
     },
     {
-     "label": "Book value fell",
-     "text": "Reported book value per share fell 22% to $30.73, though the adjusted measure rose 5% to $59.41. Return on equity was 19.6% excluding one-offs, up from 16.7%.",
-     "verified": true
+     "label": "Soft spots",
+     "text": "Latin America profit excluding one-time items fell 5% at constant exchange rates. Asia sales dropped 6% against a strong prior-year quarter."
     }
    ]
   },
@@ -310,23 +306,23 @@
    "date": "2026-11-03",
    "move_pct": -13.4,
    "basis": "close",
-   "verdict": "Kodak's chemicals business is carrying the company: Print profit nearly vanished, so growth slowed to 3% and earnings gains came mostly from lower interest costs.",
+   "verdict": "Chemicals growth and lower interest costs lifted Kodak's profit, but Print fell 7% and its operating profit collapsed from $8 million to $1 million.",
    "takeaways": [
     {
-     "label": "Print profit nearly gone",
-     "text": "Print revenue fell 7% to $165 million, and its operational EBITDA (a core profit measure) dropped to $1 million from $8 million a year earlier."
+     "label": "Print is weakening",
+     "text": "Print revenue fell 7% to $165 million, and its operational EBITDA dropped from $8 million to $1 million. Kodak blamed challenging economic conditions."
     },
     {
      "label": "Chemicals carry growth",
-     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operational EBITDA rose to $21 million from $16 million, now the company's most profitable unit."
+     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operational EBITDA rose from $16 million to $21 million. It is now the most profitable unit."
     },
     {
-     "label": "Profit gain is mostly interest",
-     "text": "Net income rose to $21 million from $13 million, but interest expense fell to $3 million from $18 million. Operational EBITDA rose only $2 million, to $31 million."
+     "label": "Profit helped by debt paydown",
+     "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell from $18 million to $3 million. Operational EBITDA rose only $2 million, to $31 million."
     },
     {
-     "label": "Momentum slowed, cash rebuilt",
-     "text": "Revenue grew 3% after 18% last quarter, and operational EBITDA fell from $36 million. Cash rose $27 million to $317 million, though nine-month operating cash flow was only break-even."
+     "label": "Cash up, but inventory builds",
+     "text": "Cash rose $27 million to $317 million in the quarter. Year to date, operating cash flow was break-even, and inventories rose $44 million."
     }
    ]
   },
