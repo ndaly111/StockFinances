@@ -1,33 +1,34 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-07T13:44Z",
+ "updated": "2026-11-07T16:43Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
   "move_pct": -21.8,
   "basis": "close",
-  "verdict": "Opendoor is buying homes far faster than it can sell them, and profit per home fell, leaving it deeper in debt.",
+  "verdict": "Opendoor bought far more homes than it sold, and profit per home sold fell, so the loss widened to $218M and the debt load grew.",
   "takeaways": [
    {
-    "label": "Margins missed",
-    "text": "Contribution margin, the profit on homes sold after direct costs, was 3.3%, below the 4%\u20134.5% guided and 5.8% last quarter. Profit per home fell to $12K from $22K."
+    "label": "Margins fell sharply",
+    "text": "Profit per home sold fell: contribution margin was 3.3% versus 5.8% last quarter, and gross margin was 3.7% versus 9.7%. Writedowns on unsold homes rose to $53M from $14M."
    },
    {
-    "label": "Inventory and debt balloon",
-    "text": "Homes held rose to 7,596 from 5,459, and inventory value reached $2.6B from $925M at year-end. Most of it is funded by $2.4B of asset-backed debt. Cash is $910M."
+    "label": "Inventory and debt ballooned",
+    "text": "Opendoor bought 4,865 homes but sold 2,728. Inventory reached $2.57B (7,596 homes), funded mostly by borrowing. Asset-backed debt is about $2.36B, and most of it is due within a year."
    },
    {
-    "label": "Weaker Q4 profit outlook",
-    "text": "Opendoor expects revenue up at least 40% year over year, but lower contribution profit and an adjusted EBITDA loss of $70\u201385M, versus a $31M loss in Q3."
+    "label": "Growth missed its target",
+    "text": "Revenue rose 12% to $1.02B, short of the 'at least 20%' growth the company guided to in August. Net loss widened to $218M from $90M a year ago."
    },
    {
-    "label": "Profit goal slipping",
-    "text": "Management admits it is \"behind\" its target of positive adjusted net income by the end of 2026. Adjusted net loss was $66M, and the net loss was $218M."
+    "label": "Tough Q4 outlook",
+    "text": "Opendoor expects Q4 revenue up at least 40% year over year, but profit dollars to fall and an adjusted EBITDA loss of $70M\u2013$85M. It says it is 'selling into a difficult market'."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/exhibit992-q32026form8xk.htm",
    "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/q32026formxex991earningsre.htm",
    "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000028/open-20260930.htm"
   ]

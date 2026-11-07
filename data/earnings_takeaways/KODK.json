@@ -1,37 +1,36 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-07T13:41Z",
+ "updated": "2026-11-07T16:42Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Chemicals growth and far lower interest costs lifted profit, but Print's earnings nearly vanished, leaving Kodak's profit up on a shrinking core business.",
+  "verdict": "Chemicals growth and lower debt costs lifted profit, but Print, once the turnaround story, shrank 7% and earned almost nothing.",
   "takeaways": [
    {
-    "label": "Print profit nearly gone",
-    "text": "Print revenue fell 7% to $165 million, and its operational EBITDA (a core-earnings measure) dropped to $1 million from $8 million a year earlier."
+    "label": "Print turned sour",
+    "text": "Print revenue fell 7% to $165 million, after growing 10% last quarter. Its operational EBITDA (a core profit measure) dropped to $1 million from $8 million."
    },
    {
-    "label": "Chemicals carrying growth",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operational EBITDA rose to $21 million from $16 million, the company's most profitable unit."
+    "label": "Chemicals carry the load",
+    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operational EBITDA rose to $21 million from $16 million. It now supplies nearly all of Kodak's segment profit."
    },
    {
-    "label": "Profit boosted by debt paydown",
-    "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell to $3 million from $18 million; operational EBITDA rose only $2 million, to $31 million."
+    "label": "Profit gain came from debt",
+    "text": "Net income rose to $21 million from $13 million, helped by interest expense falling to $3 million from $18 million. Operational EBITDA rose only $2 million, to $31 million."
    },
    {
-    "label": "Costs and cash",
-    "text": "Overhead rose to $50 million from $41 million, mainly stock-based pay. Cash rose $27 million to $317 million, but year-to-date operating cash flow is only break-even."
+    "label": "Cash rebuilt, costs creeping",
+    "text": "Cash rose $27 million to $317 million on $25 million of operating cash flow. Stock-based pay jumped to $8 million from $1 million, pushing up overhead costs."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm",
+   "https://finviz.com/news/415031/kodak-beats-on-eps-but-prints-reversal-and-revenue-miss-show-the-growth-story-losing-steam",
    "https://www.earningswhispers.com/transcript/KODK/Q32026",
-   "https://finsee.ai/earnings/kodk/2026/q3/en/",
-   "https://www.panabee.com/news/kodak-earnings-q4-2026",
-   "https://finviz.com/news/414875/kodak-reports-third-quarter-2026-financial-results"
+   "https://www.panabee.com/news/kodak-earnings-q4-2026"
   ]
  },
  "history": [
