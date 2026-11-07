@@ -1,28 +1,28 @@
 {
  "ticker": "MRNA",
- "updated": "2026-11-07T16:42Z",
+ "updated": "2026-11-07T21:18Z",
  "last": {
   "date": "2026-11-06",
   "timing": "pre",
   "move_pct": 5.3,
   "basis": "close",
-  "verdict": "Moderna swung to a profit on 29% revenue growth and raised its 2026 outlook, but much of the cash jump is borrowed.",
+  "verdict": "Moderna swung to a profit on strong international COVID vaccine sales and raised its 2026 outlook, but much of the cash jump is borrowed money.",
   "takeaways": [
    {
-    "label": "Outlook raised",
-    "text": "2026 revenue growth is now expected at 15\u201325%, up from 'up to 10%'. Q3 revenue rose 29% to $1.3B, mostly from international COVID vaccine deliveries."
+    "label": "Profitable quarter, higher outlook",
+    "text": "Revenue rose 29% to $1.3B, mostly international COVID sales, giving $162M net income versus a $200M loss a year ago. Full-year growth now seen at 15\u201325%, up from up to 10%."
    },
    {
-    "label": "Cash boost is borrowed",
-    "text": "Year-end cash is now seen at $8.1\u20138.3B, up from $4.7\u20135.2B. About $2.6B of the rise is net proceeds from a $3.0B convertible note sale."
+    "label": "Cash boost is mostly borrowing",
+    "text": "Year-end cash outlook jumped to $8.1\u20138.3B from $4.7\u20135.2B, but $2.6B of that is net proceeds from convertible debt. Most Q3 sales were still uncollected at quarter-end."
    },
    {
-    "label": "Profit is seasonal",
-    "text": "Net income was $162M versus a $200M loss a year ago. Nine-month loss is still $1.96B, and most Q3 sales were not yet collected."
+    "label": "Melanoma shot works, flu launch small",
+    "text": "Intismeran plus Keytruda cut melanoma recurrence or death risk 42% in Phase 3, with regulatory filings being prepared. The flu shot won FDA approval in August but launches only in limited form this season."
    },
    {
-    "label": "Melanoma data lead pipeline",
-    "text": "The melanoma cancer vaccine with Merck cut recurrence or death risk 42% in Phase 3, and filings are being prepared. The norovirus vaccine's path forward is unclear."
+    "label": "Spending down, norovirus stalled",
+    "text": "R&D fell 27% to $583M and 2026 R&D guidance dropped to about $2.7B from $2.9B. The norovirus vaccine gets no new trial cohort this season; its path forward is undecided."
    }
   ],
   "transcript_read": false,
