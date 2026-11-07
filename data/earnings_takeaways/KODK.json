@@ -1,33 +1,35 @@
 {
  "ticker": "KODK",
- "updated": "2026-11-07T01:06Z",
+ "updated": "2026-11-07T05:34Z",
  "last": {
   "date": "2026-11-03",
   "timing": "post",
   "move_pct": -13.4,
   "basis": "close",
-  "verdict": "Chemicals growth and lower interest costs lifted Kodak's profit, but Print fell 7% and its operating profit collapsed from $8 million to $1 million.",
+  "verdict": "Chemicals growth is carrying Kodak while Print slips; the profit rise comes mostly from lower interest, not stronger operations.",
   "takeaways": [
    {
-    "label": "Print is weakening",
-    "text": "Print revenue fell 7% to $165 million, and its operational EBITDA dropped from $8 million to $1 million. Kodak blamed challenging economic conditions."
+    "label": "Print profit nearly gone",
+    "text": "Print revenue fell 7% to $165 million and its operating profit (EBITDA) dropped to $1 million from $8 million. The chemicals unit, up 21% to $99 million, offset the loss."
    },
    {
-    "label": "Chemicals carry growth",
-    "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million and its operational EBITDA rose from $16 million to $21 million. It is now the most profitable unit."
+    "label": "Profit rise is mostly interest",
+    "text": "Net income rose to $21 million from $13 million, but interest cost fell to $3 million from $18 million. Operating profit (EBITDA) rose only $2 million, to $31 million."
    },
    {
-    "label": "Profit helped by debt paydown",
-    "text": "Net income rose to $21 million from $13 million, mostly because interest expense fell from $18 million to $3 million. Operational EBITDA rose only $2 million, to $31 million."
+    "label": "Costs rising",
+    "text": "Overhead rose to $50 million from $41 million, mainly stock pay ($8 million versus $1 million). Operating profit also fell from $36 million last quarter."
    },
    {
-    "label": "Cash up, but inventory builds",
-    "text": "Cash rose $27 million to $317 million in the quarter. Year to date, operating cash flow was break-even, and inventories rose $44 million."
+    "label": "Cash up, but thin",
+    "text": "Cash rose $27 million to $317 million in the quarter, yet operating cash flow for the first nine months was only break-even, with $44 million tied up in inventory."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm"
+   "https://www.sec.gov/Archives/edgar/data/31235/000119312526445409/kodk-ex99_1.htm",
+   "https://finviz.com/news/414875/kodak-reports-third-quarter-2026-financial-results",
+   "https://www.panabee.com/news/kodak-earnings-q4-2026"
   ]
  },
  "history": [

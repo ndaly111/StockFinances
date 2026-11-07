@@ -1,35 +1,34 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-07T01:09Z",
+ "updated": "2026-11-07T05:39Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
-  "move_pct": -21.2,
-  "basis": "after hours",
-  "verdict": "Opendoor bought far more homes but earned less on each sale, and it expects profit dollars to shrink again next quarter.",
+  "move_pct": -21.8,
+  "basis": "close",
+  "verdict": "Opendoor is buying homes far faster than it sells them, and profit per home and losses are both heading the wrong way.",
   "takeaways": [
    {
-    "label": "Margins missed",
-    "text": "Contribution margin, the profit left after direct selling and holding costs, fell to 3.3% from 5.8% last quarter, below the 4%\u20134.5% outlook. Profit dropped to $34M from $51M."
+    "label": "Profit per home shrinking",
+    "text": "Contribution margin fell to 3.3% from 5.8% last quarter, with profit per home sold at $12K versus $22K. The company expects contribution profit dollars to decline again in Q4."
    },
    {
-    "label": "Weaker profit outlook",
-    "text": "Fourth-quarter revenue is guided up at least 40% year over year, but profit dollars are expected to fall again. Adjusted EBITDA loss is guided to $70M\u2013$85M, versus $31M this quarter."
+    "label": "Bigger losses guided",
+    "text": "Q4 adjusted EBITDA loss is guided to $70M-$85M, versus $31M in Q3 and $4M in Q2. The Q3 net loss was $218M."
    },
    {
-    "label": "Inventory and debt swelling",
-    "text": "Inventory reached $2.57B (7,596 homes) from $925M at year-start. Short-term bank debt rose to $2.0B, and nine-month operating cash outflow hit $1.8B."
+    "label": "Inventory and debt ballooning",
+    "text": "Opendoor bought 4,865 homes but sold 2,728, lifting inventory to $2.57B. About $2.0B of bank loans against those homes now falls due within a year; cash is $910M."
    },
    {
-    "label": "Aging homes",
-    "text": "Homes listed over 120 days rose to 18% of listed inventory from 9% last quarter. Management admits it is behind on its goal of positive adjusted net income by year-end."
+    "label": "Growth continues",
+    "text": "Revenue rose to $1.02B, up 12% from a year ago. Q4 revenue is guided to grow at least 40% year over year, against $736M last year."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm",
-   "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/q32026formxex991earningsre.htm",
-   "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000028/open-20260930.htm"
+   "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/q32026formxex991earningsre.htm"
   ]
  },
  "history": [
