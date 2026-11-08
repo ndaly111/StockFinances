@@ -1,34 +1,36 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-08T01:09Z",
+ "updated": "2026-11-08T05:36Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
   "move_pct": -21.8,
   "basis": "close",
-  "verdict": "Opendoor has loaded up on homes it is struggling to resell at a profit, and it expects bigger losses next quarter.",
+  "verdict": "Opendoor is buying many more homes and growing revenue, but selling them at thinner margins in a weak market. Losses widen, and Q4 is guided worse.",
   "takeaways": [
    {
-    "label": "Margin missed guidance",
-    "text": "Profit margin on homes sold was 3.3%, below the 4%\u20134.5% guided last quarter and down from 5.8%. Profit per home fell to about $12,000 from $22,000."
+    "label": "Margins keep shrinking",
+    "text": "Contribution margin fell to 3.3% from 5.8% last quarter. Management blamed spring-bought homes selling into a weaker market with deeper price cuts, and expects another decline in Q4."
    },
    {
-    "label": "Losses to widen",
-    "text": "Next-quarter adjusted EBITDA loss is guided at $70M\u2013$85M, versus $31M this quarter. Profit dollars per home sold are expected to fall again in what management calls a difficult market."
+    "label": "Bigger bet on inventory",
+    "text": "Homes bought rose to 4,865 from 1,169 a year ago. Inventory reached $2.57B, funded mostly with debt, and operating cash flow was -$1.8B over nine months."
    },
    {
-    "label": "Inventory pile-up",
-    "text": "Homes held rose to 7,596 and inventory to $2.57B, from $1.05B a year ago. Opendoor bought 4,865 homes, but only 2,728 sold."
+    "label": "Losses widen, profit goal slips",
+    "text": "Net loss was $218M against $90M a year ago. Q4 adjusted EBITDA loss is guided at $70M-$85M, and management admits it is behind on reaching profitability by year-end."
    },
    {
-    "label": "Debt due within a year",
-    "text": "Debt due within a year, mostly home-backed loans, jumped to $2.0B from $52M at year-end. Cash was $910M, and nine-month operating cash outflow was $1.8B."
+    "label": "Revenue growth, softer than hoped",
+    "text": "Revenue was $1.02B, up 12% from a year ago. Q4 is guided to grow at least 40%, off a weak $736M base."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm",
    "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/q32026formxex991earningsre.htm",
-   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm"
+   "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000028/open-20260930.htm",
+   "https://www.fool.com/earnings/call-transcripts/2026/11/06/opendoor-open-q3-2026-earnings-call-transcript/"
   ]
  },
  "history": [

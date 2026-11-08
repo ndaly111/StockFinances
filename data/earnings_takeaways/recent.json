@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-08T01:10Z",
+ "updated": "2026-11-08T05:37Z",
  "reports": [
   {
    "ticker": "BRK-B",
@@ -31,23 +31,23 @@
    "date": "2026-11-06",
    "move_pct": 5.3,
    "basis": "close",
-   "verdict": "Moderna swung to a quarterly profit and raised its revenue outlook, but the cash forecast jump comes mostly from borrowing, not operations.",
+   "verdict": "Moderna swung to a $162M profit on international COVID vaccine deliveries and raised its revenue outlook, but the cash jump is mostly borrowed.",
    "takeaways": [
     {
-     "label": "Profit and higher outlook",
-     "text": "Revenue rose 29% to $1.3B on international COVID vaccine deliveries, giving net income of $162M versus a $200M loss a year ago. Full-year growth is now seen at 15\u201325%, up from up to 10%."
+     "label": "Revenue outlook raised",
+     "text": "Full-year revenue growth is now expected at 15%\u201325%, up from up to 10%. Third-quarter revenue rose 29% to $1.3B, driven by international COVID vaccine deliveries."
     },
     {
-     "label": "Cash boost is borrowed",
-     "text": "Year-end cash is now seen at $8.1\u20138.3B, up from $4.7\u20135.2B, largely because of $2.6B net from convertible notes. Most Q3 sales are still uncollected; receivables hit $1.37B."
+     "label": "Profit, but cash is borrowed",
+     "text": "Quarterly net income was $162M versus a $200M loss a year ago. Year-end cash is now seen at $8.1\u20138.3B, up from $4.7\u20135.2B, largely from $2.6B net convertible-note proceeds."
     },
     {
      "label": "Melanoma shot works",
-     "text": "With Merck, intismeran plus Keytruda cut the risk of recurrence or death 42% versus Keytruda alone in Phase 3. Filings are being prepared, and further readouts are expected."
+     "text": "Phase 3 data for the Moderna-Merck cancer treatment intismeran showed a 42% lower risk of recurrence or death versus Keytruda alone. Regulatory filings are being prepared."
     },
     {
-     "label": "Flu launch limited",
-     "text": "The flu vaccine mFLUSIVA won U.S. approval, but only a limited launch is planned this season because approval came after contracting. Norovirus has no new cohort this season."
+     "label": "Flu launch is limited",
+     "text": "The FDA approved its flu vaccine, but approval came after annual contracting, so this season's U.S. launch is limited. The norovirus vaccine's path is unclear."
     }
    ]
   },
@@ -56,23 +56,23 @@
    "date": "2026-11-05",
    "move_pct": -21.8,
    "basis": "close",
-   "verdict": "Opendoor has loaded up on homes it is struggling to resell at a profit, and it expects bigger losses next quarter.",
+   "verdict": "Opendoor is buying many more homes and growing revenue, but selling them at thinner margins in a weak market. Losses widen, and Q4 is guided worse.",
    "takeaways": [
     {
-     "label": "Margin missed guidance",
-     "text": "Profit margin on homes sold was 3.3%, below the 4%\u20134.5% guided last quarter and down from 5.8%. Profit per home fell to about $12,000 from $22,000."
+     "label": "Margins keep shrinking",
+     "text": "Contribution margin fell to 3.3% from 5.8% last quarter. Management blamed spring-bought homes selling into a weaker market with deeper price cuts, and expects another decline in Q4."
     },
     {
-     "label": "Losses to widen",
-     "text": "Next-quarter adjusted EBITDA loss is guided at $70M\u2013$85M, versus $31M this quarter. Profit dollars per home sold are expected to fall again in what management calls a difficult market."
+     "label": "Bigger bet on inventory",
+     "text": "Homes bought rose to 4,865 from 1,169 a year ago. Inventory reached $2.57B, funded mostly with debt, and operating cash flow was -$1.8B over nine months."
     },
     {
-     "label": "Inventory pile-up",
-     "text": "Homes held rose to 7,596 and inventory to $2.57B, from $1.05B a year ago. Opendoor bought 4,865 homes, but only 2,728 sold."
+     "label": "Losses widen, profit goal slips",
+     "text": "Net loss was $218M against $90M a year ago. Q4 adjusted EBITDA loss is guided at $70M-$85M, and management admits it is behind on reaching profitability by year-end."
     },
     {
-     "label": "Debt due within a year",
-     "text": "Debt due within a year, mostly home-backed loans, jumped to $2.0B from $52M at year-end. Cash was $910M, and nine-month operating cash outflow was $1.8B."
+     "label": "Revenue growth, softer than hoped",
+     "text": "Revenue was $1.02B, up 12% from a year ago. Q4 is guided to grow at least 40%, off a weak $736M base."
     }
    ]
   },
@@ -323,156 +323,6 @@
     {
      "label": "Pension deals lighter",
      "text": "Large pension-transfer volume has been light this year. Management called it timing, citing a back-ended pipeline. Group Benefits earnings rose 14% on favorable claims, though management expects that to ease gradually."
-    }
-   ]
-  },
-  {
-   "ticker": "KODK",
-   "date": "2026-11-03",
-   "move_pct": -13.4,
-   "basis": "close",
-   "verdict": "Chemicals growth and lower debt costs lifted profit, but Print, once the turnaround story, shrank 7% and earned almost nothing.",
-   "takeaways": [
-    {
-     "label": "Print turned sour",
-     "text": "Print revenue fell 7% to $165 million, after growing 10% last quarter. Its operational EBITDA (a core profit measure) dropped to $1 million from $8 million."
-    },
-    {
-     "label": "Chemicals carry the load",
-     "text": "Advanced Materials & Chemicals revenue rose 21% to $99 million, and its operational EBITDA rose to $21 million from $16 million. It now supplies nearly all of Kodak's segment profit."
-    },
-    {
-     "label": "Profit gain came from debt",
-     "text": "Net income rose to $21 million from $13 million, helped by interest expense falling to $3 million from $18 million. Operational EBITDA rose only $2 million, to $31 million."
-    },
-    {
-     "label": "Cash rebuilt, costs creeping",
-     "text": "Cash rose $27 million to $317 million on $25 million of operating cash flow. Stock-based pay jumped to $8 million from $1 million, pushing up overhead costs."
-    }
-   ]
-  },
-  {
-   "ticker": "SHOP",
-   "date": "2026-11-03",
-   "move_pct": -8.7,
-   "basis": "close",
-   "verdict": "Shopify held 32% growth and a record 22% cash margin, but the first revenue miss in four years and a flat fourth-quarter outlook cooled enthusiasm.",
-   "takeaways": [
-    {
-     "label": "First revenue miss",
-     "text": "Revenue of $3.74B (up 32%) came in just under analyst estimates of about $3.75B, reportedly the first miss in about four years. Sales volume rose 29% to $119B, also slightly light."
-    },
-    {
-     "label": "Cash margin flattered",
-     "text": "The 22% free cash flow margin included temporary boosts: a marketing test, tax timing and an accounting change. The Q4 guide is merely flat with last year's Q4, and Q4 spending steps up."
-    },
-    {
-     "label": "Steady holiday outlook",
-     "text": "Q4 revenue growth is guided to the low thirties, matching Q3. Gross profit is guided to grow in the high twenties, and operating costs to run 29\u201330% of revenue."
-    },
-    {
-     "label": "AI shopping still small",
-     "text": "Orders from AI-driven traffic rose 3.3x, but management called volume small. Shopify also paid about $100M for Shop.com and is spending more on AI tools."
-    }
-   ]
-  },
-  {
-   "ticker": "TEVA",
-   "date": "2026-11-03",
-   "move_pct": 3.0,
-   "basis": "close",
-   "verdict": "Teva beat profit forecasts and raised its brand-drug outlook, but the Austedo boom faces a Medicare pricing hit from January.",
-   "takeaways": [
-    {
-     "label": "Brand drugs driving growth",
-     "text": "Austedo, Ajovy and Uzedy together grew 33% to about $1.1 billion. 2026 Austedo guidance rose to $2.55\u20132.65 billion and total revenue guidance to $16.7\u201317.0 billion."
-    },
-    {
-     "label": "Austedo pricing headwind",
-     "text": "Management expects Austedo sales to fall year over year in Q4 and flagged Medicare price changes in January. The CEO still sees peak sales above $3 billion."
-    },
-    {
-     "label": "Profit beat, sales slipped",
-     "text": "Adjusted EPS was $0.86 versus $0.78 a year ago, and margins widened. Revenue still fell 2% to $4.4 billion because generic Revlimid sales dropped."
-    },
-    {
-     "label": "Stronger balance sheet",
-     "text": "Teva refinanced about $4.7 billion of notes, and Moody's and S&P upgraded it to investment grade. Total debt is still $16.7 billion."
-    }
-   ]
-  },
-  {
-   "ticker": "PFE",
-   "date": "2026-11-03",
-   "move_pct": -2.2,
-   "basis": "close",
-   "verdict": "Pfizer raised 2026 guidance on strong Eliquis and new-drug sales, but flat quarterly revenue shows COVID and vaccine declines still weigh.",
-   "takeaways": [
-    {
-     "label": "Guidance raised",
-     "text": "Full-year revenue outlook rose $1.5B at the midpoint to $62-64B, and EPS to $2.95-$3.05 from $2.80-$3.00, driven by Eliquis and newer drugs."
-    },
-    {
-     "label": "Eliquis and new drugs",
-     "text": "Eliquis grew 25% on lower rebates and higher demand. Launched and acquired products rose 32%, and non-COVID sales rose 7%. Padcev jumped 55%."
-    },
-    {
-     "label": "COVID and vaccines drag",
-     "text": "Revenue was flat at $16.6B. Paxlovid fell 63%, Comirnaty 29% and Prevnar 10% on lower vaccination rates and shrinking adult share."
-    },
-    {
-     "label": "Obesity and patent cliff",
-     "text": "Pfizer targets a first approval for its monthly obesity drug in 2028. It also added $2.5B of 2027-2029 cost cuts to cushion coming patent expiries."
-    }
-   ]
-  },
-  {
-   "ticker": "AMD",
-   "date": "2026-11-03",
-   "move_pct": 1.0,
-   "basis": "close",
-   "verdict": "AMD's AI data center business nearly doubled and the fourth-quarter forecast is far above Wall Street's, though margins and cash flow lag the growth.",
-   "takeaways": [
-    {
-     "label": "Data center surge",
-     "text": "Revenue rose 45% to $13.4B, above AMD's own guidance. Data center sales jumped 97% to $8.5B, now about 64% of the total."
-    },
-    {
-     "label": "Big Q4 guide",
-     "text": "AMD guided fourth-quarter revenue to about $17B, against analyst estimates near $16.2B. Management says growth accelerates as Helios AI racks and Venice server chips ramp."
-    },
-    {
-     "label": "2027 ambition",
-     "text": "Lisa Su now expects revenue to grow more than 80% in 2027, a sharp step up in the long-term growth story."
-    },
-    {
-     "label": "Margins and cash lag",
-     "text": "Gross margin is guided to about 55%, down from 56%. Free cash flow fell to $554M from $1.5B a year ago. Gaming sales dropped 40%."
-    }
-   ]
-  },
-  {
-   "ticker": "MPC",
-   "date": "2026-11-03",
-   "move_pct": -0.7,
-   "basis": "close",
-   "verdict": "Refining profits hit another record on war-inflated margins, and management expects them to stay high through mid-2027 while it sells two refineries for cash.",
-   "takeaways": [
-    {
-     "label": "Record margins again",
-     "text": "Profit per barrel refined jumped to $45.70 from $17.60 a year ago. Adjusted earnings were $26.93 a share, above the roughly $24.5 analysts expected."
-    },
-    {
-     "label": "Margins seen lasting",
-     "text": "Management expects elevated margins through at least mid-2027, citing about 10 million barrels a day of global refining capacity offline, and says it has seen no demand destruction."
-    },
-    {
-     "label": "Selling two refineries",
-     "text": "Marathon is selling its St. Paul Park and Mandan refineries to CVR Energy for $4.2 billion, with $3.45 billion going to Marathon. Proceeds go mainly to the Gulf Coast."
-    },
-    {
-     "label": "Heavy cash return",
-     "text": "Marathon returned $3.3 billion in the quarter, raised its dividend 10% and added a $5 billion buyback authorization. It holds $13.6 billion in cash."
     }
    ]
   }
