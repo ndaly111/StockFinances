@@ -1,35 +1,34 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-07T21:19Z",
+ "updated": "2026-11-08T01:09Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
   "move_pct": -21.8,
   "basis": "close",
-  "verdict": "Opendoor bought far more homes than it sold, and it now expects Q4 operating losses to widen to $70M\u2013$85M as profit per home sold falls.",
+  "verdict": "Opendoor has loaded up on homes it is struggling to resell at a profit, and it expects bigger losses next quarter.",
   "takeaways": [
    {
-    "label": "Profit shrinking, losses widening",
-    "text": "Contribution margin fell to 3.3% from 5.8% last quarter, below the 4%\u20134.5% guide. Q4 contribution profit is guided lower again, with an adjusted EBITDA loss of $70M\u2013$85M versus $31M now."
+    "label": "Margin missed guidance",
+    "text": "Profit margin on homes sold was 3.3%, below the 4%\u20134.5% guided last quarter and down from 5.8%. Profit per home fell to about $12,000 from $22,000."
    },
    {
-    "label": "Inventory and debt ballooning",
-    "text": "Homes in inventory hit 7,596 (3,139 a year ago) after 4,865 purchases. Inventory is $2.6B, and $2.0B of home-loan debt is now due within a year."
+    "label": "Losses to widen",
+    "text": "Next-quarter adjusted EBITDA loss is guided at $70M\u2013$85M, versus $31M this quarter. Profit dollars per home sold are expected to fall again in what management calls a difficult market."
    },
    {
-    "label": "Growth missed, but guided higher",
-    "text": "Revenue rose 12% to $1.02B, short of the 20%+ target. Q4 revenue is guided up at least 40%, selling into what the company calls a difficult market."
+    "label": "Inventory pile-up",
+    "text": "Homes held rose to 7,596 and inventory to $2.57B, from $1.05B a year ago. Opendoor bought 4,865 homes, but only 2,728 sold."
    },
    {
-    "label": "Profit goal slipping",
-    "text": "Management says it is behind its goal of positive adjusted net income by end of 2026, blaming a slower housing market. Net loss was $218M."
+    "label": "Debt due within a year",
+    "text": "Debt due within a year, mostly home-backed loans, jumped to $2.0B from $52M at year-end. Cash was $910M, and nine-month operating cash outflow was $1.8B."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/q32026formxex991earningsre.htm",
-   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm",
-   "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000028/open-20260930.htm"
+   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm"
   ]
  },
  "history": [
