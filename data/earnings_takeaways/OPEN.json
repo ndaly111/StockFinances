@@ -1,34 +1,35 @@
 {
  "ticker": "OPEN",
- "updated": "2026-11-06T21:23Z",
+ "updated": "2026-11-07T21:19Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
   "move_pct": -21.8,
   "basis": "close",
-  "verdict": "Opendoor is buying homes far faster than it can sell them, and profit per home sold is shrinking while losses and debt grow.",
+  "verdict": "Opendoor bought far more homes than it sold, and it now expects Q4 operating losses to widen to $70M\u2013$85M as profit per home sold falls.",
   "takeaways": [
    {
-    "label": "Margins fell short",
-    "text": "Profit per home sold fell to 3.3% of revenue from 5.8% last quarter, below the 4%\u20134.5% guided in August. Gross margin dropped to 3.7% from 9.7%."
+    "label": "Profit shrinking, losses widening",
+    "text": "Contribution margin fell to 3.3% from 5.8% last quarter, below the 4%\u20134.5% guide. Q4 contribution profit is guided lower again, with an adjusted EBITDA loss of $70M\u2013$85M versus $31M now."
    },
    {
-    "label": "Inventory and debt balloon",
-    "text": "Homes in inventory rose to 7,596 from 5,459, worth $2.6B. Asset-backed debt due within a year jumped to $2.0B from $52M at year-end."
+    "label": "Inventory and debt ballooning",
+    "text": "Homes in inventory hit 7,596 (3,139 a year ago) after 4,865 purchases. Inventory is $2.6B, and $2.0B of home-loan debt is now due within a year."
    },
    {
-    "label": "Older homes piling up",
-    "text": "Homes listed over 120 days doubled to 18% of listings from 9% last quarter. Write-downs on unsold homes rose to $53M from $14M."
+    "label": "Growth missed, but guided higher",
+    "text": "Revenue rose 12% to $1.02B, short of the 20%+ target. Q4 revenue is guided up at least 40%, selling into what the company calls a difficult market."
    },
    {
-    "label": "Bigger losses ahead",
-    "text": "Opendoor guides Q4 revenue up at least 40% but profit per home sold down, with an adjusted EBITDA loss of $70M\u2013$85M versus $31M now. It admits it is behind on its goal of adjusted net profit by end of 2026."
+    "label": "Profit goal slipping",
+    "text": "Management says it is behind its goal of positive adjusted net income by end of 2026, blaming a slower housing market. Net loss was $218M."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000027/q32026formxex991earningsre.htm",
-   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm"
+   "https://www.sec.gov/Archives/edgar/data/1801169/000180116926000027/exhibit992-q32026form8xk.htm",
+   "https://www.sec.gov/Archives/edgar/data/0001801169/000180116926000028/open-20260930.htm"
   ]
  },
  "history": [

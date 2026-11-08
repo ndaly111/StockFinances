@@ -1,35 +1,37 @@
 {
  "ticker": "DKNG",
- "updated": "2026-11-06T21:17Z",
+ "updated": "2026-11-07T05:33Z",
  "last": {
   "date": "2026-11-05",
   "timing": "post",
   "move_pct": -21.3,
   "basis": "close",
-  "verdict": "DraftKings slashed 2026 profit guidance to $175-275 million from $700-900 million to fund prediction markets, betting 2027 pays off.",
+  "verdict": "DraftKings turned its profit forecast sharply lower, because a roughly $700 million bet on its Predictions product will leave 2026 profit near $200 million.",
   "takeaways": [
    {
-    "label": "Profit outlook gutted",
-    "text": "2026 adjusted EBITDA (operating profit before some costs) guidance fell to $175-275 million from $700-900 million. Predictions spending of $650-700 million is the main cause. Revenue guidance fell to $6.35-6.55 billion."
+    "label": "Profit forecast slashed",
+    "text": "2026 adjusted EBITDA, a measure of operating profit, is now $175-275 million, down from $700-900 million. Predictions spending of $650-700 million drives the cut."
    },
    {
-    "label": "Core business also softer",
-    "text": "Excluding Predictions, 2026 adjusted EBITDA is now guided at $875-925 million, below the roughly $1 billion expected in August. Management cited extra iGaming investment and customer-friendly sports results."
+    "label": "Weak 2027 outlook",
+    "text": "2027 profit is guided to $800 million-$1 billion, including about $300 million of Predictions spending. Coverage says that trails the roughly $1.12 billion Wall Street expected."
    },
    {
-    "label": "Rebound promised for 2027",
-    "text": "2027 guidance is revenue of $7.35-7.75 billion and adjusted EBITDA of $800 million-$1 billion. That includes $650-750 million of Predictions revenue and about $300 million of Predictions spending."
+    "label": "Core business softer",
+    "text": "Core 2026 profit guidance is now $875-925 million, below the roughly $1 billion guided in August, citing iGaming investment and customer-friendly sports results. Q3 revenue rose 16% to $1.33 billion, but the net loss was $469 million."
    },
    {
-    "label": "Growth bought with losses",
-    "text": "Revenue rose 16% to $1.33 billion and monthly paying users rose 13% to 4.1 million. Net loss reached $469 million, versus $257 million a year earlier."
+    "label": "Predictions payback claim",
+    "text": "Predictions revenue is guided to $650-750 million in 2027. Robins said that even if sports contracts ended in July 2028, 2027 customers would pay back within four years."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/0001883685/000188368526000039/q326-prx8kexx991.htm",
-   "https://www.yogonet.com/international/news/2026/11/06/127212-draftkings-cuts-2026-earnings-forecast-by-up-to-625-million-as-quarterly-losses-nearly-double",
-   "https://qz.com/draftkings-stock-prediction-markets-profit-outlook-110626"
+   "https://finance.yahoo.com/markets/stocks/articles/draftkings-plunges-2027-forecast-misses-214756000.html",
+   "https://finance.yahoo.com/markets/stocks/articles/draftkings-dkng-said-q3-earnings-161458478.html",
+   "https://igamingbusiness.com/sports-betting/draftkings-2026-q3-earnings/",
+   "https://247wallst.com/investing/2026/11/06/draftkings-plunges-27-on-weak-2027-forecast-and-prediction-market-spending-flutter-sinks-8-penn-entertainment-drops-4/"
   ]
  },
  "history": [

@@ -1486,21 +1486,33 @@ def main() -> int:
                 for s, c in zip(segs, colors)
             ) + '</div>'
 
-            # Mix table on the latest period (TTM when available)
+            # Revenue for each reported fiscal year (last 3) + TTM; profit (when
+            # reported) sits small under each revenue figure; Mix = latest period.
             col = "TTM" if "TTM" in ax["years"] else fy_years[-1]
             col_label = "TTM" if col == "TTM" else f"FY{col}"
+            tbl_years = fy_years[-3:] + (["TTM"] if "TTM" in ax["years"] else [])
             profit_label = ax.get("profit_label")
             total = sum(s["revenue"].get(col) or 0.0 for s in segs)
             profit_abbr = {"Gross Profit": "GP", "Operating Income": "OI"}.get(profit_label, profit_label)
-            head = (f'<th>{title}</th><th>{col_label} Rev</th>'
-                    + (f'<th>{col_label} {profit_abbr}</th>' if profit_label else '')
+            head = (f'<th>{title}</th>'
+                    + "".join(f'<th>{y}</th>' for y in tbl_years)
                     + '<th>Mix</th>')
+
+            def _cell(s, y):
+                txt = _fmt_b(s["revenue"].get(y))
+                if profit_label:
+                    p = s["profit"].get(y)
+                    if p is not None:
+                        txt += (f'<br><span style="font-size:10px;color:#666">'
+                                f'{profit_abbr} {_fmt_b(p)}</span>')
+                return f'<td>{txt}</td>'
+
             rows = ""
             for s in sorted(segs, key=lambda s: -(s["revenue"].get(col) or 0.0)):
                 rev = s["revenue"].get(col)
                 pct = f"{rev / total * 100:.1f}%" if rev is not None and total else "–"
-                rows += (f'<tr><td class="year">{s["name"]}</td><td>{_fmt_b(rev)}</td>'
-                         + (f'<td>{_fmt_b(s["profit"].get(col))}</td>' if profit_label else '')
+                rows += (f'<tr><td class="year">{s["name"]}</td>'
+                         + "".join(_cell(s, y) for y in tbl_years)
                          + f'<td><span class="delta">{pct}</span></td></tr>')
             table = (f'<table class="ft" style="margin-top:10px;font-size:12px">'
                      f'<thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>')
