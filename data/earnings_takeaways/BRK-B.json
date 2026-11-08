@@ -1,38 +1,35 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-07T21:16Z",
+ "updated": "2026-11-08T13:42Z",
  "last": {
   "date": "2026-11-07",
   "timing": "pre",
   "move_pct": 0.1,
   "basis": "after hours",
-  "verdict": "Berkshire's profit slipped as GEICO's insurance results weakened, but the company more than doubled its stock buybacks to about $9.6 billion.",
+  "verdict": "Berkshire's operating profit fell about 6% as insurance weakened, while it more than doubled buybacks to $9.6 billion and kept a $377 billion cash pile.",
   "takeaways": [
    {
-    "label": "Insurance weakened",
-    "text": "Insurance underwriting profit fell 42.9% to $1.35 billion, mainly on rising GEICO losses and higher expenses, pulling operating earnings down 5.8% to $12.7 billion."
+    "label": "Operating profit slipped",
+    "text": "Operating earnings fell 5.8% to $12.7 billion from $13.5 billion a year earlier, as insurance weakness outweighed gains at the railroad, utilities and manufacturing businesses."
+   },
+   {
+    "label": "Insurance sharply weaker",
+    "text": "Insurance underwriting profit dropped 43% to $1.35 billion, and investment income from insurance float fell 14% to $2.7 billion, the main drag on the quarter."
    },
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased about $9.6 billion of its own stock, more than double the prior quarter, which signals it sees its shares as good value."
+    "text": "Berkshire repurchased about $9.6 billion of its own stock, more than double the $4.5 billion in the prior quarter, bringing 2026 buybacks to roughly $14.4 billion."
    },
    {
-    "label": "Rail and utilities offset",
-    "text": "BNSF railroad earnings rose 19.3% to $1.73 billion and Berkshire Hathaway Energy rose 8.3%, cushioning the insurance decline."
-   },
-   {
-    "label": "Cash pile still huge",
-    "text": "Cash and Treasury bills stood at $377.4 billion despite the larger buybacks. Net earnings fell to $22.1 billion from $30.8 billion a year earlier."
+    "label": "Cash still enormous",
+    "text": "Cash and Treasury bills rose 3% to $377.4 billion despite the buybacks. Net earnings fell 28% to $22.1 billion as investment gains roughly halved."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.cnbc.com/2026/11/07/berkshire-hathaway-q3-2026-earnings-buybacks.html",
-   "https://www.bloomberg.com/news/articles/2026-11-07/berkshire-hathaway-s-operating-earnings-fall-buybacks-rise",
-   "https://www.theinsurer.com/ti/news/berkshire-hathaways-insurance-operating-earnings-drop-429-to-135-billion-in-q3-2026-11-07/",
-   "https://www.forbes.com/sites/bill_stone/2026/11/07/berkshire-hathaway-q3-earnings-miss-on-insurance-not-on-strategy/",
-   "https://mlq.ai/news/berkshire-hathaways-third-quarter-operating-earnings-fall-6-as-its-cash-pile-reaches-377-billion/",
-   "https://berkshirehathaway.com/news/nov0726.pdf"
+   "https://finance.yahoo.com/markets/stocks/articles/berkshire-hathaway-operating-earnings-fall-130121017.html",
+   "https://www.bloomberg.com/news/articles/2026-11-07/berkshire-hathaway-s-operating-earnings-fall-buybacks-rise"
   ]
  },
  "history": [
