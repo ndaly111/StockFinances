@@ -1,34 +1,35 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-08T13:42Z",
+ "updated": "2026-11-08T16:43Z",
  "last": {
   "date": "2026-11-07",
   "timing": "pre",
   "move_pct": 0.1,
   "basis": "after hours",
-  "verdict": "Berkshire's operating profit fell about 6% as insurance weakened, while it more than doubled buybacks to $9.6 billion and kept a $377 billion cash pile.",
+  "verdict": "Berkshire's profit slipped as car-insurance earnings fell, but it more than doubled share buybacks to about $9.6 billion.",
   "takeaways": [
    {
-    "label": "Operating profit slipped",
-    "text": "Operating earnings fell 5.8% to $12.7 billion from $13.5 billion a year earlier, as insurance weakness outweighed gains at the railroad, utilities and manufacturing businesses."
-   },
-   {
-    "label": "Insurance sharply weaker",
-    "text": "Insurance underwriting profit dropped 43% to $1.35 billion, and investment income from insurance float fell 14% to $2.7 billion, the main drag on the quarter."
-   },
-   {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased about $9.6 billion of its own stock, more than double the $4.5 billion in the prior quarter, bringing 2026 buybacks to roughly $14.4 billion."
+    "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and about $14.4 billion so far this year."
    },
    {
-    "label": "Cash still enormous",
-    "text": "Cash and Treasury bills rose 3% to $377.4 billion despite the buybacks. Net earnings fell 28% to $22.1 billion as investment gains roughly halved."
+    "label": "Insurance profit drops",
+    "text": "After-tax underwriting profit fell 43% to $1.35 billion. GEICO's pre-tax profit nearly halved to $982 million as injury claims got costlier and expenses rose 17%."
+   },
+   {
+    "label": "Core earnings dip",
+    "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, but lower interest income and weaker insurance more than offset them."
+   },
+   {
+    "label": "Stock buying stalls",
+    "text": "Berkshire sold slightly more stock than it bought, a net $0.4 billion, after a net $19.8 billion of purchases last quarter. Cash was also used on the $6.8 billion Taylor Morrison deal."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.cnbc.com/2026/11/07/berkshire-hathaway-q3-2026-earnings-buybacks.html",
-   "https://finance.yahoo.com/markets/stocks/articles/berkshire-hathaway-operating-earnings-fall-130121017.html",
+   "https://www.stocktitan.net/articles/berkshire-hathaway-q3-2026-earnings-abel-cash-pile",
+   "https://berkshirehathaway.com/news/nov0726.pdf",
    "https://www.bloomberg.com/news/articles/2026-11-07/berkshire-hathaway-s-operating-earnings-fall-buybacks-rise"
   ]
  },
