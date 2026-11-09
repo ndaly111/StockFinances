@@ -1,28 +1,53 @@
 {
- "updated": "2026-11-09T09:39Z",
+ "updated": "2026-11-09T13:44Z",
  "reports": [
   {
-   "ticker": "BRK-B",
-   "date": "2026-11-07",
-   "move_pct": 0.1,
+   "ticker": "EVGO",
+   "date": "2026-11-09",
+   "move_pct": -4.4,
    "basis": "after hours",
-   "verdict": "Berkshire's profit slipped as car-insurance earnings fell, but it more than doubled share buybacks to about $9.6 billion.",
+   "verdict": "EVgo cut its 2026 outlook a second time, while controlling owner LS Power's $2.00-a-share cash buyout offer now frames the stock.",
+   "takeaways": [
+    {
+     "label": "Second guidance cut",
+     "text": "Full-year revenue outlook fell to $375-400M from $400-430M. The adjusted EBITDA loss is now expected at $15-30M, versus a $5-25M loss in August."
+    },
+    {
+     "label": "Buyout offer",
+     "text": "LS Power, the controlling shareholder, offered $2.00 cash per share on November 2. The offer is unsolicited and non-binding. An independent board committee is reviewing it, and no decision has been made."
+    },
+    {
+     "label": "Charging up, total flat",
+     "text": "Charging revenue grew 29% to $72M, but total revenue slipped 1% to $91.4M. Revenue from building chargers for partners (eXtend) fell 49%."
+    },
+    {
+     "label": "Cash and losses worsening",
+     "text": "Net loss widened to $49.2M from $28.4M. Cash fell to $98.7M from $151M at year-end, and debt rose to about $317M from about $207M."
+    }
+   ]
+  },
+  {
+   "ticker": "BRK-B",
+   "date": "2026-11-09",
+   "move_pct": -0.3,
+   "basis": "after hours",
+   "verdict": "Berkshire stepped up its buybacks to $9.6 billion, but weaker insurance profit and lower interest income pulled operating earnings down about 6%.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and about $14.4 billion so far this year."
+     "text": "Berkshire bought back about $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, bringing the nine-month total to $14.4 billion."
     },
     {
-     "label": "Insurance profit drops",
-     "text": "After-tax underwriting profit fell 43% to $1.35 billion. GEICO's pre-tax profit nearly halved to $982 million as injury claims got costlier and expenses rose 17%."
+     "label": "Insurance profit sinks",
+     "text": "Insurance underwriting profit fell 43% to $1.35 billion, with GEICO's pre-tax profit nearly halved to $982 million as injury claims and expenses rose. Investment income from insurance also fell to $2.7 billion."
     },
     {
-     "label": "Core earnings dip",
-     "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, but lower interest income and weaker insurance more than offset them."
+     "label": "Operating earnings dip",
+     "text": "Operating earnings fell to $12.7 billion from $13.5 billion. Rail (+19%), utilities (+8%) and manufacturing, service and retailing (+12%) grew but did not offset insurance."
     },
     {
-     "label": "Stock buying stalls",
-     "text": "Berkshire sold slightly more stock than it bought, a net $0.4 billion, after a net $19.8 billion of purchases last quarter. Cash was also used on the $6.8 billion Taylor Morrison deal."
+     "label": "Net profit drops",
+     "text": "Net earnings fell to $22.1 billion from $30.8 billion, mostly because stock investment gains were $9.4 billion versus $17.3 billion a year earlier. Berkshire calls these gains unreliable."
     }
    ]
   },
@@ -31,23 +56,23 @@
    "date": "2026-11-06",
    "move_pct": 5.3,
    "basis": "close",
-   "verdict": "Moderna swung to a $162M quarterly profit and raised its 2026 revenue outlook, but the stronger cash outlook mostly comes from new debt.",
+   "verdict": "Moderna swung to a quarterly profit and raised its revenue outlook on overseas COVID sales, but the profit is seasonal and the bigger cash outlook is mostly borrowing.",
    "takeaways": [
     {
-     "label": "Revenue outlook raised",
-     "text": "Third-quarter revenue rose 29% to $1.3B, driven by international COVID vaccine deliveries. Full-year growth is now seen at 15%\u201325%, up from at most 10%. Moderna still expects about half of revenue from the U.S."
+     "label": "Seasonal profit, higher outlook",
+     "text": "Revenue rose 29% to $1.3B, mainly overseas COVID deliveries, and net income was $162M. Full-year growth is now seen at 15\u201325%, up from up to 10%. Nine-month loss is still $2.0B."
     },
     {
-     "label": "Cash boost is borrowed",
-     "text": "Year-end cash is now expected at $8.1\u20138.3B, up from $4.7\u20135.2B. The press release ties this partly to $2.6B net from convertible notes, which are debt that can convert to stock."
+     "label": "Cash jump is mostly debt",
+     "text": "Year-end cash is now seen at $8.1\u20138.3B, up from $4.7\u20135.2B, largely because of $2.6B net from convertible notes. Most Q3 sales were still uncollected."
     },
     {
-     "label": "Profit with caveats",
-     "text": "Net income was $162M versus a $200M loss a year ago, helped by R&D falling 27% to $583M. Most of the $1.3B in quarterly sales was still uncollected at quarter-end."
+     "label": "Cancer vaccine data",
+     "text": "Intismeran plus Keytruda cut melanoma recurrence or death risk by 42% in Phase 3. Moderna and Merck are preparing filings. Further readouts and rare-disease data are due."
     },
     {
-     "label": "Pipeline progress, mixed",
-     "text": "Melanoma cancer shot intismeran cut recurrence or death risk 42% in Phase 3. The flu vaccine won U.S. approval but launches only in limited form this season; norovirus is stalled."
+     "label": "Flu launch limited",
+     "text": "The flu shot mFLUSIVA won U.S. approval, but approval came after the annual contracting cycle, so this season's launch is limited. Moderna still awaits FDA guidance on refiling its flu/COVID combination shot."
     }
    ]
   },

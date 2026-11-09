@@ -1,34 +1,54 @@
 {
  "ticker": "EVGO",
- "updated": "2026-10-29T18:59Z",
+ "updated": "2026-11-09T13:42Z",
  "last": {
-  "date": "2026-08-05",
+  "date": "2026-11-09",
   "timing": "pre",
-  "move_pct": -11.6,
-  "basis": "close",
-  "verdict": "Investors sold EVgo after the company cut its full-year outlook and cash burn rose.",
-  "reasons": [
+  "move_pct": -4.4,
+  "basis": "after hours",
+  "verdict": "EVgo cut its 2026 outlook a second time, while controlling owner LS Power's $2.00-a-share cash buyout offer now frames the stock.",
+  "takeaways": [
    {
-    "label": "Lower 2026 outlook",
-    "text": "Revenue guidance cut to $400-430M from $410-470M; below analysts' roughly $433M."
+    "label": "Second guidance cut",
+    "text": "Full-year revenue outlook fell to $375-400M from $400-430M. The adjusted EBITDA loss is now expected at $15-30M, versus a $5-25M loss in August."
    },
    {
-    "label": "Bigger expected losses",
-    "text": "Full-year adjusted EBITDA now a $5-25M loss, versus a range reaching up to +$20M before."
+    "label": "Buyout offer",
+    "text": "LS Power, the controlling shareholder, offered $2.00 cash per share on November 2. The offer is unsolicited and non-binding. An independent board committee is reviewing it, and no decision has been made."
    },
    {
-    "label": "Cash and slower ramp",
-    "text": "Operating cash burn widened and new stalls ramped slower than hoped, despite Tesla deal."
+    "label": "Charging up, total flat",
+    "text": "Charging revenue grew 29% to $72M, but total revenue slipped 1% to $91.4M. Revenue from building chargers for partners (eXtend) fell 49%."
+   },
+   {
+    "label": "Cash and losses worsening",
+    "text": "Net loss widened to $49.2M from $28.4M. Cash fell to $98.7M from $151M at year-end, and debt rose to about $317M from about $207M."
    }
   ],
+  "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1821159/000182115926000017/exhibit991evgoearningsrele.htm",
-   "https://www.barchart.com/story/news/3661243/evgos-nasdaqevgo-q2-cy2026-sales-beat-estimates-but-stock-drops-12-7",
-   "https://www.marketbeat.com/instant-alerts/evgo-nasdaqevgo-releases-quarterly-earnings-results-beats-expectations-by-003-eps-2026-08-05/",
-   "https://www.sec.gov/Archives/edgar/data/0001821159/000182115926000009/evgoearningsrelease20260505.htm",
-   "https://www.mexc.com/news/850739"
+   "https://www.sec.gov/Archives/edgar/data/1821159/000182115926000032/exhibit991evgoearningsrele.htm"
   ]
  },
- "story": "Revenue and stall growth stayed strong through early 2026, but guidance kept disappointing. The March outlook came in below analyst hopes and the stock fell about 5%. May's outlook was reaffirmed with a muted reaction. August cut it, and shares sank.",
- "history": []
+ "history": [
+  {
+   "date": "2026-08-05",
+   "move_pct": -11.6,
+   "verdict": "Investors sold EVgo after the company cut its full-year outlook and cash burn rose.",
+   "reasons": [
+    {
+     "label": "Lower 2026 outlook",
+     "text": "Revenue guidance cut to $400-430M from $410-470M; below analysts' roughly $433M."
+    },
+    {
+     "label": "Bigger expected losses",
+     "text": "Full-year adjusted EBITDA now a $5-25M loss, versus a range reaching up to +$20M before."
+    },
+    {
+     "label": "Cash and slower ramp",
+     "text": "Operating cash burn widened and new stalls ramped slower than hoped, despite Tesla deal."
+    }
+   ]
+  }
+ ]
 }
