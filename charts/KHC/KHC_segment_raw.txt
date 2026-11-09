@@ -8,15 +8,15 @@ us-gaap:OperatingIncomeLoss 2023-12-30       4.572000e+09
         us-gaap:GrossProfit 2025-12-27       8.309000e+09
         us-gaap:GrossProfit 2024-12-28       8.968000e+09
         us-gaap:GrossProfit 2023-12-30       8.926000e+09
-us-gaap:OperatingIncomeLoss 2026-09-26       8.750000e+08
-us-gaap:OperatingIncomeLoss 2025-09-27       1.025000e+09
-us-gaap:OperatingIncomeLoss 2026-09-26      -4.411000e+09
-us-gaap:OperatingIncomeLoss 2025-09-27      -5.753000e+09
-us-gaap:OperatingIncomeLoss 2026-09-26       8.750000e+08
-us-gaap:OperatingIncomeLoss 2025-09-27       1.025000e+09
-us-gaap:OperatingIncomeLoss 2026-09-26      -4.411000e+09
-us-gaap:OperatingIncomeLoss 2025-09-27      -5.753000e+09
-        us-gaap:GrossProfit 2026-09-26       1.988000e+09
-        us-gaap:GrossProfit 2025-09-27       1.990000e+09
-        us-gaap:GrossProfit 2026-09-26       6.235000e+09
-        us-gaap:GrossProfit 2025-09-27       6.237000e+09
+us-gaap:OperatingIncomeLoss 2026-06-27      -6.431000e+09
+us-gaap:OperatingIncomeLoss 2025-06-28      -7.974000e+09
+us-gaap:OperatingIncomeLoss 2026-06-27      -5.286000e+09
+us-gaap:OperatingIncomeLoss 2025-06-28      -6.778000e+09
+us-gaap:OperatingIncomeLoss 2026-06-27      -6.431000e+09
+us-gaap:OperatingIncomeLoss 2025-06-28      -7.974000e+09
+us-gaap:OperatingIncomeLoss 2026-06-27      -5.286000e+09
+us-gaap:OperatingIncomeLoss 2025-06-28      -6.778000e+09
+        us-gaap:GrossProfit 2026-06-27       2.028000e+09
+        us-gaap:GrossProfit 2025-06-28       2.183000e+09
+        us-gaap:GrossProfit 2026-06-27       4.247000e+09
+        us-gaap:GrossProfit 2025-06-28       4.247000e+09
