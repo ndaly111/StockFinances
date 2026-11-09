@@ -1,36 +1,33 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-09T16:41Z",
+ "updated": "2026-11-09T21:16Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
-  "move_pct": -0.3,
-  "basis": "intraday",
-  "verdict": "Berkshire is buying back its own stock at a much faster pace as GEICO's profit halves and core earnings slip.",
+  "move_pct": 0.8,
+  "basis": "close",
+  "verdict": "Berkshire's profit slipped as insurance weakened, but it more than doubled share buybacks to $9.6 billion, signalling it sees its own stock as cheap.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased about $9.6 billion of its own shares in the quarter, double the prior quarter's $4.5 billion, and $14.4 billion for the year. Another $2 billion followed in October."
+    "text": "Berkshire repurchased about $9.6 billion of its own shares in the quarter, over double the prior quarter's $4.5 billion, bringing the year's total to about $14.4 billion."
    },
    {
-    "label": "GEICO profit halves",
-    "text": "GEICO's pre-tax profit nearly halved to $982 million as claims costs rose; the share of premiums paid out in claims climbed to 76.6% from 71.5%."
+    "label": "Insurance profit drops",
+    "text": "Insurance underwriting profit fell 43% to $1.35 billion, with GEICO's profit nearly halving as claims and costs rose. Investment income on insurance funds also fell, to $2.7 billion from $3.2 billion."
    },
    {
     "label": "Core earnings dip",
-    "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, but weaker insurance profit and lower investment income outweighed them."
+    "text": "Operating earnings fell 5.8% to $12.7 billion. Gains at rail ($1.73 billion), utilities ($1.61 billion) and manufacturing and retail ($4.04 billion) only partly offset the insurance weakness."
    },
    {
-    "label": "Cash pile shrinks",
-    "text": "Berkshire still holds a very large cash pile. Buybacks and the $6.8 billion Taylor Morrison purchase, which closed in July, are now drawing it down."
+    "label": "Headline profit falls",
+    "text": "Net earnings fell to $22.1 billion from $30.8 billion, mainly because stock-portfolio gains were smaller at $9.4 billion versus $17.3 billion. Berkshire itself calls quarterly investment gains misleading."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
-   "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
-   "https://gvwire.com/2026/11/07/berkshire-hathaway-accelerates-stock-buybacks-operating-profit-falls/",
-   "https://www.stocktitan.net/articles/berkshire-hathaway-q3-2026-earnings-abel-cash-pile"
+   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm"
   ]
  },
  "history": [
