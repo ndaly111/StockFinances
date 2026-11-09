@@ -1,36 +1,36 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-09T13:41Z",
+ "updated": "2026-11-09T16:41Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": -0.3,
-  "basis": "after hours",
-  "verdict": "Berkshire stepped up its buybacks to $9.6 billion, but weaker insurance profit and lower interest income pulled operating earnings down about 6%.",
+  "basis": "intraday",
+  "verdict": "Berkshire is buying back its own stock at a much faster pace as GEICO's profit halves and core earnings slip.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire bought back about $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, bringing the nine-month total to $14.4 billion."
+    "text": "Berkshire repurchased about $9.6 billion of its own shares in the quarter, double the prior quarter's $4.5 billion, and $14.4 billion for the year. Another $2 billion followed in October."
    },
    {
-    "label": "Insurance profit sinks",
-    "text": "Insurance underwriting profit fell 43% to $1.35 billion, with GEICO's pre-tax profit nearly halved to $982 million as injury claims and expenses rose. Investment income from insurance also fell to $2.7 billion."
+    "label": "GEICO profit halves",
+    "text": "GEICO's pre-tax profit nearly halved to $982 million as claims costs rose; the share of premiums paid out in claims climbed to 76.6% from 71.5%."
    },
    {
-    "label": "Operating earnings dip",
-    "text": "Operating earnings fell to $12.7 billion from $13.5 billion. Rail (+19%), utilities (+8%) and manufacturing, service and retailing (+12%) grew but did not offset insurance."
+    "label": "Core earnings dip",
+    "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, but weaker insurance profit and lower investment income outweighed them."
    },
    {
-    "label": "Net profit drops",
-    "text": "Net earnings fell to $22.1 billion from $30.8 billion, mostly because stock investment gains were $9.4 billion versus $17.3 billion a year earlier. Berkshire calls these gains unreliable."
+    "label": "Cash pile shrinks",
+    "text": "Berkshire still holds a very large cash pile. Buybacks and the $6.8 billion Taylor Morrison purchase, which closed in July, are now drawing it down."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
-   "https://qz.com/berkshire-hathaway-buybacks-profit-decline-third-quarter-110926",
-   "https://tradersagency.com/blog/berkshire-hathaway-q3-2026-insurance-underwriting-drops-43percent-buybacks-jump-to-dollar96-billion",
-   "https://www.gurufocus.com/news/9184604/berkshire-hathaway-reports-q3-2026-earnings-net-income-of-22112m-gaap-eps-of-15502-revenue-misses-estimates"
+   "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
+   "https://gvwire.com/2026/11/07/berkshire-hathaway-accelerates-stock-buybacks-operating-profit-falls/",
+   "https://www.stocktitan.net/articles/berkshire-hathaway-q3-2026-earnings-abel-cash-pile"
   ]
  },
  "history": [
