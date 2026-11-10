@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-10T05:36Z",
+ "updated": "2026-11-10T09:35Z",
  "reports": [
   {
    "ticker": "DJT",
@@ -31,23 +31,23 @@
    "date": "2026-11-09",
    "move_pct": 0.8,
    "basis": "close",
-   "verdict": "Berkshire more than doubled buybacks to $9.6 billion as insurance profit dropped, pulling operating earnings down about 6%.",
+   "verdict": "Berkshire is buying back its own stock at a much faster pace, even as car insurance weakness cut operating profit about 6%.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter and about $14.4 billion so far this year, a sharp change from the Buffett era."
+     "text": "Berkshire repurchased $9.6 billion of its own shares in the quarter, about $14.4 billion this year. Reuters says another roughly $2 billion followed in early October."
     },
     {
-     "label": "Insurance weakens",
-     "text": "Underwriting profit fell 43% to $1.35 billion. Reports say GEICO's pretax profit fell about 45%, so the core insurance business is the main drag on earnings."
+     "label": "Insurance squeeze",
+     "text": "Insurance underwriting profit fell to $1.35 billion from $2.37 billion. GEICO earned $982 million, down from $1.77 billion, as claim costs rose and premiums fell."
     },
     {
-     "label": "Other businesses grow",
-     "text": "Rail profit rose 19% to $1.73 billion, utilities rose 8% to $1.61 billion, and manufacturing and retail rose to $4.04 billion, which only partly offset insurance."
+     "label": "Other businesses held up",
+     "text": "Operating earnings slipped to $12.7 billion from $13.5 billion. Railroad profit rose to $1.73 billion and utilities to $1.61 billion, with manufacturing and retail up to $4.04 billion."
     },
     {
-     "label": "Cash pile shrinking",
-     "text": "Berkshire still holds a huge cash pile, reported at roughly $357 billion at quarter-end, but is now spending it on buybacks and the $6.8 billion Taylor Morrison deal."
+     "label": "Cash still huge",
+     "text": "Cash reached $377.4 billion, up from $365.5 billion in June (per AP), despite the buybacks and a $6.8 billion Taylor Morrison purchase."
     }
    ]
   },
@@ -56,23 +56,23 @@
    "date": "2026-11-09",
    "move_pct": 0.5,
    "basis": "close",
-   "verdict": "EVgo cut its 2026 outlook again, but a $2.00-a-share buyout offer from majority owner LS Power now matters more than the results.",
+   "verdict": "EVgo cut its 2026 outlook again and its losses widened, while a $2.00-a-share buyout offer from majority owner LS Power now matters most.",
    "takeaways": [
     {
      "label": "Buyout offer",
-     "text": "LS Power, which controls about 56% of the vote, proposed buying the rest of the company for $2.00 a share in cash. The offer is non-binding and a special committee is reviewing it."
+     "text": "Majority owner LS Power (about 56% of voting power) offered $2.00 per share in cash on Nov 2. The offer is non-binding, and an independent board committee is still reviewing it."
     },
     {
      "label": "Outlook cut again",
-     "text": "2026 revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M. This is the second cut in a row."
+     "text": "Full-year revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M. This is the second cut in a row."
     },
     {
-     "label": "Core charging is growing",
-     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% because partner-built (eXtend) revenue fell 49%. Per-stall usage dropped to 283 kWh a day from 295."
+     "label": "Charging grows, total revenue doesn't",
+     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M because revenue from building chargers for partners fell 49%. Net loss was $49.2M, up from $28.4M."
     },
     {
-     "label": "Losses and cash burn",
-     "text": "Net loss grew to $49M from $28M. Capital spending after offsets rose to $24M from $4M, and cash fell to $99M from $151M at year-end."
+     "label": "Cash draining, debt rising",
+     "text": "Cash fell to $98.7M from $151M at year-end, while long-term debt rose to about $312M from $204M. Spending on new stalls net of offsets jumped to $24M in the quarter."
     }
    ]
   },
