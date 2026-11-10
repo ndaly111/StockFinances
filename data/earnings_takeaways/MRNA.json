@@ -1,35 +1,35 @@
 {
  "ticker": "MRNA",
- "updated": "2026-11-09T21:19Z",
+ "updated": "2026-11-10T01:05Z",
  "last": {
   "date": "2026-11-06",
   "timing": "pre",
   "move_pct": 5.3,
   "basis": "close",
-  "verdict": "Moderna swung to a profit and raised its 2026 revenue outlook on international COVID sales, but the cash jump comes mostly from new debt.",
+  "verdict": "Moderna swung to a profit on international COVID sales and raised its 2026 outlook, but the cash jump is mostly borrowed money.",
   "takeaways": [
    {
-    "label": "Profit on foreign COVID sales",
-    "text": "Revenue grew 29% to $1.3B, driven by COVID vaccine deliveries under government partnerships abroad. Net income was $162M against a $200M loss a year ago. Full-year growth outlook rose to 15\u201325% from up to 10%."
+    "label": "Big beat, raised outlook",
+    "text": "Revenue rose 29% to $1.3B against roughly $885M expected, mostly international COVID deals. Full-year growth outlook rose to 15\u201325% from up to 10%, with net income of $162M."
    },
    {
     "label": "Cash boost is borrowed",
-    "text": "Year-end cash is now seen at $8.1\u20138.3B versus $4.7\u20135.2B. About $2.6B of that is net proceeds from a new convertible debt sale, not operations."
+    "text": "Year-end cash outlook jumped to $8.1\u20138.3B from $4.7\u20135.2B, helped by $2.6B net from convertible notes. Most Q3 sales were still uncollected, and the nine-month cash burn was $2.7B."
    },
    {
-    "label": "Melanoma shot works",
-    "text": "Intismeran plus Keytruda cut recurrence or death risk by 42% in the Phase 3 melanoma trial. Moderna and Merck are working toward regulatory filings and a possible launch."
+    "label": "Cancer vaccine win",
+    "text": "Melanoma vaccine intismeran with Keytruda cut recurrence or death risk 42% in Phase 3. Regulatory filings and launch preparation are underway with Merck."
    },
    {
-    "label": "Flu launch limited, norovirus stalled",
-    "text": "The FDA approved the flu vaccine mFLUSIVA, but the 2026\u201327 launch is limited because approval came after contracting season. The norovirus vaccine has no path forward yet."
+    "label": "Costs falling, flu launch limited",
+    "text": "R&D spending outlook cut to $2.7B from $2.9B. The newly approved flu shot launches only in limited form this season, since approval came after contracting closed."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1682852/000168285226000194/exhibit9912026q3pressrelea.htm",
-   "https://www.marketscale.com/industries/healthcare/moderna-q3-2026-profit-raises-revenue-outlook.md",
-   "https://247wallst.com/cards/moderna-q3-2026-earnings-mrna-01m6rb6wpqb93fhyyrsekf8shr",
+   "https://www.marketscale.com/industries/healthcare/moderna-q3-2026-profit-raises-revenue-outlook",
+   "https://www.tikr.com/blog/moderna-soars-8-on-raised-revenue-outlook-as-ceo-touts-geographic-diversification",
    "https://finviz.com/news/418355/moderna-shares-jump-10-as-q3-earnings-beat-forecasts-and-revenue-outlook-improves"
   ]
  },
