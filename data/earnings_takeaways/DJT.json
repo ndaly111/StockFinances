@@ -1,34 +1,37 @@
 {
  "ticker": "DJT",
- "updated": "2026-11-09T21:17Z",
+ "updated": "2026-11-10T05:34Z",
  "last": {
   "date": "2026-11-09",
   "timing": "post",
-  "move_pct": 0.5,
+  "move_pct": 1.0,
   "basis": "after hours",
-  "verdict": "The TAE fusion merger cleared a key SEC hurdle, and Trump Media swung to a large quarterly profit from a tiny media business.",
+  "verdict": "Trump Media's $409.7 million quarterly profit came almost entirely from bitcoin's rise, while the media business stayed tiny and the TAE fusion merger moved closer.",
   "takeaways": [
    {
-    "label": "Merger moves forward",
-    "text": "The SEC declared the registration statement for the TAE Technologies merger effective. Closing is expected in the fourth quarter, still subject to a Trump Media shareholder vote."
+    "label": "Profit is bitcoin, not business",
+    "text": "Net income of $409.7 million, versus a $54.8 million loss a year earlier, came mostly from non-cash gains of $496.1 million. The CFO tied the $378.1 million digital-asset gain to a 42% rise in bitcoin."
    },
    {
-    "label": "Swing to profit",
-    "text": "The release reports $409.7 million of net income, against a $238.1 million loss last quarter. The summary I could access did not say what drove the swing."
+    "label": "Media business still tiny",
+    "text": "Revenue was $3.0 million, up 205%, mostly from the new Truth API data subscription. Adjusted EBITDA was still a $12.3 million loss."
    },
    {
-    "label": "Media still tiny",
-    "text": "Revenue was $3.0 million, up 205% from $1.0 million a year earlier. That is still small next to $2.5 billion in total assets."
+    "label": "TAE merger nears vote",
+    "text": "The SEC declared the merger registration effective November 5. Closing is targeted for Q4 2026, pending a Trump Media shareholder vote and regulatory approvals."
    },
    {
-    "label": "Legal costs fall",
-    "text": "Legal fees dropped to $2.4 million from $20.3 million a year earlier. Financial assets were about $2.3 billion at quarter end."
+    "label": "Costs falling",
+    "text": "Operating expenses excluding digital-asset swings were $26.5 million, down 45% from the prior quarter. Legal fees dropped to $2.4 million from $20.3 million a year earlier."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
-   "https://www.globenewswire.com/news-release/2026/11/09/3398959/0/en/trump-media-technology-group-reports-third-quarter-2026-results.html",
-   "https://stockhouse.com/news/press-releases/2026/11/09/trump-media-technology-group-reports-third-quarter-2026-results"
+   "https://www.investing.com/news/transcripts/earnings-call-transcript-trump-media-posts-q3-2026-revenue-surge-stock-rises-10-93CH-5013572",
+   "https://www.theblock.co/news/business/2026-11-09-trump-media-q3-profit-436964",
+   "https://finance.yahoo.com/markets/stocks/articles/trump-media-technology-group-reports-210500822.html",
+   "https://www.gurufocus.com/news/9186246/trump-media-technology-group-djt-reports-q3-net-income-of-4097m-amid-revenue-surge",
+   "https://www.sec.gov/Archives/edgar/data/0001849635/000143774926035886/ex_1007154.htm"
   ]
  },
  "history": [

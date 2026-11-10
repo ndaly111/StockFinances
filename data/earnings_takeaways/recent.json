@@ -1,78 +1,78 @@
 {
- "updated": "2026-11-10T01:06Z",
+ "updated": "2026-11-10T05:36Z",
  "reports": [
-  {
-   "ticker": "EVGO",
-   "date": "2026-11-09",
-   "move_pct": 1.6,
-   "basis": "after hours",
-   "verdict": "EVgo cut its 2026 outlook again, but a $2.00-a-share buyout bid from controlling owner LS Power now matters more than the results.",
-   "takeaways": [
-    {
-     "label": "Buyout bid",
-     "text": "LS Power, which holds about 56% of the voting power, offered $2.00 a share in cash on Nov. 2. It is non-binding, and a special committee is reviewing it."
-    },
-    {
-     "label": "Second guidance cut",
-     "text": "2026 revenue outlook fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M. Stalls added are guided to 1,075-1,275."
-    },
-    {
-     "label": "Core growing, total flat",
-     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M as revenue from building chargers for partners (eXtend) fell 49%. Per-stall daily throughput dipped to 283 kWh from 295."
-    },
-    {
-     "label": "Losses and cash drain",
-     "text": "Net loss grew to $49.2M from $28.4M, with admin costs up 39%. Cash fell to $99M from $151M over nine months while debt rose to about $317M from $207M."
-    }
-   ]
-  },
   {
    "ticker": "DJT",
    "date": "2026-11-09",
-   "move_pct": 0.5,
+   "move_pct": 1.0,
    "basis": "after hours",
-   "verdict": "The TAE fusion merger cleared a key SEC hurdle, and Trump Media swung to a large quarterly profit from a tiny media business.",
+   "verdict": "Trump Media's $409.7 million quarterly profit came almost entirely from bitcoin's rise, while the media business stayed tiny and the TAE fusion merger moved closer.",
    "takeaways": [
     {
-     "label": "Merger moves forward",
-     "text": "The SEC declared the registration statement for the TAE Technologies merger effective. Closing is expected in the fourth quarter, still subject to a Trump Media shareholder vote."
+     "label": "Profit is bitcoin, not business",
+     "text": "Net income of $409.7 million, versus a $54.8 million loss a year earlier, came mostly from non-cash gains of $496.1 million. The CFO tied the $378.1 million digital-asset gain to a 42% rise in bitcoin."
     },
     {
-     "label": "Swing to profit",
-     "text": "The release reports $409.7 million of net income, against a $238.1 million loss last quarter. The summary I could access did not say what drove the swing."
+     "label": "Media business still tiny",
+     "text": "Revenue was $3.0 million, up 205%, mostly from the new Truth API data subscription. Adjusted EBITDA was still a $12.3 million loss."
     },
     {
-     "label": "Media still tiny",
-     "text": "Revenue was $3.0 million, up 205% from $1.0 million a year earlier. That is still small next to $2.5 billion in total assets."
+     "label": "TAE merger nears vote",
+     "text": "The SEC declared the merger registration effective November 5. Closing is targeted for Q4 2026, pending a Trump Media shareholder vote and regulatory approvals."
     },
     {
-     "label": "Legal costs fall",
-     "text": "Legal fees dropped to $2.4 million from $20.3 million a year earlier. Financial assets were about $2.3 billion at quarter end."
+     "label": "Costs falling",
+     "text": "Operating expenses excluding digital-asset swings were $26.5 million, down 45% from the prior quarter. Legal fees dropped to $2.4 million from $20.3 million a year earlier."
     }
    ]
   },
   {
    "ticker": "BRK-B",
    "date": "2026-11-09",
-   "move_pct": 0.3,
-   "basis": "after hours",
-   "verdict": "Berkshire's core profit slipped as GEICO weakened, but it more than doubled buybacks to $9.6 billion, treating its own stock as the best use of cash.",
+   "move_pct": 0.8,
+   "basis": "close",
+   "verdict": "Berkshire more than doubled buybacks to $9.6 billion as insurance profit dropped, pulling operating earnings down about 6%.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased $9.6 billion of its own stock, more than double the prior quarter's $4.5 billion and about $14.4 billion so far this year."
+     "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter and about $14.4 billion so far this year, a sharp change from the Buffett era."
     },
     {
-     "label": "GEICO squeezes insurance",
-     "text": "GEICO's profit fell to $982 million from $1.77 billion as claims took 76.6% of premiums versus 71.5%. Insurance underwriting profit dropped 43% to $1.35 billion."
+     "label": "Insurance weakens",
+     "text": "Underwriting profit fell 43% to $1.35 billion. Reports say GEICO's pretax profit fell about 45%, so the core insurance business is the main drag on earnings."
     },
     {
-     "label": "Other businesses offset some",
-     "text": "Operating earnings fell 5.8% to $12.7 billion. BNSF railroad grew about 19% and manufacturing, service and retailing rose to $4.0 billion from $3.6 billion, cushioning the insurance decline."
+     "label": "Other businesses grow",
+     "text": "Rail profit rose 19% to $1.73 billion, utilities rose 8% to $1.61 billion, and manufacturing and retail rose to $4.04 billion, which only partly offset insurance."
     },
     {
-     "label": "Cash still enormous",
-     "text": "Cash stood near $377 billion at quarter-end (AP figure), up from $365.5 billion in June, even after the larger buybacks."
+     "label": "Cash pile shrinking",
+     "text": "Berkshire still holds a huge cash pile, reported at roughly $357 billion at quarter-end, but is now spending it on buybacks and the $6.8 billion Taylor Morrison deal."
+    }
+   ]
+  },
+  {
+   "ticker": "EVGO",
+   "date": "2026-11-09",
+   "move_pct": 0.5,
+   "basis": "close",
+   "verdict": "EVgo cut its 2026 outlook again, but a $2.00-a-share buyout offer from majority owner LS Power now matters more than the results.",
+   "takeaways": [
+    {
+     "label": "Buyout offer",
+     "text": "LS Power, which controls about 56% of the vote, proposed buying the rest of the company for $2.00 a share in cash. The offer is non-binding and a special committee is reviewing it."
+    },
+    {
+     "label": "Outlook cut again",
+     "text": "2026 revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M. This is the second cut in a row."
+    },
+    {
+     "label": "Core charging is growing",
+     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% because partner-built (eXtend) revenue fell 49%. Per-stall usage dropped to 283 kWh a day from 295."
+    },
+    {
+     "label": "Losses and cash burn",
+     "text": "Net loss grew to $49M from $28M. Capital spending after offsets rose to $24M from $4M, and cash fell to $99M from $151M at year-end."
     }
    ]
   },
@@ -98,131 +98,6 @@
     {
      "label": "Costs falling, flu launch limited",
      "text": "R&D spending outlook cut to $2.7B from $2.9B. The newly approved flu shot launches only in limited form this season, since approval came after contracting closed."
-    }
-   ]
-  },
-  {
-   "ticker": "OPEN",
-   "date": "2026-11-05",
-   "move_pct": -21.8,
-   "basis": "close",
-   "verdict": "Opendoor is buying many more homes and growing revenue, but selling them at thinner margins in a weak market. Losses widen, and Q4 is guided worse.",
-   "takeaways": [
-    {
-     "label": "Margins keep shrinking",
-     "text": "Contribution margin fell to 3.3% from 5.8% last quarter. Management blamed spring-bought homes selling into a weaker market with deeper price cuts, and expects another decline in Q4."
-    },
-    {
-     "label": "Bigger bet on inventory",
-     "text": "Homes bought rose to 4,865 from 1,169 a year ago. Inventory reached $2.57B, funded mostly with debt, and operating cash flow was -$1.8B over nine months."
-    },
-    {
-     "label": "Losses widen, profit goal slips",
-     "text": "Net loss was $218M against $90M a year ago. Q4 adjusted EBITDA loss is guided at $70M-$85M, and management admits it is behind on reaching profitability by year-end."
-    },
-    {
-     "label": "Revenue growth, softer than hoped",
-     "text": "Revenue was $1.02B, up 12% from a year ago. Q4 is guided to grow at least 40%, off a weak $736M base."
-    }
-   ]
-  },
-  {
-   "ticker": "DKNG",
-   "date": "2026-11-05",
-   "move_pct": -21.3,
-   "basis": "close",
-   "verdict": "DraftKings turned its profit forecast sharply lower, because a roughly $700 million bet on its Predictions product will leave 2026 profit near $200 million.",
-   "takeaways": [
-    {
-     "label": "Profit forecast slashed",
-     "text": "2026 adjusted EBITDA, a measure of operating profit, is now $175-275 million, down from $700-900 million. Predictions spending of $650-700 million drives the cut."
-    },
-    {
-     "label": "Weak 2027 outlook",
-     "text": "2027 profit is guided to $800 million-$1 billion, including about $300 million of Predictions spending. Coverage says that trails the roughly $1.12 billion Wall Street expected."
-    },
-    {
-     "label": "Core business softer",
-     "text": "Core 2026 profit guidance is now $875-925 million, below the roughly $1 billion guided in August, citing iGaming investment and customer-friendly sports results. Q3 revenue rose 16% to $1.33 billion, but the net loss was $469 million."
-    },
-    {
-     "label": "Predictions payback claim",
-     "text": "Predictions revenue is guided to $650-750 million in 2027. Robins said that even if sports contracts ended in July 2028, 2027 customers would pay back within four years."
-    }
-   ]
-  },
-  {
-   "ticker": "NET",
-   "date": "2026-11-05",
-   "move_pct": 9.9,
-   "basis": "close",
-   "verdict": "Cloudflare's growth sped up to 39%, its fastest in nearly four years, and it raised its full-year revenue outlook by about $100 million.",
-   "takeaways": [
-    {
-     "label": "Growth accelerating, outlook raised",
-     "text": "Revenue hit $782.5M, up 39% (36% last quarter). Full-year guidance rose to $2.963B from $2.864\u20132.870B, and Q4 is guided to $845\u2013846M."
-    },
-    {
-     "label": "Broad customer demand",
-     "text": "Cloudflare added over 158,000 paying customers, nearly double the prior record. Existing customers also spent more: net retention reached 122%, and large deals included an $11M AI-company contract."
-    },
-    {
-     "label": "Margins squeezed, profits improving",
-     "text": "Gross margin fell to 72.4% (non-GAAP) from 75.3% a year ago, but operating margin rose to 17.5%. Free cash flow slipped to 10% of revenue from 13%."
-    },
-    {
-     "label": "Still losing money on GAAP",
-     "text": "The GAAP operating loss was $67.9M, mostly from stock pay. Management reportedly expects GAAP profitability in Q4, well ahead of its 2028 target."
-    }
-   ]
-  },
-  {
-   "ticker": "CELH",
-   "date": "2026-11-05",
-   "move_pct": -2.3,
-   "basis": "close",
-   "verdict": "Record sales came from Alani Nu, but costs keep squeezing margins, the flagship CELSIUS brand is still shrinking, and fourth-quarter growth will slow.",
-   "takeaways": [
-    {
-     "label": "Margins keep sliding",
-     "text": "Gross margin fell to 46.8% from 51.3% a year ago and 48.1% last quarter. Aluminum and diesel costs rose further, and management expects only high-40s for the full year."
-    },
-    {
-     "label": "Alani Nu carries growth",
-     "text": "Alani Nu sales rose 24% to $410M, with a record seasonal flavor. CELSIUS brand sales fell 6% to $357M, and management said it is 'not yet where we want it to be.'"
-    },
-    {
-     "label": "Growth slows next",
-     "text": "Fourth-quarter growth is guided below the first three quarters. About $20-25M of shipments were pulled into Q3, and last year's quarter had a one-time inventory benefit. No numeric targets were given."
-    },
-    {
-     "label": "Reorganization and fixes",
-     "text": "Brand-led leadership is now in place, with new presidents for CELSIUS and Rockstar. Management says 2027 'will look very different' for CELSIUS, with new flavors and a second North Carolina production line."
-    }
-   ]
-  },
-  {
-   "ticker": "PENN",
-   "date": "2026-11-05",
-   "move_pct": -0.6,
-   "basis": "close",
-   "verdict": "PENN's casinos beat expectations and its online business guided to a first profitable quarter, but a $20 million full-year Interactive loss still stands.",
-   "takeaways": [
-    {
-     "label": "Online losses nearly gone",
-     "text": "Interactive lost $18.3 million versus $76.6 million a year ago. Management guides to an $18.7 million profit in Q4, a $20 million full-year loss, and profit in 2027."
-    },
-    {
-     "label": "Casinos beat, outlook raised",
-     "text": "Casino revenue hit $1.5 billion with profit margin up for a third straight quarter. Full-year casino profit guidance rose $10 million to $1.973 billion."
-    },
-    {
-     "label": "Debt falling, buybacks eyed",
-     "text": "Net debt fell to $1.8 billion from $2.2 billion at year-end. Management says share buybacks are 'front of mind' for 2027, after paying down debt."
-    },
-    {
-     "label": "Alberta launch gaining fast",
-     "text": "Online sports betting in Alberta is nearing its Ontario market share after three months. The launch cost $20 million, which explains why 2026 Interactive is no longer breakeven."
     }
    ]
   }
