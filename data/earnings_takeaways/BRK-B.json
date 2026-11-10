@@ -1,37 +1,36 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-10T01:03Z",
+ "updated": "2026-11-10T13:41Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
-  "move_pct": 0.3,
-  "basis": "after hours",
-  "verdict": "Berkshire's core profit slipped as GEICO weakened, but it more than doubled buybacks to $9.6 billion, treating its own stock as the best use of cash.",
+  "move_pct": 0.8,
+  "basis": "close",
+  "verdict": "Berkshire's core profit slipped as GEICO weakened, but a record-pace $9.6 billion buyback shows CEO Greg Abel is finally spending the cash.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased $9.6 billion of its own stock, more than double the prior quarter's $4.5 billion and about $14.4 billion so far this year."
+    "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and about $14.4 billion so far this year. Another roughly $2 billion followed in early October."
    },
    {
-    "label": "GEICO squeezes insurance",
-    "text": "GEICO's profit fell to $982 million from $1.77 billion as claims took 76.6% of premiums versus 71.5%. Insurance underwriting profit dropped 43% to $1.35 billion."
+    "label": "GEICO weakens",
+    "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's pretax profit fell about 45% as accidents grew costlier and more frequent, advertising rose and prices were cut to win back customers."
    },
    {
-    "label": "Other businesses offset some",
-    "text": "Operating earnings fell 5.8% to $12.7 billion. BNSF railroad grew about 19% and manufacturing, service and retailing rose to $4.0 billion from $3.6 billion, cushioning the insurance decline."
+    "label": "Rail, energy, manufacturing grow",
+    "text": "BNSF profit rose 19% to $1.73 billion, utilities rose 8% and manufacturing 12%. Operating earnings still fell 5.8% to $12.7 billion as insurance and interest income shrank."
    },
    {
-    "label": "Cash still enormous",
-    "text": "Cash stood near $377 billion at quarter-end (AP figure), up from $365.5 billion in June, even after the larger buybacks."
+    "label": "Stock buying stalls",
+    "text": "Berkshire was a slight net seller of stocks, about $0.4 billion, after heavy net buying last quarter. Cash stayed near $357 billion even after the $6.8 billion Taylor Morrison purchase."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
    "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
    "https://gvwire.com/2026/11/07/berkshire-hathaway-accelerates-stock-buybacks-operating-profit-falls/",
-   "https://www.yourvalley.net/stories/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined,738765",
-   "https://www.newsbytesapp.com/news/business/berkshire-hathaway-96b-buyback-signals-investor-confidence-in-greg-abel/tldr"
+   "https://coinpaper.com/38488/berkshire-hathaway-buys-back-9-6-b-in-stock-as-profits-fall-28-and-geico-earnings-plunge-45",
+   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm"
   ]
  },
  "history": [
