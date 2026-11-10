@@ -1,28 +1,53 @@
 {
- "updated": "2026-11-10T16:43Z",
+ "updated": "2026-11-10T21:22Z",
  "reports": [
+  {
+   "ticker": "CRWV",
+   "date": "2026-11-10",
+   "move_pct": 6.0,
+   "basis": "after hours",
+   "verdict": "CoreWeave raised its 2026 outlook and backlog jumped to $132.5B, but rising interest costs and $37-39B of spending keep losses deep.",
+   "takeaways": [
+    {
+     "label": "Growth and guidance",
+     "text": "Revenue was $3.66B, up about 168% from a year ago and above the $3.45-3.6B target. Full-year 2026 revenue guidance rose to $13.0-13.3B."
+    },
+    {
+     "label": "Backlog keeps swelling",
+     "text": "Contracted backlog reached about $132.5B, up from about $104B last quarter. Roughly $9B of customer prepayments and deposits are expected over the next three months."
+    },
+    {
+     "label": "Debt costs weigh",
+     "text": "Net loss was $709M as interest expense hit $846M. Q4 interest is guided to $1.05-1.15B, and the company raised $4.2B in convertible notes."
+    },
+    {
+     "label": "Spending stays huge",
+     "text": "2026 capital spending is guided to $37-39B, with the low end raised, as capacity gets delivered sooner than planned. Adjusted operating margin was 10%, versus 16% a year ago."
+    }
+   ]
+  },
   {
    "ticker": "DJT",
    "date": "2026-11-09",
-   "move_pct": 1.0,
-   "basis": "after hours",
-   "verdict": "Trump Media's $409.7 million quarterly profit came almost entirely from bitcoin's rise, while the media business stayed tiny and the TAE fusion merger moved closer.",
+   "move_pct": 5.4,
+   "basis": "close",
+   "verdict": "Trump Media's $410 million profit is bitcoin and investment gains, not business strength; the TAE fusion merger vote on December 14 is what matters.",
    "takeaways": [
     {
-     "label": "Profit is bitcoin, not business",
-     "text": "Net income of $409.7 million, versus a $54.8 million loss a year earlier, came mostly from non-cash gains of $496.1 million. The CFO tied the $378.1 million digital-asset gain to a 42% rise in bitcoin."
+     "label": "Profit is paper gains",
+     "text": "Net income of $409.7 million came from $496.1 million of mostly non-cash gains on bitcoin and investments. Adjusted EBITDA, which strips those out, was still a $12.3 million loss."
     },
     {
      "label": "Media business still tiny",
-     "text": "Revenue was $3.0 million, up 205%, mostly from the new Truth API data subscription. Adjusted EBITDA was still a $12.3 million loss."
+     "text": "Revenue was $3.0 million, up 205% from $1.0 million, driven by subscriptions including the Truth API launched August 1. It remains far too small to matter next to the bitcoin holdings."
     },
     {
-     "label": "TAE merger nears vote",
-     "text": "The SEC declared the merger registration effective November 5. Closing is targeted for Q4 2026, pending a Trump Media shareholder vote and regulatory approvals."
+     "label": "TAE merger vote set",
+     "text": "The SEC cleared the merger filing on November 5. Shareholders vote December 14, and the company still targets a Q4 2026 close, pending approvals."
     },
     {
-     "label": "Costs falling",
-     "text": "Operating expenses excluding digital-asset swings were $26.5 million, down 45% from the prior quarter. Legal fees dropped to $2.4 million from $20.3 million a year earlier."
+     "label": "Legal drag ends",
+     "text": "Legal fees fell to $2.4 million from $20.3 million a year earlier, and the company says legacy legal matters are resolved. Management plans tighter institutional management of the bitcoin."
     }
    ]
   },
@@ -31,23 +56,23 @@
    "date": "2026-11-09",
    "move_pct": 0.8,
    "basis": "close",
-   "verdict": "Berkshire's core profit slipped as GEICO weakened, but a record-pace $9.6 billion buyback shows CEO Greg Abel is finally spending the cash.",
+   "verdict": "Berkshire is putting its huge cash pile to work through buybacks, but weaker GEICO car-insurance profit pulled core earnings down 6%.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and about $14.4 billion so far this year. Another roughly $2 billion followed in early October."
+     "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter and $14.4 billion this year, roughly double the prior quarter's pace and a break from Buffett-era restraint."
     },
     {
-     "label": "GEICO weakens",
-     "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's pretax profit fell about 45% as accidents grew costlier and more frequent, advertising rose and prices were cut to win back customers."
+     "label": "GEICO drags insurance",
+     "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO earned $982 million before tax versus $1.77 billion a year earlier, as accident claims and advertising costs rose."
     },
     {
-     "label": "Rail, energy, manufacturing grow",
-     "text": "BNSF profit rose 19% to $1.73 billion, utilities rose 8% and manufacturing 12%. Operating earnings still fell 5.8% to $12.7 billion as insurance and interest income shrank."
+     "label": "Core earnings dip",
+     "text": "Operating earnings fell about 6% to $12.7 billion. BNSF railroad grew 19% and manufacturing and utilities rose, but insurance and lower investment income outweighed them."
     },
     {
-     "label": "Stock buying stalls",
-     "text": "Berkshire was a slight net seller of stocks, about $0.4 billion, after heavy net buying last quarter. Cash stayed near $357 billion even after the $6.8 billion Taylor Morrison purchase."
+     "label": "Deals and cash",
+     "text": "Berkshire paid $6.8 billion in July for homebuilder Taylor Morrison. Net profit fell 28% to $22.1 billion because stock gains were smaller than a year ago."
     }
    ]
   },
@@ -56,23 +81,23 @@
    "date": "2026-11-09",
    "move_pct": 0.5,
    "basis": "close",
-   "verdict": "EVgo cut its 2026 outlook again, but its charging business is growing and a $2.00-per-share buyout offer from majority holder LS Power now sets the stock's anchor.",
+   "verdict": "EVgo cut its 2026 outlook a second time, but charging growth is strong, and a $2.00-a-share buyout offer from majority owner LS Power now frames the stock.",
    "takeaways": [
     {
      "label": "Second guidance cut",
-     "text": "Full-year revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M, extending August's reduced outlook."
+     "text": "Full-year revenue outlook fell to $375-400M from $400-430M, and the expected adjusted EBITDA loss widened to $15-30M from $5-25M, after August's cut."
     },
     {
      "label": "Buyout offer",
-     "text": "Majority holder LS Power proposed on Nov 2 to buy the remaining shares for $2.00 cash. The offer is non-binding, and an independent board committee is reviewing it."
+     "text": "LS Power, the controlling shareholder, proposed buying the rest of EVgo for $2.00 per share in cash, a 59% premium to the Oct. 30 close. The board's special committee has made no decision."
     },
     {
-     "label": "Core charging growing",
-     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M as partner-built (eXtend) revenue halved. Usage per stall fell to 283 kWh/day from 295."
+     "label": "Charging up, total flat",
+     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M because partner-built (eXtend) revenue fell 49%. Per-stall usage dipped to 283 kWh a day from 295."
     },
     {
-     "label": "Rising losses and cash drain",
-     "text": "Net loss grew 74% to $49.2M as admin costs rose 39%. Cash fell to $99M from $151M at year-end, while debt rose to $316M from $207M."
+     "label": "Cash drain rising",
+     "text": "Net loss widened to $49.2M from $28.4M. Cash fell to $98.7M from $151M at year-end, while debt rose to about $316M from about $207M."
     }
    ]
   },
