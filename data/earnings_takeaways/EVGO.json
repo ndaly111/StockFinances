@@ -1,34 +1,35 @@
 {
  "ticker": "EVGO",
- "updated": "2026-11-10T13:42Z",
+ "updated": "2026-11-10T21:20Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.5,
   "basis": "close",
-  "verdict": "EVgo cut its 2026 outlook again, but its charging business is growing and a $2.00-per-share buyout offer from majority holder LS Power now sets the stock's anchor.",
+  "verdict": "EVgo cut its 2026 outlook a second time, but charging growth is strong, and a $2.00-a-share buyout offer from majority owner LS Power now frames the stock.",
   "takeaways": [
    {
     "label": "Second guidance cut",
-    "text": "Full-year revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M, extending August's reduced outlook."
+    "text": "Full-year revenue outlook fell to $375-400M from $400-430M, and the expected adjusted EBITDA loss widened to $15-30M from $5-25M, after August's cut."
    },
    {
     "label": "Buyout offer",
-    "text": "Majority holder LS Power proposed on Nov 2 to buy the remaining shares for $2.00 cash. The offer is non-binding, and an independent board committee is reviewing it."
+    "text": "LS Power, the controlling shareholder, proposed buying the rest of EVgo for $2.00 per share in cash, a 59% premium to the Oct. 30 close. The board's special committee has made no decision."
    },
    {
-    "label": "Core charging growing",
-    "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M as partner-built (eXtend) revenue halved. Usage per stall fell to 283 kWh/day from 295."
+    "label": "Charging up, total flat",
+    "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M because partner-built (eXtend) revenue fell 49%. Per-stall usage dipped to 283 kWh a day from 295."
    },
    {
-    "label": "Rising losses and cash drain",
-    "text": "Net loss grew 74% to $49.2M as admin costs rose 39%. Cash fell to $99M from $151M at year-end, while debt rose to $316M from $207M."
+    "label": "Cash drain rising",
+    "text": "Net loss widened to $49.2M from $28.4M. Cash fell to $98.7M from $151M at year-end, while debt rose to about $316M from about $207M."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1821159/000182115926000032/exhibit991evgoearningsrele.htm",
    "https://theevreport.com/evgo-ls-power-take-private-proposal",
+   "https://stocktwits.com/news-articles/markets/equity/evgo-stock-clocks-best-day-in-two-years-after-controlling-shareholder-takeover-proposal/cNGaOR6R9PM",
    "https://finviz.com/news/413451/evgo-confirms-receipt-of-unsolicited-and-non-binding-take-private-proposal"
   ]
  },
