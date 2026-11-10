@@ -1,28 +1,28 @@
 {
  "ticker": "EVGO",
- "updated": "2026-11-10T09:33Z",
+ "updated": "2026-11-10T13:42Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.5,
   "basis": "close",
-  "verdict": "EVgo cut its 2026 outlook again and its losses widened, while a $2.00-a-share buyout offer from majority owner LS Power now matters most.",
+  "verdict": "EVgo cut its 2026 outlook again, but its charging business is growing and a $2.00-per-share buyout offer from majority holder LS Power now sets the stock's anchor.",
   "takeaways": [
    {
+    "label": "Second guidance cut",
+    "text": "Full-year revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M, extending August's reduced outlook."
+   },
+   {
     "label": "Buyout offer",
-    "text": "Majority owner LS Power (about 56% of voting power) offered $2.00 per share in cash on Nov 2. The offer is non-binding, and an independent board committee is still reviewing it."
+    "text": "Majority holder LS Power proposed on Nov 2 to buy the remaining shares for $2.00 cash. The offer is non-binding, and an independent board committee is reviewing it."
    },
    {
-    "label": "Outlook cut again",
-    "text": "Full-year revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M. This is the second cut in a row."
+    "label": "Core charging growing",
+    "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M as partner-built (eXtend) revenue halved. Usage per stall fell to 283 kWh/day from 295."
    },
    {
-    "label": "Charging grows, total revenue doesn't",
-    "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M because revenue from building chargers for partners fell 49%. Net loss was $49.2M, up from $28.4M."
-   },
-   {
-    "label": "Cash draining, debt rising",
-    "text": "Cash fell to $98.7M from $151M at year-end, while long-term debt rose to about $312M from $204M. Spending on new stalls net of offsets jumped to $24M in the quarter."
+    "label": "Rising losses and cash drain",
+    "text": "Net loss grew 74% to $49.2M as admin costs rose 39%. Cash fell to $99M from $151M at year-end, while debt rose to $316M from $207M."
    }
   ],
   "transcript_read": false,

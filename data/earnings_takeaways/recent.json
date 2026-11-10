@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-10T09:35Z",
+ "updated": "2026-11-10T13:43Z",
  "reports": [
   {
    "ticker": "DJT",
@@ -31,23 +31,23 @@
    "date": "2026-11-09",
    "move_pct": 0.8,
    "basis": "close",
-   "verdict": "Berkshire is buying back its own stock at a much faster pace, even as car insurance weakness cut operating profit about 6%.",
+   "verdict": "Berkshire's core profit slipped as GEICO weakened, but a record-pace $9.6 billion buyback shows CEO Greg Abel is finally spending the cash.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased $9.6 billion of its own shares in the quarter, about $14.4 billion this year. Reuters says another roughly $2 billion followed in early October."
+     "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and about $14.4 billion so far this year. Another roughly $2 billion followed in early October."
     },
     {
-     "label": "Insurance squeeze",
-     "text": "Insurance underwriting profit fell to $1.35 billion from $2.37 billion. GEICO earned $982 million, down from $1.77 billion, as claim costs rose and premiums fell."
+     "label": "GEICO weakens",
+     "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's pretax profit fell about 45% as accidents grew costlier and more frequent, advertising rose and prices were cut to win back customers."
     },
     {
-     "label": "Other businesses held up",
-     "text": "Operating earnings slipped to $12.7 billion from $13.5 billion. Railroad profit rose to $1.73 billion and utilities to $1.61 billion, with manufacturing and retail up to $4.04 billion."
+     "label": "Rail, energy, manufacturing grow",
+     "text": "BNSF profit rose 19% to $1.73 billion, utilities rose 8% and manufacturing 12%. Operating earnings still fell 5.8% to $12.7 billion as insurance and interest income shrank."
     },
     {
-     "label": "Cash still huge",
-     "text": "Cash reached $377.4 billion, up from $365.5 billion in June (per AP), despite the buybacks and a $6.8 billion Taylor Morrison purchase."
+     "label": "Stock buying stalls",
+     "text": "Berkshire was a slight net seller of stocks, about $0.4 billion, after heavy net buying last quarter. Cash stayed near $357 billion even after the $6.8 billion Taylor Morrison purchase."
     }
    ]
   },
@@ -56,23 +56,23 @@
    "date": "2026-11-09",
    "move_pct": 0.5,
    "basis": "close",
-   "verdict": "EVgo cut its 2026 outlook again and its losses widened, while a $2.00-a-share buyout offer from majority owner LS Power now matters most.",
+   "verdict": "EVgo cut its 2026 outlook again, but its charging business is growing and a $2.00-per-share buyout offer from majority holder LS Power now sets the stock's anchor.",
    "takeaways": [
     {
+     "label": "Second guidance cut",
+     "text": "Full-year revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M, extending August's reduced outlook."
+    },
+    {
      "label": "Buyout offer",
-     "text": "Majority owner LS Power (about 56% of voting power) offered $2.00 per share in cash on Nov 2. The offer is non-binding, and an independent board committee is still reviewing it."
+     "text": "Majority holder LS Power proposed on Nov 2 to buy the remaining shares for $2.00 cash. The offer is non-binding, and an independent board committee is reviewing it."
     },
     {
-     "label": "Outlook cut again",
-     "text": "Full-year revenue guidance fell to $375-400M from $400-430M, and the adjusted EBITDA loss widened to $15-30M from $5-25M. This is the second cut in a row."
+     "label": "Core charging growing",
+     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M as partner-built (eXtend) revenue halved. Usage per stall fell to 283 kWh/day from 295."
     },
     {
-     "label": "Charging grows, total revenue doesn't",
-     "text": "Charging revenue rose 29% to $72M, but total revenue slipped 1% to $91.4M because revenue from building chargers for partners fell 49%. Net loss was $49.2M, up from $28.4M."
-    },
-    {
-     "label": "Cash draining, debt rising",
-     "text": "Cash fell to $98.7M from $151M at year-end, while long-term debt rose to about $312M from $204M. Spending on new stalls net of offsets jumped to $24M in the quarter."
+     "label": "Rising losses and cash drain",
+     "text": "Net loss grew 74% to $49.2M as admin costs rose 39%. Cash fell to $99M from $151M at year-end, while debt rose to $316M from $207M."
     }
    ]
   },
