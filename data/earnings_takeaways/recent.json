@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-11T05:36Z",
+ "updated": "2026-11-11T09:35Z",
  "reports": [
   {
    "ticker": "CRWV",
@@ -31,23 +31,23 @@
    "date": "2026-11-09",
    "move_pct": 5.4,
    "basis": "close",
-   "verdict": "Trump Media's $409.7 million profit came entirely from non-cash digital-asset gains; the media business still lost money, and the TAE merger vote is set for December 14.",
+   "verdict": "Bitcoin's rebound produced a $409.7 million profit, but the media business still loses money and nearly $1 billion of notes may need repaying.",
    "takeaways": [
     {
      "label": "Profit is bitcoin, not business",
-     "text": "Net income of $409.7 million rested on $496.1 million of non-cash gains on digital assets and securities. Adjusted EBITDA, a measure of operating results, was still a $12.3 million loss."
+     "text": "Net income was $409.7 million, driven by non-cash gains: $378.1 million on digital assets after bitcoin rose about 42% in the quarter. Revenue was only about $3 million."
     },
     {
-     "label": "Revenue tripled, still tiny",
-     "text": "Revenue rose 205% to $3.0 million, mostly from subscriptions, including Truth API, a data product launched August 1. It is small next to $2.5 billion in total assets."
+     "label": "Note repayment unresolved",
+     "text": "Holders of nearly $1 billion in convertible notes can demand repayment starting Nov. 30. Management cannot say how much will be repaid, plans cash and credit, and says no new equity is planned."
     },
     {
-     "label": "TAE merger on track",
-     "text": "The SEC declared the merger filing effective November 5. Shareholders vote December 14, and the company still targets closing in Q4 2026, pending approvals."
+     "label": "TAE merger on schedule",
+     "text": "Shareholders vote Dec. 14 on the fusion-energy merger, with closing targeted by year-end. The share count would roughly double from about 300 million to about 600 million."
     },
     {
-     "label": "Legal drag fading",
-     "text": "Legal fees fell to $2.4 million from $20.3 million a year earlier after old legal matters were resolved. Management also promised a more disciplined approach to managing its digital assets."
+     "label": "Costs fell, media still loses",
+     "text": "Operating expenses fell 45% from the prior quarter to $26.5 million, mostly on lower legal fees. Adjusted EBITDA was still a $12.3 million loss on about $3 million revenue."
     }
    ]
   },
@@ -56,23 +56,23 @@
    "date": "2026-11-09",
    "move_pct": 0.8,
    "basis": "close",
-   "verdict": "Berkshire's core profit slipped as GEICO weakened, but its $9.6 billion buyback shows Greg Abel will spend the cash pile more readily than Buffett did.",
+   "verdict": "Berkshire more than doubled buybacks to $9.6 billion while GEICO's profit nearly halved, pulling operating earnings down about 6%.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased $9.6 billion of its own stock, more than double last quarter's $4.5 billion, and about $14.4 billion so far this year."
+     "text": "Berkshire repurchased $9.6 billion of its own stock, up from $4.5 billion last quarter and $14.4 billion this year. Reports say roughly $2 billion more was bought in October."
     },
     {
-     "label": "GEICO profit squeezed",
-     "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's pre-tax profit nearly halved as accident claims and advertising costs rose, and analysts point to lower prices aimed at winning back customers."
+     "label": "GEICO weakens",
+     "text": "GEICO's pre-tax profit fell about 45% to $982 million. Accident losses and advertising costs rose, and its loss ratio climbed to 76.6% from 71.5%. Analysts called it weak next to rivals."
     },
     {
-     "label": "Other businesses grew",
-     "text": "Rail, utilities and manufacturing all earned more than a year ago, but not enough to offset weaker insurance and lower interest income. Operating earnings fell 5.8% to $12.7 billion."
+     "label": "Operating profit slips",
+     "text": "Operating earnings fell 5.8% to $12.7 billion. Insurance profit and investment income fell, offsetting gains at rail ($1.73 billion), utilities ($1.61 billion) and manufacturing ($4.04 billion)."
     },
     {
-     "label": "Cash still enormous",
-     "text": "Reuters puts cash and equivalents at about $357 billion at quarter-end. Net earnings fell 28% to $22.1 billion because stock-portfolio gains were smaller than last year."
+     "label": "Net profit drop is mostly gains",
+     "text": "Net earnings fell 28% to $22.1 billion, mainly because stock-portfolio gains shrank from $17.3 billion to $9.4 billion. Business results held up better than that headline suggests."
     }
    ]
   },
