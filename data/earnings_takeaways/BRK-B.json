@@ -1,38 +1,38 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-11T16:41Z",
+ "updated": "2026-11-11T21:18Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.8,
   "basis": "close",
-  "verdict": "Berkshire's operating profit fell 6% as GEICO weakened, but CEO Greg Abel more than doubled share buybacks to $9.6 billion.",
+  "verdict": "Berkshire is buying back its own stock much faster, but weaker GEICO car-insurance profit pulled core earnings down about 6%.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, up from $4.5 billion the prior quarter, and about $14.4 billion so far this year. Reports say roughly $2 billion more was bought in October."
+    "text": "Berkshire repurchased about $9.6 billion of its own shares in the quarter and $14.4 billion this year. The pace picked up sharply under CEO Greg Abel."
    },
    {
-    "label": "Car insurance weakens",
-    "text": "Insurance underwriting profit fell from $2.37 billion to $1.35 billion. Reports attribute this mainly to GEICO, whose pretax profit fell 45% on costlier accident claims and higher advertising spending."
+    "label": "GEICO squeezes insurance",
+    "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's claims took 76.6% of premiums, up from 71.5%, and advertising spending rose."
    },
    {
-    "label": "Rail and utilities grow",
-    "text": "BNSF earnings rose to $1.73 billion from $1.45 billion, Berkshire Hathaway Energy rose to $1.61 billion from $1.49 billion, and manufacturing and retail rose to $4.04 billion from $3.62 billion. That was not enough to offset weaker insurance and investment income."
+    "label": "Core earnings dip",
+    "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, but weaker insurance and lower investment income outweighed them. BNSF profit rose about 19%."
    },
    {
-    "label": "Cash pile still huge",
-    "text": "Reuters put cash at $356.9 billion at quarter-end. AP and Bloomberg cited $377.4 billion, which includes $20.5 billion of Treasury bills bought in September but paid for in October."
+    "label": "Cash still enormous",
+    "text": "Cash stood near $377 billion, up from $365.5 billion in June. Big purchases, including $10 billion into Alphabet's AI projects, have barely dented it."
    }
   ],
   "transcript_read": false,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
-   "https://www.thestar.com.my/business/business-news/2026/11/09/berkshire-hathaway-steps-up-stock-buybacks",
-   "https://ny1.com/nyc/all-boroughs/ap-top-news/2026/11/07/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined",
    "https://www.businessinsurance.com/berkshire-hathaway-speeds-up-stock-buybacks-though-profit-falls/",
+   "https://www.thestar.com.my/business/business-news/2026/11/09/berkshire-hathaway-steps-up-stock-buybacks",
    "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
-   "https://www.thestandard.com.hk/finance/article/347864/"
+   "https://ny1.com/nyc/all-boroughs/ap-top-news/2026/11/07/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined",
+   "https://www.newsbytesapp.com/news/business/berkshire-hathaway-96b-buyback-signals-investor-confidence-in-greg-abel/tldr"
   ]
  },
  "history": [
