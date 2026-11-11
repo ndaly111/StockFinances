@@ -1,36 +1,38 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-11T01:05Z",
+ "updated": "2026-11-11T16:41Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.8,
   "basis": "close",
-  "verdict": "Berkshire's core profit slipped as GEICO weakened, but a record $9.6 billion buyback signals management sees its own stock as cheap.",
+  "verdict": "Berkshire's operating profit fell 6% as GEICO weakened, but CEO Greg Abel more than doubled share buybacks to $9.6 billion.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and $14.4 billion so far this year."
+    "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, up from $4.5 billion the prior quarter, and about $14.4 billion so far this year. Reports say roughly $2 billion more was bought in October."
    },
    {
-    "label": "GEICO weakening",
-    "text": "Underwriting profit fell 43% to $1.35 billion. GEICO's claims rose to 76.6% of premiums from 71.5% as it cut prices to win back customers."
+    "label": "Car insurance weakens",
+    "text": "Insurance underwriting profit fell from $2.37 billion to $1.35 billion. Reports attribute this mainly to GEICO, whose pretax profit fell 45% on costlier accident claims and higher advertising spending."
    },
    {
-    "label": "Core profit dips",
-    "text": "Operating earnings fell 5.8% to $12.7 billion. Railroad profit rose 19% to $1.73 billion and manufacturing and utilities also grew, but insurance and lower interest income outweighed them."
+    "label": "Rail and utilities grow",
+    "text": "BNSF earnings rose to $1.73 billion from $1.45 billion, Berkshire Hathaway Energy rose to $1.61 billion from $1.49 billion, and manufacturing and retail rose to $4.04 billion from $3.62 billion. That was not enough to offset weaker insurance and investment income."
    },
    {
-    "label": "Cash still huge",
-    "text": "Cash was about $357 billion by Reuters' count. Berkshire also spent $6.8 billion on homebuilder Taylor Morrison, and the cash pile has shrunk from $380 billion in March."
+    "label": "Cash pile still huge",
+    "text": "Reuters put cash at $356.9 billion at quarter-end. AP and Bloomberg cited $377.4 billion, which includes $20.5 billion of Treasury bills bought in September but paid for in October."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
-   "https://gvwire.com/2026/11/07/berkshire-hathaway-accelerates-stock-buybacks-operating-profit-falls/",
+   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
+   "https://www.thestar.com.my/business/business-news/2026/11/09/berkshire-hathaway-steps-up-stock-buybacks",
    "https://ny1.com/nyc/all-boroughs/ap-top-news/2026/11/07/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined",
-   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm"
+   "https://www.businessinsurance.com/berkshire-hathaway-speeds-up-stock-buybacks-though-profit-falls/",
+   "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
+   "https://www.thestandard.com.hk/finance/article/347864/"
   ]
  },
  "history": [

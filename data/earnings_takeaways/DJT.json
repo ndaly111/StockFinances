@@ -1,37 +1,36 @@
 {
  "ticker": "DJT",
- "updated": "2026-11-11T01:06Z",
+ "updated": "2026-11-11T09:33Z",
  "last": {
   "date": "2026-11-09",
   "timing": "post",
-  "move_pct": 6.3,
-  "basis": "after hours",
-  "verdict": "Trump Media's $410 million profit came from bitcoin gains, not its business, which still earned about $3 million in revenue and an operating loss.",
+  "move_pct": 5.4,
+  "basis": "close",
+  "verdict": "Bitcoin's rebound produced a $409.7 million profit, but the media business still loses money and nearly $1 billion of notes may need repaying.",
   "takeaways": [
    {
-    "label": "Profit is crypto gains",
-    "text": "Net income was $409.7 million versus a $54.8 million loss a year ago. About $378 million came from digital-asset gains, with an adjusted EBITDA loss near $12 million."
+    "label": "Profit is bitcoin, not business",
+    "text": "Net income was $409.7 million, driven by non-cash gains: $378.1 million on digital assets after bitcoin rose about 42% in the quarter. Revenue was only about $3 million."
    },
    {
-    "label": "Media business still tiny",
-    "text": "Revenue was about $3.0 million, up 205% from roughly $1.0 million, driven mainly by Truth API subscriptions. Legal fees fell to $2.4 million from $20.3 million."
+    "label": "Note repayment unresolved",
+    "text": "Holders of nearly $1 billion in convertible notes can demand repayment starting Nov. 30. Management cannot say how much will be repaid, plans cash and credit, and says no new equity is planned."
    },
    {
-    "label": "Bitcoin-heavy balance sheet",
-    "text": "The company held about 15,649 bitcoin at quarter-end and roughly $2.3 billion in financial assets, so results swing with bitcoin's price. The nine-month net loss was about $234 million."
+    "label": "TAE merger on schedule",
+    "text": "Shareholders vote Dec. 14 on the fusion-energy merger, with closing targeted by year-end. The share count would roughly double from about 300 million to about 600 million."
    },
    {
-    "label": "TAE merger nears",
-    "text": "The fusion-company merger is still expected to close in Q4 2026. The SEC has declared the merger filing (Form S-4) effective; shareholder and regulatory approvals remain."
+    "label": "Costs fell, media still loses",
+    "text": "Operating expenses fell 45% from the prior quarter to $26.5 million, mostly on lower legal fees. Adjusted EBITDA was still a $12.3 million loss on about $3 million revenue."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
+   "https://www.fool.com/earnings/call-transcripts/2026/11/10/tmtg-djt-q3-2026-earnings-call-transcript/",
    "https://www.theblock.co/news/business/2026-11-09-trump-media-q3-profit-436964",
-   "https://www.kucoin.com/news/flash/trump-media-posts-410m-profit-crypto-hides-operating-loss",
-   "https://www.kucoin.com/news/flash/trump-media-reports-410m-q3-profit-amid-3m-revenue-bitcoin-holdings-reach-15-649-btc",
-   "https://www.marketscreener.com/news/trump-media-technology-group-corp-reports-earnings-results-for-the-third-quarter-and-nine-months-ce785edad989f523",
-   "https://www.sec.gov/Archives/edgar/data/0001849635/000143774926035884/djt20260930_10q.htm"
+   "https://www.kucoin.com/news/flash/trump-media-q3-profit-surpasses-409m-driven-by-bitcoin-rally",
+   "https://uk.investing.com/news/stock-market-news/earnings-call-transcript-trump-media-posts-q3-2026-revenue-surge-stock-rises-10-93CH-4969833"
   ]
  },
  "history": [

@@ -1,49 +1,53 @@
 {
- "updated": "2026-11-11T01:08Z",
+ "updated": "2026-11-11T16:44Z",
  "reports": [
   {
    "ticker": "CRWV",
    "date": "2026-11-10",
-   "move_pct": 7.4,
+   "move_pct": 7.9,
    "basis": "after hours",
-   "verdict": "CoreWeave beat on sales and lifted its 2026 outlook as its order backlog hit $132.5B, but a $709M quarterly loss and heavy debt remain the concern.",
+   "verdict": "CoreWeave beat on profit and raised its 2026 outlook, with its order backlog jumping to about $133B. Losses and debt costs keep growing.",
    "takeaways": [
     {
-     "label": "Beat and raise",
-     "text": "Revenue was $3.66B, up about 168% from a year ago, versus roughly $3.55B expected. Full-year 2026 revenue guidance rose to $13.0\u201313.3B."
+     "label": "Profit well above plan",
+     "text": "Adjusted operating income was about $379M, far above the company's $200\u2013260M target, on revenue of about $3.7B, up 168% from a year earlier."
     },
     {
-     "label": "Backlog keeps growing",
-     "text": "Contracted backlog reached $132.5B, up from about $104B last quarter, reinforcing demand for AI computing capacity."
+     "label": "Higher full-year outlook",
+     "text": "2026 revenue guidance rose to $13\u201313.3B from $12.4\u201313.2B, above analysts' roughly $12.9B. Management expects to exit the year at a $20\u201321B annualized revenue pace."
     },
     {
-     "label": "Losses and debt",
-     "text": "Net loss was $709M, with interest costs of $846M in the quarter and about $47B of debt. Analysts flagged financing as the main risk."
+     "label": "Backlog jumped again",
+     "text": "Contracted backlog reached about $132.5B, up from about $104B at June 30, which suggests AI demand hasn't slowed."
+    },
+    {
+     "label": "Losses and debt costs persist",
+     "text": "Net loss widened to $709M from $110M a year ago. Most of the remaining build-out is to be funded with more borrowing tied to customer contracts."
     }
    ]
   },
   {
    "ticker": "DJT",
    "date": "2026-11-09",
-   "move_pct": 6.3,
-   "basis": "after hours",
-   "verdict": "Trump Media's $410 million profit came from bitcoin gains, not its business, which still earned about $3 million in revenue and an operating loss.",
+   "move_pct": 5.4,
+   "basis": "close",
+   "verdict": "Bitcoin's rebound produced a $409.7 million profit, but the media business still loses money and nearly $1 billion of notes may need repaying.",
    "takeaways": [
     {
-     "label": "Profit is crypto gains",
-     "text": "Net income was $409.7 million versus a $54.8 million loss a year ago. About $378 million came from digital-asset gains, with an adjusted EBITDA loss near $12 million."
+     "label": "Profit is bitcoin, not business",
+     "text": "Net income was $409.7 million, driven by non-cash gains: $378.1 million on digital assets after bitcoin rose about 42% in the quarter. Revenue was only about $3 million."
     },
     {
-     "label": "Media business still tiny",
-     "text": "Revenue was about $3.0 million, up 205% from roughly $1.0 million, driven mainly by Truth API subscriptions. Legal fees fell to $2.4 million from $20.3 million."
+     "label": "Note repayment unresolved",
+     "text": "Holders of nearly $1 billion in convertible notes can demand repayment starting Nov. 30. Management cannot say how much will be repaid, plans cash and credit, and says no new equity is planned."
     },
     {
-     "label": "Bitcoin-heavy balance sheet",
-     "text": "The company held about 15,649 bitcoin at quarter-end and roughly $2.3 billion in financial assets, so results swing with bitcoin's price. The nine-month net loss was about $234 million."
+     "label": "TAE merger on schedule",
+     "text": "Shareholders vote Dec. 14 on the fusion-energy merger, with closing targeted by year-end. The share count would roughly double from about 300 million to about 600 million."
     },
     {
-     "label": "TAE merger nears",
-     "text": "The fusion-company merger is still expected to close in Q4 2026. The SEC has declared the merger filing (Form S-4) effective; shareholder and regulatory approvals remain."
+     "label": "Costs fell, media still loses",
+     "text": "Operating expenses fell 45% from the prior quarter to $26.5 million, mostly on lower legal fees. Adjusted EBITDA was still a $12.3 million loss on about $3 million revenue."
     }
    ]
   },
@@ -52,23 +56,23 @@
    "date": "2026-11-09",
    "move_pct": 0.8,
    "basis": "close",
-   "verdict": "Berkshire's core profit slipped as GEICO weakened, but a record $9.6 billion buyback signals management sees its own stock as cheap.",
+   "verdict": "Berkshire's operating profit fell 6% as GEICO weakened, but CEO Greg Abel more than doubled share buybacks to $9.6 billion.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and $14.4 billion so far this year."
+     "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, up from $4.5 billion the prior quarter, and about $14.4 billion so far this year. Reports say roughly $2 billion more was bought in October."
     },
     {
-     "label": "GEICO weakening",
-     "text": "Underwriting profit fell 43% to $1.35 billion. GEICO's claims rose to 76.6% of premiums from 71.5% as it cut prices to win back customers."
+     "label": "Car insurance weakens",
+     "text": "Insurance underwriting profit fell from $2.37 billion to $1.35 billion. Reports attribute this mainly to GEICO, whose pretax profit fell 45% on costlier accident claims and higher advertising spending."
     },
     {
-     "label": "Core profit dips",
-     "text": "Operating earnings fell 5.8% to $12.7 billion. Railroad profit rose 19% to $1.73 billion and manufacturing and utilities also grew, but insurance and lower interest income outweighed them."
+     "label": "Rail and utilities grow",
+     "text": "BNSF earnings rose to $1.73 billion from $1.45 billion, Berkshire Hathaway Energy rose to $1.61 billion from $1.49 billion, and manufacturing and retail rose to $4.04 billion from $3.62 billion. That was not enough to offset weaker insurance and investment income."
     },
     {
-     "label": "Cash still huge",
-     "text": "Cash was about $357 billion by Reuters' count. Berkshire also spent $6.8 billion on homebuilder Taylor Morrison, and the cash pile has shrunk from $380 billion in March."
+     "label": "Cash pile still huge",
+     "text": "Reuters put cash at $356.9 billion at quarter-end. AP and Bloomberg cited $377.4 billion, which includes $20.5 billion of Treasury bills bought in September but paid for in October."
     }
    ]
   },
@@ -77,48 +81,23 @@
    "date": "2026-11-09",
    "move_pct": 0.5,
    "basis": "close",
-   "verdict": "EVgo cut its 2026 outlook a second time, and the stock now hinges on LS Power's unsolicited $2.00-a-share buyout proposal.",
+   "verdict": "EVgo cut its 2026 outlook a second time, but its majority owner LS Power has offered $2.00 a share to take it private.",
    "takeaways": [
-    {
-     "label": "Buyout offer",
-     "text": "Majority owner LS Power proposed buying all remaining shares for $2.00 cash on Nov. 2. A special committee is reviewing it, and no decision or deal is certain."
-    },
     {
      "label": "Second guidance cut",
-     "text": "Full-year revenue outlook fell to $375-400M from $400-430M. The adjusted EBITDA loss forecast widened to $15-30M from $5-25M. Stall additions are now guided at 1,075-1,275."
+     "text": "2026 revenue is now expected at $375-400M, down from $400-430M in August. The expected adjusted EBITDA loss widened to $15-30M. Management blamed slower EV sales and a weak summer."
     },
     {
-     "label": "Charging up, total flat",
-     "text": "Charging revenue grew 29% to $72M, but total revenue slipped 1% to $91.4M as automaker-partner (eXtend) revenue halved. Net loss widened to $49.2M from $28.4M."
+     "label": "LS Power buyout offer",
+     "text": "LS Power, the majority owner, proposed buying the shares it doesn't own for $2.00 cash, about a 59% premium to the prior close. A special committee is reviewing it, with no decision yet."
     },
     {
-     "label": "Cash and debt strain",
-     "text": "Cash fell to $98.7M from $151M at year-end while long-term debt rose to about $312M from $204M. Capex after offsets hit $24M, versus $4M a year ago."
-    }
-   ]
-  },
-  {
-   "ticker": "MRNA",
-   "date": "2026-11-06",
-   "move_pct": 5.3,
-   "basis": "close",
-   "verdict": "Moderna swung to a profit on international COVID sales and raised its 2026 outlook, but the cash jump is mostly borrowed money.",
-   "takeaways": [
-    {
-     "label": "Big beat, raised outlook",
-     "text": "Revenue rose 29% to $1.3B against roughly $885M expected, mostly international COVID deals. Full-year growth outlook rose to 15\u201325% from up to 10%, with net income of $162M."
+     "label": "Charging growing, but less used",
+     "text": "Charging revenue rose 29% to $72M, but daily use per stall fell 4% to 283 kWh as automaker charging credits expired. Excluding those, use rose 7%."
     },
     {
-     "label": "Cash boost is borrowed",
-     "text": "Year-end cash outlook jumped to $8.1\u20138.3B from $4.7\u20135.2B, helped by $2.6B net from convertible notes. Most Q3 sales were still uncollected, and the nine-month cash burn was $2.7B."
-    },
-    {
-     "label": "Cancer vaccine win",
-     "text": "Melanoma vaccine intismeran with Keytruda cut recurrence or death risk 42% in Phase 3. Regulatory filings and launch preparation are underway with Merck."
-    },
-    {
-     "label": "Costs falling, flu launch limited",
-     "text": "R&D spending outlook cut to $2.7B from $2.9B. The newly approved flu shot launches only in limited form this season, since approval came after contracting closed."
+     "label": "Spending pulled back",
+     "text": "Management plans about $100M less building spending in 2026, shifting some stalls into 2027. Net loss still widened to $49M, but available liquidity is about $787M."
     }
    ]
   }

@@ -1,35 +1,36 @@
 {
  "ticker": "EVGO",
- "updated": "2026-11-11T01:06Z",
+ "updated": "2026-11-11T05:34Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.5,
   "basis": "close",
-  "verdict": "EVgo cut its 2026 outlook a second time, and the stock now hinges on LS Power's unsolicited $2.00-a-share buyout proposal.",
+  "verdict": "EVgo cut its 2026 outlook a second time, but its majority owner LS Power has offered $2.00 a share to take it private.",
   "takeaways": [
    {
-    "label": "Buyout offer",
-    "text": "Majority owner LS Power proposed buying all remaining shares for $2.00 cash on Nov. 2. A special committee is reviewing it, and no decision or deal is certain."
-   },
-   {
     "label": "Second guidance cut",
-    "text": "Full-year revenue outlook fell to $375-400M from $400-430M. The adjusted EBITDA loss forecast widened to $15-30M from $5-25M. Stall additions are now guided at 1,075-1,275."
+    "text": "2026 revenue is now expected at $375-400M, down from $400-430M in August. The expected adjusted EBITDA loss widened to $15-30M. Management blamed slower EV sales and a weak summer."
    },
    {
-    "label": "Charging up, total flat",
-    "text": "Charging revenue grew 29% to $72M, but total revenue slipped 1% to $91.4M as automaker-partner (eXtend) revenue halved. Net loss widened to $49.2M from $28.4M."
+    "label": "LS Power buyout offer",
+    "text": "LS Power, the majority owner, proposed buying the shares it doesn't own for $2.00 cash, about a 59% premium to the prior close. A special committee is reviewing it, with no decision yet."
    },
    {
-    "label": "Cash and debt strain",
-    "text": "Cash fell to $98.7M from $151M at year-end while long-term debt rose to about $312M from $204M. Capex after offsets hit $24M, versus $4M a year ago."
+    "label": "Charging growing, but less used",
+    "text": "Charging revenue rose 29% to $72M, but daily use per stall fell 4% to 283 kWh as automaker charging credits expired. Excluding those, use rose 7%."
+   },
+   {
+    "label": "Spending pulled back",
+    "text": "Management plans about $100M less building spending in 2026, shifting some stalls into 2027. Net loss still widened to $49M, but available liquidity is about $787M."
    }
   ],
-  "transcript_read": false,
+  "transcript_read": true,
   "sources": [
    "https://www.sec.gov/Archives/edgar/data/1821159/000182115926000032/exhibit991evgoearningsrele.htm",
-   "https://theevreport.com/evgo-ls-power-take-private-proposal",
-   "https://www.evinfrastructurenews.com/public-charging/evgo-considers-completion-of-acquisition-by-ls-power"
+   "https://www.marketbeat.com/instant-alerts/transcript-evgo-q3-earnings-call-highlights-2026-11-09/",
+   "https://finviz.com/news/413451/evgo-confirms-receipt-of-unsolicited-and-non-binding-take-private-proposal",
+   "https://www.panabee.com/news/evgo-receives-unsolicited-2-00-per-share-take-private-proposal-from-ls-power"
   ]
  },
  "history": [
