@@ -1,28 +1,28 @@
 {
- "updated": "2026-11-11T16:44Z",
+ "updated": "2026-11-11T21:23Z",
  "reports": [
   {
    "ticker": "CRWV",
    "date": "2026-11-10",
-   "move_pct": 7.9,
-   "basis": "after hours",
-   "verdict": "CoreWeave beat on profit and raised its 2026 outlook, with its order backlog jumping to about $133B. Losses and debt costs keep growing.",
+   "move_pct": 24.7,
+   "basis": "close",
+   "verdict": "CoreWeave beat on profit and demand, raising 2026 revenue guidance, but its debt-funded build-out keeps losses large with profit not expected until 2028.",
    "takeaways": [
     {
-     "label": "Profit well above plan",
-     "text": "Adjusted operating income was about $379M, far above the company's $200\u2013260M target, on revenue of about $3.7B, up 168% from a year earlier."
+     "label": "Profit and backlog beat",
+     "text": "Adjusted operating income hit $379M against a $200\u2013260M target, and contracted backlog reached about $132.5B, up from roughly $104B last quarter."
     },
     {
-     "label": "Higher full-year outlook",
-     "text": "2026 revenue guidance rose to $13\u201313.3B from $12.4\u201313.2B, above analysts' roughly $12.9B. Management expects to exit the year at a $20\u201321B annualized revenue pace."
+     "label": "Guidance raised",
+     "text": "2026 revenue guidance rose to $13.0\u201313.3B, with annualized revenue expected to reach $20\u201321B by year-end. Management says it is largely sold out through 2027."
     },
     {
-     "label": "Backlog jumped again",
-     "text": "Contracted backlog reached about $132.5B, up from about $104B at June 30, which suggests AI demand hasn't slowed."
+     "label": "Heavy debt still drives losses",
+     "text": "Net loss was $709M on $846M of interest expense, and Q4 interest is guided to $1.05\u20131.15B. Management expects adjusted net income only in 2028."
     },
     {
-     "label": "Losses and debt costs persist",
-     "text": "Net loss widened to $709M from $110M a year ago. Most of the remaining build-out is to be funded with more borrowing tied to customer contracts."
+     "label": "Customers now fund the build",
+     "text": "About $9B of customer prepayments is expected within three months, and most remaining spending will use contract-backed loans. Older GPU capacity is re-renting at 30\u201350% higher prices."
     }
    ]
   },
@@ -56,23 +56,23 @@
    "date": "2026-11-09",
    "move_pct": 0.8,
    "basis": "close",
-   "verdict": "Berkshire's operating profit fell 6% as GEICO weakened, but CEO Greg Abel more than doubled share buybacks to $9.6 billion.",
+   "verdict": "Berkshire is buying back its own stock much faster, but weaker GEICO car-insurance profit pulled core earnings down about 6%.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, up from $4.5 billion the prior quarter, and about $14.4 billion so far this year. Reports say roughly $2 billion more was bought in October."
+     "text": "Berkshire repurchased about $9.6 billion of its own shares in the quarter and $14.4 billion this year. The pace picked up sharply under CEO Greg Abel."
     },
     {
-     "label": "Car insurance weakens",
-     "text": "Insurance underwriting profit fell from $2.37 billion to $1.35 billion. Reports attribute this mainly to GEICO, whose pretax profit fell 45% on costlier accident claims and higher advertising spending."
+     "label": "GEICO squeezes insurance",
+     "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's claims took 76.6% of premiums, up from 71.5%, and advertising spending rose."
     },
     {
-     "label": "Rail and utilities grow",
-     "text": "BNSF earnings rose to $1.73 billion from $1.45 billion, Berkshire Hathaway Energy rose to $1.61 billion from $1.49 billion, and manufacturing and retail rose to $4.04 billion from $3.62 billion. That was not enough to offset weaker insurance and investment income."
+     "label": "Core earnings dip",
+     "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, but weaker insurance and lower investment income outweighed them. BNSF profit rose about 19%."
     },
     {
-     "label": "Cash pile still huge",
-     "text": "Reuters put cash at $356.9 billion at quarter-end. AP and Bloomberg cited $377.4 billion, which includes $20.5 billion of Treasury bills bought in September but paid for in October."
+     "label": "Cash still enormous",
+     "text": "Cash stood near $377 billion, up from $365.5 billion in June. Big purchases, including $10 billion into Alphabet's AI projects, have barely dented it."
     }
    ]
   },
