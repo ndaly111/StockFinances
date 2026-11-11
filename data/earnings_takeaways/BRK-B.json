@@ -1,36 +1,37 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-11T01:05Z",
+ "updated": "2026-11-11T05:32Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.8,
   "basis": "close",
-  "verdict": "Berkshire's core profit slipped as GEICO weakened, but a record $9.6 billion buyback signals management sees its own stock as cheap.",
+  "verdict": "Berkshire's core profit slipped as GEICO weakened, but its $9.6 billion buyback shows Greg Abel will spend the cash pile more readily than Buffett did.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and $14.4 billion so far this year."
+    "text": "Berkshire repurchased $9.6 billion of its own stock, more than double last quarter's $4.5 billion, and about $14.4 billion so far this year."
    },
    {
-    "label": "GEICO weakening",
-    "text": "Underwriting profit fell 43% to $1.35 billion. GEICO's claims rose to 76.6% of premiums from 71.5% as it cut prices to win back customers."
+    "label": "GEICO profit squeezed",
+    "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's pre-tax profit nearly halved as accident claims and advertising costs rose, and analysts point to lower prices aimed at winning back customers."
    },
    {
-    "label": "Core profit dips",
-    "text": "Operating earnings fell 5.8% to $12.7 billion. Railroad profit rose 19% to $1.73 billion and manufacturing and utilities also grew, but insurance and lower interest income outweighed them."
+    "label": "Other businesses grew",
+    "text": "Rail, utilities and manufacturing all earned more than a year ago, but not enough to offset weaker insurance and lower interest income. Operating earnings fell 5.8% to $12.7 billion."
    },
    {
-    "label": "Cash still huge",
-    "text": "Cash was about $357 billion by Reuters' count. Berkshire also spent $6.8 billion on homebuilder Taylor Morrison, and the cash pile has shrunk from $380 billion in March."
+    "label": "Cash still enormous",
+    "text": "Reuters puts cash and equivalents at about $357 billion at quarter-end. Net earnings fell 28% to $22.1 billion because stock-portfolio gains were smaller than last year."
    }
   ],
   "transcript_read": false,
   "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
+   "https://www.businessinsurance.com/berkshire-hathaway-speeds-up-stock-buybacks-though-profit-falls/",
    "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
-   "https://gvwire.com/2026/11/07/berkshire-hathaway-accelerates-stock-buybacks-operating-profit-falls/",
-   "https://ny1.com/nyc/all-boroughs/ap-top-news/2026/11/07/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined",
-   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm"
+   "https://www.thestar.com.my/business/business-news/2026/11/09/berkshire-hathaway-steps-up-stock-buybacks",
+   "https://www.yourvalley.net/stories/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined,738765"
   ]
  },
  "history": [
