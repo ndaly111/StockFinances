@@ -1,37 +1,36 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-10T21:16Z",
+ "updated": "2026-11-11T01:05Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.8,
   "basis": "close",
-  "verdict": "Berkshire is putting its huge cash pile to work through buybacks, but weaker GEICO car-insurance profit pulled core earnings down 6%.",
+  "verdict": "Berkshire's core profit slipped as GEICO weakened, but a record $9.6 billion buyback signals management sees its own stock as cheap.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter and $14.4 billion this year, roughly double the prior quarter's pace and a break from Buffett-era restraint."
+    "text": "Berkshire repurchased $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion, and $14.4 billion so far this year."
    },
    {
-    "label": "GEICO drags insurance",
-    "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO earned $982 million before tax versus $1.77 billion a year earlier, as accident claims and advertising costs rose."
+    "label": "GEICO weakening",
+    "text": "Underwriting profit fell 43% to $1.35 billion. GEICO's claims rose to 76.6% of premiums from 71.5% as it cut prices to win back customers."
    },
    {
-    "label": "Core earnings dip",
-    "text": "Operating earnings fell about 6% to $12.7 billion. BNSF railroad grew 19% and manufacturing and utilities rose, but insurance and lower investment income outweighed them."
+    "label": "Core profit dips",
+    "text": "Operating earnings fell 5.8% to $12.7 billion. Railroad profit rose 19% to $1.73 billion and manufacturing and utilities also grew, but insurance and lower interest income outweighed them."
    },
    {
-    "label": "Deals and cash",
-    "text": "Berkshire paid $6.8 billion in July for homebuilder Taylor Morrison. Net profit fell 28% to $22.1 billion because stock gains were smaller than a year ago."
+    "label": "Cash still huge",
+    "text": "Cash was about $357 billion by Reuters' count. Berkshire also spent $6.8 billion on homebuilder Taylor Morrison, and the cash pile has shrunk from $380 billion in March."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
-   "https://www.bangordailynews.com/2026/11/07/nation/berkshire-hathaway-buys-back-9-6-billion-of-its-own-stock-but-its-profits-declined/",
-   "https://www.itv.com/news/2026-11-07/warren-buffetts-berkshire-hathaway-repurchases-96-billion-in-stock",
    "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
-   "https://www.berkshirehathaway.com/news/nov0726.pdf"
+   "https://gvwire.com/2026/11/07/berkshire-hathaway-accelerates-stock-buybacks-operating-profit-falls/",
+   "https://ny1.com/nyc/all-boroughs/ap-top-news/2026/11/07/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined",
+   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm"
   ]
  },
  "history": [

@@ -1,35 +1,33 @@
 {
  "ticker": "CRWV",
- "updated": "2026-11-10T21:18Z",
+ "updated": "2026-11-11T01:05Z",
  "last": {
   "date": "2026-11-10",
   "timing": "post",
-  "move_pct": 6.0,
+  "move_pct": 7.4,
   "basis": "after hours",
-  "verdict": "CoreWeave raised its 2026 outlook and backlog jumped to $132.5B, but rising interest costs and $37-39B of spending keep losses deep.",
+  "verdict": "CoreWeave beat on sales and lifted its 2026 outlook as its order backlog hit $132.5B, but a $709M quarterly loss and heavy debt remain the concern.",
   "takeaways": [
    {
-    "label": "Growth and guidance",
-    "text": "Revenue was $3.66B, up about 168% from a year ago and above the $3.45-3.6B target. Full-year 2026 revenue guidance rose to $13.0-13.3B."
+    "label": "Beat and raise",
+    "text": "Revenue was $3.66B, up about 168% from a year ago, versus roughly $3.55B expected. Full-year 2026 revenue guidance rose to $13.0\u201313.3B."
    },
    {
-    "label": "Backlog keeps swelling",
-    "text": "Contracted backlog reached about $132.5B, up from about $104B last quarter. Roughly $9B of customer prepayments and deposits are expected over the next three months."
+    "label": "Backlog keeps growing",
+    "text": "Contracted backlog reached $132.5B, up from about $104B last quarter, reinforcing demand for AI computing capacity."
    },
    {
-    "label": "Debt costs weigh",
-    "text": "Net loss was $709M as interest expense hit $846M. Q4 interest is guided to $1.05-1.15B, and the company raised $4.2B in convertible notes."
-   },
-   {
-    "label": "Spending stays huge",
-    "text": "2026 capital spending is guided to $37-39B, with the low end raised, as capacity gets delivered sooner than planned. Adjusted operating margin was 10%, versus 16% a year ago."
+    "label": "Losses and debt",
+    "text": "Net loss was $709M, with interest costs of $846M in the quarter and about $47B of debt. Analysts flagged financing as the main risk."
    }
   ],
   "transcript_read": false,
   "sources": [
-   "https://www.stocktitan.net/news/CRWV/core-weave-reports-strong-third-quarter-2026-y9sd4v037r0b.html",
-   "https://www.cnbc.com/2026/11/10/coreweave-earnings-preview-debt-capex.html",
-   "https://fortune.com/2026/08/11/coreweave-ceo-michael-intrator-cites-sold-out-capacity-as-revenue-more-than-doubles-and-backlog-swells-to-104-billion/"
+   "https://cnbc.com/2026/11/10/stock-market-movers-live-updates.html",
+   "https://uk.investing.com/news/stock-market-news/earnings-call-transcript-coreweave-tops-q3-2026-forecast-and-shares-rise-57-93CH-4973333",
+   "https://www.benzinga.com/markets/earnings/26/11/63123969/coreweave-reports-q3-double-beat-raises-guidance-this-was-a-breakout-quarter",
+   "https://www.tradingkey.com/analysis/stocks/us-stocks/262299527-coreweave-earnings-report-q3-revenue-growth-backlog-capital-expenditures-net-loss-tradingkey",
+   "https://stocktwits.com/news-articles/markets/equity/crwv-stock-climbs-6-after-hours-as-132-b-revenue-backlog-reinforces-ai-compute-demand-nbis-iren-tick-higher/cNGuwW0R9JL"
   ]
  },
  "history": [
