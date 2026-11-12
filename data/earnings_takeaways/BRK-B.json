@@ -1,37 +1,37 @@
 {
  "ticker": "BRK-B",
- "updated": "2026-11-12T01:15Z",
+ "updated": "2026-11-12T05:34Z",
  "last": {
   "date": "2026-11-09",
   "timing": "pre",
   "move_pct": 0.8,
   "basis": "close",
-  "verdict": "Berkshire is finally spending its cash on its own stock, but weaker car insurance pulled core profit down about 6%.",
+  "verdict": "Berkshire stepped up buybacks to $9.6 billion while its core profit slipped, as GEICO's insurance earnings fell sharply.",
   "takeaways": [
    {
     "label": "Buybacks accelerate",
-    "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion. Reuters describes new CEO Greg Abel as more willing to deploy cash than Warren Buffett was."
+    "text": "Berkshire repurchased about $9.6 billion of its own stock, more than double the prior quarter's $4.5 billion and about $14.4 billion so far this year. Another roughly $2 billion followed in early October."
    },
    {
-    "label": "GEICO squeezes insurance",
-    "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's profit nearly halved as accident claims and advertising costs rose, and its loss ratio climbed to 76.6% from 71.5%."
+    "label": "Insurance weakens",
+    "text": "Underwriting profit fell 43% to $1.35 billion. GEICO's pre-tax profit fell about 45%, as it cut prices to win back customers and its claims-cost ratio rose to 76.6% from 71.5%."
    },
    {
-    "label": "Core profit slips",
-    "text": "Operating earnings fell to $12.7 billion from $13.5 billion. Rail, utilities and manufacturing all grew, but lower insurance and investment income outweighed them."
+    "label": "Core profit dips",
+    "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, with BNSF up 19%, but lower interest income and weaker insurance outweighed them."
    },
    {
-    "label": "Headline profit overstates the drop",
-    "text": "Net earnings fell 28% to $22.1 billion, mostly because stock-holding gains were smaller than last year's. Operating earnings are the cleaner read on the businesses."
+    "label": "Cash pile keeps growing",
+    "text": "Cash stayed enormous even after buybacks and the $6.8 billion Taylor Morrison deal. Outlets differ on the total, reporting $356.9 billion (Reuters) or $377.4 billion (AP, including Treasuries)."
    }
   ],
   "transcript_read": false,
   "sources": [
+   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm",
    "https://www.businessinsurance.com/berkshire-hathaway-speeds-up-stock-buybacks-though-profit-falls/",
    "https://stockanalysis.com/news/berkshire-q3-operating-earnings-fall-buybacks/",
    "https://ny1.com/nyc/all-boroughs/ap-top-news/2026/11/07/berkshire-hathaway-buys-back-96-billion-of-its-own-stock-but-its-profits-declined",
-   "https://www.thestar.com.my/business/business-news/2026/11/09/berkshire-hathaway-steps-up-stock-buybacks",
-   "https://www.sec.gov/Archives/edgar/data/1067983/000119312526452530/brka-ex99_1.htm"
+   "https://gvwire.com/2026/11/07/berkshire-hathaway-accelerates-stock-buybacks-operating-profit-falls/"
   ]
  },
  "history": [
