@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-11T21:23Z",
+ "updated": "2026-11-12T01:19Z",
  "reports": [
   {
    "ticker": "CRWV",
@@ -56,23 +56,23 @@
    "date": "2026-11-09",
    "move_pct": 0.8,
    "basis": "close",
-   "verdict": "Berkshire is buying back its own stock much faster, but weaker GEICO car-insurance profit pulled core earnings down about 6%.",
+   "verdict": "Berkshire is finally spending its cash on its own stock, but weaker car insurance pulled core profit down about 6%.",
    "takeaways": [
     {
      "label": "Buybacks accelerate",
-     "text": "Berkshire repurchased about $9.6 billion of its own shares in the quarter and $14.4 billion this year. The pace picked up sharply under CEO Greg Abel."
+     "text": "Berkshire repurchased about $9.6 billion of its own stock in the quarter, more than double the prior quarter's $4.5 billion. Reuters describes new CEO Greg Abel as more willing to deploy cash than Warren Buffett was."
     },
     {
      "label": "GEICO squeezes insurance",
-     "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's claims took 76.6% of premiums, up from 71.5%, and advertising spending rose."
+     "text": "Insurance underwriting profit fell 43% to $1.35 billion. GEICO's profit nearly halved as accident claims and advertising costs rose, and its loss ratio climbed to 76.6% from 71.5%."
     },
     {
-     "label": "Core earnings dip",
-     "text": "Operating earnings fell 5.8% to $12.7 billion. Rail, utilities and manufacturing grew, but weaker insurance and lower investment income outweighed them. BNSF profit rose about 19%."
+     "label": "Core profit slips",
+     "text": "Operating earnings fell to $12.7 billion from $13.5 billion. Rail, utilities and manufacturing all grew, but lower insurance and investment income outweighed them."
     },
     {
-     "label": "Cash still enormous",
-     "text": "Cash stood near $377 billion, up from $365.5 billion in June. Big purchases, including $10 billion into Alphabet's AI projects, have barely dented it."
+     "label": "Headline profit overstates the drop",
+     "text": "Net earnings fell 28% to $22.1 billion, mostly because stock-holding gains were smaller than last year's. Operating earnings are the cleaner read on the businesses."
     }
    ]
   },
