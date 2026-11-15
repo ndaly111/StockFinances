@@ -13,27 +13,33 @@ us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2023-12-31          
                                 us-gaap:OperatingIncomeLoss 2025-12-31                                                                                                                     -573043700.0
                                 us-gaap:OperatingIncomeLoss 2024-12-31                                                                                                                     -186038900.0
                                 us-gaap:OperatingIncomeLoss 2023-12-31                                                                                                                      -15967400.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                                                                                        1669700.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                         883300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                                                                                        2540900.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                                                                                        1704500.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30           srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    1434800.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30           srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    2052300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30             srt:ProductOrServiceAxis:djt:SubscriptionsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember     179500.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30             srt:ProductOrServiceAxis:djt:SubscriptionsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember     372100.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                             us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember      55400.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                             us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember     116500.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    1614300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember     883300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    2424400.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    1704500.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember      55400.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember     116500.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    1669700.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember     883300.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-06-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    2540900.0
-us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-06-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    1704500.0
-                                us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                     -163504000.0
-                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                      -43508000.0
-                                us-gaap:OperatingIncomeLoss 2026-06-30                                                                                                                     -456991900.0
-                                us-gaap:OperatingIncomeLoss 2025-06-30                                                                                                                      -83043000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                         us-gaap:RelatedPartyTransactionAxis:djt:Freedom250LlcMember     175000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30             srt:ProductOrServiceAxis:djt:SubscriptionsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember      71500.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                                                                                        2967100.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                                                         972900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                                                                                        5508000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                                                                                        2677400.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                         us-gaap:RelatedPartyTransactionAxis:djt:Freedom250LlcMember     175000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30           srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    1424700.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30           srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    3477000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30             srt:ProductOrServiceAxis:djt:SubscriptionsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    1378400.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30             srt:ProductOrServiceAxis:djt:SubscriptionsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    1750500.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                             us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember     164000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                             us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember     280500.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30           srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember     901400.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30           srt:ProductOrServiceAxis:us-gaap:AdvertisingMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    2605900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30             srt:ProductOrServiceAxis:djt:SubscriptionsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember      71500.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    2803100.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember     972900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    5227500.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30   srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:MediaMember    2677400.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember     164000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30 srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember; us-gaap:StatementBusinessSegmentsAxis:djt:TruthfiMember     280500.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    2967100.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember     972900.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2026-09-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    5508000.0
+us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax 2025-09-30                                                          srt:ConsolidationItemsAxis:us-gaap:OperatingSegmentsMember    2677400.0
+                                us-gaap:OperatingIncomeLoss 2026-09-30                                                                                                                      354554100.0
+                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                      -57658400.0
+                                us-gaap:OperatingIncomeLoss 2026-09-30                                                                                                                     -102437800.0
+                                us-gaap:OperatingIncomeLoss 2025-09-30                                                                                                                     -140701400.0
