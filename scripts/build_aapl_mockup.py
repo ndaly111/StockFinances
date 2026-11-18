@@ -1495,7 +1495,11 @@ def main() -> int:
             return "".join(" " + c if c.isupper() and i else c for i, c in enumerate(name)).strip()
 
         def _fmt_b(v):
-            return "–" if v is None else f"${v / 1e9:,.1f}B"
+            if v is None:
+                return "–"
+            if v and abs(v) < 1e9:  # sub-$1B reads "$0.0B" otherwise
+                return f"${v / 1e6:,.0f}M"
+            return f"${v / 1e9:,.1f}B"
 
         def _pipeline_axis_html(ax, div_id):
             segs = [s for s in ax["segments"]
@@ -1650,7 +1654,8 @@ def main() -> int:
         )
         bs_fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=12))
         bs_fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee",
-                            ticksuffix="B", tickfont=dict(size=11))
+                            ticksuffix="B", tickfont=dict(size=11),
+                            zeroline=True, zerolinecolor="#888", zerolinewidth=2)
 
         bs_chart = bs_fig.to_html(include_plotlyjs=False, full_html=False, config={
             "displayModeBar": False, "responsive": True, "scrollZoom": False,
