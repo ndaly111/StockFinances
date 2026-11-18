@@ -300,6 +300,10 @@
   .ft .neg::before, .ft td.neg > .delta::before{ content:"▼ " }
   /* On YoY table, the cells themselves carry pos/neg class */
   .ft td.pos > .delta::before, .ft td.neg > .delta::before{ content:"" }
+  .ft td.ttm-cell, .ft th.ttm-cell{
+    background:var(--hi-yellow) !important; color:#000; font-weight:900;
+    border:1px solid #998800;
+  }
   .ft tr.ttm-row td{
     background:var(--hi-yellow) !important; color:#000; font-weight:900;
     border:1px solid #998800;

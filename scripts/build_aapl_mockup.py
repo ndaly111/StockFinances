@@ -540,7 +540,14 @@ def main() -> int:
         else:
             unit, mult = "K", 1e6
         scaled_max = vmax * mult
-        fmt = (lambda v: f"{v:,.1f}") if scaled_max < 20 else (lambda v: f"{v:,.0f}")
+        # Whole numbers only once a bar is >= 10 units: a "-1" or "4" label
+        # hid too much (-1.2 vs -0.6), so small bars always keep one decimal.
+        def fmt(v):
+            if abs(v) < 1 and v != 0:
+                return f"{v:,.2f}"
+            if abs(v) < 10 or scaled_max < 20:
+                return f"{v:,.1f}"
+            return f"{v:,.0f}"
         return unit, mult, fmt
 
     rev_vals = pad_left(rev_combined.values, max_n)
@@ -942,6 +949,9 @@ def main() -> int:
         hist_rev_tail = hist_rev.tail(n_actual_ctx)
         hist_ni_tail  = hist_ni.tail(n_actual_ctx)
         hist_eps_tail = hist_eps.tail(n_actual_ctx)
+        def _bm(v):  # $B, but sub-$1B values in $M so they don't read "$0.0B"
+            return f"${v * 1000:,.0f}M" if abs(v) < 1 else f"${v:,.1f}B"
+
         for d, rev_v, ni_v, eps_v in zip(
             hist_rev_tail.index,
             hist_rev_tail.values,
@@ -951,8 +961,8 @@ def main() -> int:
             yr_lbl = fy_label(d)
             fc_rows.append(
                 f'<tr><td class="year">{yr_lbl}</td>'
-                f'<td>${rev_v:,.1f}B</td>'
-                f'<td>${ni_v:,.1f}B</td>'
+                f'<td>{_bm(rev_v)}</td>'
+                f'<td>{_bm(ni_v)}</td>'
                 f'<td>${eps_v:.2f}</td>'
                 f'<td>—</td></tr>'
             )
@@ -1310,6 +1320,41 @@ def main() -> int:
             '<tbody>' + "".join(rows_chg) + '</tbody></table>'
         )
 
+        # When there are more expense columns than years (e.g. an S-1 with five
+        # categories and four periods) the year-per-row table runs off a phone
+        # screen: flip it so categories are rows and years are columns.
+        if len(exp_cats) + 1 > len(years_lbl):
+            def _ttm(yr):
+                return ' class="ttm-cell"' if yr == "TTM" else ''
+
+            def _flip_cell(td, yr):
+                if yr != "TTM":
+                    return td
+                return td.replace('<td class="', '<td class="ttm-cell ').replace('<td>', '<td class="ttm-cell">')
+
+            series = [("Revenue", rev_v)] + [(_h(n), vals) for n, _, vals in exp_cats]
+            yr_heads = "".join(f"<th{_ttm(y)}>{y}</th>" for y in years_lbl)
+            table_abs = (
+                '<table class="ft" style="margin-top:10px;font-size:12px">'
+                f'<thead><tr><th></th>{yr_heads}</tr></thead><tbody>'
+                + "".join(
+                    f'<tr><td class="year">{lab}</td>'
+                    + "".join(_flip_cell(cell(vals[i]), y) for i, y in enumerate(years_lbl)) + '</tr>'
+                    for lab, vals in series)
+                + '</tbody></table>'
+            )
+            chg_heads = "".join(f"<th{_ttm(y)}>{y}</th>" for y in years_lbl[1:])
+            table_chg = (
+                '<table class="ft" style="margin-top:10px;font-size:12px">'
+                f'<thead><tr><th>Change</th>{chg_heads}</tr></thead><tbody>'
+                + "".join(
+                    f'<tr><td class="year">{lab}</td>'
+                    + "".join(_flip_cell(chg_cell(chg(vals[i], vals[i - 1])), years_lbl[i])
+                              for i in range(1, len(years_lbl))) + '</tr>'
+                    for lab, vals in series)
+                + '</tbody></table>'
+            )
+
         expenses_html = (
             '<div class="data-table"><h2>Expenses</h2>'
             + exp_chart
@@ -1450,7 +1495,11 @@ def main() -> int:
             return "".join(" " + c if c.isupper() and i else c for i, c in enumerate(name)).strip()
 
         def _fmt_b(v):
-            return "–" if v is None else f"${v / 1e9:,.1f}B"
+            if v is None:
+                return "–"
+            if v and abs(v) < 1e9:  # sub-$1B reads "$0.0B" otherwise
+                return f"${v / 1e6:,.0f}M"
+            return f"${v / 1e9:,.1f}B"
 
         def _pipeline_axis_html(ax, div_id):
             segs = [s for s in ax["segments"]
@@ -1605,7 +1654,8 @@ def main() -> int:
         )
         bs_fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=12))
         bs_fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee",
-                            ticksuffix="B", tickfont=dict(size=11))
+                            ticksuffix="B", tickfont=dict(size=11),
+                            zeroline=True, zerolinecolor="#888", zerolinewidth=2)
 
         bs_chart = bs_fig.to_html(include_plotlyjs=False, full_html=False, config={
             "displayModeBar": False, "responsive": True, "scrollZoom": False,
