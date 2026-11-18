@@ -535,7 +535,7 @@
     <div id="chart-expenses" style="height:720px"></div>
     <div id="sect-expenses-table-abs"></div>
     <div id="sect-expenses-table-chg"></div>
-    <p class="m-footnote">From SEC 10-K filings (EDGAR). Top chart compares revenue alongside each operating-expense category. Bottom chart shows each expense as a % of revenue (stacked); the gap to 100% is operating margin.</p>
+    <p class="m-footnote" id="sect-expenses-footnote">From SEC 10-K filings (EDGAR). Top chart compares revenue alongside each operating-expense category. Bottom chart shows each expense as a % of revenue (stacked); the gap to 100% is operating margin.</p>
   </div>
 
   <div class="data-table" id="sect-segments-card" style="display:none">
@@ -563,7 +563,7 @@
     <div id="sect-balance-legend"></div>
     <div id="chart-balance" style="height:320px"></div>
     <div id="sect-balance-table"></div>
-    <p class="m-footnote">Latest FY 10-K snapshot from EDGAR.</p>
+    <p class="m-footnote" id="sect-balance-footnote">Latest FY 10-K snapshot from EDGAR.</p>
   </div>
 
   <div class="data-table" id="sect-epsdiv-card" style="display:none">
@@ -690,6 +690,7 @@
       ['yoy_table', 'sect-yoy-table'],
       ['expenses_abs', 'sect-expenses-table-abs'],
       ['expenses_chg', 'sect-expenses-table-chg'],
+      ['expenses_footnote', 'sect-expenses-footnote'],
       ['prod_legend', 'sect-prod-legend'],
       ['prod_table', 'sect-prod-table'],
       ['geo_legend', 'sect-geo-legend'],
@@ -699,6 +700,7 @@
       ['fwdest_table', 'sect-fwdest-table'],
       ['balance_legend', 'sect-balance-legend'],
       ['balance_table', 'sect-balance-table'],
+      ['balance_footnote', 'sect-balance-footnote'],
       ['epsdiv_legend', 'sect-epsdiv-legend'],
       ['epsdiv_footnote', 'sect-epsdiv-footnote'],
       ['valuation_legend', 'sect-valuation-legend'],

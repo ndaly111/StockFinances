@@ -38,6 +38,8 @@ QUARTERS = [
     ("2025-01-01", "2025-03-31"), ("2025-04-01", "2025-06-30"), ("2025-07-01", "2025-09-30"),
     ("2025-10-01", "2025-12-31"), ("2026-01-01", "2026-03-31"), ("2026-04-01", "2026-06-30"),
 ]
+# Column labels for the Expenses tables (S-1 row labels are too long on a phone).
+OPEX_SHORT = ["Compute", "Personnel", "Legal Settlement", "Sales & Mktg", "Other Opex"]
 BALANCE = ["2024-12-31", "2025-12-31", "2026-06-30"]
 
 _NUM = r"\(?-?[\d,]+(?:\.\d+)?\)?|[—–�-]"
@@ -116,6 +118,8 @@ def build(ticker: str) -> None:
     cash = _row(bs, "Cash and cash equivalents $", 3)
     assets = _row(bs, "Total assets $", 3)
     liab = _row(bs, "Total liabilities", 3)
+    # The S-1 carries no bank debt; its borrowings are the convertible notes.
+    notes = _row(bs, "Convertible notes payable", 3)
     equity = _row(bs, "Total stockholders’ deficit", 3) if "Total stockholders’ deficit" in bs \
         else _row(bs, "Total stockholders' deficit", 3)
 
@@ -155,7 +159,19 @@ def build(ticker: str) -> None:
         "Assets": usd(inst(assets)),
         "Liabilities": usd(inst(liab)),
         "StockholdersEquity": usd(inst(equity)),
+        "LongTermDebtNoncurrent": usd(inst(notes)),
     }}
+    # The S-1 reports expenses by its own categories (no COGS / R&D / SG&A split),
+    # so they ride in a separate namespace the Expenses section reads as-is.
+    # Same years as segments.json: FY2023-25 + TTM (FY2025 + H1 2026 - H1 2025).
+    facts["s1-opex"] = {
+        "years": ["2023", "2024", "2025", "TTM"],
+        "revenue": [rev[0] * M, rev[1] * M, rev[2] * M, (rev[2] + rev[4] - rev[3]) * M],
+        "categories": [
+            {"name": lab, "short": short, "values": [v[0] * M, v[1] * M, v[2] * M, (v[2] + v[4] - v[3]) * M]}
+            for lab, short, v in zip(opex_labels, OPEX_SHORT, opex)
+        ],
+    }
     seed = {
         "ticker": ticker,
         "name": meta["name"],
