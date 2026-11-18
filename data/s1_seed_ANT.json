@@ -440,7 +440,100 @@
       }
      ]
     }
+   },
+   "LongTermDebtNoncurrent": {
+    "units": {
+     "USD": [
+      {
+       "end": "2024-12-31",
+       "val": 14116000000.0,
+       "form": "S-1",
+       "filed": "2026-10-26",
+       "accn": "0001628280-26-067168"
+      },
+      {
+       "end": "2025-12-31",
+       "val": 41677000000.0,
+       "form": "S-1",
+       "filed": "2026-10-26",
+       "accn": "0001628280-26-067168"
+      },
+      {
+       "end": "2026-06-30",
+       "val": 108566000000.0,
+       "form": "S-1",
+       "filed": "2026-10-26",
+       "accn": "0001628280-26-067168"
+      }
+     ]
+    }
    }
+  },
+  "s1-opex": {
+   "years": [
+    "2023",
+    "2024",
+    "2025",
+    "TTM"
+   ],
+   "revenue": [
+    41000000.0,
+    386000000.0,
+    4585000000.0,
+    19708000000.0
+   ],
+   "categories": [
+    {
+     "name": "Compute and infrastructure",
+     "short": "Compute",
+     "values": [
+      433000000.0,
+      2522000000.0,
+      7326000000.0,
+      13937000000.0
+     ]
+    },
+    {
+     "name": "Personnel",
+     "short": "Personnel",
+     "values": [
+      95000000.0,
+      454000000.0,
+      1839000000.0,
+      4453000000.0
+     ]
+    },
+    {
+     "name": "Bartz settlement",
+     "short": "Legal Settlement",
+     "values": [
+      0.0,
+      0.0,
+      1500000000.0,
+      1500000000.0
+     ]
+    },
+    {
+     "name": "Sales, marketing, and partnerships",
+     "short": "Sales & Mktg",
+     "values": [
+      2000000.0,
+      43000000.0,
+      568000000.0,
+      3616000000.0
+     ]
+    },
+    {
+     "name": "Other operating and administrative",
+     "short": "Other Opex",
+     "values": [
+      62000000.0,
+      347000000.0,
+      1412000000.0,
+      2820000000.0
+     ]
+    }
+   ]
   }
  }
 }

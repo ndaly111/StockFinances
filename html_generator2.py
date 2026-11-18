@@ -193,12 +193,6 @@ td{padding:4px;border:1px solid #8080FF}
       <a href="ticker.html?t={{t}}" class="button">{{t}}</a>{% if not loop.last %} | {% endif %}
     {% endfor %}
   </nav>
-  {% if pre_ipo %}
-  <p style="text-align:center;margin:6px 0;">
-    Pre-IPO (S-1 filed):
-    {% for t, m in pre_ipo %}<a href="ticker.html?t={{t}}" class="button">{{m.name}} ({{t}})</a>{% if not loop.last %} | {% endif %}{% endfor %}
-  </p>
-  {% endif %}
 
   <header><h1>Financial Overview</h1></header>
 
@@ -622,9 +616,11 @@ def create_home_page(
             pre_ipo = [(k, v) for k, v in json.load(f).items() if not k.startswith("_")]
     except Exception:
         pre_ipo = []
+    # Pre-IPO tickers sit in the same grid as every other ticker (their pages
+    # carry the S-1 financials); they move to tickers.csv once they list.
+    grid = sorted(set(tickers) | {k for k, _ in pre_ipo})
     rendered = tpl.render(
-        tickers=tickers,
-        pre_ipo=pre_ipo,
+        tickers=grid,
         dashboard_table=dashboard_html,
         dashboard_data=avg_vals,
         spy_qqq_growth=spy_qqq_html,

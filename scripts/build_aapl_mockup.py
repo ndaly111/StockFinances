@@ -1166,21 +1166,42 @@ def main() -> int:
     sga_a  = annual_series(sga_entries)  / 1e9
     dna_a  = annual_series(dna_entries)  / 1e9
 
-    expenses_html = ""
+    # Expense categories: the standard 10-K split (COGS / R&D / SG&A / D&A), or
+    # for a pre-IPO S-1 seed the company's own categories ("s1-opex", written by
+    # s1_seed.py) -- an S-1 has no XBRL tags to map them onto.
+    exp_years, exp_rev, exp_cats, exp_src = [], [], [], ""
+    _s1_opex = _load_company_facts().get("s1-opex")
     if not cogs_a.empty and not rnd_a.empty and not sga_a.empty:
         # Use last 5 actual annual + TTM (TTM treated as a synthetic period)
         common_idx = sorted(set(rev_a.index) & set(cogs_a.index) & set(rnd_a.index) & set(sga_a.index))
         common_idx = common_idx[-5:]
-        years_lbl = [fy_label(d) for d in common_idx] + ["TTM"]
-        rev_v  = [rev_a.loc[d]  for d in common_idx] + [float(rev_ttm.dropna().iloc[-1])]
-        cogs_v = [cogs_a.loc[d] for d in common_idx] + [float(cogs_a.iloc[-1])]   # last reported COGS as TTM proxy
-        rnd_v  = [rnd_a.loc[d]  for d in common_idx] + [float(rnd_a.iloc[-1])]
-        sga_v  = [sga_a.loc[d]  for d in common_idx] + [float(sga_a.iloc[-1])]
-        dna_v  = ([dna_a.loc[d] if d in dna_a.index else None for d in common_idx]
-                  + ([float(dna_a.iloc[-1])] if not dna_a.empty else [None]))
+        exp_years = [fy_label(d) for d in common_idx] + ["TTM"]
+        exp_rev = [rev_a.loc[d] for d in common_idx] + [float(rev_ttm.dropna().iloc[-1])]
+        exp_cats = [  # last reported annual value stands in as the TTM proxy
+            ("Cost of Revenue", "#7f7f7f", [cogs_a.loc[d] for d in common_idx] + [float(cogs_a.iloc[-1])]),
+            ("R&D", "#1f77b4", [rnd_a.loc[d] for d in common_idx] + [float(rnd_a.iloc[-1])]),
+            ("SG&A", "#9467bd", [sga_a.loc[d] for d in common_idx] + [float(sga_a.iloc[-1])]),
+        ]
+        dna_v = ([dna_a.loc[d] if d in dna_a.index else None for d in common_idx]
+                 + ([float(dna_a.iloc[-1])] if not dna_a.empty else [None]))
+        if any(v is not None for v in dna_v):
+            exp_cats.append(("Facilities / D&A", "#ff9e4a", dna_v))
+        exp_src = "From SEC 10-K filings (EDGAR)."
+    elif _s1_opex:
+        palette = ["#7f7f7f", "#1f77b4", "#d62728", "#9467bd", "#ff9e4a", "#8c564b"]
+        exp_years = list(_s1_opex["years"])
+        exp_rev = [v / 1e9 for v in _s1_opex["revenue"]]
+        for k, c in enumerate(_s1_opex["categories"]):
+            vals = [v / 1e9 for v in c["values"]]
+            if any(vals):
+                exp_cats.append((c.get("short") or c["name"], palette[k % len(palette)], vals))
+        exp_src = ("From the S-1's statements of operations, in the company's own expense "
+                   "categories (TTM = FY2025 + H1 2026 - H1 2025).")
 
-        # ----- Chart 1: Revenue vs Operating Expenses (GROUPED bars) -----
-        col_rev = "#2ca02c"; col_cogs = "#7f7f7f"; col_rnd = "#1f77b4"; col_sga = "#9467bd"; col_dna = "#ff9e4a"
+    expenses_html = ""
+    if exp_cats:
+        years_lbl, rev_v = exp_years, exp_rev
+        col_rev = "#2ca02c"
         exp_fig = make_subplots(
             rows=2, cols=1, shared_xaxes=False, vertical_spacing=0.13,
             subplot_titles=("Revenue vs Operating Expenses ($B)",
@@ -1196,15 +1217,7 @@ def main() -> int:
             hovertemplate="<b>%{x}</b><br>Revenue: $%{y:,.1f}B<extra></extra>",
         ), row=1, col=1)
 
-        stack_abs_specs = [
-            (cogs_v, "Cost of Revenue", col_cogs),
-            (rnd_v,  "R&D",             col_rnd),
-            (sga_v,  "SG&A",            col_sga),
-        ]
-        if any(v is not None for v in dna_v):
-            stack_abs_specs.append((dna_v, "Facilities / D&A", col_dna))
-
-        for vals, name, color in stack_abs_specs:
+        for name, color, vals in exp_cats:
             exp_fig.add_trace(go.Bar(
                 x=years_lbl, y=vals, name=name, marker_color=color,
                 offsetgroup="exp", legendgroup=name,
@@ -1212,23 +1225,12 @@ def main() -> int:
             ), row=1, col=1)
 
         # ----- Chart 2: Expenses as % of Revenue (STACKED) -----
-        cogs_pct = [c/r*100 for c, r in zip(cogs_v, rev_v)]
-        rnd_pct  = [x/r*100 for x, r in zip(rnd_v,  rev_v)]
-        sga_pct  = [x/r*100 for x, r in zip(sga_v,  rev_v)]
-        dna_pct  = [(x/r*100) if x is not None else 0 for x, r in zip(dna_v, rev_v)]
-        stack_specs = [
-            (cogs_pct, "Cost of Revenue", col_cogs),
-            (rnd_pct,  "R&D",             col_rnd),
-            (sga_pct,  "SG&A",            col_sga),
-        ]
-        if any(v is not None for v in dna_v):
-            stack_specs.append((dna_pct, "Facilities / D&A", col_dna))
-
-        for vals, name, color in stack_specs:
+        for name, color, vals in exp_cats:
+            pct = [(x / r * 100) if (x is not None and r) else 0 for x, r in zip(vals, rev_v)]
             exp_fig.add_trace(go.Bar(
-                x=years_lbl, y=vals, name=name, marker_color=color,
+                x=years_lbl, y=pct, name=name, marker_color=color,
                 offsetgroup="pct", legendgroup=name, showlegend=False,
-                # No in-bar text — the values are in the table below; rotated
+                # No in-bar text - the values are in the table below; rotated
                 # labels in narrow stacked segments were unreadable on mobile.
                 hovertemplate=f"<b>%{{x}}</b><br>{name}: %{{y:.1f}}% of revenue<extra></extra>",
             ), row=2, col=1)
@@ -1244,37 +1246,43 @@ def main() -> int:
         )
         # barmode="stack" + offsetgroup separates Revenue from the expense
         # stack while the expense traces share the "exp" offsetgroup and stack
-        # on each other. Bottom panel shares the same barmode and uses
-        # offsetgroup="pct" so all bottom traces stack within one bar per year.
+        # on each other; bottom-panel traces share offsetgroup="pct".
         exp_fig.update_layout(barmode="stack")
         exp_fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc", row=1, col=1)
         exp_fig.update_yaxes(fixedrange=True, showgrid=True, gridcolor="#eee", zerolinecolor="#ccc",
                               ticksuffix="%", row=2, col=1)
         exp_fig.update_xaxes(fixedrange=True, showgrid=False, tickfont=dict(size=11))
-        # apply stacked barmode just for the bottom panel by setting barmode globally to group
-        # and using offsetgroup="pct" so the bottom bars share one slot.
-        # All bottom traces share offsetgroup so they auto-stack visually.
 
         exp_chart = exp_fig.to_html(include_plotlyjs=False, full_html=False, config={
             "displayModeBar": False, "responsive": True, "scrollZoom": False,
             "doubleClick": False, "showAxisDragHandles": False, "staticPlot": False,
         }, div_id="aapl-expenses-chart")
 
+        _short = {"Cost of Revenue": "Cost of Rev"}
+
+        def _h(n):
+            return _short.get(n, n).replace("&", "&amp;")
+        heads = "".join(f"<th>{_h(n)}</th>" for n, _, _ in exp_cats)
+
         # ----- Table 1: absolute values -----
+        _small = _s1_opex is not None and not (not cogs_a.empty and not rnd_a.empty and not sga_a.empty)
+
         def cell(v, fmt="${v:,.1f}B"):
-            return f'<td>—</td>' if v is None else f'<td>{fmt.format(v=v)}</td>'
+            if v is None:
+                return '<td>—</td>'
+            if _small and abs(v) < 1:  # S-1 early years are in the millions
+                return f'<td>${v * 1000:,.0f}M</td>'
+            return f'<td>{fmt.format(v=v)}</td>'
         rows_abs = []
         for i, yr in enumerate(years_lbl):
             row_cls = ' class="ttm-row"' if yr == "TTM" else ''
             rows_abs.append(
-                f'<tr{row_cls}><td class="year">{yr}</td>'
-                f'{cell(rev_v[i])}{cell(cogs_v[i])}{cell(rnd_v[i])}{cell(sga_v[i])}'
-                f'{cell(dna_v[i])}</tr>'
+                f'<tr{row_cls}><td class="year">{yr}</td>{cell(rev_v[i])}'
+                + "".join(cell(vals[i]) for _, _, vals in exp_cats) + '</tr>'
             )
         table_abs = (
             '<table class="ft" style="margin-top:10px;font-size:12px">'
-            '<thead><tr><th>Year</th><th>Revenue</th><th>Cost of Rev</th>'
-            '<th>R&amp;D</th><th>SG&amp;A</th><th>Facilities / D&amp;A</th></tr></thead>'
+            f'<thead><tr><th>Year</th><th>Revenue</th>{heads}</tr></thead>'
             '<tbody>' + "".join(rows_abs) + '</tbody></table>'
         )
 
@@ -1292,18 +1300,13 @@ def main() -> int:
             yr = years_lbl[i]
             row_cls = ' class="ttm-row"' if yr == "TTM" else ''
             rows_chg.append(
-                f'<tr{row_cls}><td class="year">{yr}</td>'
-                f'{chg_cell(chg(rev_v[i],  rev_v[i-1]))}'
-                f'{chg_cell(chg(cogs_v[i], cogs_v[i-1]))}'
-                f'{chg_cell(chg(rnd_v[i],  rnd_v[i-1]))}'
-                f'{chg_cell(chg(sga_v[i],  sga_v[i-1]))}'
-                f'{chg_cell(chg(dna_v[i],  dna_v[i-1]) if dna_v[i] is not None else None)}'
-                f'</tr>'
+                f'<tr{row_cls}><td class="year">{yr}</td>{chg_cell(chg(rev_v[i], rev_v[i-1]))}'
+                + "".join(chg_cell(chg(vals[i], vals[i-1])) for _, _, vals in exp_cats) + '</tr>'
             )
+        heads_chg = "".join(f"<th>{_h(n).replace(' / ', '/')} Change</th>" for n, _, _ in exp_cats)
         table_chg = (
             '<table class="ft" style="margin-top:10px;font-size:12px">'
-            '<thead><tr><th>Year</th><th>Revenue Change</th><th>Cost of Rev Change</th>'
-            '<th>R&amp;D Change</th><th>SG&amp;A Change</th><th>Facilities/D&amp;A Change</th></tr></thead>'
+            f'<thead><tr><th>Year</th><th>Revenue Change</th>{heads_chg}</tr></thead>'
             '<tbody>' + "".join(rows_chg) + '</tbody></table>'
         )
 
@@ -1312,7 +1315,7 @@ def main() -> int:
             + exp_chart
             + '<div style="overflow-x:auto">' + table_abs + '</div>'
             + '<div style="overflow-x:auto">' + table_chg + '</div>'
-            + '<p class="m-footnote">From SEC 10-K filings (EDGAR). Top chart compares revenue alongside '
+            + f'<p class="m-footnote">{exp_src} Top chart compares revenue alongside '
             'each operating-expense category. Bottom chart shows each expense as a % of revenue (stacked); '
             'the gap to 100% is operating margin.</p>'
             + '</div>'
@@ -1550,7 +1553,7 @@ def main() -> int:
         no 'start' date — they're instant values reported at fiscal year end)."""
         best = None; best_date = ""
         for v in entries:
-            if v.get("form") != "10-K": continue
+            if v.get("form") not in ("10-K", "S-1"): continue
             ed = v.get("end"); val = v.get("val")
             if not ed or val is None: continue
             if ed > best_date:
@@ -1618,7 +1621,7 @@ def main() -> int:
             '</div>'
         )
 
-        de_ratio = a_debt / a_equity if a_equity else None
+        de_ratio = a_debt / a_equity if a_equity and a_equity > 0 else None
         bs_table = (
             '<table class="ft" style="margin-top:10px;font-size:13px">'
             '<thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>'
@@ -1628,15 +1631,16 @@ def main() -> int:
             f'<tr><td class="year">Total Debt</td><td>${a_debt/1e6:,.0f}M</td></tr>'
             f'<tr><td class="year">Total Equity</td><td>${a_equity/1e6:,.0f}M</td></tr>'
             f'<tr><td class="year">Debt / Equity</td>'
-            f'<td class="{ "neg" if (de_ratio or 0) > 1 else "pos"}">{de_ratio:.2f}</td></tr>'
-            '</tbody></table>'
+            + (f'<td class="{ "neg" if de_ratio > 1 else "pos"}">{de_ratio:.2f}</td></tr>'
+               if de_ratio is not None else '<td class="neg">n/m (negative equity)</td></tr>')
+            + '</tbody></table>'
         )
 
         balance_html = (
             '<div class="data-table"><h2>Balance Sheet</h2>'
             + bs_legend + bs_chart
             + '<div style="overflow-x:auto">' + bs_table + '</div>'
-            + '<p class="m-footnote">Latest FY 10-K snapshot from EDGAR. Assets and Liabilities are stacked '
+            + '<p class="m-footnote">' + (f'S-1 balance sheet as of {max((v.get("end") or "") for v in bs_assets)}.' if _load_company_facts().get("s1-opex") else 'Latest FY 10-K snapshot from EDGAR.') + ' Assets and Liabilities are stacked '
             'into their components; Total Equity and Total Debt are shown separately for quick at-a-glance comparison.</p>'
             + '</div>'
         )

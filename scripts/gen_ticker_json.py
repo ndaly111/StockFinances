@@ -377,6 +377,15 @@ def _apply_pre_ipo(tk: str, d: dict) -> None:
     for k in [k for k in html if k.startswith(("valuation_", "impliedgrowth_"))]:
         del html[k]
     d["name"] = meta["name"]
+    if "expenses_abs" in html:
+        html["expenses_footnote"] = (
+            "From the S-1's statements of operations, in the company's own expense categories "
+            "(TTM = FY2025 + H1 2026 &minus; H1 2025). Bottom chart shows each expense as a % of "
+            "revenue (stacked); above 100% means an operating loss.")
+    if "balance_table" in html:
+        html["balance_footnote"] = (
+            "S-1 balance sheet as of June 30, 2026 (unaudited). Debt = convertible notes payable. "
+            "Equity is negative because redeemable convertible preferred stock sits outside equity.")
     d["metrics_footnote"] = (
         f'Pre-IPO: {meta["name"]} filed its S-1 on {meta["filed"]} '
         f'(<a href="{meta["s1_url"]}">prospectus</a>) and has not started trading. '
