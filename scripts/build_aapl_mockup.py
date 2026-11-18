@@ -540,7 +540,14 @@ def main() -> int:
         else:
             unit, mult = "K", 1e6
         scaled_max = vmax * mult
-        fmt = (lambda v: f"{v:,.1f}") if scaled_max < 20 else (lambda v: f"{v:,.0f}")
+        # Whole numbers only once a bar is >= 10 units: a "-1" or "4" label
+        # hid too much (-1.2 vs -0.6), so small bars always keep one decimal.
+        def fmt(v):
+            if abs(v) < 1 and v != 0:
+                return f"{v:,.2f}"
+            if abs(v) < 10 or scaled_max < 20:
+                return f"{v:,.1f}"
+            return f"{v:,.0f}"
         return unit, mult, fmt
 
     rev_vals = pad_left(rev_combined.values, max_n)
@@ -942,6 +949,9 @@ def main() -> int:
         hist_rev_tail = hist_rev.tail(n_actual_ctx)
         hist_ni_tail  = hist_ni.tail(n_actual_ctx)
         hist_eps_tail = hist_eps.tail(n_actual_ctx)
+        def _bm(v):  # $B, but sub-$1B values in $M so they don't read "$0.0B"
+            return f"${v * 1000:,.0f}M" if abs(v) < 1 else f"${v:,.1f}B"
+
         for d, rev_v, ni_v, eps_v in zip(
             hist_rev_tail.index,
             hist_rev_tail.values,
@@ -951,8 +961,8 @@ def main() -> int:
             yr_lbl = fy_label(d)
             fc_rows.append(
                 f'<tr><td class="year">{yr_lbl}</td>'
-                f'<td>${rev_v:,.1f}B</td>'
-                f'<td>${ni_v:,.1f}B</td>'
+                f'<td>{_bm(rev_v)}</td>'
+                f'<td>{_bm(ni_v)}</td>'
                 f'<td>${eps_v:.2f}</td>'
                 f'<td>—</td></tr>'
             )
