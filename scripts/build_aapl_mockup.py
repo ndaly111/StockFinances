@@ -1320,6 +1320,41 @@ def main() -> int:
             '<tbody>' + "".join(rows_chg) + '</tbody></table>'
         )
 
+        # When there are more expense columns than years (e.g. an S-1 with five
+        # categories and four periods) the year-per-row table runs off a phone
+        # screen: flip it so categories are rows and years are columns.
+        if len(exp_cats) + 1 > len(years_lbl):
+            def _ttm(yr):
+                return ' class="ttm-cell"' if yr == "TTM" else ''
+
+            def _flip_cell(td, yr):
+                if yr != "TTM":
+                    return td
+                return td.replace('<td class="', '<td class="ttm-cell ').replace('<td>', '<td class="ttm-cell">')
+
+            series = [("Revenue", rev_v)] + [(_h(n), vals) for n, _, vals in exp_cats]
+            yr_heads = "".join(f"<th{_ttm(y)}>{y}</th>" for y in years_lbl)
+            table_abs = (
+                '<table class="ft" style="margin-top:10px;font-size:12px">'
+                f'<thead><tr><th></th>{yr_heads}</tr></thead><tbody>'
+                + "".join(
+                    f'<tr><td class="year">{lab}</td>'
+                    + "".join(_flip_cell(cell(vals[i]), y) for i, y in enumerate(years_lbl)) + '</tr>'
+                    for lab, vals in series)
+                + '</tbody></table>'
+            )
+            chg_heads = "".join(f"<th{_ttm(y)}>{y}</th>" for y in years_lbl[1:])
+            table_chg = (
+                '<table class="ft" style="margin-top:10px;font-size:12px">'
+                f'<thead><tr><th>Change</th>{chg_heads}</tr></thead><tbody>'
+                + "".join(
+                    f'<tr><td class="year">{lab}</td>'
+                    + "".join(_flip_cell(chg_cell(chg(vals[i], vals[i - 1])), years_lbl[i])
+                              for i in range(1, len(years_lbl))) + '</tr>'
+                    for lab, vals in series)
+                + '</tbody></table>'
+            )
+
         expenses_html = (
             '<div class="data-table"><h2>Expenses</h2>'
             + exp_chart
