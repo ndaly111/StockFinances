@@ -1128,13 +1128,17 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     if callout:
         callout_section = f'      <p class="callout">{callout}</p>\n'
 
-    def _measured_card(title_text, chart_html, ro_id, clear_target, hint=""):
+    def _measured_card(title_text, chart_html, ro_id, clear_target, hint="", scale_toggle=False):
+        scale_row = (f'<div class="scale-row" data-chart="{clear_target}">'
+                     '<button class="range-btn active" data-scale="linear">LINEAR</button>'
+                     '<button class="range-btn" data-scale="log">LOG</button></div>') if scale_toggle else ""
         return f"""    <div class="chart-card">
       <h2>{title_text}</h2>
       {hint}
       <div class="chart-body">
       {chart_html}
       {_range_bar(clear_target)}
+      {scale_row}
       <div class="measure-readout" id="{ro_id}">Click a point, then another, to measure % change.</div>
       <button class="win-btn" onclick="clearMeasure('{clear_target}')">Clear</button>
       </div>
@@ -1144,7 +1148,8 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     def _hint(s):
         return f'<p class="hint">{s}</p>'
     eps_section = _measured_card("EPS ($)", eps_chart_html, "ro-eps", "eps-chart",
-                                 _hint("Are earnings still climbing? The orange dashes are what analysts expect next.")) if eps_chart_html else ""
+                                 _hint("Are earnings still climbing? The orange dashes are what analysts expect next."),
+                                 scale_toggle=True) if eps_chart_html else ""
     growth_section = ""
     if eps_growth_html:
         growth_section = f"""    <div class="chart-card">
@@ -1198,6 +1203,18 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
       });
       (bar.getAttribute('data-kind')==='bars' ? setBars : setRange)(id, +bar.getAttribute('data-default'));
     });
+    document.querySelectorAll('.scale-row').forEach(function(bar){
+      var id=bar.getAttribute('data-chart');
+      bar.querySelectorAll('button').forEach(function(b){
+        b.addEventListener('click', function(){
+          bar.querySelectorAll('button').forEach(function(o){ o.classList.remove('active'); });
+          b.classList.add('active');
+          var gd=document.getElementById(id); if(!gd||!window.Plotly) return;
+          Plotly.relayout(gd, {'yaxis.type': b.getAttribute('data-scale')}).then(function(){
+            setRange(id, gd.__years==null ? 5 : gd.__years); });
+        });
+      });
+    });
   }
   if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
 })();
@@ -1236,6 +1253,8 @@ function setRange(divId, years){
   // _fullData holds decoded arrays (gd.data may be plotly's binary {bdata} form).
   var data=gd._fullData||gd.data;
   if(!data||!window.Plotly) return;
+  gd.__years=years;
+  var isLog=(gd.layout&&gd.layout.yaxis&&gd.layout.yaxis.type)==='log';
   function t(x){ return new Date(x).getTime(); }
   var lo=Infinity, histMax=-Infinity, allMax=-Infinity;
   data.forEach(function(tr, k){
@@ -1252,7 +1271,8 @@ function setRange(divId, years){
     if(tr.meta==='ref') return;
     var xs=tr.x||[], ys=tr.y||[];
     for(var i=0;i<xs.length;i++){ var xv=t(xs[i]), yv=ys[i];
-      if(xv<x0||xv>x1||yv==null||!isFinite(yv)) continue;
+      if(xv<x0||xv>x1||yv==null||!isFinite(yv)||(isLog&&yv<=0)) continue;
+      if(isLog) yv=Math.log10(yv);
       if(yv<ylo) ylo=yv; if(yv>yhi) yhi=yv; }
   });
   var upd={'xaxis.range':[new Date(x0).toISOString(), new Date(x1).toISOString()]};
@@ -1312,6 +1332,7 @@ function setRange(divId, years){
       font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:.5px; }}
     table.stats td.tf, table.stats th.tf{{ text-align:left; white-space:nowrap; background:#C0C0FF; font-weight:700; }}
     table.stats thead th.tf{{ background:var(--navy); color:#FFF; }}
+    .scale-row{{ display:flex; gap:6px; justify-content:center; padding:0 6px 8px; }}
     .range-row{{ display:flex; gap:6px; justify-content:center; padding:8px 6px; flex-wrap:wrap;
       background:#DCDCDC; border-top:1px solid var(--gray-shade); margin-top:4px; }}
     .range-btn{{ appearance:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
