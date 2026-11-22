@@ -56,29 +56,14 @@ def test_eps_figure_log_and_forecast():
     assert fc, "expected a forecast trace"
     assert any(len(getattr(t,"x",[]) or []) >= 2 for t in fc)
 
-def test_eps_indexed_figure_rebases_to_100():
-    idx = pd.to_datetime(["2025-01-31","2025-06-30","2025-12-31"], utc=True)
-    df = pd.DataFrame({"eps":[80.0,100.0,120.0]}, index=idx)
-    d,w,m = g._resample_frames(df)
-    fig = g._eps_indexed_figure(d,w,m,"QQQ", fwd=None)
-    assert fig is not None and fig.layout.yaxis.type == "linear"
-    base = [t for t in fig.data if t.mode and "lines" in t.mode][0]
-    assert round(float(base.y[0]),1) == 100.0 and round(float(base.y[-1]),1) == 150.0
-
-def test_eps_indexed_figure_guards_bad_base():
-    idx = pd.to_datetime(["2025-01-31","2025-06-30"], utc=True)
-    df = pd.DataFrame({"eps":[0.0,5.0]}, index=idx)
-    d,w,m = g._resample_frames(df)
-    assert g._eps_indexed_figure(d,w,m,"QQQ", fwd=None) is None
-
 def test_page_html_has_measure_tool():
     html = g._page_html("QQQ test", "<div>growth</div>",
                         eps_chart_html='<div id="eps-chart"></div>',
-                        eps_indexed_html='<div id="eps-indexed-chart"></div>',
                         timeframe_table_html="<table></table>", callout="callout x")
-    for needle in ['eps-chart','eps-indexed-chart','measure-readout','Clear',
-                   'plotly_click','annualized','callout x']:
+    for needle in ['eps-chart','measure-readout','Clear',
+                   'pointerup','p2c','%/yr','callout x']:
         assert needle in html, needle
+    assert 'eps-indexed-chart' not in html
 
 def test_forward_callout_text():
     t = g._forward_callout({"growth_this_fy":0.25,"growth_next_fy":0.29,"coverage_weight":0.93})
