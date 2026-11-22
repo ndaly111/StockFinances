@@ -650,92 +650,6 @@ def _eps_figure(
         fig.update_xaxes(range=[xmin, xmax])
     return fig
 
-def _eps_indexed_figure(
-    df_d: pd.DataFrame,
-    df_w: pd.DataFrame,
-    df_m: pd.DataFrame,
-    ticker: str,
-    fwd=None,
-) -> Optional[go.Figure]:
-    """Build an EPS chart normalised to 100 at the start of the default view.
-
-    The base is the EPS ~5 years ago (the start of the default x-window), NOT the
-    first observation — for indices like SPY the reported series runs back to 1970
-    (~$5), so indexing to that made the default view show values in the thousands
-    on a log axis (unreadable). Anchoring to the window start keeps the default
-    view around 100-180 on a linear axis. Returns None if that base is <= 0.
-    """
-    b = df_m["eps"].dropna() if "eps" in df_m.columns else pd.Series(dtype=float)
-    if b.empty:
-        return None
-    _win_start = pd.Timestamp(b.index.max()) - pd.DateOffset(years=5)
-    _in_win = b[b.index >= _win_start]
-    base = float(_in_win.iloc[0]) if not _in_win.empty else float(b.iloc[0])
-    if base <= 0:
-        return None
-
-    def mk_traces(df: pd.DataFrame) -> List[go.Scatter]:
-        if "eps" not in df.columns:
-            return []
-        s = df["eps"].dropna()
-        if s.empty:
-            return []
-        return [
-            go.Scatter(
-                x=s.index,
-                y=s / base * 100,
-                name="EPS (5Y ago = 100)",
-                mode="lines", line=dict(color=_C_TTM, width=2),
-                hovertemplate="%{y:.1f}<extra></extra>",
-            )
-        ]
-
-    traces_m = mk_traces(df_m)
-
-    # Forecast trace (always visible).
-    forecast_traces: List[go.Scatter] = []
-    if fwd is not None and not b.empty:
-        last_eps_indexed = float(b.iloc[-1]) / base * 100
-        forecast_traces = [
-            _eps_forecast_trace(b.index[-1], last_eps_indexed, fwd, scale=100.0 / base)
-        ]
-
-    fig = go.Figure(data=traces_m + forecast_traces)
-
-    fig.update_layout(
-        title=f"{ticker} — EPS (Indexed to 100)",
-        margin=dict(l=50, r=50, t=60, b=40),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0.0),
-        xaxis=dict(
-            title="Date",
-            rangeselector=dict(buttons=[
-                dict(count=1,  label="1Y",  step="year", stepmode="backward"),
-                dict(count=3,  label="3Y",  step="year", stepmode="backward"),
-                dict(count=5,  label="5Y",  step="year", stepmode="backward"),
-                dict(count=10, label="10Y", step="year", stepmode="backward"),
-                dict(step="all", label="All"),
-            ]),
-            rangeslider=dict(visible=True),
-            type="date",
-        ),
-        yaxis=dict(title="Indexed EPS (5Y ago = 100)", type="linear"),
-        template=None,
-    )
-    if len(df_m.index):
-        xmax_hist = pd.Timestamp(df_m.index.max())
-        xmin = xmax_hist - pd.DateOffset(years=5)
-        xmax = xmax_hist
-        try:
-            if fwd and fwd.get("horizon_date"):
-                fh = pd.Timestamp(fwd["horizon_date"], tz="UTC") + pd.DateOffset(years=1)
-                if fh > xmax:
-                    xmax = fh
-        except Exception:
-            pass
-        fig.update_xaxes(range=[xmin, xmax])
-    return fig
-
-
 def _pe_figure(df_m: pd.DataFrame, fair_pe_now: Optional[float] = None) -> Optional[go.Figure]:
     """Trailing P/E over time, with its long-run median and today's fair P/E
     (normalized growth, today's 10Y) as dashed references."""
@@ -1104,7 +1018,7 @@ def _legend_strip(fig) -> str:
 
 
 def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str],
-               eps_indexed_html: Optional[str], timeframe_table_html: str, callout: str,
+               timeframe_table_html: str, callout: str,
                eps_growth_html: str = "", verdict_html: str = "", gap_html: str = "",
                pe_chart_html: Optional[str] = None) -> str:
     """Assemble the full HTML page in the site's 1999 NASDAQ-terminal theme."""
@@ -1139,7 +1053,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
       {chart_html}
       {_range_bar(clear_target)}
       {scale_row}
-      <div class="measure-readout" id="{ro_id}">Click a point, then another, to measure % change.</div>
+      <div class="measure-readout" id="{ro_id}">Tap any two points on the chart to measure the % change.</div>
       <button class="win-btn" onclick="clearMeasure('{clear_target}')">Clear</button>
       </div>
     </div>
@@ -1148,7 +1062,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
     def _hint(s):
         return f'<p class="hint">{s}</p>'
     eps_section = _measured_card("EPS ($)", eps_chart_html, "ro-eps", "eps-chart",
-                                 _hint("Are earnings still climbing? The orange dashes are what analysts expect next."),
+                                 _hint("Are earnings still climbing? The orange dashes are what analysts expect next. Tap two points to measure growth between them."),
                                  scale_toggle=True) if eps_chart_html else ""
     growth_section = ""
     if eps_growth_html:
@@ -1160,38 +1074,68 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
 """
     pe_section = _measured_card("P/E Over Time", pe_chart_html, "ro-pe", "pe-chart",
                                 _hint("What investors pay per $1 of trailing earnings. Above the green dashes is above today&#39;s fair P/E.")) if pe_chart_html else ""
-    eps_indexed_section = _measured_card("EPS Growth (indexed = 100)", eps_indexed_html, "ro-eps-indexed", "eps-indexed-chart",
-                                         _hint("Same earnings, starting from 100, so the growth is easier to read.")) if eps_indexed_html else ""
-
     measure_script = """<script>
 (function(){
-  function attach(divId, roId){
+  // Measuring: tap ANYWHERE on the plot (not just on the line) - the tap snaps
+  // to the nearest data point by date. Tap 1 = start (marker), tap 2 = end
+  // (shaded span + % change), tap 3 starts over. Native pointer events, because
+  // plotly_click only fires when the tap lands on a point and is flaky on phones.
+  // Before any tap, hovering shows the change from the start of the window.
+  function attach(divId, roId, unit){
     var gd=document.getElementById(divId), ro=document.getElementById(roId);
-    if(!gd||!ro||!gd.on) return;
-    var anchor=null, first=null;
-    function ms(x){ return (typeof x==='number')?x:new Date(x).getTime(); }
-    gd.on('plotly_click', function(d){
-      var p=d.points[0], x=ms(p.x), y=p.y;
-      if(first===null) first=y;
-      if(anchor===null){ anchor={x:x,y:y}; ro.innerHTML='Anchor set. Click another point.'; return; }
-      var s=anchor, e={x:x,y:y};
-      if(e.x < s.x){ var t=s; s=e; e=t; }
+    if(!gd||!ro||!window.Plotly) return;
+    var IDLE='Tap any two points on the chart to measure the % change.';
+    var base=((gd.layout&&gd.layout.shapes)||[]).slice(), A=null, B=null, down=null;
+    var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function t(x){ return (typeof x==='number')?x:new Date(x).getTime(); }
+    function lab(x){ var d=new Date(x); return MON[d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+    function val(y){ return unit==='$' ? '$'+y.toFixed(2) : y.toFixed(1)+unit; }
+    function pts(){ var out=[]; (gd._fullData||[]).forEach(function(tr){
+      if(tr.meta==='ref'||tr.visible===false) return; var xs=tr.x||[], ys=tr.y||[];
+      for(var i=0;i<xs.length;i++){ var y=ys[i]; if(y!=null&&isFinite(y)) out.push({x:t(xs[i]),y:+y}); } });
+      return out.sort(function(p,q){ return p.x-q.x; }); }
+    function nearest(ms){ var best=null; pts().forEach(function(p){
+      if(!best||Math.abs(p.x-ms)<Math.abs(best.x-ms)) best=p; }); return best; }
+    function change(s,e){ if(e.x<s.x){ var k=s; s=e; e=k; }
       var pct=(e.y/s.y-1)*100, yrs=(e.x-s.x)/(365.25*86400000);
-      var span = yrs>=1 ? yrs.toFixed(1)+' years' : Math.round(yrs*12)+' months';
-      var txt='<b>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</b> over '+span;
-      if(yrs>=0.02){ var ann=(Math.pow(e.y/s.y,1/yrs)-1)*100;
-        if(isFinite(ann)) txt+=' ('+(ann>=0?'+':'')+ann.toFixed(1)+'% annualized)'; }
-      ro.innerHTML=txt; anchor=null;
-    });
+      var span=yrs>=1 ? yrs.toFixed(1)+' yrs' : Math.max(1,Math.round(yrs*12))+' mo';
+      var txt='<b>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</b> '+lab(s.x)+' '+val(s.y)+' &rarr; '+lab(e.x)+' '+val(e.y)+' ('+span;
+      if(yrs>=0.5&&s.y>0&&e.y>0){ var ann=(Math.pow(e.y/s.y,1/yrs)-1)*100; txt+=', '+(ann>=0?'+':'')+ann.toFixed(1)+'%/yr'; }
+      return txt+')'; }
+    function vline(p,c){ return {type:'line',xref:'x',yref:'paper',x0:new Date(p.x).toISOString(),x1:new Date(p.x).toISOString(),
+      y0:0,y1:1,line:{color:c,width:2}}; }
+    function draw(){ var sh=base.slice();
+      if(A&&B){ var lo=Math.min(A.x,B.x), hi=Math.max(A.x,B.x);
+        sh.push({type:'rect',xref:'x',yref:'paper',x0:new Date(lo).toISOString(),x1:new Date(hi).toISOString(),
+          y0:0,y1:1,fillcolor:'rgba(255,255,0,0.22)',line:{width:0},layer:'below'}); }
+      if(A){ sh.push(vline(A,'#008800')); }
+      if(B){ sh.push(vline(B,'#CC0000')); }
+      Plotly.relayout(gd,{shapes:sh}); }
+    function tap(ev){ var xa=gd._fullLayout&&gd._fullLayout.xaxis; if(!xa) return;
+      var r=gd.getBoundingClientRect(), px=ev.clientX-r.left-xa._offset;
+      if(px<-10||px>xa._length+10) return;
+      var p=nearest(xa.p2c(Math.max(0,Math.min(xa._length,px)))); if(!p) return;
+      if(!A||B){ A=p; B=null; ro.innerHTML='Start: <b>'+lab(p.x)+' '+val(p.y)+'</b>. Now tap a second point.'; }
+      else { B=p; ro.innerHTML=change(A,B); }
+      draw(); }
+    gd.addEventListener('pointerdown', function(e){ down={x:e.clientX,y:e.clientY}; }, true);
+    gd.addEventListener('pointercancel', function(){ down=null; }, true);
+    gd.addEventListener('pointerup', function(e){ if(!down) return;
+      var moved=Math.abs(e.clientX-down.x)+Math.abs(e.clientY-down.y); down=null;
+      if(moved<12) tap(e); }, true);
     gd.on('plotly_hover', function(d){
-      if(anchor!==null||first===null) return;
-      var y=d.points[0].y, pct=(y/first-1)*100;
-      ro.innerHTML='% from first point: <b>'+(pct>=0?'+':'')+pct.toFixed(1)+'%</b>';
+      if(A) return; var xa=gd._fullLayout.xaxis, x0=t(xa.range[0]);
+      var h=d.points[0], hx=t(h.x), s=null;
+      pts().forEach(function(p){ if(!s&&p.x>=x0) s=p; });
+      if(!s||s.x>=hx) return;
+      ro.innerHTML='Since start of view: '+change(s,{x:hx,y:+h.y});
     });
-    gd.__clear=function(){ anchor=null; ro.innerHTML='Click a point, then another, to measure % change.'; };
+    gd.on('plotly_unhover', function(){ if(!A) ro.innerHTML=IDLE; });
+    gd.__clear=function(){ A=null; B=null; ro.innerHTML=IDLE; draw(); };
+    gd.__redraw=draw;
   }
   function init(){
-    attach('eps-chart','ro-eps'); attach('eps-indexed-chart','ro-eps-indexed'); attach('pe-chart','ro-pe');
+    attach('eps-chart','ro-eps','$'); attach('pe-chart','ro-pe','x');
     document.querySelectorAll('.range-row').forEach(function(bar){
       var id=bar.getAttribute('data-chart');
       bar.querySelectorAll('button').forEach(function(b){
@@ -1211,7 +1155,7 @@ def _page_html(title: str, growth_chart_html: str, eps_chart_html: Optional[str]
           b.classList.add('active');
           var gd=document.getElementById(id); if(!gd||!window.Plotly) return;
           Plotly.relayout(gd, {'yaxis.type': b.getAttribute('data-scale')}).then(function(){
-            setRange(id, gd.__years==null ? 5 : gd.__years); });
+            setRange(id, gd.__years==null ? 5 : gd.__years); if(gd.__redraw) gd.__redraw(); });
         });
       });
     });
@@ -1346,7 +1290,8 @@ function setRange(divId, years){
       font-family:Arial,sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; }}
     .key{{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }}
     .key-line{{ display:inline-block; width:18px; height:0; }}
-    #growth-chart, #pe-chart, #eps-chart, #eps-indexed-chart, #eps-growth-chart{{ touch-action:pan-y; }}
+    #growth-chart, #pe-chart, #eps-chart, #eps-growth-chart{{ touch-action:pan-y; }}
+    #pe-chart, #eps-chart{{ cursor:crosshair; }}
     .tiles{{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin:0 0 6px; }}
     @media (min-width:700px){{ .tiles{{ grid-template-columns:repeat(6,1fr); }} }}
     .tile{{ background:#000; border:2px inset var(--gray); padding:5px 4px; text-align:center; }}
@@ -1381,7 +1326,7 @@ function setRange(divId, years){
       <p class="hint">Blue is the growth the price expects. Green is what actually happened. Blue above green means the market is paying up.</p>
       <div class="chart-body">{growth_chart_html}{_range_bar('growth-chart')}</div>
     </div>
-{pe_section}{gap_section}{callout_section}{eps_section}{growth_section}{eps_indexed_section}    <div class="chart-card">
+{pe_section}{gap_section}{callout_section}{eps_section}{growth_section}    <div class="chart-card">
       <h2>10-Year Statistics</h2>
       <p class="hint">Where today&#39;s number sits against the last 1 to 10 years.</p>
       {timeframe_table_html}
@@ -1441,12 +1386,6 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
         _apply_retro_layout(fig_eps)
         chart_eps_html = to_html(fig_eps, include_plotlyjs=False, full_html=False,
                                  default_height="320px", div_id="eps-chart", config=_PLOT_CONFIG) + _legend_strip(fig_eps)
-    fig_eps_idx = _eps_indexed_figure(df_d, df_w, df_m, ticker, fwd=fwd)
-    chart_eps_idx_html = None
-    if fig_eps_idx is not None:
-        _apply_retro_layout(fig_eps_idx)
-        chart_eps_idx_html = to_html(fig_eps_idx, include_plotlyjs=False, full_html=False,
-                                     default_height="320px", div_id="eps-indexed-chart", config=_PLOT_CONFIG) + _legend_strip(fig_eps_idx)
     eps_growth_html = ""
     if "eps" in df_d.columns:
         summary = _eps_growth_summary(df_d["eps"], _forward_growth_rates(conn, ticker))
@@ -1485,7 +1424,7 @@ def _build_one(conn: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> None:
         chart_pe_html = to_html(fig_pe, include_plotlyjs=False, full_html=False, default_height="320px",
                                 div_id="pe-chart", config=_PLOT_CONFIG) + _legend_strip(fig_pe)
     page = _page_html(PAGE_TITLES[ticker], chart_growth_html, chart_eps_html,
-                      chart_eps_idx_html, tf_table, callout, eps_growth_html, verdict_html, gap_html,
+                      tf_table, callout, eps_growth_html, verdict_html, gap_html,
                       chart_pe_html)
     out_file = os.path.join(OUTPUT_DIR, OUTPUT_FILES[ticker])
     _write_page(out_file, page)
