@@ -5,7 +5,7 @@ us-gaap:OperatingIncomeLoss 2023-12-31                                          
 us-gaap:OperatingIncomeLoss 2025-12-31 us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:penn:KansasEntertainmentLLCMember   68400000.0
 us-gaap:OperatingIncomeLoss 2024-12-31 us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:penn:KansasEntertainmentLLCMember   66800000.0
 us-gaap:OperatingIncomeLoss 2023-12-31 us-gaap:EquityMethodInvestmentNonconsolidatedInvesteeAxis:penn:KansasEntertainmentLLCMember   65200000.0
-us-gaap:OperatingIncomeLoss 2026-06-30                                                                                              131700000.0
-us-gaap:OperatingIncomeLoss 2025-06-30                                                                                               77500000.0
-us-gaap:OperatingIncomeLoss 2026-06-30                                                                                              228700000.0
-us-gaap:OperatingIncomeLoss 2025-06-30                                                                                              120300000.0
+us-gaap:OperatingIncomeLoss 2026-09-30                                                                                              127300000.0
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                             -776400000.0
+us-gaap:OperatingIncomeLoss 2026-09-30                                                                                              355900000.0
+us-gaap:OperatingIncomeLoss 2025-09-30                                                                                             -656100000.0

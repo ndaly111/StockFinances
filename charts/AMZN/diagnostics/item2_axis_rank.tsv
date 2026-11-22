@@ -1,3 +1,2 @@
 AxisType	AxisGroup	MembersMatched	AxisScore	Examples
-ProductOrServiceAxis	PRODUCT	4	20.0	Advertising, Other Services, Product
-StatementBusinessSegmentsAxis	OPERATING	1	7.0	International
+StatementBusinessSegmentsAxis	OPERATING	0	0.0	
