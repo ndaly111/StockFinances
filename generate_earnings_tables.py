@@ -1,3 +1,4 @@
+import html
 import os
 import sqlite3
 import logging
@@ -12,6 +13,12 @@ try:  # pragma: no cover - import check only
     import requests  # noqa: F401
 except Exception as exc:  # pragma: no cover - error path
     raise ImportError("The 'requests' package is required to fetch earnings data") from exc
+
+
+def ticker_link(t) -> str:
+    """Link a ticker to its page (the site's single ticker.html shell)."""
+    t = html.escape(str(t))
+    return f'<a href="ticker.html?t={t}">{t}</a>'
 
 def ensure_column(cursor: sqlite3.Cursor, table: str, name: str, definition: str) -> None:
     """Add a column to *table* if it does not already exist."""
@@ -326,7 +333,7 @@ def generate_earnings_tables():
 
         note = f"<p>Showing earnings from {seven_days_ago.date()} to {today.date()}.</p>"
         reporting_html = (
-            f"<p><strong>Reporting Today:</strong> {', '.join(sorted(reporting_today))}</p>"
+            f"<p><strong>Reporting Today:</strong> {', '.join(ticker_link(t) for t in sorted(reporting_today))}</p>"
             if reporting_today else ""
         )
 
@@ -336,12 +343,12 @@ def generate_earnings_tables():
         summary_html = (
             "<h3>Top 5 Earnings Beats</h3><ul>"
             + "".join(
-                f"<li>{r['ticker']}: {format_surprise(r['Surprise Value'])}</li>"
+                f"<li>{ticker_link(r['ticker'])}: {format_surprise(r['Surprise Value'])}</li>"
                 for _, r in beats.iterrows()
             )
             + "</ul><h3>Top 5 Earnings Misses</h3><ul>"
             + "".join(
-                f"<li>{r['ticker']}: {format_surprise(r['Surprise Value'])}</li>"
+                f"<li>{ticker_link(r['ticker'])}: {format_surprise(r['Surprise Value'])}</li>"
                 for _, r in misses.iterrows()
             )
             + "</ul>"
@@ -366,6 +373,7 @@ def generate_earnings_tables():
 
         dfp_display = dfp.sort_values('earnings_date', ascending=False)[display_columns].copy()
         dfp_display['earnings_date'] = dfp_display['earnings_date'].dt.strftime('%b %d')
+        dfp_display['ticker'] = dfp_display['ticker'].apply(ticker_link)
         dfp_display = dfp_display.fillna('-').rename(columns=rename_map)
 
         # Eight columns overflow a phone screen; let the table swipe sideways.
@@ -410,7 +418,7 @@ def generate_earnings_tables():
         for date, group in early:
             html += f"<h3>{date}</h3><ul>"
             for _, row in group.iterrows():
-                html += f"<li>{row['ticker']}</li>"
+                html += f"<li>{ticker_link(row['ticker'])}</li>"
             html += "</ul>"
 
         if later:
@@ -418,7 +426,7 @@ def generate_earnings_tables():
             for date, group in later:
                 html += f"<h3>{date}</h3><ul>"
                 for _, row in group.iterrows():
-                    html += f"<li>{row['ticker']}</li>"
+                    html += f"<li>{ticker_link(row['ticker'])}</li>"
                 html += "</ul>"
             html += "</details>"
 
